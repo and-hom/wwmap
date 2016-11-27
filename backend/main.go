@@ -17,11 +17,10 @@ func TracksHandler(w http.ResponseWriter, _ *http.Request) {
 
 	json, e := json.Marshal(storage.getTracks())
 	if e != nil {
-		log.Errorf("Json serialize error: %v", e)
-		http.Error(w, "Unknown error", http.StatusInternalServerError)
-		return
+		onError(w, e, "Json serialize error")
+	} else {
+		w.Write(json)
 	}
-	w.Write(json)
 }
 
 func TrackFiles(w http.ResponseWriter, r *http.Request) {
@@ -32,16 +31,21 @@ func TrackFiles(w http.ResponseWriter, r *http.Request) {
 
 	fileReader, err := files.Get(id)
 	if err != nil {
-		log.Errorf("Read data error: %v", err)
-		http.Error(w, "Unknown error", http.StatusInternalServerError)
+		onError(w, err, "Read data error")
+		return
 	}
 
 	_, err = io.Copy(w, fileReader)
 
 	if err != nil {
-		log.Errorf("Send error: %v", err)
-		http.Error(w, "Unknown error", http.StatusInternalServerError)
+		onError(w, err, "Send error")
 	}
+}
+
+func onError(w http.ResponseWriter, err error, msg string) {
+	errStr := fmt.Sprintf("%s: %v", msg, err)
+	log.Errorf(errStr)
+	http.Error(w, errStr, http.StatusInternalServerError)
 }
 
 func main() {
