@@ -6,6 +6,7 @@
 </head>
 <body>
 <div id="map" style="width: 800px; height: 600px"></div>
+<div id="tracks"></div>
 
 <script type="text/javascript" src="./js/jquery-3.1.1.min.js"></script>
 <script type="text/javascript" src="./js/jquery.cookie.js"></script>
@@ -29,8 +30,10 @@
 
         // Load tracks
         $.get("http://localhost:7007/tracks", function (data) {
+            $('#tracks').html("")
             $.each($.parseJSON(data), function (_, track) {
                 myMap.geoObjects.add(new ymaps.Polyline(track.path));
+                $("#tracks").append("<p>" + track.title + "</p>")
             })
         });
     }
