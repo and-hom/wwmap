@@ -28,7 +28,7 @@
         });
 
         // Load tracks
-        $.get("./tracks", function (data) {
+        $.get("http://localhost:7007/tracks", function (data) {
             $.each($.parseJSON(data), function (_, track) {
                 myMap.geoObjects.add(new ymaps.Polyline(track.path));
             })
