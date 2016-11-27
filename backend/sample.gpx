@@ -1,0 +1,2326 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx xmlns="http://www.topografix.com/GPX/1/1" creator="SAS.Planet" version="1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:wptx1="http://www.garmin.com/xmlschemas/WaypointExtension/v1" xmlns:gpxtrx="http://www.garmin.com/xmlschemas/GpxExtensions/v3" xmlns:gpxtpx="http://www.garmin.com/xmlschemas/TrackPointExtension/v1" xmlns:gpxx="http://www.garmin.com/xmlschemas/GpxExtensions/v3" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/WaypointExtension/v1 http://www8.garmin.com/xmlschemas/WaypointExtensionv1.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www8.garmin.com/xmlschemas/GpxExtensionsv3.xsd">
+  <metadata>
+    <time>2016-03-25T15:58:23Z</time>
+    <link href="http://www.sasgis.org/">
+      <text>SAS.Planet</text>
+    </link>
+    <name>Трек</name>
+    <desc>18.03.2016 20:24:37</desc>
+    <author>
+      <name>and_hom</name>
+    </author>
+    <bounds maxlat="56.028754234235" maxlon="37.6047915047205" minlat="56.2410512669905" minlon="37.0322406850034"/>
+  </metadata>
+  <wpt lat="56.0448" lon="37.5098361111111">
+    <name>Родник и мост</name>
+    <fix>2d</fix>
+    <type>user</type>
+    <sym>Flag, Blue</sym>
+    <link href="files\wht-blank.png"/>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolOnly</gpxx:DisplayMode>
+        <gpxx:Categories>
+          <gpxx:Category>ПВД-3</gpxx:Category>
+        </gpxx:Categories>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolOnly</wptx1:DisplayMode>
+        <wptx1:Categories>
+          <wptx1:Category>ПВД-3</wptx1:Category>
+        </wptx1:Categories>
+      </wptx1:WaypointExtension>
+    </extensions>
+  </wpt>
+  <rte>
+    <name>Трек</name>
+    <cmt>18.03.2016 20:24:37</cmt>
+    <number>1</number>
+    <extensions>
+      <gpxx:RouteExtension>
+        <gpxx:Categories>
+          <gpxx:Category>ПВД-3</gpxx:Category>
+        </gpxx:Categories>
+      </gpxx:RouteExtension>
+      <gpxtrx:TrackExtension>
+        <gpxtrx:Categories>
+          <gpxtrx:Category>ПВД-3</gpxtrx:Category>
+        </gpxtrx:Categories>
+      </gpxtrx:TrackExtension>
+    </extensions>
+    <rtept lat="56.0289460745397" lon="37.48710116126">
+      <name>Трек 1</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.028754234235" lon="37.4876161453909">
+      <name>Трек 2</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.028826174461" lon="37.488731944341">
+      <name>Трек 3</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0287782143252" lon="37.489075267095">
+      <name>Трек 4</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.028826174461" lon="37.4910493729299">
+      <name>Трек 5</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0291379138912" lon="37.4912639496511">
+      <name>Трек 6</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.029521589734" lon="37.4909206268972">
+      <name>Трек 7</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0298573029684" lon="37.4925943253225">
+      <name>Трек 8</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0298573029684" lon="37.4928947327322">
+      <name>Трек 9</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0300731170774" lon="37.4930663941091">
+      <name>Трек 10</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0305047416759" lon="37.4959417221731">
+      <name>Трек 11</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0304567836255" lon="37.4964996216482">
+      <name>Трек 12</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0310322762978" lon="37.4987741348928">
+      <name>Трек 13</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0310562549729" lon="37.4993749497121">
+      <name>Трек 14</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0315837820579" lon="37.5017782089895">
+      <name>Трек 15</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0333581384362" lon="37.512678706426">
+      <name>Трек 16</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0447487071766" lon="37.5048681137746">
+      <name>Трек 17</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0448688097909" lon="37.5053830979055">
+      <name>Трек 18</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0450249426282" lon="37.5058980820364">
+      <name>Трек 19</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0452050951136" lon="37.5059195397085">
+      <name>Трек 20</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0453972568336" lon="37.5059195397085">
+      <name>Трек 21</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0455653975501" lon="37.5060912010854">
+      <name>Трек 22</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0455413774928" lon="37.5064345238393">
+      <name>Трек 23</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0456854976114" lon="37.5066276428884">
+      <name>Трек 24</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0458656469994" lon="37.5072070000356">
+      <name>Трек 25</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0457935873456" lon="37.5077756283468">
+      <name>Трек 26</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0459677312777" lon="37.5082476971334">
+      <name>Трек 27</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0459557213767" lon="37.5095458862966">
+      <name>Трек 28</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0456434626327" lon="37.5096746323293">
+      <name>Трек 29</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0448688097909" lon="37.5097819206899">
+      <name>Трек 30</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0443163346564" lon="37.5099213955587">
+      <name>Трек 31</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0442803033934" lon="37.510522210378">
+      <name>Трек 32</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0443403554796" lon="37.511058652181">
+      <name>Трек 33</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0441301727672" lon="37.5122280953115">
+      <name>Трек 34</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0440220783531" lon="37.512850367803">
+      <name>Трек 35</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0436857826756" lon="37.513386809606">
+      <name>Трек 36</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0434936123954" lon="37.5138803360647">
+      <name>Трек 37</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.043241387444" lon="37.515017592687">
+      <name>Трек 38</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0431092689516" lon="37.5158115265554">
+      <name>Трек 39</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0432533981936" lon="37.5167127487844">
+      <name>Трек 40</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0433614947702" lon="37.5174637673086">
+      <name>Трек 41</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0435416550556" lon="37.5180002091116">
+      <name>Трек 42</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0435626737005" lon="37.5184025404637">
+      <name>Трек 43</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0434545776898" lon="37.5187297699636">
+      <name>Трек 44</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0433074465199" lon="37.5190355417913">
+      <name>Трек 45</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0432173659337" lon="37.5191481945699">
+      <name>Трек 46</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0432631739369" lon="37.5194271443074">
+      <name>Трек 47</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0432091255483" lon="37.5196578142827">
+      <name>Трек 48</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0432241389972" lon="37.5198455689137">
+      <name>Трек 49</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0431010285429" lon="37.520070874471">
+      <name>Трек 50</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0430770069449" lon="37.520430290479">
+      <name>Трек 51</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0430259609991" lon="37.5207199690526">
+      <name>Трек 52</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0429238680687" lon="37.5209560034458">
+      <name>Трек 53</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0428758246361" lon="37.521165215749">
+      <name>Трек 54</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0428923395728" lon="37.5213797924702">
+      <name>Трек 55</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0428593096922" lon="37.5215380428021">
+      <name>Трек 56</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0429448870516" lon="37.5218599078839">
+      <name>Трек 57</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0430574885498" lon="37.5221737263386">
+      <name>Трек 58</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0431670870245" lon="37.5225116846745">
+      <name>Трек 59</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.043425317811" lon="37.5233056185429">
+      <name>Трек 60</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0434943792389" lon="37.5237079498952">
+      <name>Трек 61</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0434943792389" lon="37.5239761707967">
+      <name>Трек 62</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0434883739023" lon="37.5241371033375">
+      <name>Трек 63</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0435784538531" lon="37.5243945954029">
+      <name>Трек 64</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0436385070362" lon="37.5248237488453">
+      <name>Трек 65</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0436445123494" lon="37.5251563427632">
+      <name>Трек 66</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0435244059079" lon="37.5254674790089">
+      <name>Трек 67</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0434643525464" lon="37.5257249710743">
+      <name>Трек 68</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0434943792389" lon="37.5261755821888">
+      <name>Трек 69</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0434283204844" lon="37.5265832779591">
+      <name>Трек 70</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0433802776825" lon="37.5269051430409">
+      <name>Трек 71</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0432601704151" lon="37.5272591946308">
+      <name>Трек 72</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0432181327827" lon="37.5276883480732">
+      <name>Трек 73</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0433202240957" lon="37.528192603368">
+      <name>Трек 74</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0433142187319" lon="37.5287397740071">
+      <name>Трек 75</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0433622616164" lon="37.5294264195149">
+      <name>Трек 76</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0434343258304" lon="37.5299199459736">
+      <name>Трек 77</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0440889029184" lon="37.5294264195149">
+      <name>Трек 78</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0445693193732" lon="37.5296624539082">
+      <name>Трек 79</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0448335458628" lon="37.5295337078755">
+      <name>Трек 80</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0453740034771" lon="37.5299414036458">
+      <name>Трек 81</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0456021944094" lon="37.530520760793">
+      <name>Трек 82</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0458784237245" lon="37.5309284565633">
+      <name>Трек 83</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0463648226909" lon="37.5307782528585">
+      <name>Трек 84</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0467491335685" lon="37.533031308431">
+      <name>Трек 85</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0469412875656" lon="37.5335462925618">
+      <name>Трек 86</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0464699080784" lon="37.5344528792088">
+      <name>Трек 87</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0462717468219" lon="37.5348069307988">
+      <name>Трек 88</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0463378006876" lon="37.5356866953557">
+      <name>Трек 89</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0466140247138" lon="37.5361480353062">
+      <name>Трек 90</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0469623043508" lon="37.5363089678471">
+      <name>Трек 91</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0470058390834" lon="37.5363250611012">
+      <name>Трек 92</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0470553785467" lon="37.5370090244">
+      <name>Трек 93</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0472340203233" lon="37.538462781686">
+      <name>Трек 94</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0472610416961" lon="37.5392298934643">
+      <name>Трек 95</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0473931459121" lon="37.5394015548412">
+      <name>Трек 96</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0481707501582" lon="37.5390635965053">
+      <name>Трек 97</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0482998489535" lon="37.5391011474316">
+      <name>Трек 98</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0484289473149" lon="37.5392459867184">
+      <name>Трек 99</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.04857005433" lon="37.5396322248165">
+      <name>Трек 100</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0484979997488" lon="37.5400560138409">
+      <name>Трек 101</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.048395922194" lon="37.5402330396359">
+      <name>Трек 102</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0485340270563" lon="37.54024913289">
+      <name>Трек 103</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0487321766437" lon="37.5398682592099">
+      <name>Трек 104</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0489963745036" lon="37.5398468015377">
+      <name>Трек 105</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0492815860628" lon="37.5401901242916">
+      <name>Трек 106</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0494377009668" lon="37.5406031844799">
+      <name>Трек 107</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0498339897968" lon="37.5415258643811">
+      <name>Трек 108</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0500801671628" lon="37.5414534447376">
+      <name>Трек 109</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0502512895243" lon="37.5415821907703">
+      <name>Трек 110</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0503353493525" lon="37.5418718693439">
+      <name>Трек 111</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0504074004874" lon="37.5423761246387">
+      <name>Трек 112</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0504944620951" lon="37.5427087185566">
+      <name>Трек 113</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0506835952525" lon="37.5430225370113">
+      <name>Трек 114</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0508096835068" lon="37.5429903505031">
+      <name>Трек 115</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0518423907733" lon="37.5438164708797">
+      <name>Трек 116</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0520585352921" lon="37.5447820661251">
+      <name>Трек 117</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0523947576814" lon="37.5460480687801">
+      <name>Трек 118</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0532232931493" lon="37.5475501058284">
+      <name>Трек 119</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0534454336784" lon="37.5475501058284">
+      <name>Трек 120</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0539617553499" lon="37.5468527314845">
+      <name>Трек 121</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0542259172419" lon="37.5466381547634">
+      <name>Трек 122</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0544060265811" lon="37.5473462579433">
+      <name>Трек 123</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0540217923031" lon="37.5477324960414">
+      <name>Трек 124</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0534694487937" lon="37.5488053796474">
+      <name>Трек 125</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0536855841564" lon="37.5507365701381">
+      <name>Трек 126</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0533493730667" lon="37.5524746415797">
+      <name>Трек 127</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0535174789795" lon="37.5536333558742">
+      <name>Трек 128</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0544060265811" lon="37.5542770860377">
+      <name>Трек 129</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0548382855492" lon="37.5558864114467">
+      <name>Трек 130</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0552945536263" lon="37.5564443109218">
+      <name>Трек 131</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0552945536263" lon="37.5572382447902">
+      <name>Трек 132</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0554506440925" lon="37.5581823823634">
+      <name>Трек 133</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0556547614372" lon="37.5587617395106">
+      <name>Трек 134</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0553065606078" lon="37.5594483850184">
+      <name>Трек 135</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0554986718006" lon="37.5602423188869">
+      <name>Трек 136</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0558468708883" lon="37.5610362527553">
+      <name>Трек 137</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0564231934756" lon="37.5606070993129">
+      <name>Трек 138</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0569034556916" lon="37.5620233056727">
+      <name>Трек 139</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0567473711302" lon="37.5629459855739">
+      <name>Трек 140</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0561830601153" lon="37.5637613771144">
+      <name>Трек 141</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0558468708883" lon="37.5646411416713">
+      <name>Трек 142</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0554746579541" lon="37.5654565332118">
+      <name>Трек 143</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0553545884961" lon="37.5662719247523">
+      <name>Трек 144</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0558108504394" lon="37.5672160623256">
+      <name>Трек 145</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0569154621701" lon="37.5695764062587">
+      <name>Трек 146</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0568914492094" lon="37.5703059671107">
+      <name>Трек 147</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0564352001042" lon="37.5711642739954">
+      <name>Трек 148</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0557147957439" lon="37.5715505120936">
+      <name>Трек 149</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0555244728982" lon="37.5715428417717">
+      <name>Трек 150</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0552249284079" lon="37.5712531631981">
+      <name>Трек 151</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0550631734157" lon="37.5709527557884">
+      <name>Трек 152</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0550631734157" lon="37.5703948563133">
+      <name>Трек 153</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0549912820903" lon="37.5699657028709">
+      <name>Трек 154</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0548115531905" lon="37.5695794647728">
+      <name>Трек 155</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.054547949289" lon="37.569439989904">
+      <name>Трек 156</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0542663704041" lon="37.5694721764122">
+      <name>Трек 157</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0536373037665" lon="37.5696652954612">
+      <name>Трек 158</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0534515773688" lon="37.5697833126579">
+      <name>Трек 159</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0532658500767" lon="37.5703304832969">
+      <name>Трек 160</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0533976566342" lon="37.5726157253776">
+      <name>Трек 161</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0534515773688" lon="37.5733023708854">
+      <name>Трек 162</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0534995068473" lon="37.5738924568687">
+      <name>Трек 163</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0535594186118" lon="37.5743430679832">
+      <name>Трек 164</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0536432949257" lon="37.5749116962944">
+      <name>Трек 165</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0538769494097" lon="37.575383765081">
+      <name>Трек 166</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0539069050104" lon="37.5756627148185">
+      <name>Трек 167</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0540013455193" lon="37.5758451050316">
+      <name>Трек 168</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0537672007465" lon="37.5770360058342">
+      <name>Трек 169</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0542715107911" lon="37.5776368206535">
+      <name>Трек 170</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0543435545426" lon="37.5783663815056">
+      <name>Трек 171</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0539293011259" lon="37.5791174000297">
+      <name>Трек 172</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0539112900064" lon="37.5793963497673">
+      <name>Трек 173</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0530827693799" lon="37.5808018272911">
+      <name>Трек 174</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0528366112572" lon="37.5811666077171">
+      <name>Трек 175</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.053905286298" lon="37.5825077122245">
+      <name>Трек 176</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0544245981599" lon="37.5833767479454">
+      <name>Трек 177</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0538015252378" lon="37.5852650230919">
+      <name>Трек 178</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0537056669717" lon="37.5865953987632">
+      <name>Трек 179</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0533941259616" lon="37.5884836739097">
+      <name>Трек 180</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.053489985002" lon="37.5893848961387">
+      <name>Трек 181</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0542568487481" lon="37.5902432030235">
+      <name>Трек 182</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0573001889013" lon="37.5939768379724">
+      <name>Трек 183</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0570126394758" lon="37.5972384041345">
+      <name>Трек 184</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0582586715009" lon="37.5986116951502">
+      <name>Трек 185</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0590254404278" lon="37.5972384041345">
+      <name>Трек 186</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0632423969956" lon="37.6011866158045">
+      <name>Трек 187</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0644882277214" lon="37.6011866158045">
+      <name>Трек 188</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0662131576504" lon="37.6032465523279">
+      <name>Трек 189</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.069854422941" lon="37.6046198433435">
+      <name>Трек 190</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0703844856653" lon="37.6047915047205">
+      <name>Трек 191</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0719175260151" lon="37.6003283089197">
+      <name>Трек 192</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.074097212775" lon="37.6004999702966">
+      <name>Трек 193</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0738555043276" lon="37.5972169464624">
+      <name>Трек 194</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0761596616791" lon="37.594813687185">
+      <name>Трек 195</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0766876782545" lon="37.5939553803002">
+      <name>Трек 196</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.076615676422" lon="37.5932687347924">
+      <name>Трек 197</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0781996855291" lon="37.5923245972192">
+      <name>Трек 198</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.078847670409" lon="37.5922816818749">
+      <name>Трек 199</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0799276208922" lon="37.5918954437768">
+      <name>Трек 200</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0801916041649" lon="37.5916379517114">
+      <name>Трек 201</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0811995235912" lon="37.5857585495507">
+      <name>Трек 202</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0825913687943" lon="37.5863593643701">
+      <name>Трек 203</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0850869647881" lon="37.5703519409693">
+      <name>Трек 204</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0854948833117" lon="37.5695365494287">
+      <name>Трек 205</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0857828231875" lon="37.5679486816919">
+      <name>Трек 206</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0866706241989" lon="37.5668328827417">
+      <name>Трек 207</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0868625784728" lon="37.5653308456934">
+      <name>Трек 208</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0870785258828" lon="37.5642150467431">
+      <name>Трек 209</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0880862643886" lon="37.5608676498926">
+      <name>Трек 210</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0910853294844" lon="37.56185470281">
+      <name>Трек 211</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.0914452015377" lon="37.5640433853663">
+      <name>Трек 212</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.092989902924" lon="37.5660174912011">
+      <name>Трек 213</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1021100318845" lon="37.5670903748071">
+      <name>Трек 214</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1031152682451" lon="37.5671332901513">
+      <name>Трек 215</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1114672884966" lon="37.5720256393944">
+      <name>Трек 216</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1125679926685" lon="37.5733989304101">
+      <name>Трек 217</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1154870990906" lon="37.5678199356591">
+      <name>Трек 218</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1148171598186" lon="37.5672191208397">
+      <name>Трек 219</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1157742123509" lon="37.5653308456933">
+      <name>Трек 220</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1163723580957" lon="37.5636142319237">
+      <name>Трек 221</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1172097465173" lon="37.5625413483178">
+      <name>Трек 222</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1179394558531" lon="37.5619834488426">
+      <name>Трек 223</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1188007343106" lon="37.5623053139244">
+      <name>Трек 224</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1192552901678" lon="37.5624769753014">
+      <name>Трек 225</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1200806541794" lon="37.5622838562523">
+      <name>Трек 226</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1211571893235" lon="37.5639575546776">
+      <name>Трек 227</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1220423178748" lon="37.5646871155296">
+      <name>Трек 228</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.122389187023" lon="37.5611895149742">
+      <name>Трек 229</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1242072086417" lon="37.5525206154381">
+      <name>Трек 230</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1249248251021" lon="37.548357827047">
+      <name>Трек 231</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1243507330048" lon="37.5432079857384">
+      <name>Трек 232</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1249726657235" lon="37.5304192131554">
+      <name>Трек 233</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1237766323392" lon="37.5222652977501">
+      <name>Трек 234</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1234858758502" lon="37.5205687196639">
+      <name>Трек 235</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1235815606128" lon="37.5185087831404">
+      <name>Трек 236</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1233951134843" lon="37.5167492540268">
+      <name>Трек 237</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1229156831228" lon="37.5154617936997">
+      <name>Трек 238</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1230355412757" lon="37.514818063536">
+      <name>Трек 239</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1230355412757" lon="37.513552060881">
+      <name>Трек 240</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1234083408439" lon="37.5134769590285">
+      <name>Трек 241</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1231212845496" lon="37.5099149854567">
+      <name>Трек 242</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1238150002605" lon="37.509614578047">
+      <name>Трек 243</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1236236316588" lon="37.5055376203444">
+      <name>Трек 244</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.123193048824" lon="37.5033918531325">
+      <name>Трек 245</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1252263142968" lon="37.4938646467116">
+      <name>Трек 246</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1231452059893" lon="37.4815908582594">
+      <name>Трек 247</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1236357574527" lon="37.4730936201">
+      <name>Трек 248</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1235398724628" lon="37.4669138105297">
+      <name>Трек 249</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.12584104598" lon="37.4673429639721">
+      <name>Трек 250</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.138063712457" lon="37.4672571332836">
+      <name>Трек 251</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1400697793298" lon="37.467342963972">
+      <name>Трек 252</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1410042442965" lon="37.4677506597423">
+      <name>Трек 253</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1412917673896" lon="37.4665919454479">
+      <name>Трек 254</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1418428472819" lon="37.4633303792858">
+      <name>Трек 255</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1431486353562" lon="37.4620643766307">
+      <name>Трек 256</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1438793780508" lon="37.4615493924998">
+      <name>Трек 257</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1442986503477" lon="37.4626437337779">
+      <name>Трек 258</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1452929062931" lon="37.4625364454173">
+      <name>Трек 259</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1464069214302" lon="37.4632445485972">
+      <name>Трек 260</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.147616729099" lon="37.4640599401378">
+      <name>Трек 261</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1478802464894" lon="37.4638668210887">
+      <name>Трек 262</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.148754632104" lon="37.4629441411876">
+      <name>Трек 263</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1482395854613" lon="37.4599400670909">
+      <name>Трек 264</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1483593643688" lon="37.4591890485667">
+      <name>Трек 265</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1484312315334" lon="37.425736537733">
+      <name>Трек 266</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1491738509985" lon="37.4238911779308">
+      <name>Трек 267</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1496289977417" lon="37.408441654005">
+      <name>Трек 268</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1462032866764" lon="37.410244098463">
+      <name>Трек 269</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1458918431926" lon="37.4074546010875">
+      <name>Трек 270</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1441131968883" lon="37.4107376249214">
+      <name>Трек 271</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1423917541545" lon="37.4114671857735">
+      <name>Трек 272</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1410528009505" lon="37.4126688154121">
+      <name>Трек 273</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1390921067559" lon="37.4074760587593">
+      <name>Трек 274</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1382551946365" lon="37.4075189741035">
+      <name>Трек 275</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1380399857181" lon="37.4065319211861">
+      <name>Трек 276</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1383508426579" lon="37.4061456830879">
+      <name>Трек 277</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1380878100263" lon="37.4061456830879">
+      <name>Трек 278</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1379921613505" lon="37.4043861539742">
+      <name>Трек 279</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.13691609735" lon="37.4006525190254">
+      <name>Трек 280</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1382752409962" lon="37.3993650586983">
+      <name>Трек 281</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1438340343417" lon="37.3891512067696">
+      <name>Трек 282</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.148098423408" lon="37.3808256299874">
+      <name>Трек 283</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1500148480128" lon="37.3760191114327">
+      <name>Трек 284</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1589249618399" lon="37.3670927198311">
+      <name>Трек 285</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1595955316065" lon="37.3653761060616">
+      <name>Трек 286</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1638102724272" lon="37.3645177991768">
+      <name>Трек 287</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1672104634718" lon="37.3614278943917">
+      <name>Трек 288</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1727650548232" lon="37.354089370527">
+      <name>Трек 289</name>
+      <sym>waypoint</sym>
+    </rtept>
+  </rte>
+  <wpt lat="56.1455277777778" lon="37.4066361111111">
+    <name>c-25</name>
+    <fix>2d</fix>
+    <time>1899-12-30T01:00:00Z</time>
+    <cmt>3/5/2016 9:58:20 PM</cmt>
+    <type>user</type>
+    <sym>Flag, Blue</sym>
+    <link href="files\1.png"/>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolOnly</gpxx:DisplayMode>
+        <gpxx:Categories>
+          <gpxx:Category>ПВД-3</gpxx:Category>
+        </gpxx:Categories>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolOnly</wptx1:DisplayMode>
+        <wptx1:Categories>
+          <wptx1:Category>ПВД-3</wptx1:Category>
+        </wptx1:Categories>
+      </wptx1:WaypointExtension>
+    </extensions>
+  </wpt>
+  <rte>
+    <name>iksha-senezh</name>
+    <cmt>3/5/2016 10:40:21 PM</cmt>
+    <number>2</number>
+    <extensions>
+      <gpxx:RouteExtension>
+        <gpxx:Categories>
+          <gpxx:Category>ПВД-3</gpxx:Category>
+        </gpxx:Categories>
+      </gpxx:RouteExtension>
+      <gpxtrx:TrackExtension>
+        <gpxtrx:Categories>
+          <gpxtrx:Category>ПВД-3</gpxtrx:Category>
+        </gpxtrx:Categories>
+      </gpxtrx:TrackExtension>
+    </extensions>
+    <rtept lat="56.1729789779804" lon="37.5099367461384">
+      <name>iksha-senezh 1</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1727874548503" lon="37.5077909789264">
+      <name>iksha-senezh 2</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.175277180716" lon="37.4998945555865">
+      <name>iksha-senezh 3</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1774794953789" lon="37.5010961852252">
+      <name>iksha-senezh 4</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1788199726261" lon="37.4961180052935">
+      <name>iksha-senezh 5</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.178888790502" lon="37.4946857056799">
+      <name>iksha-senezh 6</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1783621809943" lon="37.4939132294837">
+      <name>iksha-senezh 7</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1781706848292" lon="37.4927974305335">
+      <name>iksha-senezh 8</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1790802830699" lon="37.4914241395179">
+      <name>iksha-senezh 9</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1832450091023" lon="37.4920249543372">
+      <name>iksha-senezh 10</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1846331502774" lon="37.4905658326331">
+      <name>iksha-senezh 11</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1854947297867" lon="37.4893642029944">
+      <name>iksha-senezh 12</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1862126978741" lon="37.4862742982093">
+      <name>iksha-senezh 13</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1870263787345" lon="37.4851584992591">
+      <name>iksha-senezh 14</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1871221047556" lon="37.4829269013587">
+      <name>iksha-senezh 15</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1894673173705" lon="37.4762321076575">
+      <name>iksha-senezh 16</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1888929928949" lon="37.4738288483802">
+      <name>iksha-senezh 17</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1901852108265" lon="37.4693656525794">
+      <name>iksha-senezh 18</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1903766468035" lon="37.4669623933021">
+      <name>iksha-senezh 19</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1909509489803" lon="37.4661040864173">
+      <name>iksha-senezh 20</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1923866666586" lon="37.4398398957435">
+      <name>iksha-senezh 21</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1873135560784" lon="37.4077392182532">
+      <name>iksha-senezh 22</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1741011645431" lon="37.3637939057532">
+      <name>iksha-senezh 23</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1747235898227" lon="37.3577857575597">
+      <name>iksha-senezh 24</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1720901828505" lon="37.3480010590733">
+      <name>iksha-senezh 25</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1715874209012" lon="37.3456836304844">
+      <name>iksha-senezh 26</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1729333187368" lon="37.3395467362584">
+      <name>iksha-senezh 27</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1732916739944" lon="37.3380017838658">
+      <name>iksha-senezh 28</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1740322642611" lon="37.3313069901646">
+      <name>iksha-senezh 29</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1736739159159" lon="37.329762037772">
+      <name>iksha-senezh 30</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1737933657359" lon="37.3280883393468">
+      <name>iksha-senezh 31</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1711176006945" lon="37.3272729478063">
+      <name>iksha-senezh 32</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1711892754029" lon="37.3264575562657">
+      <name>iksha-senezh 33</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.169588508377" lon="37.3245692811192">
+      <name>iksha-senezh 34</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.169755755815" lon="37.3232818207921">
+      <name>iksha-senezh 35</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.169540723261" lon="37.3228955826939">
+      <name>iksha-senezh 36</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1691823329951" lon="37.3222518525304">
+      <name>iksha-senezh 37</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1687044741042" lon="37.3228097520055">
+      <name>iksha-senezh 38</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1683699693424" lon="37.3228526673497">
+      <name>iksha-senezh 39</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.16801156815" lon="37.3233676514806">
+      <name>iksha-senezh 40</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1669602386891" lon="37.3227668366612">
+      <name>iksha-senezh 41</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1683460760336" lon="37.3195911011876">
+      <name>iksha-senezh 42</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1691823329951" lon="37.3162866196813">
+      <name>iksha-senezh 43</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1696124009128" lon="37.3159432969273">
+      <name>iksha-senezh 44</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1699468948521" lon="37.3156428895177">
+      <name>iksha-senezh 45</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1701619251316" lon="37.3143554291905">
+      <name>iksha-senezh 46</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1702574937582" lon="37.312638815421">
+      <name>iksha-senezh 47</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1712848414726" lon="37.3120380006017">
+      <name>iksha-senezh 48</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1710220342085" lon="37.3077893815221">
+      <name>iksha-senezh 49</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1708309005231" lon="37.3071027360143">
+      <name>iksha-senezh 50</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1701141407292" lon="37.3069739899815">
+      <name>iksha-senezh 51</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1698752178247" lon="37.3050427994907">
+      <name>iksha-senezh 52</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1692779040597" lon="37.3032403550327">
+      <name>iksha-senezh 53</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1689911901523" lon="37.2981334290684">
+      <name>iksha-senezh 54</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1701141407292" lon="37.2979188523472">
+      <name>iksha-senezh 55</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1705680901521" lon="37.2938848099888">
+      <name>iksha-senezh 56</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1714520815223" lon="37.2941423020542">
+      <name>iksha-senezh 57</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1713804073045" lon="37.2916961274326">
+      <name>iksha-senezh 58</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1709981425499" lon="37.2898078522862">
+      <name>iksha-senezh 59</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1709742508764" lon="37.2889924607456">
+      <name>iksha-senezh 60</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1723360525417" lon="37.2883058152378">
+      <name>iksha-senezh 61</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1782366350005" lon="37.2890782914342">
+      <name>iksha-senezh 62</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1768989306189" lon="37.2854734025182">
+      <name>iksha-senezh 63</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1771378098201" lon="37.2801518998327">
+      <name>iksha-senezh 64</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1792398826965" lon="37.280581053275">
+      <name>iksha-senezh 65</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1809119039238" lon="37.2754312119664">
+      <name>iksha-senezh 66</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1834914509503" lon="37.2730279526891">
+      <name>iksha-senezh 67</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1828226961457" lon="37.2689080796422">
+      <name>iksha-senezh 68</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1824405453113" lon="37.2659040055456">
+      <name>iksha-senezh 69</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2056747342197" lon="37.2550464234533">
+      <name>iksha-senezh 70</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2049108838712" lon="37.2514415345372">
+      <name>iksha-senezh 71</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2060566536883" lon="37.2502399048986">
+      <name>iksha-senezh 72</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2060566536883" lon="37.2480083069982">
+      <name>iksha-senezh 73</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2047199189067" lon="37.2440600953283">
+      <name>iksha-senezh 74</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2031921649572" lon="37.2397685609044">
+      <name>iksha-senezh 75</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2037650798204" lon="37.2315288148107">
+      <name>iksha-senezh 76</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2037650798204" lon="37.2275806031408">
+      <name>iksha-senezh 77</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2028102169603" lon="37.2255206666173">
+      <name>iksha-senezh 78</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2032876513621" lon="37.222945745963">
+      <name>iksha-senezh 79</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2021417988127" lon="37.2097278199376">
+      <name>iksha-senezh 80</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2008049275692" lon="37.2056079468908">
+      <name>iksha-senezh 81</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.201282386934" lon="37.2040629944982">
+      <name>iksha-senezh 82</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2009959120284" lon="37.2008014283361">
+      <name>iksha-senezh 83</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2010914039013" lon="37.1977115235509">
+      <name>iksha-senezh 84</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2005184490973" lon="37.193591650504">
+      <name>iksha-senezh 85</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2029057043162" lon="37.1862102112951">
+      <name>iksha-senezh 86</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2026192415355" lon="37.1824336610021">
+      <name>iksha-senezh 87</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2051018478847" lon="37.1733356080236">
+      <name>iksha-senezh 88</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2068204812147" lon="37.1690440735997">
+      <name>iksha-senezh 89</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2063430907937" lon="37.1620059571447">
+      <name>iksha-senezh 90</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2062476119963" lon="37.1596026978673">
+      <name>iksha-senezh 91</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2068204812147" lon="37.1556544861974">
+      <name>iksha-senezh 92</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2180851700552" lon="37.1357417664708">
+      <name>iksha-senezh 93</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2193259926956" lon="37.1319652161779">
+      <name>iksha-senezh 94</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2204713317879" lon="37.1323085389318">
+      <name>iksha-senezh 95</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2223801542176" lon="37.1307635865392">
+      <name>iksha-senezh 96</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2291557060564" lon="37.1299052796545">
+      <name>iksha-senezh 97</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2305870073817" lon="37.1275020203771">
+      <name>iksha-senezh 98</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2302053322565" lon="37.124240454215">
+      <name>iksha-senezh 99</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2329723907684" lon="37.1190906129064">
+      <name>iksha-senezh 100</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2200895558934" lon="37.094886358756">
+      <name>iksha-senezh 101</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2208531038795" lon="37.087676580924">
+      <name>iksha-senezh 102</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2201850002235" lon="37.0857883057775">
+      <name>iksha-senezh 103</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2186578624191" lon="37.080466803092">
+      <name>iksha-senezh 104</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2159852248458" lon="37.0789218506994">
+      <name>iksha-senezh 105</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2135987838251" lon="37.0761752686681">
+      <name>iksha-senezh 106</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2136465133376" lon="37.0743728242102">
+      <name>iksha-senezh 107</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2156034035021" lon="37.067678030509">
+      <name>iksha-senezh 108</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2175124683708" lon="37.062099035758">
+      <name>iksha-senezh 109</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2175601937744" lon="37.0601249299231">
+      <name>iksha-senezh 110</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2186101376186" lon="37.0560908875647">
+      <name>iksha-senezh 111</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2182760676969" lon="37.0528293214026">
+      <name>iksha-senezh 112</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2188964809483" lon="37.0519710145178">
+      <name>iksha-senezh 113</name>
+      <sym>waypoint</sym>
+    </rtept>
+  </rte>
+  <wpt lat="56.2068083333333" lon="37.1587416666667">
+    <name>Night iksha-senezh</name>
+    <fix>2d</fix>
+    <time>1899-12-30T01:00:00Z</time>
+    <cmt>3/5/2016 10:40:36 PM</cmt>
+    <type>user</type>
+    <sym>Flag, Blue</sym>
+    <link href="files\1.png"/>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolOnly</gpxx:DisplayMode>
+        <gpxx:Categories>
+          <gpxx:Category>ПВД-3</gpxx:Category>
+        </gpxx:Categories>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolOnly</wptx1:DisplayMode>
+        <wptx1:Categories>
+          <wptx1:Category>ПВД-3</wptx1:Category>
+        </wptx1:Categories>
+      </wptx1:WaypointExtension>
+    </extensions>
+  </wpt>
+  <rte>
+    <name>iksha-senezh-v2</name>
+    <cmt>3/5/2016 11:00:36 PM</cmt>
+    <number>3</number>
+    <extensions>
+      <gpxx:RouteExtension>
+        <gpxx:Categories>
+          <gpxx:Category>ПВД-3</gpxx:Category>
+        </gpxx:Categories>
+      </gpxx:RouteExtension>
+      <gpxtrx:TrackExtension>
+        <gpxtrx:Categories>
+          <gpxtrx:Category>ПВД-3</gpxtrx:Category>
+        </gpxtrx:Categories>
+      </gpxtrx:TrackExtension>
+    </extensions>
+    <rtept lat="56.1819035960384" lon="37.2643161378083">
+      <name>iksha-senezh-v2 1</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1803749332659" lon="37.2615695557771">
+      <name>iksha-senezh-v2 2</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1813303546332" lon="37.2540164551911">
+      <name>iksha-senezh-v2 3</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1794194881169" lon="37.2450900635896">
+      <name>iksha-senezh-v2 4</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1798016690303" lon="37.2371936402497">
+      <name>iksha-senezh-v2 5</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1767441151781" lon="37.2334170899568">
+      <name>iksha-senezh-v2 6</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1744507899678" lon="37.2241473756013">
+      <name>iksha-senezh-v2 7</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1744507899678" lon="37.2100711426911">
+      <name>iksha-senezh-v2 8</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1733040759901" lon="37.2100711426911">
+      <name>iksha-senezh-v2 9</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1757885796555" lon="37.2028613648591">
+      <name>iksha-senezh-v2 10</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1744507899678" lon="37.1956515870271">
+      <name>iksha-senezh-v2 11</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1761707967185" lon="37.192218359488">
+      <name>iksha-senezh-v2 12</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1811165955823" lon="37.1834743580991">
+      <name>iksha-senezh-v2 13</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1811405308108" lon="37.1799982152158">
+      <name>iksha-senezh-v2 14</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1777176409687" lon="37.1790969929868">
+      <name>iksha-senezh-v2 15</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1797761988683" lon="37.143305595892">
+      <name>iksha-senezh-v2 16</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1781485110973" lon="37.1401298604184">
+      <name>iksha-senezh-v2 17</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1763292486308" lon="37.1369541249448">
+      <name>iksha-senezh-v2 18</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1721111248492" lon="37.133950050848">
+      <name>iksha-senezh-v2 19</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1700090326134" lon="37.1338642201596">
+      <name>iksha-senezh-v2 20</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1688358472667" lon="37.1313751301938">
+      <name>iksha-senezh-v2 21</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1706776388924" lon="37.1225345692806">
+      <name>iksha-senezh-v2 22</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1681928044853" lon="37.124766167181">
+      <name>iksha-senezh-v2 23</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.160641744166" lon="37.1256244740658">
+      <name>iksha-senezh-v2 24</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1528023644415" lon="37.1300876698666">
+      <name>iksha-senezh-v2 25</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1494558006166" lon="37.1269977650814">
+      <name>iksha-senezh-v2 26</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1469695931032" lon="37.1223629079037">
+      <name>iksha-senezh-v2 27</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.144674489563" lon="37.1206462941341">
+      <name>iksha-senezh-v2 28</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1423792489698" lon="37.1225345692806">
+      <name>iksha-senezh-v2 29</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1416141383151" lon="37.1206462941341">
+      <name>iksha-senezh-v2 30</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1411359364225" lon="37.11017495014">
+      <name>iksha-senezh-v2 31</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1393187149777" lon="37.1033084950619">
+      <name>iksha-senezh-v2 32</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1398925836615" lon="37.0966137013607">
+      <name>iksha-senezh-v2 33</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1376927071858" lon="37.0899189076595">
+      <name>iksha-senezh-v2 34</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1352057387176" lon="37.0765293202572">
+      <name>iksha-senezh-v2 35</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1309966563695" lon="37.0686328969174">
+      <name>iksha-senezh-v2 36</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1277438680784" lon="37.0710361561947">
+      <name>iksha-senezh-v2 37</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1229598560889" lon="37.0631397328549">
+      <name>iksha-senezh-v2 38</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.118175249067" lon="37.0597065053158">
+      <name>iksha-senezh-v2 39</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1137728850392" lon="37.0586765370541">
+      <name>iksha-senezh-v2 40</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1120500837427" lon="37.0566166005306">
+      <name>iksha-senezh-v2 41</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1120105954013" lon="37.0423687062436">
+      <name>iksha-senezh-v2 42</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1086534595347" lon="37.0322406850034">
+      <name>iksha-senezh-v2 43</name>
+      <sym>waypoint</sym>
+    </rtept>
+  </rte>
+  <rte>
+    <name>iksha-senezh-3</name>
+    <cmt>3/5/2016 11:21:30 PM</cmt>
+    <number>4</number>
+    <extensions>
+      <gpxx:RouteExtension>
+        <gpxx:Categories>
+          <gpxx:Category>ПВД-3</gpxx:Category>
+        </gpxx:Categories>
+      </gpxx:RouteExtension>
+      <gpxtrx:TrackExtension>
+        <gpxtrx:Categories>
+          <gpxtrx:Category>ПВД-3</gpxtrx:Category>
+        </gpxtrx:Categories>
+      </gpxtrx:TrackExtension>
+    </extensions>
+    <rtept lat="56.1912060034446" lon="37.4659002385312">
+      <name>iksha-senezh-3 1</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1934074004651" lon="37.4632394871884">
+      <name>iksha-senezh-3 2</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1938380937424" lon="37.4616945347958">
+      <name>iksha-senezh-3 3</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1966614072122" lon="37.4591196141415">
+      <name>iksha-senezh-3 4</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.198814641639" lon="37.455600555914">
+      <name>iksha-senezh-3 5</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.199340969372" lon="37.4492490849668">
+      <name>iksha-senezh-3 6</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.1996280541697" lon="37.4466741643125">
+      <name>iksha-senezh-3 7</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2000586773207" lon="37.4452150426084">
+      <name>iksha-senezh-3 8</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2007285259061" lon="37.4403226933652">
+      <name>iksha-senezh-3 9</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2012548272681" lon="37.4379194340879">
+      <name>iksha-senezh-3 10</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2030250604471" lon="37.4340570531064">
+      <name>iksha-senezh-3 11</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2057041762247" lon="37.4246156773739">
+      <name>iksha-senezh-3 12</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.211444505763" lon="37.4162042699032">
+      <name>iksha-senezh-3 13</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2150796014849" lon="37.4072778783017">
+      <name>iksha-senezh-3 14</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2181404662783" lon="37.3990381322079">
+      <name>iksha-senezh-3 15</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2194795174503" lon="37.3973215184384">
+      <name>iksha-senezh-3 16</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2220618406267" lon="37.3921716771298">
+      <name>iksha-senezh-3 17</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.225260596518" lon="37.3483980260067">
+      <name>iksha-senezh-3 18</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2263103294244" lon="37.3495996556454">
+      <name>iksha-senezh-3 19</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2284097089671" lon="37.3483980260067">
+      <name>iksha-senezh-3 20</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2319402242559" lon="37.3520887456112">
+      <name>iksha-senezh-3 21</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2319879316941" lon="37.353118713873">
+      <name>iksha-senezh-3 22</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.234182409627" lon="37.3528612218075">
+      <name>iksha-senezh-3 23</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2344209322624" lon="37.3536336980038">
+      <name>iksha-senezh-3 24</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2394772626446" lon="37.3533762059384">
+      <name>iksha-senezh-3 25</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2399065429727" lon="37.3514021001034">
+      <name>iksha-senezh-3 26</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2410512669905" lon="37.3465955815488">
+      <name>iksha-senezh-3 27</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2382370924459" lon="37.3418748936826">
+      <name>iksha-senezh-3 28</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2380462934664" lon="37.3400724492246">
+      <name>iksha-senezh-3 29</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2366629724398" lon="37.3386133275205">
+      <name>iksha-senezh-3 30</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2351364912576" lon="37.3387849888974">
+      <name>iksha-senezh-3 31</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2342778188594" lon="37.3352659306699">
+      <name>iksha-senezh-3 32</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.231987931694" lon="37.3326910100156">
+      <name>iksha-senezh-3 33</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2314631466069" lon="37.331146057623">
+      <name>iksha-senezh-3 34</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2315108546391" lon="37.3265970311337">
+      <name>iksha-senezh-3 35</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2308906455859" lon="37.3228204808408">
+      <name>iksha-senezh-3 36</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2308906455859" lon="37.3192155919248">
+      <name>iksha-senezh-3 37</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2312758399027" lon="37.3162973485165">
+      <name>iksha-senezh-3 38</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2302957707635" lon="37.3155248723202">
+      <name>iksha-senezh-3 39</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2311802245096" lon="37.3122203908139">
+      <name>iksha-senezh-3 40</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2315626846443" lon="37.3099458775692">
+      <name>iksha-senezh-3 41</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2313236475094" lon="37.3095596394711">
+      <name>iksha-senezh-3 42</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2314670699701" lon="37.307199295538">
+      <name>iksha-senezh-3 43</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2312280322361" lon="37.3068559727841">
+      <name>iksha-senezh-3 44</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2311085128075" lon="37.3042381367855">
+      <name>iksha-senezh-3 45</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2293156764483" lon="37.3036802373105">
+      <name>iksha-senezh-3 46</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2289810043306" lon="37.302693184393">
+      <name>iksha-senezh-3 47</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2286463292774" lon="37.3023069462948">
+      <name>iksha-senezh-3 48</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2282638399078" lon="37.3015344700985">
+      <name>iksha-senezh-3 49</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2283833682477" lon="37.3007619939022">
+      <name>iksha-senezh-3 50</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2234823992716" lon="37.2934663853817">
+      <name>iksha-senezh-3 51</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2231237670719" lon="37.2923076710873">
+      <name>iksha-senezh-3 52</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.221497925497" lon="37.2930801472836">
+      <name>iksha-senezh-3 53</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2204697840485" lon="37.2941530308896">
+      <name>iksha-senezh-3 54</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2192981472398" lon="37.2925222478085">
+      <name>iksha-senezh-3 55</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2181503865147" lon="37.2915781102353">
+      <name>iksha-senezh-3 56</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2173851935241" lon="37.2802484593564">
+      <name>iksha-senezh-3 57</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2166199851944" lon="37.2745836339169">
+      <name>iksha-senezh-3 58</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2153286613547" lon="37.2702062688046">
+      <name>iksha-senezh-3 59</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2151851782316" lon="37.2656572423154">
+      <name>iksha-senezh-3 60</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2127937134517" lon="37.2597349248105">
+      <name>iksha-senezh-3 61</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.211693589348" lon="37.2595632634335">
+      <name>iksha-senezh-3 62</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2101150950468" lon="37.2611082158261">
+      <name>iksha-senezh-3 63</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2083930268365" lon="37.2606790623837">
+      <name>iksha-senezh-3 64</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.207340613586" lon="37.258018311041">
+      <name>iksha-senezh-3 65</name>
+      <sym>waypoint</sym>
+    </rtept>
+    <rtept lat="56.2055227405627" lon="37.2534692845517">
+      <name>iksha-senezh-3 66</name>
+      <sym>waypoint</sym>
+    </rtept>
+  </rte>
+  <wpt lat="56.1841138888889" lon="37.2302027777778">
+    <name>Ночёвка</name>
+    <fix>2d</fix>
+    <time>2016-03-18T17:04:23Z</time>
+    <type>user</type>
+    <sym>Flag, Blue</sym>
+    <link href="files\1.png"/>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolOnly</gpxx:DisplayMode>
+        <gpxx:Categories>
+          <gpxx:Category>ПВД-3</gpxx:Category>
+        </gpxx:Categories>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolOnly</wptx1:DisplayMode>
+        <wptx1:Categories>
+          <wptx1:Category>ПВД-3</wptx1:Category>
+        </wptx1:Categories>
+      </wptx1:WaypointExtension>
+    </extensions>
+  </wpt>
+  <wpt lat="56.1223305555556" lon="37.4801305555556">
+    <name>База обеспечения С-25</name>
+    <fix>2d</fix>
+    <time>2016-03-18T17:10:09Z</time>
+    <type>user</type>
+    <sym>Flag, Blue</sym>
+    <link href="files\1.png"/>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolOnly</gpxx:DisplayMode>
+        <gpxx:Categories>
+          <gpxx:Category>ПВД-3</gpxx:Category>
+        </gpxx:Categories>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolOnly</wptx1:DisplayMode>
+        <wptx1:Categories>
+          <wptx1:Category>ПВД-3</wptx1:Category>
+        </wptx1:Categories>
+      </wptx1:WaypointExtension>
+    </extensions>
+  </wpt>
+  <wpt lat="56.1461055555556" lon="37.4178805555556">
+    <name>Ур. трутнёво</name>
+    <fix>2d</fix>
+    <time>2016-03-18T17:16:10Z</time>
+    <type>user</type>
+    <sym>Flag, Blue</sym>
+    <link href="files\1.png"/>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolOnly</gpxx:DisplayMode>
+        <gpxx:Categories>
+          <gpxx:Category>ПВД-3</gpxx:Category>
+        </gpxx:Categories>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolOnly</wptx1:DisplayMode>
+        <wptx1:Categories>
+          <wptx1:Category>ПВД-3</wptx1:Category>
+        </wptx1:Categories>
+      </wptx1:WaypointExtension>
+    </extensions>
+  </wpt>
+  <wpt lat="56.1510805555556" lon="37.3350027777778">
+    <name>Ночёвка-лайт</name>
+    <fix>2d</fix>
+    <time>2016-03-18T17:24:29Z</time>
+    <type>user</type>
+    <sym>Flag, Blue</sym>
+    <link href="files\1.png"/>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolOnly</gpxx:DisplayMode>
+        <gpxx:Categories>
+          <gpxx:Category>ПВД-3</gpxx:Category>
+        </gpxx:Categories>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolOnly</wptx1:DisplayMode>
+        <wptx1:Categories>
+          <wptx1:Category>ПВД-3</wptx1:Category>
+        </wptx1:Categories>
+      </wptx1:WaypointExtension>
+    </extensions>
+  </wpt>
+  <wpt lat="56.1061527777778" lon="37.5210222222222">
+    <name>Переход</name>
+    <fix>2d</fix>
+    <time>2016-03-18T17:41:12Z</time>
+    <type>user</type>
+    <sym>Flag, Blue</sym>
+    <link href="files\1.png"/>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolOnly</gpxx:DisplayMode>
+        <gpxx:Categories>
+          <gpxx:Category>ПВД-3</gpxx:Category>
+        </gpxx:Categories>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolOnly</wptx1:DisplayMode>
+        <wptx1:Categories>
+          <wptx1:Category>ПВД-3</wptx1:Category>
+        </wptx1:Categories>
+      </wptx1:WaypointExtension>
+    </extensions>
+  </wpt>
+  <wpt lat="56.1031833333333" lon="37.51895">
+    <name>Мост через Саморядку</name>
+    <fix>2d</fix>
+    <time>2016-03-18T17:41:34Z</time>
+    <type>user</type>
+    <sym>Flag, Blue</sym>
+    <link href="files\1.png"/>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:DisplayMode>SymbolOnly</gpxx:DisplayMode>
+        <gpxx:Categories>
+          <gpxx:Category>ПВД-3</gpxx:Category>
+        </gpxx:Categories>
+      </gpxx:WaypointExtension>
+      <wptx1:WaypointExtension>
+        <wptx1:DisplayMode>SymbolOnly</wptx1:DisplayMode>
+        <wptx1:Categories>
+          <wptx1:Category>ПВД-3</wptx1:Category>
+        </wptx1:Categories>
+      </wptx1:WaypointExtension>
+    </extensions>
+  </wpt>
+</gpx>

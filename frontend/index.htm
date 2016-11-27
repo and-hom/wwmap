@@ -16,13 +16,14 @@
     </div>
 </div>
 
-<script type="text/javascript" src="./js/bootstrap.min.js"></script>
 <script type="text/javascript" src="./js/jquery-3.1.1.min.js"></script>
+<script type="text/javascript" src="./js/tether.min.js"></script>
+<script type="text/javascript" src="./js/bootstrap.min.js"></script>
 <script type="text/javascript" src="./js/jquery.cookie.js"></script>
 <script type="text/javascript" src="./js/jquery.json.js"></script>
 <script type="text/javascript" src="https://api-maps.yandex.ru/2.1/?lang=tr_TR"></script>
 <script type="text/javascript">
-    const LAST_POS_COOKIE_NAME = "last-map-pos"
+    const LAST_POS_COOKIE_NAME = "last-map-pos";
 
     ymaps.ready(init);
     var myMap;
@@ -38,10 +39,20 @@
         });
 
         // Load tracks
-        $.get("http://localhost:7007/tracks", function (data) {
+        const apiBase = "http://localhost:7007";
+        $.get(apiBase + "/tracks", function (data) {
             $('#tracks').html("")
             $.each($.parseJSON(data), function (_, track) {
-                myMap.geoObjects.add(new ymaps.Polyline(track.path));
+                if (track.fileIds) {
+                    $.each(track.fileIds, function (_, fileId) {
+                        var url = apiBase + "/track-files/" + fileId;
+                        ymaps.geoXml.load(url).then(function (res) {
+                            myMap.geoObjects.add(res.geoObjects);
+                        });
+                    })
+                } else if (track.path) {
+                    myMap.geoObjects.add(new ymaps.Polyline(track.path));
+                }
                 $("#tracks").append("<p>" + track.title + "</p>")
             })
         });

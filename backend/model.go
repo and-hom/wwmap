@@ -23,3 +23,8 @@ type Track struct {
 	Title string `json:"title"`
 	Path  []Point `json:"path"`
 }
+
+type ExtDataTrack struct {
+	Title string `json:"title"`
+	FileIds   []string `json:"fileIds"`
+}
