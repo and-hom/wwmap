@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8"/>
+    <title>WWMap</title>
+</head>
+<body>
+<div id="map" style="width: 800px; height: 600px"></div>
+
+<script type="text/javascript" src="./js/jquery-3.1.1.min.js"></script>
+<script type="text/javascript" src="./js/jquery.cookie.js"></script>
+<script type="text/javascript" src="./js/jquery.json.js"></script>
+<script type="text/javascript" src="https://api-maps.yandex.ru/2.1/?lang=tr_TR"></script>
+<script type="text/javascript">
+    const LAST_POS_COOKIE_NAME = "last-map-pos"
+
+    ymaps.ready(init);
+    var myMap;
+
+    function init() {
+        myMap = new ymaps.Map("map", {
+            center: lastPosition(),
+            zoom: 7
+        });
+
+        myMap.events.add('boundschange', function (e) {
+            $.cookie(LAST_POS_COOKIE_NAME, $.toJSON(myMap.getCenter()))
+        });
+
+        // Load tracks
+        $.get("./tracks", function (data) {
+            $.each($.parseJSON(data), function (_, track) {
+                myMap.geoObjects.add(new ymaps.Polyline(track.path));
+            })
+        });
+    }
+
+    function lastPosition() {
+        lastPos = $.cookie(LAST_POS_COOKIE_NAME)
+        if (lastPos) {
+            return $.parseJSON(lastPos)
+        } else {
+            return [55.76, 37.64]
+        }
+    }
+</script>
+</body>
+</html>
