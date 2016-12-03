@@ -7,6 +7,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"os"
+	"github.com/gorilla/handlers"
 )
 
 var storage Storage
@@ -21,6 +23,20 @@ func TracksHandler(w http.ResponseWriter, _ *http.Request) {
 	} else {
 		w.Write(json)
 	}
+}
+func TileHandler(w http.ResponseWriter, req *http.Request) {
+	w.Header().Add("Access-Control-Allow-Origin", "*")
+
+	callback := req.FormValue("callback")
+	_, err := NewBbox(req.FormValue("bbox"))
+	if err != nil {
+		onError(w, err, "Can not parse bbox")
+		return
+	}
+	tracks := storage.getTracks()
+	features := TracksToYmaps(tracks)
+
+	w.Write([]byte(callback + "(" + features.Json() + ");"))
 }
 
 func TrackFiles(w http.ResponseWriter, r *http.Request) {
@@ -56,12 +72,13 @@ func main() {
 
 	r := mux.NewRouter()
 	r.HandleFunc("/tracks", TracksHandler)
+	r.HandleFunc("/tile", TileHandler)
 	r.HandleFunc("/track-files/{id}", TrackFiles)
 
 	httpStr := fmt.Sprintf(":%d", 7007)
 	log.Infof("Starting http server on %s", httpStr)
 	http.Handle("/", r)
-	err := http.ListenAndServe(httpStr, nil)
+	err := http.ListenAndServe(httpStr, handlers.LoggingHandler(os.Stdout, http.DefaultServeMux))
 	if err != nil {
 		log.Fatalf("Can not start server: %v", err)
 	}

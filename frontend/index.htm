@@ -24,6 +24,7 @@
 <script type="text/javascript" src="https://api-maps.yandex.ru/2.1/?lang=tr_TR"></script>
 <script type="text/javascript">
     const LAST_POS_COOKIE_NAME = "last-map-pos";
+    const apiBase = "http://localhost:7007";
 
     ymaps.ready(init);
     var myMap;
@@ -31,35 +32,33 @@
     function init() {
         myMap = new ymaps.Map("map", {
             center: lastPosition(),
-            zoom: 7
+            zoom: 7,
+            controls: ["zoomControl", "fullscreenControl"]
         });
 
         myMap.events.add('boundschange', function (e) {
             $.cookie(LAST_POS_COOKIE_NAME, $.toJSON(myMap.getCenter()))
         });
 
+
+        var remoteObjectManager = new ymaps.LoadingObjectManager(apiBase + '/tile?bbox=%b', {
+            clusterHasBalloon: false,
+            geoObjectOpenBalloonOnClick: false,
+            splitRequests: true
+        });
+        myMap.geoObjects.add(remoteObjectManager);
+
         // Load tracks
-        const apiBase = "http://localhost:7007";
         $.get(apiBase + "/tracks", function (data) {
-            $('#tracks').html("")
+            $('#tracks').html("");
             $.each($.parseJSON(data), function (_, track) {
-                if (track.fileIds) {
-                    $.each(track.fileIds, function (_, fileId) {
-                        var url = apiBase + "/track-files/" + fileId;
-                        ymaps.geoXml.load(url).then(function (res) {
-                            myMap.geoObjects.add(res.geoObjects);
-                        });
-                    })
-                } else if (track.path) {
-                    myMap.geoObjects.add(new ymaps.Polyline(track.path));
-                }
                 $("#tracks").append("<p>" + track.title + "</p>")
             })
         });
     }
 
     function lastPosition() {
-        lastPos = $.cookie(LAST_POS_COOKIE_NAME)
+        lastPos = $.cookie(LAST_POS_COOKIE_NAME);
         if (lastPos) {
             return $.parseJSON(lastPos)
         } else {

@@ -20,11 +20,12 @@ func (this Point) MarshalJSON() ([]byte, error) {
 }
 
 type Track struct {
+	Id    int64 `json:"-"`
 	Title string `json:"title"`
 	Path  []Point `json:"path"`
 }
 
 type ExtDataTrack struct {
-	Title string `json:"title"`
-	FileIds   []string `json:"fileIds"`
+	Title   string `json:"title"`
+	FileIds []string `json:"fileIds"`
 }
