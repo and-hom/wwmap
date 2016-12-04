@@ -14,26 +14,16 @@ import (
 var storage Storage
 var files Files
 
-func TracksHandler(w http.ResponseWriter, _ *http.Request) {
-	w.Header().Add("Access-Control-Allow-Origin", "*")
-
-	json, e := json.Marshal(storage.getTracks())
-	if e != nil {
-		onError(w, e, "Json serialize error")
-	} else {
-		w.Write(json)
-	}
-}
 func TileHandler(w http.ResponseWriter, req *http.Request) {
 	w.Header().Add("Access-Control-Allow-Origin", "*")
 
 	callback := req.FormValue("callback")
-	_, err := NewBbox(req.FormValue("bbox"))
+	bbox, err := NewBbox(req.FormValue("bbox"))
 	if err != nil {
 		onError(w, err, "Can not parse bbox")
 		return
 	}
-	tracks := storage.getTracks()
+	tracks := storage.getTracks(bbox)
 	features := TracksToYmaps(tracks)
 
 	w.Write([]byte(callback + "(" + JsonStr(features, "{}") + "); trackList(" + JsonStr(tracks.withoutPath(), "[]") + ");"))
@@ -80,7 +70,6 @@ func main() {
 	files = DummyFiles{}
 
 	r := mux.NewRouter()
-	r.HandleFunc("/tracks", TracksHandler)
 	r.HandleFunc("/tile", TileHandler)
 	r.HandleFunc("/track-files/{id}", TrackFiles)
 

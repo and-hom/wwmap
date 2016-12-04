@@ -23,14 +23,14 @@ func (t TrackList) withoutPath() TrackList {
 }
 
 type Storage interface {
-	getTracks() TrackList
+	getTracks(bbox Bbox) TrackList
 }
 
 type DummyStorage struct {
 
 }
 
-func (s DummyStorage) getTracks() TrackList {
+func (s DummyStorage) getTracks(bbox Bbox) TrackList {
 	return []Track{
 		Track{
 			Id: int64(1),
@@ -104,10 +104,12 @@ func NewPostgresStorage() Storage {
 	}
 }
 
-func (s postgresStorage) getTracks() TrackList {
+func (s postgresStorage) getTracks(bbox Bbox) TrackList {
 	rows, err := s.db.Query(`SELECT t.id, t.title, ST_AsGeoJSON(t.path) as path,
 	p.id, p.title, p.text, ST_AsGeoJSON(p.point) as point, p.time
-	FROM track t INNER JOIN point p ON t.id=p.track_id ORDER BY t.id, p.time`)
+	FROM track t INNER JOIN point p ON t.id=p.track_id
+	WHERE path && ST_MakeEnvelope($1,$2,$3,$4)
+	ORDER BY t.id, p.time`, bbox.X1, bbox.Y1, bbox.X2, bbox.Y2)
 	if err != nil {
 		log.Errorf("Can not load track list: %v", err)
 		return []Track{}
