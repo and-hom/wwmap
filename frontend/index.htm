@@ -39,14 +39,21 @@
         myMap.events.add('boundschange', function (e) {
             $.cookie(LAST_POS_COOKIE_NAME, $.toJSON(myMap.getCenter()))
         });
+        myMap.events.add('click', function (e) {
+            myMap.balloon.close()
+        });
 
-
-        var remoteObjectManager = new ymaps.LoadingObjectManager(apiBase + '/tile?bbox=%b', {
+        var objectManager = new ymaps.LoadingObjectManager(apiBase + '/tile?bbox=%b', {
             clusterHasBalloon: false,
             geoObjectOpenBalloonOnClick: false,
             splitRequests: true
         });
-        myMap.geoObjects.add(remoteObjectManager);
+
+        objectManager.objects.events.add(['click'], function (e) {
+            objectManager.objects.balloon.open(e.get('objectId'));
+        });
+        
+        myMap.geoObjects.add(objectManager);
 
         // Load tracks
         $.get(apiBase + "/tracks", function (data) {

@@ -52,7 +52,7 @@ type lineString struct {
 	Coordinates []Point `json:"coordinates"`
 }
 
-func NewLineString(points []Point) Geometry{
+func NewLineString(points []Point) Geometry {
 	return lineString{
 		Coordinates:points,
 		Type:"LineString",
@@ -64,7 +64,7 @@ type yPoint struct {
 	Coordinates Point `json:"coordinates"`
 }
 
-func NewYPoint(point Point) Geometry{
+func NewYPoint(point Point) Geometry {
 	return yPoint{
 		Coordinates:point,
 		Type:"Point",
@@ -89,23 +89,55 @@ type FeatureCollection struct {
 	Type     string `json:"type"`
 }
 
-func trackToYmaps(track Track) Feature {
-	return Feature{
+func trackToYmaps(track Track) []Feature {
+	pointCount := len(track.Points)
+	result := make([]Feature, pointCount + 1)
+	for i := 0; i < pointCount; i++ {
+		point := track.Points[i]
+		result[i] = Feature{
+			Id:point.Id,
+			Geometry:NewYPoint(point.Point),
+			Type:"Feature",
+			Properties:FeatureProperties{
+				BalloonContent:	point.Text,
+				HintContent: point.Title,
+			},
+		}
+	}
+	result[pointCount] = Feature{
 		Id:track.Id,
 		Geometry:NewLineString(track.Path),
 		Type:"Feature",
 	}
+	return result
 }
 
 func TracksToYmaps(tracks []Track) FeatureCollection {
-	features := make([]Feature, len(tracks))
+	featuresForTracks := make([][]Feature, len(tracks))
 	for i := 0; i < len(tracks); i++ {
-		features[i] = trackToYmaps(tracks[i])
+		featuresForTracks[i] = trackToYmaps(tracks[i])
 	}
+	features := flatten(featuresForTracks)
 	return FeatureCollection{
 		Features:features,
 		Type:"FeatureCollection",
 	}
+}
+
+func flatten(arrs [][]Feature) []Feature {
+	totalSize := 0
+	for i := 0; i < len(arrs); i++ {
+		totalSize += len(arrs[i])
+	}
+	result := make([]Feature, totalSize)
+	pos := 0
+	for i := 0; i < len(arrs); i++ {
+		for j := 0; j < len(arrs[i]); j++ {
+			result[pos] = arrs[i][j]
+			pos++
+		}
+	}
+	return result
 }
 
 func (f FeatureCollection) Json() string {

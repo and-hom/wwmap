@@ -19,10 +19,18 @@ func (this Point) MarshalJSON() ([]byte, error) {
 	return buffer.Bytes(), nil
 }
 
+type EventPoint struct {
+	Point
+	Id int64
+	Title string
+	Text string
+}
+
 type Track struct {
 	Id    int64 `json:"-"`
 	Title string `json:"title"`
 	Path  []Point `json:"path"`
+	Points  []EventPoint `json:"points"` // points with articles
 }
 
 type ExtDataTrack struct {
