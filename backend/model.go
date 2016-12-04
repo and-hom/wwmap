@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"time"
+	"encoding/json"
 )
 
 type Point struct {
@@ -18,6 +19,17 @@ func (this Point) MarshalJSON() ([]byte, error) {
 	buffer.WriteString(fmt.Sprint(this.y))
 	buffer.WriteString("]")
 	return buffer.Bytes(), nil
+}
+
+func (this *Point) UnmarshalJSON(data []byte) error {
+	arr := make([]float64, 2)
+	err := json.Unmarshal(data, &arr)
+	if (err != nil) {
+		return err
+	}
+	this.x = arr[0]
+	this.y = arr[1]
+	return nil
 }
 
 type JSONTime time.Time

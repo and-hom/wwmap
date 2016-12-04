@@ -1,24 +1,19 @@
-CREATE EXTENSION IF NOT EXISTS postgis;
+CREATE SEQUENCE id_gen;
 
-CREATE TABLE route (
-  id       BIGSERIAL PRIMARY KEY,
+CREATE TABLE track (
+  id       BIGINT PRIMARY KEY DEFAULT nextval('id_gen'),
   title    VARCHAR(512) NOT NULL,
   category VARCHAR(4),
+  path     GEOMETRY NOT NULL,
   created  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
 
-CREATE TABLE track (
-  id       BIGSERIAL PRIMARY KEY,
-  route_id BIGINT REFERENCES route (id) NOT NULL ,
-  path     GEOMETRY NOT NULL
-);
-CREATE INDEX ON track (route_id);
-
 CREATE TABLE point (
-  id       BIGSERIAL PRIMARY KEY,
+  id       BIGINT PRIMARY KEY DEFAULT nextval('id_gen'),
   track_id BIGINT REFERENCES track (id) NOT NULL ,
   point    GEOMETRY NOT NULL,
+  title     TEXT,
   text     TEXT,
-  created  TIMESTAMP WITH TIME ZONE
+  time  TIMESTAMP WITH TIME ZONE
 );
 CREATE INDEX ON point (track_id);

@@ -1,12 +1,18 @@
 package main
 
-import "time"
+import (
+	"time"
+	log "github.com/Sirupsen/logrus"
+	"database/sql"
+	_ "github.com/lib/pq"
+	"encoding/json"
+)
 
 type TrackList []Track;
 
 func (t TrackList) withoutPath() TrackList {
 	newList := make([]Track, len(t))
-	for i:=0;i<len(t);i++ {
+	for i := 0; i < len(t); i++ {
 		newList[i] = Track{
 			Id:t[i].Id,
 			Title:t[i].Title,
@@ -76,19 +82,106 @@ func (s DummyStorage) getTracks() TrackList {
 			},
 			Points:[]EventPoint{
 				EventPoint{Point{x:56.2877096985583, y:37.5007003462651, },
-					2,"Старт","Начало нашего маршрута", JSONTime(time.Now())},
+					2, "Старт", "Начало нашего маршрута", JSONTime(time.Now())},
 				EventPoint{Point{x:56.26006935475, y:37.374400488172, },
-					3,"Фигня какая-то", "Из леса вышел лосось", JSONTime(time.Now())},
+					3, "Фигня какая-то", "Из леса вышел лосось", JSONTime(time.Now())},
 			},
 		},
 	}
 }
 
-
-type PostgresStorage struct {
-
+type postgresStorage struct {
+	db *sql.DB
 }
 
-func (s PostgresStorage) getTracks() []Track {
-	return []Track{}
+func NewPostgresStorage() Storage {
+	db, err := sql.Open("postgres", "postgres://wwmap:wwmap@localhost:5432/wwmap?sslmode=require")
+	if err != nil {
+		log.Fatalf("Can not connect to postgres: %v", err)
+	}
+	return postgresStorage{
+		db:db,
+	}
+}
+
+func (s postgresStorage) getTracks() TrackList {
+	rows, err := s.db.Query(`SELECT t.id, t.title, ST_AsGeoJSON(t.path) as path,
+	p.id, p.title, p.text, ST_AsGeoJSON(p.point) as point, p.time
+	FROM track t INNER JOIN point p ON t.id=p.track_id ORDER BY t.id, p.time`)
+	if err != nil {
+		log.Errorf("Can not load track list: %v", err)
+		return []Track{}
+	}
+	defer rows.Close()
+
+	results := make([]Track, 0)
+	var current Track
+	var prevTrackId int64 = -1
+
+	for rows.Next() {
+		var id int64
+		var title string
+		var pathStr string
+		var p_id int64
+		var p_title string
+		var p_text string
+		var p_pointStr string
+		var p_time time.Time
+
+		err := rows.Scan(&id, &title, &pathStr, &p_id, &p_title, &p_text, &p_pointStr, &p_time)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if prevTrackId != id {
+
+			if (prevTrackId > 0) {
+				results = append(results, current)
+			}
+
+			var path PgLineString
+			err := json.Unmarshal([]byte(pathStr), &path)
+			if err != nil {
+				log.Errorf("Can not parse path for track %s: %v", path, err)
+				continue
+			}
+
+			current = Track{
+				Id:id,
+				Title:title,
+				Points:make([]EventPoint, 0),
+				Path: path.Coordinates,
+			}
+			prevTrackId = id
+		}
+
+		var point PgPoint
+		err = json.Unmarshal([]byte(p_pointStr), &point)
+		if err != nil {
+			log.Errorf("Can not parse point for track %s: %v", p_pointStr, err)
+			continue
+		}
+		current.Points = append(current.Points, EventPoint{
+			Id:p_id,
+			Title:p_title,
+			Text:p_text,
+			Time: JSONTime(p_time),
+			Point: point.Coordinates,
+		})
+	}
+
+	if (prevTrackId > 0) {
+		results = append(results, current)
+	}
+
+	log.Infof("%v", results)
+	return results
+}
+
+type PgLineString struct {
+	Coordinates []Point `json:"coordinates"`
+}
+
+type PgPoint struct {
+	Coordinates Point `json:"coordinates"`
 }

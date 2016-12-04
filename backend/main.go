@@ -76,7 +76,7 @@ func onError(w http.ResponseWriter, err error, msg string) {
 func main() {
 	log.Infof("Starting wwmap")
 
-	storage = DummyStorage{}
+	storage = NewPostgresStorage()
 	files = DummyFiles{}
 
 	r := mux.NewRouter()
