@@ -1,14 +1,30 @@
 package main
 
+import "time"
+
+type TrackList []Track;
+
+func (t TrackList) withoutPath() TrackList {
+	newList := make([]Track, len(t))
+	for i:=0;i<len(t);i++ {
+		newList[i] = Track{
+			Id:t[i].Id,
+			Title:t[i].Title,
+			Points:t[i].Points,
+		}
+	}
+	return newList
+}
+
 type Storage interface {
-	getTracks() []Track
+	getTracks() TrackList
 }
 
 type DummyStorage struct {
 
 }
 
-func (s DummyStorage) getTracks() []Track {
+func (s DummyStorage) getTracks() TrackList {
 	return []Track{
 		Track{
 			Id: int64(1),
@@ -59,8 +75,10 @@ func (s DummyStorage) getTracks() []Track {
 
 			},
 			Points:[]EventPoint{
-				EventPoint{Point{x:56.2877096985583, y:37.5007003462651, }, 2,"Старт","Начало нашего маршрута"},
-				EventPoint{Point{x:56.26006935475, y:37.374400488172, },3,"Фигня какая-то", "Из леса вышел лосось"},
+				EventPoint{Point{x:56.2877096985583, y:37.5007003462651, },
+					2,"Старт","Начало нашего маршрута", JSONTime(time.Now())},
+				EventPoint{Point{x:56.26006935475, y:37.374400488172, },
+					3,"Фигня какая-то", "Из леса вышел лосось", JSONTime(time.Now())},
 			},
 		},
 	}

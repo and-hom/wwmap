@@ -36,7 +36,16 @@ func TileHandler(w http.ResponseWriter, req *http.Request) {
 	tracks := storage.getTracks()
 	features := TracksToYmaps(tracks)
 
-	w.Write([]byte(callback + "(" + features.Json() + ");"))
+	w.Write([]byte(callback + "(" + JsonStr(features, "{}") + "); trackList(" + JsonStr(tracks.withoutPath(), "[]") + ");"))
+}
+
+func JsonStr(f interface{}, _default string) string {
+	bytes, err := json.Marshal(f)
+	if err != nil {
+		log.Errorf("Can not serialize object %v: %s", f, err.Error())
+		return _default
+	}
+	return string(bytes)
 }
 
 func TrackFiles(w http.ResponseWriter, r *http.Request) {

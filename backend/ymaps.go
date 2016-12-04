@@ -4,8 +4,6 @@ import (
 	"strings"
 	"fmt"
 	"strconv"
-	"encoding/json"
-	log "github.com/Sirupsen/logrus"
 )
 
 type Bbox struct {
@@ -99,7 +97,7 @@ func trackToYmaps(track Track) []Feature {
 			Geometry:NewYPoint(point.Point),
 			Type:"Feature",
 			Properties:FeatureProperties{
-				BalloonContent:	point.Text,
+				BalloonContent:        point.Text,
 				HintContent: point.Title,
 			},
 		}
@@ -138,13 +136,4 @@ func flatten(arrs [][]Feature) []Feature {
 		}
 	}
 	return result
-}
-
-func (f FeatureCollection) Json() string {
-	bytes, err := json.Marshal(f)
-	if err != nil {
-		log.Errorf("Can not serialize object %v: %s", f, err.Error())
-		return "{}"
-	}
-	return string(bytes)
 }

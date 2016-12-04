@@ -1,0 +1,17 @@
+.trackMenu {
+    list-style-type: none;
+    padding-left: 0px;
+}
+
+.trackMenu .title {
+    font-weight: bold;
+}
+
+.trackMenu li ul {
+    list-style-type: none;
+    padding-left: 0px;
+}
+
+.time {
+    font-weight: 200;
+}
