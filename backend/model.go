@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"time"
 )
 
 type Point struct {
@@ -24,6 +25,7 @@ type EventPoint struct {
 	Id int64
 	Title string
 	Text string
+	Time time.Time
 }
 
 type Track struct {

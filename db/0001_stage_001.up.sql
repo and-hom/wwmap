@@ -4,7 +4,7 @@ CREATE TABLE route (
   id       BIGSERIAL PRIMARY KEY,
   title    VARCHAR(512) NOT NULL,
   category VARCHAR(4),
-  created  TIMESTAMP WITH TIME ZONE DEFAULT now()
+  created  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
 
 CREATE TABLE track (
@@ -18,6 +18,7 @@ CREATE TABLE point (
   id       BIGSERIAL PRIMARY KEY,
   track_id BIGINT REFERENCES track (id) NOT NULL ,
   point    GEOMETRY NOT NULL,
-  text     TEXT
+  text     TEXT,
+  created  TIMESTAMP WITH TIME ZONE
 );
 CREATE INDEX ON point (track_id);
