@@ -9,6 +9,7 @@ import (
 	"io"
 	"os"
 	"github.com/gorilla/handlers"
+	"errors"
 )
 
 var storage Storage
@@ -86,16 +87,20 @@ func UploadTrack(w http.ResponseWriter, r *http.Request) {
 	cookieDomain := r.FormValue("cookie_domain")
 	cookiePath := r.FormValue("cookie_path")
 
-	file, _, err := r.FormFile("gpx")
+	file, _, err := r.FormFile("geo_file")
 	if err != nil {
 		onError(w, err, "Can not read form file")
 		return
 	}
 
-	gpxFileReader := file.(io.Reader)
-	tracks, err := parseGpx(&gpxFileReader)
+	parser, err := geoParser(file)
 	if err != nil {
-		onError(w, err, "Can not parse GPX")
+		onError(w, err, "Can not parse geo data")
+		return
+	}
+	tracks, err := parser.getTracks()
+	if err != nil {
+		onError(w, err, "Bad geo data symantics")
 		return
 	}
 	err = storage.insert(tracks...)
@@ -125,6 +130,21 @@ func onError(w http.ResponseWriter, err error, msg string) {
 	errStr := fmt.Sprintf("%s: %v", msg, err)
 	log.Errorf(errStr)
 	http.Error(w, errStr, http.StatusInternalServerError)
+}
+
+func geoParser(r io.ReadSeeker) (GeoParser, error) {
+	gpxParser, err := InitGpxParser(r)
+	if err == nil {
+		return gpxParser, nil
+	}
+	log.Warn(err)
+	r.Seek(0, 0)
+	kmlParser, err := InitKmlParser(r)
+	if err == nil {
+		return kmlParser, nil
+	}
+	log.Warn(err)
+	return nil, errors.New("Can not find valid parser for this format!")
 }
 
 func main() {

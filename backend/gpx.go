@@ -6,16 +6,26 @@ import (
 	"io"
 )
 
-func parseGpx(reader *io.Reader) ([]Track, error) {
-	tracks := make([]Track, 0)
+type GpxParser struct {
+	gpx_data *gpx.Gpx
+}
 
-	gpx_data, err := gpx.Parse(*reader)
+func InitGpxParser(reader io.Reader) (*GpxParser, error) {
+	gpx_data, err := gpx.Parse(reader)
 	if err != nil {
 		return nil, err
 	}
+	parser := GpxParser{
+		gpx_data:gpx_data,
+	}
+	return &parser, nil
+}
 
-	log.Infof("%d tracks detected", len(gpx_data.Tracks))
-	for _, trk := range gpx_data.Tracks {
+func (this GpxParser) getTracks() ([]Track, error) {
+	tracks := make([]Track, 0)
+
+	log.Infof("%d tracks detected", len(this.gpx_data.Tracks))
+	for _, trk := range this.gpx_data.Tracks {
 		log.Infof("Importing %s", trk.Name)
 		points := make([]Point, 0)
 		for _, seg := range trk.Segments {
@@ -28,8 +38,8 @@ func parseGpx(reader *io.Reader) ([]Track, error) {
 		})
 	}
 
-	log.Infof("%d routes detected", len(gpx_data.Routes))
-	for _, route := range gpx_data.Routes {
+	log.Infof("%d routes detected", len(this.gpx_data.Routes))
+	for _, route := range this.gpx_data.Routes {
 		log.Infof("Importing %s", route.Name)
 		tracks = append(tracks, Track{
 			Title:route.Name,

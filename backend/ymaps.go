@@ -40,18 +40,6 @@ type Geometry interface {
 
 }
 
-type lineString struct {
-	Type        GeometryType `json:"type"`
-	Coordinates []Point `json:"coordinates"`
-}
-
-func NewLineString(points []Point) Geometry {
-	return lineString{
-		Coordinates:points,
-		Type:LINE_STRING,
-	}
-}
-
 type yPoint struct {
 	Type        GeometryType `json:"type"`
 	Coordinates Point `json:"coordinates"`

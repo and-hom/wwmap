@@ -147,7 +147,7 @@ func (s postgresStorage) getTracks(bbox Bbox) TrackList {
 				results = append(results, current)
 			}
 
-			var path PgLineString
+			var path LineString
 			err := json.Unmarshal([]byte(pathStr), &path)
 			if err != nil {
 				log.Errorf("Can not parse path for track %s: %v", path, err)
@@ -202,7 +202,7 @@ func (s postgresStorage) insert(tracks ...Track) error {
 	}
 
 	for _, track := range tracks {
-		pathBytes, err := json.Marshal(PgLineString{
+		pathBytes, err := json.Marshal(LineString{
 			Coordinates:track.Path,
 			Type:LINE_STRING,
 		})
@@ -221,11 +221,6 @@ func (s postgresStorage) insert(tracks ...Track) error {
 		return err
 	}
 	return tx.Commit()
-}
-
-type PgLineString struct {
-	Coordinates []Point `json:"coordinates"`
-	Type        GeometryType `json:"type"`
 }
 
 type PgPoint struct {
