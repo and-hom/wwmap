@@ -40,7 +40,8 @@
             window.location.href = "./index.htm";
         })
         $('#redirect_to').attr('value', indexUrl())
-        $('#cookie_domain').attr('value', window.location.origin)
+        $('#cookie_path').attr('value', '/')
+        $('#cookie_domain').attr('value', 'localhost')
     })
 </script>
 </body>

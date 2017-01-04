@@ -29,6 +29,7 @@
         {{/each}}
         </ul>
     </li>
+
 </script>
 
 <script type="text/javascript" src="./js/jquery-3.1.1.min.js"></script>
@@ -58,7 +59,7 @@
         });
 
         myMap.events.add('boundschange', function (e) {
-            $.cookie(LAST_POS_COOKIE_NAME, $.toJSON(myMap.getCenter()), { path: window.location.origin })
+            $.cookie(LAST_POS_COOKIE_NAME, $.toJSON(myMap.getCenter()), {path: '/'})
         });
         myMap.events.add('click', function (e) {
             myMap.balloon.close()

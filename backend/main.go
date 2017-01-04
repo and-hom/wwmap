@@ -84,6 +84,7 @@ func UploadTrack(w http.ResponseWriter, r *http.Request) {
 	//title := r.FormValue("title")
 	redirectTo := r.FormValue("redirect_to")
 	cookieDomain := r.FormValue("cookie_domain")
+	cookiePath := r.FormValue("cookie_path")
 
 	file, _, err := r.FormFile("gpx")
 	if err != nil {
@@ -106,7 +107,12 @@ func UploadTrack(w http.ResponseWriter, r *http.Request) {
 	if len(tracks) > 0 && len(tracks[0].Path) > 0 {
 		jsonBytes, err := tracks[0].Path[0].MarshalJSON()
 		if err == nil {
-			viewPositionCookie := http.Cookie{Name:"last-map-pos", Value:string(jsonBytes), Domain:cookieDomain}
+			viewPositionCookie := http.Cookie{
+				Name:"last-map-pos",
+				Value:string(jsonBytes),
+				Domain:cookieDomain,
+				Path:cookiePath,
+			}
 			http.SetCookie(w, &viewPositionCookie)
 		} else {
 			log.Warnf("Can not marshal point %v", tracks[0].Path[0])
