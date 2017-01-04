@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="css/index.css"/>
 </head>
 <body>
+<a href="./upload.htm">Upload</a>
 <div style="height: 30px;"></div>
 <div class="container">
     <div class="row">
@@ -57,7 +58,7 @@
         });
 
         myMap.events.add('boundschange', function (e) {
-            $.cookie(LAST_POS_COOKIE_NAME, $.toJSON(myMap.getCenter()))
+            $.cookie(LAST_POS_COOKIE_NAME, $.toJSON(myMap.getCenter()), { path: window.location.origin })
         });
         myMap.events.add('click', function (e) {
             myMap.balloon.close()

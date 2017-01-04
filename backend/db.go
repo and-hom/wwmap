@@ -24,6 +24,7 @@ func (t TrackList) withoutPath() TrackList {
 
 type Storage interface {
 	getTracks(bbox Bbox) TrackList
+	insert(track ...Track) error
 }
 
 type DummyStorage struct {
@@ -90,6 +91,10 @@ func (s DummyStorage) getTracks(bbox Bbox) TrackList {
 	}
 }
 
+func (s DummyStorage) insert(track ...Track) error {
+	return nil
+}
+
 type postgresStorage struct {
 	db *sql.DB
 }
@@ -106,8 +111,9 @@ func NewPostgresStorage() Storage {
 
 func (s postgresStorage) getTracks(bbox Bbox) TrackList {
 	rows, err := s.db.Query(`SELECT t.id, t.title, ST_AsGeoJSON(t.path) as path,
-	p.id, p.title, p.text, ST_AsGeoJSON(p.point) as point, p.time
-	FROM track t INNER JOIN point p ON t.id=p.track_id
+	COALESCE(p.id, -1), COALESCE(p.title,''), COALESCE(p.text,''),
+	COALESCE(ST_AsGeoJSON(p.point),'') as point, COALESCE(p.time, now())
+	FROM track t LEFT OUTER JOIN point p ON t.id=p.track_id
 	WHERE path && ST_MakeEnvelope($1,$2,$3,$4)
 	ORDER BY t.id, p.time`, bbox.X1, bbox.Y1, bbox.X2, bbox.Y2)
 	if err != nil {
@@ -157,6 +163,10 @@ func (s postgresStorage) getTracks(bbox Bbox) TrackList {
 			prevTrackId = id
 		}
 
+		if p_id < 0 {
+			continue
+		}
+
 		var point PgPoint
 		err = json.Unmarshal([]byte(p_pointStr), &point)
 		if err != nil {
@@ -176,12 +186,46 @@ func (s postgresStorage) getTracks(bbox Bbox) TrackList {
 		results = append(results, current)
 	}
 
-	log.Infof("%v", results)
 	return results
+}
+
+func (s postgresStorage) insert(tracks ...Track) error {
+	log.Info("Inserting tracks")
+	tx, err := s.db.Begin()
+	if err != nil {
+		return err
+	}
+
+	stmt, err := tx.Prepare("INSERT INTO track(title, path) VALUES ($1, ST_GeomFromGeoJSON($2))")
+	if err != nil {
+		return err
+	}
+
+	for _, track := range tracks {
+		pathBytes, err := json.Marshal(PgLineString{
+			Coordinates:track.Path,
+			Type:LINE_STRING,
+		})
+		if err != nil {
+			return err
+		}
+		r, err := stmt.Exec(track.Title, string(pathBytes))
+		if err != nil {
+			return err
+		}
+		log.Info("Result is %v", r)
+	}
+
+	err = stmt.Close()
+	if err != nil {
+		return err
+	}
+	return tx.Commit()
 }
 
 type PgLineString struct {
 	Coordinates []Point `json:"coordinates"`
+	Type        GeometryType `json:"type"`
 }
 
 type PgPoint struct {

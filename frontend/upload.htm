@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>WWMap: upload track</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="css/index.css"/>
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-sm-8">
+            <form action="http://localhost:7007/upload-track" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="redirect_to" id="redirect_to"/>
+                <input type="hidden" name="cookie_domain" id="cookie_domain"/>
+                <div>
+                    <input type="file" name="gpx">
+                </div>
+                <!--<div>-->
+                <!--<label for="title">Title</label>-->
+                <!--<input id="title" name="title"/>-->
+                <!--</div>-->
+                <div>
+                    <input type="submit" value="Ok"/>
+                    <input type="button" id="cancel" value="Cancel"/>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="./js/jquery-3.1.1.min.js"></script>
+<script type="text/javascript">
+    function indexUrl() {
+        var url = window.location.href;
+        return url.substr(0, url.lastIndexOf('/') + 1) + 'index.htm'
+    }
+
+    $(document).ready(function () {
+        $('#cancel').click(function () {
+            window.location.href = "./index.htm";
+        })
+        $('#redirect_to').attr('value', indexUrl())
+        $('#cookie_domain').attr('value', window.location.origin)
+    })
+</script>
+</body>
+</html>

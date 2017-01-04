@@ -25,8 +25,23 @@ func TileHandler(w http.ResponseWriter, req *http.Request) {
 	}
 	tracks := storage.getTracks(bbox)
 	features := TracksToYmaps(tracks)
+	log.Infof("Found %d", len(tracks))
 
-	w.Write([]byte(callback + "(" + JsonStr(features, "{}") + "); trackList(" + JsonStr(tracks.withoutPath(), "[]") + ");"))
+	w.Write([]byte(callback + "(" + JsonStr(features, "{}") + ");"))
+}
+
+func TracksHandler(w http.ResponseWriter, req *http.Request) {
+	w.Header().Add("Access-Control-Allow-Origin", "*")
+
+	bbox, err := NewBbox(req.FormValue("bbox"))
+	if err != nil {
+		onError(w, err, "Can not parse bbox")
+		return
+	}
+	tracks := storage.getTracks(bbox)
+	log.Infof("Found %d", len(tracks))
+
+	w.Write([]byte(JsonStr(tracks.withoutPath(), "[]")))
 }
 
 func JsonStr(f interface{}, _default string) string {
@@ -57,6 +72,49 @@ func TrackFiles(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func UploadTrack(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Access-Control-Allow-Origin", "*")
+
+	err := r.ParseMultipartForm(32 << 20)
+	if err != nil {
+		onError(w, err, "Can not parse form")
+		return
+	}
+
+	//title := r.FormValue("title")
+	redirectTo := r.FormValue("redirect_to")
+	cookieDomain := r.FormValue("cookie_domain")
+
+	file, _, err := r.FormFile("gpx")
+	if err != nil {
+		onError(w, err, "Can not read form file")
+		return
+	}
+
+	gpxFileReader := file.(io.Reader)
+	tracks, err := parseGpx(&gpxFileReader)
+	if err != nil {
+		onError(w, err, "Can not parse GPX")
+		return
+	}
+	err = storage.insert(tracks...)
+	if err != nil {
+		onError(w, err, "Can not insert tracks")
+		return
+	}
+
+	if len(tracks) > 0 && len(tracks[0].Path) > 0 {
+		jsonBytes, err := tracks[0].Path[0].MarshalJSON()
+		if err == nil {
+			viewPositionCookie := http.Cookie{Name:"last-map-pos", Value:string(jsonBytes), Domain:cookieDomain}
+			http.SetCookie(w, &viewPositionCookie)
+		} else {
+			log.Warnf("Can not marshal point %v", tracks[0].Path[0])
+		}
+	}
+	http.Redirect(w, r, redirectTo, http.StatusFound)
+}
+
 func onError(w http.ResponseWriter, err error, msg string) {
 	errStr := fmt.Sprintf("%s: %v", msg, err)
 	log.Errorf(errStr)
@@ -71,7 +129,9 @@ func main() {
 
 	r := mux.NewRouter()
 	r.HandleFunc("/tile", TileHandler)
+	r.HandleFunc("/tracks", TracksHandler)
 	r.HandleFunc("/track-files/{id}", TrackFiles)
+	r.HandleFunc("/upload-track", UploadTrack).Methods("POST")
 
 	httpStr := fmt.Sprintf(":%d", 7007)
 	log.Infof("Starting http server on %s", httpStr)

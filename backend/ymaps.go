@@ -35,11 +35,6 @@ func NewBbox(data string) (Bbox, error) {
 	}, nil
 }
 
-type GeometryType string
-
-const (
-	POINT GeometryType = "Point"
-)
 
 type Geometry interface {
 
@@ -53,7 +48,7 @@ type lineString struct {
 func NewLineString(points []Point) Geometry {
 	return lineString{
 		Coordinates:points,
-		Type:"LineString",
+		Type:LINE_STRING,
 	}
 }
 
@@ -65,7 +60,7 @@ type yPoint struct {
 func NewYPoint(point Point) Geometry {
 	return yPoint{
 		Coordinates:point,
-		Type:"Point",
+		Type:POINT,
 	}
 }
 
