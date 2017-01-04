@@ -30,6 +30,7 @@
         </ul>
     </li>
 
+
 </script>
 
 <script type="text/javascript" src="./js/jquery-3.1.1.min.js"></script>
@@ -51,6 +52,13 @@
         $('#trackMenuTemplate').tmpl(tracks).appendTo('#tracks');
     }
 
+    function loadTrackList(bounds) {
+        $.get(apiBase + "/tracks?bbox=" + bounds.join(','), function (data) {
+            $('#tracks').html('');
+            $('#trackMenuTemplate').tmpl($.parseJSON(data)).appendTo('#tracks');
+        });
+    }
+
     function init() {
         myMap = new ymaps.Map("map", {
             center: lastPosition(),
@@ -60,6 +68,8 @@
 
         myMap.events.add('boundschange', function (e) {
             $.cookie(LAST_POS_COOKIE_NAME, $.toJSON(myMap.getCenter()), {path: '/'})
+            var bounds = e.get("newBounds");
+            loadTrackList(bounds);
         });
         myMap.events.add('click', function (e) {
             myMap.balloon.close()
@@ -77,6 +87,7 @@
 
         myMap.geoObjects.add(objectManager);
 
+        loadTrackList(myMap.getBounds())
     }
 
     function lastPosition() {
