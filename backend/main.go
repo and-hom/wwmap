@@ -10,6 +10,7 @@ import (
 	"os"
 	"github.com/gorilla/handlers"
 	"errors"
+	"strconv"
 )
 
 var storage Storage
@@ -29,6 +30,41 @@ func TileHandler(w http.ResponseWriter, req *http.Request) {
 	log.Infof("Found %d", len(tracks))
 
 	w.Write([]byte(callback + "(" + JsonStr(features, "{}") + ");"))
+}
+
+func SingleTrackTileHandler(w http.ResponseWriter, req *http.Request) {
+	w.Header().Add("Access-Control-Allow-Origin", "*")
+
+	callback := req.FormValue("callback")
+	id, err := strconv.ParseInt(req.FormValue("id"), 10, 64)
+	if err != nil {
+		onError(w, err, "Can not parse id")
+		return
+	}
+	track := storage.getTrack(id)
+	features := TracksToYmaps(track)
+	w.Write([]byte(callback + "(" + JsonStr(features, "{}") + ",{strokeWidth:5});"))
+}
+
+func SingleTrackBoundsHandler(w http.ResponseWriter, req *http.Request) {
+	w.Header().Add("Access-Control-Allow-Origin", "*")
+
+	id, err := strconv.ParseInt(req.FormValue("id"), 10, 64)
+	if err != nil {
+		onError(w, err, "Can not parse id")
+		return
+	}
+	tracks := storage.getTrack(id)
+	if len(tracks) > 0 {
+		bytes, err := json.Marshal(tracks[0].Bounds())
+		if err != nil {
+			onError(w, err, "Can not serialize track")
+			return
+		}
+		w.Write(bytes)
+	} else {
+		onError(w, err, "Track not found")
+	}
 }
 
 func TracksHandler(w http.ResponseWriter, req *http.Request) {
@@ -155,6 +191,8 @@ func main() {
 
 	r := mux.NewRouter()
 	r.HandleFunc("/tile", TileHandler)
+	r.HandleFunc("/single-track-tile", SingleTrackTileHandler)
+	r.HandleFunc("/single-track-bounds", SingleTrackBoundsHandler)
 	r.HandleFunc("/tracks", TracksHandler)
 	r.HandleFunc("/track-files/{id}", TrackFiles)
 	r.HandleFunc("/upload-track", UploadTrack).Methods("POST")

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 	"encoding/json"
+	"math"
 )
 
 type Point struct {
@@ -49,10 +50,33 @@ type EventPoint struct {
 }
 
 type Track struct {
-	Id     int64 `json:"-"`
+	Id     int64 `json:"id"`
 	Title  string `json:"title"`
 	Path   []Point `json:"path"`
 	Points []EventPoint `json:"points"` // points with articles
+}
+
+func (this Track) Bounds() Bbox {
+	if len(this.Path) == 0 {
+		return Bbox{-180, -90, 180, 90}
+	}
+	var xMin float64 = 180
+	var yMin float64 = 90
+	var xMax float64 = -180
+	var yMax float64 = -90
+
+	for _, p := range this.Path {
+		xMin = math.Min(xMin, p.x)
+		yMin = math.Min(yMin, p.y)
+		xMax = math.Max(xMax, p.x)
+		yMax = math.Max(yMax, p.y)
+	}
+	return Bbox{
+		X1:xMin,
+		Y1:yMin,
+		X2:xMax,
+		Y2:yMax,
+	}
 }
 
 type ExtDataTrack struct {

@@ -5,6 +5,14 @@
 
 .trackMenu .title {
     font-weight: bold;
+    margin-right: 11px;
+}
+.trackMenu li:nth-child(odd) {
+    background: #f0fcf0;
+}
+.trackMenu li a img {
+    vertical-align: top;
+    float: right;
 }
 
 .trackMenu li ul {

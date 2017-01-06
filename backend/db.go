@@ -23,12 +23,17 @@ func (t TrackList) withoutPath() TrackList {
 }
 
 type Storage interface {
+	getTrack(id int64) TrackList
 	getTracks(bbox Bbox) TrackList
 	insert(track ...Track) error
 }
 
 type DummyStorage struct {
 
+}
+
+func (s DummyStorage) getTrack(id int64) TrackList {
+	return []Track{}
 }
 
 func (s DummyStorage) getTracks(bbox Bbox) TrackList {
@@ -109,13 +114,20 @@ func NewPostgresStorage() Storage {
 	}
 }
 
+func (s postgresStorage) getTrack(id int64) TrackList {
+	return s.getTracksInternal("t.id=$1", id)
+}
+
 func (s postgresStorage) getTracks(bbox Bbox) TrackList {
+	return s.getTracksInternal("path && ST_MakeEnvelope($1,$2,$3,$4)", bbox.X1, bbox.Y1, bbox.X2, bbox.Y2)
+}
+func (s postgresStorage) getTracksInternal(whereClause string, queryParams ...interface{}) TrackList {
 	rows, err := s.db.Query(`SELECT t.id, t.title, ST_AsGeoJSON(t.path) as path,
 	COALESCE(p.id, -1), COALESCE(p.title,''), COALESCE(p.text,''),
 	COALESCE(ST_AsGeoJSON(p.point),'') as point, COALESCE(p.time, now())
 	FROM track t LEFT OUTER JOIN point p ON t.id=p.track_id
-	WHERE path && ST_MakeEnvelope($1,$2,$3,$4)
-	ORDER BY t.id, p.time`, bbox.X1, bbox.Y1, bbox.X2, bbox.Y2)
+	WHERE ` + whereClause + `
+	ORDER BY t.id, p.time`, queryParams...)
 	if err != nil {
 		log.Errorf("Can not load track list: %v", err)
 		return []Track{}

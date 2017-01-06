@@ -4,6 +4,7 @@ import (
 	"strings"
 	"fmt"
 	"strconv"
+	"bytes"
 )
 
 type Bbox struct {
@@ -11,6 +12,19 @@ type Bbox struct {
 	Y1 float64
 	X2 float64
 	Y2 float64
+}
+
+func (this Bbox) MarshalJSON() ([]byte, error) {
+	buffer := bytes.NewBufferString("[[")
+	buffer.WriteString(fmt.Sprint(this.X1))
+	buffer.WriteString(",")
+	buffer.WriteString(fmt.Sprint(this.Y1))
+	buffer.WriteString("],[")
+	buffer.WriteString(fmt.Sprint(this.X2))
+	buffer.WriteString(",")
+	buffer.WriteString(fmt.Sprint(this.Y2))
+	buffer.WriteString("]]")
+	return buffer.Bytes(), nil
 }
 
 func NewBbox(data string) (Bbox, error) {
@@ -35,6 +49,9 @@ func NewBbox(data string) (Bbox, error) {
 	}, nil
 }
 
+func (this Bbox) Center() Point {
+	return Point{x:(this.X1 + this.X2) / 2, y:(this.Y1 + this.Y2) / 2, }
+}
 
 type Geometry interface {
 
