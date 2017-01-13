@@ -116,13 +116,10 @@ func TrackPointsToClickHandler(w http.ResponseWriter, req *http.Request) {
 				Properties:FeatureProperties{
 					HotspotMetaData : HotspotMetaData{
 						Id:int64(i * 30 + int(z)),
-						RenderedGeometry: NewYPolygonInt([][][]int{{
+						RenderedGeometry: NewYRectangleInt([][]int{
 							{tilePoint.x - 15, tilePoint.y - 15, },
-							{tilePoint.x + 15, tilePoint.y - 15, },
 							{tilePoint.x + 15, tilePoint.y + 15, },
-							{tilePoint.x - 15, tilePoint.y + 15, },
-							{tilePoint.x - 15, tilePoint.y - 15, },
-						}}),
+						}),
 					},
 				},
 				Type:"Feature",

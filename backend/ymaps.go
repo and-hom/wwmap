@@ -100,18 +100,6 @@ func NewYRectangleInt(rectangle [][]int) Geometry {
 	}
 }
 
-type yPolygonInt struct {
-	Type        GeometryType `json:"type"`
-	Coordinates [][][]int `json:"coordinates"`
-}
-
-func NewYPolygonInt(lines [][][]int) Geometry {
-	return yPolygonInt{
-		Coordinates:lines,
-		Type:POLYGON,
-	}
-}
-
 type FeatureProperties struct {
 	BalloonContent       string `json:"balloonContent,omitempty"`
 	BalloonContentBody   string `json:"balloonContentBody,omitempty"`
