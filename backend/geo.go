@@ -4,6 +4,8 @@ type GeometryType string
 
 const (
 	POINT GeometryType = "Point"
+	RECTANGLE GeometryType = "Rectangle"
+	POLYGON GeometryType = "Polygon"
 	LINE_STRING GeometryType = "LineString"
 )
 

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strconv"
 	"bytes"
+	"math"
+	"github.com/Sirupsen/logrus"
 )
 
 type Bbox struct {
@@ -51,6 +53,23 @@ func NewBbox(data string) (Bbox, error) {
 
 func (this Bbox) Center() Point {
 	return Point{x:(this.X1 + this.X2) / 2, y:(this.Y1 + this.Y2) / 2, }
+
+}
+
+func (this Bbox) Contains(p Point) bool {
+	return this.X1 <= p.x && p.x <= this.X2 && this.Y1 <= p.y && p.y <= this.Y2;
+}
+
+type BboxInt struct {
+	X1 int
+	Y1 int
+	X2 int
+	Y2 int
+}
+
+type PointInt struct {
+	x int
+	y int
 }
 
 type Geometry interface {
@@ -69,16 +88,44 @@ func NewYPoint(point Point) Geometry {
 	}
 }
 
+type yRectangleInt struct {
+	Type        GeometryType `json:"type"`
+	Coordinates [][]int `json:"coordinates"`
+}
+
+func NewYRectangleInt(rectangle [][]int) Geometry {
+	return yRectangleInt{
+		Coordinates:rectangle,
+		Type:RECTANGLE,
+	}
+}
+
+type yPolygonInt struct {
+	Type        GeometryType `json:"type"`
+	Coordinates [][][]int `json:"coordinates"`
+}
+
+func NewYPolygonInt(lines [][][]int) Geometry {
+	return yPolygonInt{
+		Coordinates:lines,
+		Type:POLYGON,
+	}
+}
+
 type FeatureProperties struct {
-	BalloonContent string `json:"balloonContent,omitempty"`
-	ClusterCaption string `json:"clusterCaption,omitempty"`
-	HintContent    string `json:"hintContent,omitempty"`
+	BalloonContent       string `json:"balloonContent,omitempty"`
+	BalloonContentBody   string `json:"balloonContentBody,omitempty"`
+	BalloonContentHeader string `json:"balloonContentHeader,omitempty"`
+	BalloonContentFooter string `json:"balloonContentFooter,omitempty"`
+	ClusterCaption       string `json:"clusterCaption,omitempty"`
+	HintContent          string `json:"hintContent,omitempty"`
+	HotspotMetaData      HotspotMetaData `json:"HotspotMetaData,omitempty"`
 }
 
 type Feature struct {
 	Type       string `json:"type"`
-	Id         int64 `json:"id"`
-	Geometry   Geometry `json:"geometry"`
+	Id         int64 `json:"id,omitempty"`
+	Geometry   Geometry `json:"geometry,omitempty"`
 	Properties FeatureProperties `json:"properties,omitempty"`
 }
 
@@ -137,3 +184,145 @@ func flatten(arrs [][]Feature) []Feature {
 	}
 	return result
 }
+
+type HotspotMetaData struct {
+	Id               int64 `json:"id"`
+	RenderedGeometry Geometry `json:"RenderedGeometry"`
+}
+
+type FeatureCollectionWrapper struct {
+	FeatureCollection FeatureCollection `json:"data"`
+}
+
+func tileToCoords(x int, y int, z uint32) BboxInt {
+	tileCount := 1 << (z - 1)
+
+	minX := -180
+	minY := 90
+	xSize := 360 / tileCount
+	ySize := 180 / tileCount
+
+	return BboxInt{
+		X1 : minX + (x - 1) * xSize,
+		Y1 : minY - (y - 1) * ySize,
+		X2 : minX + x * xSize,
+		Y2 : minY - y * ySize,
+	}
+}
+
+//func toTileCoords(z uint32, p Point) (PointInt, int, int) {
+//	tileCount := 1 << z
+//	logrus.Infof("z=%d tileCount=%d point=%v", z, tileCount, p)
+//
+//	xPart := ((p.y + 180.0) / 360.0)
+//	yPart := (1.0 - math.Sin(p.x * math.Pi / 180.0))
+//
+//	logrus.Infof("ypart=%d", math.Sin(p.x * math.Pi / 180.0))
+//
+//	x := math.Mod(xPart * float64(tileCount), float64(tileCount))
+//	y := math.Mod(yPart * float64(tileCount), float64(tileCount))
+//
+//	tilePoint := PointInt{
+//		x: int(math.Mod(x, 1.0) * 256.0),
+//		y: int(math.Mod(y, 1.0) * 256.0),
+//	}
+//	logrus.Infof("point=%v x=%d,y=%d", tilePoint, int(x), int(y))
+//
+//	return tilePoint, int(x), int(y)
+//}
+
+
+//func toTileCoords1(z uint32, p Point) (PointInt, int, int) {
+//	tileCount := 1 << z
+//	logrus.Infof("z=%d tileCount=%d point=%v", z, tileCount, p)
+//
+//	xPart := ((p.y + 180.0) / 360.0)
+//
+//	lat := p.x
+//	if lat > 89.5 {
+//		lat = 89.5
+//	}
+//	rlat := lat * math.Pi / 180.0
+//
+//	maxMapY := 15496570.739634648
+//	a := 6378137.0
+//	b := 6356752.3142
+//	f := (a - b) / a
+//	e := math.Sqrt(2.0 * f - math.Pow(f, 2.0))
+//	mapY := a * math.Log(
+//		math.Tan(math.Pi / 4 + rlat / 2) *
+//			math.Pow(
+//				(1 - e * math.Sin(rlat)) / (1 + e * math.Sin(rlat)), e / 2))
+//
+//	yPart := (1.0 - mapY / maxMapY) / 2
+//
+//	logrus.Infof("mapY=%10d", mapY / maxMapY)
+//
+//	x := math.Mod(xPart * float64(tileCount), float64(tileCount))
+//	y := math.Mod(yPart * float64(tileCount), float64(tileCount))
+//
+//	tilePoint := PointInt{
+//		x: int(math.Mod(x, 1.0) * 256.0),
+//		y: int(math.Mod(y, 1.0) * 256.0),
+//	}
+//	logrus.Infof("point=%v x=%d,y=%d", tilePoint, int(x), int(y))
+//
+//	return tilePoint, int(x), int(y)
+//}
+
+func toTileCoords(z uint32, p Point) (PointInt, int, int) {
+	ppm := pixelsPerMeter(z)
+
+	mercatorXPixels := longitudeToMercatorMeters(p.y) * ppm
+	mercatorYPixels := (EQUATOR / 2 - latitudeToMercatorMeters(p.x)) * ppm
+
+	logrus.Info(latitudeToMercatorMeters(p.x), ppm)
+
+	x := int(mercatorXPixels / 256.0)
+	y := int(mercatorYPixels / 256.0)
+	tilePoint := PointInt{
+		int(math.Mod(mercatorXPixels, 256.0)),
+		int(math.Mod(mercatorYPixels, 256.0)),
+	}
+
+	logrus.Info(tilePoint, x, y)
+	return tilePoint, x, y
+}
+
+func longitudeToMercatorMeters(lon float64) float64 {
+	longitudeRad := (180.0 + lon) * math.Pi / 180.0
+	return RADIUS * longitudeRad
+}
+
+func latitudeToMercatorMeters(lat float64) float64 {
+	latitudeRad := normalizeLatitude(lat) * math.Pi / 180.0;
+	esinLat := EXCENTRICITET * math.Sin(latitudeRad);
+
+	// Для широты -90 получается 0, и в результате по широте выходит -Infinity
+	tan_temp := math.Tan(math.Pi * 0.25 + latitudeRad * 0.5);
+	pow_temp := math.Pow(math.Tan(math.Pi * 0.25 + math.Asin(esinLat) * 0.5), EXCENTRICITET);
+	U := tan_temp / pow_temp;
+
+	return RADIUS * math.Log(U);
+}
+
+func normalizeLatitude(lat float64) float64 {
+	if lat > 90 - LAT_EPSILON {
+		return 90 - LAT_EPSILON
+	}
+	if lat < LAT_EPSILON - 90 {
+		return LAT_EPSILON - 90
+	}
+	return lat
+}
+
+func pixelsPerMeter(zoom uint32) float64 {
+	globalPixelCount := 1 << (zoom + 8)
+	return float64(globalPixelCount) * DIV_EQUATOR;
+}
+
+const RADIUS = 6378137.0
+const EXCENTRICITET = 0.0818191908426
+const EQUATOR = 2.0 * math.Pi * RADIUS
+const DIV_EQUATOR = 1 / EQUATOR
+const LAT_EPSILON = 1e-10

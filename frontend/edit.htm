@@ -58,6 +58,11 @@
 
 
 
+
+
+
+
+
 </script>
 
 <script type="text/javascript" src="./js/jquery-3.1.1.min.js"></script>
@@ -68,7 +73,13 @@
 <script type="text/javascript" src="./js/jquery.json.js"></script>
 <script type="text/javascript" src="https://api-maps.yandex.ru/2.1/?lang=tr_TR"></script>
 <script type="text/javascript">
+    $.urlParam = function (name) {
+        var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
+        return results[1] || 0;
+    };
+
     const apiBase = "http://localhost:7007";
+    const id = $.urlParam('id');
 
     ymaps.ready(init);
     var myMap;
@@ -80,19 +91,20 @@
             controls: ["zoomControl", "fullscreenControl"]
         });
 
-        $.get(apiBase + '/single-track-bounds?id=' + $.urlParam('id'), function (data) {
+        $.get(apiBase + '/single-track-bounds?id=' + id, function (data) {
             bounds = $.parseJSON(data);
             myMap.setBounds(bounds)
         });
 
         myMap.events.add('click', function (e) {
-            myMap.balloon.close()
+            myMap.balloon.close();
         });
 
-        var objectManager = new ymaps.LoadingObjectManager(apiBase + '/single-track-tile?id=' + $.urlParam('id'), {
+        var objectManager = new ymaps.LoadingObjectManager(apiBase + '/single-track-tile?id=' + id, {
             clusterHasBalloon: false,
             geoObjectOpenBalloonOnClick: false,
-            splitRequests: true
+            splitRequests: true,
+            geoObjectStrokeWidth: 3
         });
 
         objectManager.objects.events.add(['click'], function (e) {
@@ -100,12 +112,21 @@
         });
 
         myMap.geoObjects.add(objectManager);
-    }
+
+        var keyTemplate = 'mapCallback';
+        var tileUrlTemplate = apiBase + '/track-active-areas/' + id + '/%x/%y/%z';
+        var objSource = new ymaps.hotspot.ObjectSource(tileUrlTemplate, keyTemplate);
+        var hotspotLayer = new ymaps.hotspot.Layer(objSource, {
+            hasBalloon: false,
+            cursor: 'help',
+            zIndex: 650
+        });
+        myMap.layers.add(hotspotLayer);
 
 
-    $.urlParam = function (name) {
-        var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
-        return results[1] || 0;
+        hotspotLayer.events.add('click', function (e) {
+            alert(e.get('activeObject').getId())
+        });
     }
 </script>
 </body>
