@@ -7,9 +7,11 @@
     font-weight: bold;
     margin-right: 11px;
 }
+
 .trackMenu li:nth-child(odd) {
     background: #f0fcf0;
 }
+
 .trackMenu li a img {
     vertical-align: top;
     float: right;
@@ -22,4 +24,58 @@
 
 .time {
     font-weight: 200;
+}
+
+.placemark_layout_container {
+    position: relative;
+    font-size: 10px;
+    text-align: left;
+    width: 100px;
+}
+
+/* Квадратный макет метки */
+.square_layout {
+    position: absolute;
+    border: 2px solid #1f7e9a;
+    background-color: #F8FDF7;
+    color: #218703;
+}
+
+#map {
+    width: 100%;
+    height: 80%;
+}
+
+#menu {
+    position: absolute;
+    width: 12em;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 12px;
+    padding-bottom: 10px;
+    z-index: 2
+}
+
+#menu ul {
+    list-style-type: none;
+    padding: 20px;
+    margin: 0;
+}
+
+input {
+    width: 10em;
+}
+
+.header {
+    padding: 5px;
+}
+
+.vex-wide {
+    width: 700px !important;
+    height: 370px !important;
+. vex-content
+}
+
+.jqte_editor {
+    height: 200px !important;
 }

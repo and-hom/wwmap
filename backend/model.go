@@ -41,12 +41,32 @@ func (t JSONTime)MarshalJSON() ([]byte, error) {
 	return []byte(stamp), nil
 }
 
+type EventPointType string;
+
+const (
+	PHOTO EventPointType = "photo"
+	VIDEO EventPointType = "video"
+	POST EventPointType = "post"
+)
+
+var EventPointAvailableTypes []EventPointType = []EventPointType{PHOTO, VIDEO, POST}
+
+func parseEventPointType(s string) (EventPointType, error) {
+	for _,t := range EventPointAvailableTypes {
+		if s == string(t) {
+			return t, nil
+		}
+	}
+	return "", fmt.Errorf("Unsupported point type %s", s)
+}
+
 type EventPoint struct {
-	Point Point `json:"point"`
-	Id    int64 `json:"id"`
-	Title string `json:"title"`
-	Text  string `json:"text"`
-	Time  JSONTime `json:"time"`
+	Id      int64 `json:"id"`
+	Type    EventPointType `json:"type"`
+	Point   Point `json:"point"`
+	Title   string `json:"title"`
+	Content string `json:"content"`
+	Time    JSONTime `json:"time"`
 }
 
 type Track struct {
@@ -56,7 +76,7 @@ type Track struct {
 	Points []EventPoint `json:"points"` // points with articles
 }
 
-func (this Track) Bounds() Bbox {
+func (this Track) Bounds(withEventPoints bool) Bbox {
 	if len(this.Path) == 0 {
 		return Bbox{-180, -90, 180, 90}
 	}
@@ -71,6 +91,16 @@ func (this Track) Bounds() Bbox {
 		xMax = math.Max(xMax, p.x)
 		yMax = math.Max(yMax, p.y)
 	}
+
+	if withEventPoints {
+		for _,ep := range this.Points {
+			xMin = math.Min(xMin, ep.Point.x)
+			yMin = math.Min(yMin, ep.Point.y)
+			xMax = math.Max(xMax, ep.Point.x)
+			yMax = math.Max(yMax, ep.Point.y)
+		}
+	}
+
 	return Bbox{
 		X1:xMin,
 		Y1:yMin,

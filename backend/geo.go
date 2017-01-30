@@ -21,6 +21,20 @@ func NewLineString(points []Point) Geometry {
 	}
 }
 
+
+type geoPoint struct {
+	Type        GeometryType `json:"type"`
+	Coordinates Point `json:"coordinates"`
+}
+
+func NewGeoPoint(point Point) Geometry {
+	return geoPoint{
+		Coordinates:point,
+		Type:POINT,
+	}
+}
+
+
 type GeoParser interface {
 	getTracks() ([]Track, error)
 }

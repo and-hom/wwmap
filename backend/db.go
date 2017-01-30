@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	_ "github.com/lib/pq"
 	"encoding/json"
+	"errors"
 )
 
 type TrackList []Track;
@@ -26,6 +27,9 @@ type Storage interface {
 	getTrack(id int64) TrackList
 	getTracks(bbox Bbox) TrackList
 	insert(track ...Track) error
+	AddEventPoint(trackId int64, eventPoint EventPoint) (int64, error)
+	DeleteEventPoint(id int64) error
+	FindEventPoint(id int64, eventPoint *EventPoint) (bool, error)
 }
 
 type DummyStorage struct {
@@ -86,18 +90,25 @@ func (s DummyStorage) getTracks(bbox Bbox) TrackList {
 				Point{x:56.2540257744953, y:37.3661607420782, },
 
 			},
-			Points:[]EventPoint{
-				EventPoint{Point{x:56.2877096985583, y:37.5007003462651, },
-					2, "Старт", "Начало нашего маршрута", JSONTime(time.Now())},
-				EventPoint{Point{x:56.26006935475, y:37.374400488172, },
-					3, "Фигня какая-то", "Из леса вышел лосось", JSONTime(time.Now())},
-			},
+			Points:[]EventPoint{},
 		},
 	}
 }
 
 func (s DummyStorage) insert(track ...Track) error {
 	return nil
+}
+
+func (s DummyStorage) AddEventPoint(trackId int64, eventPoint EventPoint) (int64, error) {
+	return -1, nil
+}
+
+func (s DummyStorage) DeleteEventPoint(id int64) error {
+	return nil
+}
+
+func (s DummyStorage)FindEventPoint(id int64, eventPoint *EventPoint) (bool, error) {
+	return false, nil
 }
 
 type postgresStorage struct {
@@ -123,7 +134,7 @@ func (s postgresStorage) getTracks(bbox Bbox) TrackList {
 }
 func (s postgresStorage) getTracksInternal(whereClause string, queryParams ...interface{}) TrackList {
 	rows, err := s.db.Query(`SELECT t.id, t.title, ST_AsGeoJSON(t.path) as path,
-	COALESCE(p.id, -1), COALESCE(p.title,''), COALESCE(p.text,''),
+	COALESCE(p.id, -1), COALESCE(p.type,''), COALESCE(p.title,''), COALESCE(p.content,''),
 	COALESCE(ST_AsGeoJSON(p.point),'') as point, COALESCE(p.time, now())
 	FROM track t LEFT OUTER JOIN point p ON t.id=p.track_id
 	WHERE ` + whereClause + `
@@ -143,12 +154,13 @@ func (s postgresStorage) getTracksInternal(whereClause string, queryParams ...in
 		var title string
 		var pathStr string
 		var p_id int64
+		var p_type string
 		var p_title string
-		var p_text string
+		var p_content string
 		var p_pointStr string
 		var p_time time.Time
 
-		err := rows.Scan(&id, &title, &pathStr, &p_id, &p_title, &p_text, &p_pointStr, &p_time)
+		err := rows.Scan(&id, &title, &pathStr, &p_id, &p_type, &p_title, &p_content, &p_pointStr, &p_time)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -185,10 +197,17 @@ func (s postgresStorage) getTracksInternal(whereClause string, queryParams ...in
 			log.Errorf("Can not parse point for track %s: %v", p_pointStr, err)
 			continue
 		}
+		eventPointType, err := parseEventPointType(p_type)
+		if err != nil {
+			log.Errorf("Can not parse point type for track %s: %v", p_pointStr, err)
+			continue
+		}
+
 		current.Points = append(current.Points, EventPoint{
 			Id:p_id,
+			Type:eventPointType,
 			Title:p_title,
-			Text:p_text,
+			Content:p_content,
 			Time: JSONTime(p_time),
 			Point: point.Coordinates,
 		})
@@ -233,6 +252,104 @@ func (s postgresStorage) insert(tracks ...Track) error {
 		return err
 	}
 	return tx.Commit()
+}
+
+func (s postgresStorage) AddEventPoint(trackId int64, eventPoint EventPoint) (int64, error) {
+	log.Info("Inserting event point")
+	tx, err := s.db.Begin()
+	if err != nil {
+		return -1, err
+	}
+
+	stmt, err := tx.Prepare("INSERT INTO point(track_id, type, title, point, content, time) " +
+		"VALUES ($1, $2, $3, ST_GeomFromGeoJSON($4), $5, $6) RETURNING id")
+	if err != nil {
+		return -1, err
+	}
+
+	pointBytes, err := json.Marshal(NewGeoPoint(eventPoint.Point))
+	if err != nil {
+		return -1, err
+	}
+
+	rows, err := stmt.Query(trackId, string(eventPoint.Type), eventPoint.Title,
+		string(pointBytes), eventPoint.Content, time.Time(eventPoint.Time))
+	if err != nil {
+		return -1, err
+	}
+
+	lastId := int64(-1)
+	for rows.Next() {
+		rows.Scan(&lastId)
+	}
+
+	err = rows.Close()
+	if err != nil {
+		return -1, err
+	}
+	err = stmt.Close()
+	if err != nil {
+		return -1, err
+	}
+	err = tx.Commit()
+	if err != nil {
+		return -1, err
+	}
+	if lastId < 0 {
+		return -1, errors.New("Not inserted")
+	}
+	return lastId, nil
+}
+
+func (s postgresStorage) DeleteEventPoint(id int64) error {
+	log.Infof("Delete event point %s", id)
+	tx, err := s.db.Begin()
+	if err != nil {
+		return err
+	}
+	_, err = tx.Exec("DELETE FROM point WHERE id=$1", id)
+	if err != nil {
+		return err
+	}
+	return tx.Commit()
+}
+
+func (s postgresStorage)FindEventPoint(id int64, eventPoint *EventPoint) (bool, error) {
+	rows, err := s.db.Query("SELECT id,type,title,content,ST_AsGeoJSON(point) as point,time" +
+		" FROM point WHERE id=$1", id)
+	if err != nil {
+		return false, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		id := int64(-1)
+		_type := ""
+		title := ""
+		content := ""
+		t := time.Now() // any stub time
+		pointStr := ""
+		rows.Scan(&id, &_type, &title, &content, &pointStr, &t)
+
+		eventPoint.Id = id
+		eventPoint.Type, err = parseEventPointType(_type)
+		if err != nil {
+			return false, err
+		}
+		eventPoint.Title = title
+		eventPoint.Content = content
+
+		var pgPoint PgPoint
+		err = json.Unmarshal([]byte(pointStr), &pgPoint)
+		if err != nil {
+			log.Errorf("Can not parse point for track %s: %v", pointStr, err)
+			continue
+		}
+		eventPoint.Point = pgPoint.Coordinates
+		eventPoint.Time = JSONTime(t)
+		return true, nil
+	}
+	return false, nil
 }
 
 type PgPoint struct {

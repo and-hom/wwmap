@@ -76,18 +76,6 @@ type Geometry interface {
 
 }
 
-type yPoint struct {
-	Type        GeometryType `json:"type"`
-	Coordinates Point `json:"coordinates"`
-}
-
-func NewYPoint(point Point) Geometry {
-	return yPoint{
-		Coordinates:point,
-		Type:POINT,
-	}
-}
-
 type yRectangleInt struct {
 	Type        GeometryType `json:"type"`
 	Coordinates [][]int `json:"coordinates"`
@@ -101,13 +89,16 @@ func NewYRectangleInt(rectangle [][]int) Geometry {
 }
 
 type FeatureProperties struct {
-	BalloonContent       string `json:"balloonContent,omitempty"`
-	BalloonContentBody   string `json:"balloonContentBody,omitempty"`
-	BalloonContentHeader string `json:"balloonContentHeader,omitempty"`
-	BalloonContentFooter string `json:"balloonContentFooter,omitempty"`
-	ClusterCaption       string `json:"clusterCaption,omitempty"`
-	HintContent          string `json:"hintContent,omitempty"`
-	HotspotMetaData      HotspotMetaData `json:"HotspotMetaData,omitempty"`
+	BalloonContent  string `json:"balloonContent,omitempty"`
+	ClusterCaption  string `json:"clusterCaption,omitempty"`
+	HintContent     string `json:"hintContent,omitempty"`
+	HotspotMetaData HotspotMetaData `json:"HotspotMetaData,omitempty"`
+	Id              int64 `json:"id,omitempty"`
+}
+
+type FeatureOptions struct {
+	Preset string `json:"preset,omitempty"`
+	Id              int64 `json:"id,omitempty"`
 }
 
 type Feature struct {
@@ -115,11 +106,24 @@ type Feature struct {
 	Id         int64 `json:"id,omitempty"`
 	Geometry   Geometry `json:"geometry,omitempty"`
 	Properties FeatureProperties `json:"properties,omitempty"`
+	Options    FeatureOptions `json:"options,omitempty"`
 }
 
 type FeatureCollection struct {
 	Features []Feature `json:"features"`
 	Type     string `json:"type"`
+}
+
+func (this EventPointType) toYmapsPreset() string {
+	switch this {
+	case PHOTO:
+		return "islands#blueVegetationIcon";
+	case VIDEO:
+		return "islands#blueVideoIcon";
+	case POST:
+		return "islands#blueBookIcon";
+	}
+	return "islands#blueDotIcon";
 }
 
 func trackToYmaps(track Track) []Feature {
@@ -129,11 +133,15 @@ func trackToYmaps(track Track) []Feature {
 		point := track.Points[i]
 		result[i] = Feature{
 			Id:point.Id,
-			Geometry:NewYPoint(point.Point),
+			Geometry:NewGeoPoint(point.Point),
 			Type:"Feature",
 			Properties:FeatureProperties{
-				BalloonContent:        point.Text,
 				HintContent: point.Title,
+				Id: point.Id,
+			},
+			Options:FeatureOptions{
+				Preset: point.Type.toYmapsPreset(),
+				Id: point.Id,
 			},
 		}
 	}

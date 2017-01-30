@@ -11,13 +11,13 @@ import (
 	"github.com/gorilla/handlers"
 	"errors"
 	"strconv"
+	"time"
 )
 
 var storage Storage
-var files Files
 
 func TileHandler(w http.ResponseWriter, req *http.Request) {
-	w.Header().Add("Access-Control-Allow-Origin", "*")
+	corsHeaders(w, "GET, OPTIONS")
 
 	callback := req.FormValue("callback")
 	bbox, err := NewBbox(req.FormValue("bbox"))
@@ -33,12 +33,12 @@ func TileHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func SingleTrackTileHandler(w http.ResponseWriter, req *http.Request) {
-	w.Header().Add("Access-Control-Allow-Origin", "*")
+	corsHeaders(w, "GET, OPTIONS")
 
 	callback := req.FormValue("callback")
 	id, err := strconv.ParseInt(req.FormValue("id"), 10, 64)
 	if err != nil {
-		onError500(w, err, "Can not parse id")
+		onError(w, err, "Can not parse id", http.StatusBadRequest)
 		return
 	}
 	track := storage.getTrack(id)
@@ -48,16 +48,16 @@ func SingleTrackTileHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func SingleTrackBoundsHandler(w http.ResponseWriter, req *http.Request) {
-	w.Header().Add("Access-Control-Allow-Origin", "*")
+	corsHeaders(w, "GET, OPTIONS")
 
 	id, err := strconv.ParseInt(req.FormValue("id"), 10, 64)
 	if err != nil {
-		onError500(w, err, "Can not parse id")
+		onError(w, err, "Can not parse id", http.StatusBadRequest)
 		return
 	}
 	tracks := storage.getTrack(id)
 	if len(tracks) > 0 {
-		bytes, err := json.Marshal(tracks[0].Bounds())
+		bytes, err := json.Marshal(tracks[0].Bounds(true))
 		if err != nil {
 			onError500(w, err, "Can not serialize track")
 			return
@@ -69,7 +69,7 @@ func SingleTrackBoundsHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func TrackPointsToClickHandler(w http.ResponseWriter, req *http.Request) {
-	w.Header().Add("Access-Control-Allow-Origin", "*")
+	corsHeaders(w, "GET, OPTIONS")
 
 	callback := req.FormValue("callback")
 	pathParams := mux.Vars(req)
@@ -137,7 +137,7 @@ func TrackPointsToClickHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func TracksHandler(w http.ResponseWriter, req *http.Request) {
-	w.Header().Add("Access-Control-Allow-Origin", "*")
+ 	corsHeaders(w, "GET")
 
 	bbox, err := NewBbox(req.FormValue("bbox"))
 	if err != nil {
@@ -163,23 +163,90 @@ func JsonStr(f interface{}, _default string) string {
 	return string(bytes)
 }
 
-func TrackFiles(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Access-Control-Allow-Origin", "*")
+func GetPoint(w http.ResponseWriter, r *http.Request) {
+	corsHeaders(w, "POST, GET, OPTIONS, PUT, DELETE")
 
-	vars := mux.Vars(r)
-	id := vars["id"]
-
-	fileReader, err := files.Get(id)
+	id, err := strconv.ParseInt(r.FormValue("id"), 10, 64)
 	if err != nil {
-		onError500(w, err, "Read data error")
+		onError(w, err, "Can not parse id", http.StatusBadRequest)
+		return
+	}
+	eventPoint := EventPoint{}
+	found, err := storage.FindEventPoint(id, &EventPoint{})
+	if err != nil {
+		onError500(w, err, "Can not find")
+		return
+	}
+	if !found {
+		onError(w, fmt.Errorf("Point with id %d does not exist", id), "Not found", http.StatusNotFound)
+	}
+	bytes, err := json.Marshal(eventPoint)
+	if err != nil {
+		onError500(w, err, "Can not marshal")
+		return
+	}
+	w.Write(bytes)
+}
+
+func DelPoint(w http.ResponseWriter, r *http.Request) {
+	corsHeaders(w, "POST, GET, OPTIONS, PUT, DELETE")
+	id, err := strconv.ParseInt(r.FormValue("id"), 10, 64)
+	if err != nil {
+		onError(w, err, "Can not parse id", http.StatusBadRequest)
+		return
+	}
+	err = storage.DeleteEventPoint(id)
+	if err != nil {
+		onError500(w, err, "Can not delete")
+		return
+	}
+}
+
+func AddPoint(w http.ResponseWriter, r *http.Request) {
+	corsHeaders(w, "POST, GET, OPTIONS, PUT, DELETE")
+
+	err := r.ParseForm()
+	if err != nil {
+		onError(w, err, "Can not parse form", http.StatusBadRequest)
 		return
 	}
 
-	_, err = io.Copy(w, fileReader)
+	trackId, err := strconv.ParseInt(r.FormValue("track_id"), 10, 64)
+	if err != nil {
+		onError(w, err, "Can not parse form", http.StatusBadRequest)
+		return
+	}
+
+	title := r.FormValue("title")
+	content := r.FormValue("content")
+	pType, err := parseEventPointType(r.FormValue("type"))
+	if err != nil {
+		onError(w, err, "Can not parse form", http.StatusBadRequest)
+		return
+	}
+	point := Point{};
+	err = json.Unmarshal([]byte(r.FormValue("point")), &point)
+	if err != nil {
+		onError(w, err, "Can not parse form", http.StatusBadRequest)
+		return
+	}
+
+	eventPoint := EventPoint{
+		Type:pType,
+		Title:title,
+		Content:content,
+		Point:point,
+		Time:JSONTime(time.Now()),
+	}
+
+	id, err := storage.AddEventPoint(trackId, eventPoint)
 
 	if err != nil {
-		onError500(w, err, "Send error")
+		onError500(w, err, "Can not insert")
+		return
 	}
+
+	w.Write([]byte(strconv.FormatInt(id, 10)))
 }
 
 func UploadTrack(w http.ResponseWriter, r *http.Request) {
@@ -260,11 +327,16 @@ func geoParser(r io.ReadSeeker) (GeoParser, error) {
 	return nil, errors.New("Can not find valid parser for this format!")
 }
 
+func corsHeaders(w http.ResponseWriter, methods string) {
+	w.Header().Add("Access-Control-Allow-Origin", "*")
+	w.Header().Add("Access-Control-Allow-Methods", methods)
+	w.Header().Add("Access-Control-Allow-Headers", "origin, x-csrftoken, content-type, accept")
+}
+
 func main() {
 	log.Infof("Starting wwmap")
 
 	storage = NewPostgresStorage()
-	files = DummyFiles{}
 
 	r := mux.NewRouter()
 	r.HandleFunc("/tile", TileHandler)
@@ -272,8 +344,10 @@ func main() {
 	r.HandleFunc("/single-track-bounds", SingleTrackBoundsHandler)
 	r.HandleFunc("/track-active-areas/{id:[0-9]+}/{x:[0-9]+}/{y:[0-9]+}/{z:[0-9]+}", TrackPointsToClickHandler)
 	r.HandleFunc("/tracks", TracksHandler)
-	r.HandleFunc("/track-files/{id}", TrackFiles)
 	r.HandleFunc("/upload-track", UploadTrack).Methods("POST")
+	r.HandleFunc("/point", AddPoint).Methods("POST")
+	r.HandleFunc("/point", DelPoint).Methods("DELETE")
+	r.HandleFunc("/point", GetPoint).Methods("OPTIONS", "GET")
 
 	httpStr := fmt.Sprintf(":%d", 7007)
 	log.Infof("Starting http server on %s", httpStr)

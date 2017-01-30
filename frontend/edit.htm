@@ -5,6 +5,9 @@
     <title>WWMap</title>
     <link rel="stylesheet" href="css/bootstrap.min.css"/>
     <link rel="stylesheet" href="css/index.css"/>
+    <link rel="stylesheet" href="css/vex.css"/>
+    <link rel="stylesheet" href="css/vex-theme-default.css"/>
+    <link rel="stylesheet" href="css/jquery-te-1.4.0.css"/>
 </head>
 <body>
 <header class="navbar navbar-light navbar-static-top bd-navbar">
@@ -50,24 +53,9 @@
     </div>
 </div>
 
-<script type="text/x-jquery-tmpl" id="trackMenuTemplate">
-    <li>
-        <span class="title">${title}</span><a href="./edit?id=${id}"><img src="img/edit.png"/></a>
-        <ul>
-        {{each points}}
-            <li><span class="time">${$value.time}</span> ${$value.title}</li>
-        {{/each}}
-        </ul>
-    </li>
-
-
-
-
-
-
-
-
-</script>
+<div id="article-editor" style="display: none;">
+    <input name="article" type="text" class="editorEx" style="width:100%; height: 300px;"/>
+</div>
 
 <script type="text/javascript" src="./js/jquery-3.1.1.min.js"></script>
 <script type="text/javascript" src="./js/jquery.tmpl.js"></script>
@@ -75,6 +63,12 @@
 <script type="text/javascript" src="./js/bootstrap.min.js"></script>
 <script type="text/javascript" src="./js/jquery.cookie.js"></script>
 <script type="text/javascript" src="./js/jquery.json.js"></script>
+<script type="text/javascript" src="./js/vex.combined.min.js"></script>
+<script type="text/javascript" src="./js/jquery-te-1.4.0.min.js"></script>
+
+<script type="text/javascript" src="http://jqueryte.com/js/jquery.snippet.min.js" charset="utf-8"></script>
+<script type="text/javascript" src="http://jqueryte.com/js/site.js" charset="utf-8"></script>
+
 <script type="text/javascript" src="https://api-maps.yandex.ru/2.1/?lang=tr_TR"></script>
 <script type="text/javascript">
     $.urlParam = function (name) {
@@ -85,8 +79,16 @@
     const apiBase = "http://localhost:7007";
     const id = $.urlParam('id');
 
+    const PHOTO = 'photo';
+    const VIDEO = 'video';
+    const POST = 'post';
+
+
     ymaps.ready(init);
     var myMap;
+    var objectManager;
+
+    vex.defaultOptions.className = 'vex-theme-default'
 
     function init() {
         myMap = new ymaps.Map("map", {
@@ -100,37 +102,165 @@
             myMap.setBounds(bounds)
         });
 
-        myMap.events.add('click', function (e) {
-            myMap.balloon.close();
-        });
+        myMap.events.add('click', showMapMenu);
+        myMap.events.add('contextmenu', showMapMenu);
 
-        var objectManager = new ymaps.LoadingObjectManager(apiBase + '/single-track-tile?id=' + id, {
-            clusterHasBalloon: false,
-            geoObjectOpenBalloonOnClick: false,
+        objectManager = new ymaps.LoadingObjectManager(apiBase + '/single-track-tile?id=' + id, {
+            geoObjectHasBalloon: false,
             splitRequests: true,
             geoObjectStrokeWidth: 3
         });
+        addContextMenu(objectManager);
 
-        objectManager.objects.events.add(['click'], function (e) {
-            objectManager.objects.balloon.open(e.get('objectId'));
-        });
 
         myMap.geoObjects.add(objectManager);
 
-        var keyTemplate = 'mapCallback';
-        var tileUrlTemplate = apiBase + '/track-active-areas/' + id + '/%x/%y/%z';
-        var objSource = new ymaps.hotspot.ObjectSource(tileUrlTemplate, keyTemplate);
-        var hotspotLayer = new ymaps.hotspot.Layer(objSource, {
-            hasBalloon: false,
-            cursor: 'help',
-            zIndex: 650
-        });
-        myMap.layers.add(hotspotLayer);
+        $(".editorEx").jqte();
+    }
 
+    function showMapMenu(e) {
+        var coords = e.get('coords');
 
-        hotspotLayer.events.add('click', function (e) {
-            alert(e.get('activeObject').getId())
+        vex.dialog.open({
+                    buttons: [
+                        $.extend({}, vex.dialog.buttons.YES, {text: 'Фото', click: vexButtonVal(PHOTO)}),
+                        $.extend({}, vex.dialog.buttons.YES, {text: 'Видео', click: vexButtonVal(VIDEO)}),
+                        $.extend({}, vex.dialog.buttons.YES, {
+                            text: 'Запись',
+                            click: vexButtonVal(POST),
+                            className: 'vex-dialog-button-primary'
+                        })
+                    ],
+                    callback: function (type) {
+                        if (!type) {
+                            return
+                        }
+                        switch (type) {
+                            case PHOTO:
+                                vex.dialog.prompt({
+                                    placeholder: 'Прямая ссылка на фото в интернете',
+                                    callback: function (value) {
+                                        if (value) {
+                                            addObject(coords, value, type, "")
+                                        }
+                                    }
+                                });
+                                break;
+                            case VIDEO:
+                                vex.dialog.prompt({
+                                    placeholder: 'Ссылка на youtube',
+                                    callback: function (value) {
+                                        if (value) {
+                                            addObject(coords, value, type, "")
+                                        }
+                                    }
+                                });
+                                break;
+                            case POST:
+                                $("[name='article']").html('');
+                                vex.dialog.open({
+                                    input: $('#article-editor').html(),
+                                    callback: function (articleData) {
+                                        if (articleData) {
+                                            addObject(coords, articleData['article'], type, "")
+                                        }
+                                    },
+                                    contentClassName: 'vex-wide'
+                                });
+                                break;
+                            default:
+                                vex.dialog.alert('Это ещё не сделано!')
+                        }
+                    }
+                }
+        );
+    }
+
+    function addObject(coords, content, type, title) {
+        $.post(apiBase + '/point', {
+            track_id: id,
+            type: type,
+            title: title,
+            content: content,
+            point: JSON.stringify(coords)
+        }, function (eventPointId) {
+            // this workaround used to prevent data reload on placemark add.
+            // there is screen flicker on data reload
+            var placemark = new ymaps.Placemark(coords, {
+                id: eventPointId
+            }, {});
+            switch (type) {
+                case VIDEO:
+                    placemark.options.set({preset: 'islands#blueVideoIcon'});
+                    break;
+                case PHOTO:
+                    placemark.options.set({preset: 'islands#blueVegetationIcon'});
+                    break;
+                case POST:
+                    placemark.options.set({preset: 'islands#blueBookIcon'});
+                    break
+            }
+            addContextMenu(placemark);
+            myMap.geoObjects.add(placemark);
         });
+    }
+
+    function vexButtonVal(val) {
+        return function ($vexContent, event) {
+            this.value = val;
+            this.close();
+        };
+    }
+
+    function addContextMenu(obj) {
+        // Контекстное меню, позволяющее изменить параметры метки.
+        // Вызывается при нажатии правой кнопкой мыши на метке.
+        obj.events.add('contextmenu', showContextMenu);
+        obj.events.add('click', showContextMenu);
+    }
+
+    function showContextMenu(e) {
+        placemark = e.get("target");
+        // Если меню метки уже отображено, то убираем его.
+        if ($('#menu').css('display') == 'block') {
+            $('#menu').remove();
+        } else {
+            // HTML-содержимое контекстного меню.
+            var menuContent =
+                    '<div id="menu">\
+                    <div align="center"><input type="submit" value="Удалить"/></div>\
+                    </div>';
+
+            // Размещаем контекстное меню на странице
+            $('body').append(menuContent);
+
+            // Задаем позицию меню.
+            $('#menu').css({
+                left: e.get('pagePixels')[0],
+                top: e.get('pagePixels')[1]
+            });
+
+            $('#menu input[type="submit"]').click(function () {
+                // id of object loaded by object manager
+                var objectManagerPlacemarkId = e.get("objectId");
+                var newlyCreatedPlacemarkId = placemark.properties ? placemark.properties.get("id") : null;
+                var placemarkId = objectManagerPlacemarkId ? objectManagerPlacemarkId : newlyCreatedPlacemarkId;
+
+                $.ajax({
+                    url: apiBase + '/point?id=' + placemarkId,
+                    type: 'DELETE',
+                    success: function (result) {
+                        if (newlyCreatedPlacemarkId) {
+                            myMap.geoObjects.remove(placemark);
+                        }
+                        if (objectManagerPlacemarkId) {
+                            objectManager.reloadData();
+                        }
+                    }
+                });
+                $('#menu').remove();
+            });
+        }
     }
 </script>
 </body>
