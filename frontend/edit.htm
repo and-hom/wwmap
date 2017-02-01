@@ -41,20 +41,28 @@
     </div>
 </header>
 
+<h2 id="pageTitle">Трек без названия</h2>
 <div style="height: 30px;"></div>
 <div class="container-fluid">
     <div class="row">
         <div class="col-sm-8">
-            <div id="map" style="witdh:800px; height: 600px; margin: 10px;"></div>
+            <div id="map" style="witdh:800px; height: 400px; margin: 10px;"></div>
         </div>
         <div class="col-sm-4">
             <ul id="tracks" class="trackMenu"></ul>
         </div>
     </div>
+    <div class="row">
+        <div class="col-sm-11">
+            <div id="articles" class="articles-container">
+
+            </div>
+        </div>
+    </div>
 </div>
 
 <div id="article-editor" style="display: none;">
-    <input name="article" type="text" class="editorEx" style="width:100%; height: 300px;"/>
+    <textarea name="article" class="editorEx"></textarea>
 </div>
 
 <script type="text/javascript" src="./js/jquery-3.1.1.min.js"></script>
@@ -97,9 +105,28 @@
             controls: ["zoomControl", "fullscreenControl"]
         });
 
-        $.get(apiBase + '/single-track-bounds?id=' + id, function (data) {
-            bounds = $.parseJSON(data);
-            myMap.setBounds(bounds)
+        $.get(apiBase + '/track-editor-page?id=' + id, function (data) {
+            page = $.parseJSON(data);
+            $('#pageTitle').html(page.title);
+            myMap.setBounds(page.trackBounds);
+            for (var i in page.eventPoints) {
+                var articleHtml;
+                var eventPointId = page.eventPoints[i].id;
+                var content = page.eventPoints[i].content;
+                var type = page.eventPoints[i].type;
+                switch (type) {
+                    case VIDEO:
+                        articleHtml = mkVideoHtml(eventPointId, content)
+                        break;
+                    case PHOTO:
+                        articleHtml = mkPhotoHtml(eventPointId, content)
+                        break;
+                    case POST:
+                        articleHtml = mkPostHtml(eventPointId, content)
+                        break
+                }
+                $('#articles').append(articleHtml);
+            }
         });
 
         myMap.events.add('click', showMapMenu);
@@ -115,7 +142,6 @@
 
         myMap.geoObjects.add(objectManager);
 
-        $(".editorEx").jqte();
     }
 
     function showMapMenu(e) {
@@ -157,9 +183,8 @@
                                 });
                                 break;
                             case POST:
-                                $("[name='article']").html('');
                                 vex.dialog.open({
-                                    input: $('#article-editor').html(),
+                                    input: '<textarea name="article" class="editorEx"></textarea>',
                                     callback: function (articleData) {
                                         if (articleData) {
                                             addObject(coords, articleData['article'], type, "")
@@ -167,6 +192,7 @@
                                     },
                                     contentClassName: 'vex-wide'
                                 });
+                                $(".editorEx").jqte();
                                 break;
                             default:
                                 vex.dialog.alert('Это ещё не сделано!')
@@ -189,20 +215,39 @@
             var placemark = new ymaps.Placemark(coords, {
                 id: eventPointId
             }, {});
+            var articleHtml;
+
             switch (type) {
                 case VIDEO:
                     placemark.options.set({preset: 'islands#blueVideoIcon'});
+                    articleHtml = mkVideoHtml(eventPointId, content)
                     break;
                 case PHOTO:
                     placemark.options.set({preset: 'islands#blueVegetationIcon'});
+                    articleHtml = mkPhotoHtml(eventPointId, content)
                     break;
                 case POST:
                     placemark.options.set({preset: 'islands#blueBookIcon'});
+                    articleHtml = mkPostHtml(eventPointId, content)
                     break
             }
             addContextMenu(placemark);
             myMap.geoObjects.add(placemark);
+
+            $('#articles').append(articleHtml);
         });
+    }
+
+    function mkPostHtml(id, content) {
+        return '<p id="article' + id + '">' + content + '</p>';
+    }
+
+    function mkPhotoHtml(id, content) {
+        return '<p id="article' + id + '"><img src="' + content + '"/></p>';
+    }
+
+    function mkVideoHtml(id, content) {
+        return '<p id="article' + id + '">Not supported yet</p>';
     }
 
     function vexButtonVal(val) {
@@ -256,6 +301,7 @@
                         if (objectManagerPlacemarkId) {
                             objectManager.reloadData();
                         }
+                        $('#article' + placemarkId).remove()
                     }
                 });
                 $('#menu').remove();

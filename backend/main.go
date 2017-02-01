@@ -68,6 +68,32 @@ func SingleTrackBoundsHandler(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
+func TrackEditorPageHandler(w http.ResponseWriter, req *http.Request) {
+	corsHeaders(w, "GET, OPTIONS")
+
+	id, err := strconv.ParseInt(req.FormValue("id"), 10, 64)
+	if err != nil {
+		onError(w, err, "Can not parse id", http.StatusBadRequest)
+		return
+	}
+	tracks := storage.getTrack(id)
+	if len(tracks) > 0 {
+		track := tracks[0]
+		bytes, err := json.Marshal(TrackEditorPage{
+			Title:track.Title,
+			TrackBounds: track.Bounds(true),
+			EventPoints: track.Points,
+		})
+		if err != nil {
+			onError500(w, err, "Can not serialize track")
+			return
+		}
+		w.Write(bytes)
+	} else {
+		onError500(w, err, "Track not found")
+	}
+}
+
 func TrackPointsToClickHandler(w http.ResponseWriter, req *http.Request) {
 	corsHeaders(w, "GET, OPTIONS")
 
@@ -137,7 +163,7 @@ func TrackPointsToClickHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func TracksHandler(w http.ResponseWriter, req *http.Request) {
- 	corsHeaders(w, "GET")
+	corsHeaders(w, "GET")
 
 	bbox, err := NewBbox(req.FormValue("bbox"))
 	if err != nil {
@@ -342,6 +368,7 @@ func main() {
 	r.HandleFunc("/tile", TileHandler)
 	r.HandleFunc("/single-track-tile", SingleTrackTileHandler)
 	r.HandleFunc("/single-track-bounds", SingleTrackBoundsHandler)
+	r.HandleFunc("/track-editor-page", TrackEditorPageHandler)
 	r.HandleFunc("/track-active-areas/{id:[0-9]+}/{x:[0-9]+}/{y:[0-9]+}/{z:[0-9]+}", TrackPointsToClickHandler)
 	r.HandleFunc("/tracks", TracksHandler)
 	r.HandleFunc("/upload-track", UploadTrack).Methods("POST")
