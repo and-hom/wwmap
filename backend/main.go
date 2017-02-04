@@ -12,6 +12,7 @@ import (
 	"errors"
 	"strconv"
 	"time"
+	"io/ioutil"
 )
 
 var storage Storage
@@ -192,13 +193,18 @@ func JsonStr(f interface{}, _default string) string {
 func GetPoint(w http.ResponseWriter, r *http.Request) {
 	corsHeaders(w, "POST, GET, OPTIONS, PUT, DELETE")
 
-	id, err := strconv.ParseInt(r.FormValue("id"), 10, 64)
+	pathParams := mux.Vars(r)
+	id, err := strconv.ParseInt(pathParams["id"], 10, 64)
 	if err != nil {
 		onError(w, err, "Can not parse id", http.StatusBadRequest)
 		return
 	}
+	writePointToResponse(id, w)
+}
+
+func writePointToResponse(id int64, w http.ResponseWriter) {
 	eventPoint := EventPoint{}
-	found, err := storage.FindEventPoint(id, &EventPoint{})
+	found, err := storage.FindEventPoint(id, &eventPoint)
 	if err != nil {
 		onError500(w, err, "Can not find")
 		return
@@ -216,7 +222,8 @@ func GetPoint(w http.ResponseWriter, r *http.Request) {
 
 func DelPoint(w http.ResponseWriter, r *http.Request) {
 	corsHeaders(w, "POST, GET, OPTIONS, PUT, DELETE")
-	id, err := strconv.ParseInt(r.FormValue("id"), 10, 64)
+	pathParams := mux.Vars(r)
+	id, err := strconv.ParseInt(pathParams["id"], 10, 64)
 	if err != nil {
 		onError(w, err, "Can not parse id", http.StatusBadRequest)
 		return
@@ -228,41 +235,47 @@ func DelPoint(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func AddPoint(w http.ResponseWriter, r *http.Request) {
+func EditPoint(w http.ResponseWriter, r *http.Request) {
 	corsHeaders(w, "POST, GET, OPTIONS, PUT, DELETE")
-
 	err := r.ParseForm()
 	if err != nil {
 		onError(w, err, "Can not parse form", http.StatusBadRequest)
 		return
 	}
 
-	trackId, err := strconv.ParseInt(r.FormValue("track_id"), 10, 64)
+	pathParams := mux.Vars(r)
+	id, err := strconv.ParseInt(pathParams["id"], 10, 64)
+	if err != nil {
+		onError(w, err, "Can not parse id", http.StatusBadRequest)
+		return
+	}
+
+	eventPoint, _, err := parsePointForm(w, r)
+	if err != nil {
+		onError(w, err, "Can not parse form", http.StatusBadRequest)
+		return
+	}
+	eventPoint.Id = id
+
+	err = storage.UpdateEventPoint(eventPoint)
+	if err != nil {
+		onError500(w, err, "Can not edit point	")
+		return
+	}
+	writePointToResponse(id, w)
+}
+
+func AddPoint(w http.ResponseWriter, r *http.Request) {
+	corsHeaders(w, "POST, GET, OPTIONS, PUT, DELETE")
+	err := r.ParseForm()
 	if err != nil {
 		onError(w, err, "Can not parse form", http.StatusBadRequest)
 		return
 	}
 
-	title := r.FormValue("title")
-	content := r.FormValue("content")
-	pType, err := parseEventPointType(r.FormValue("type"))
+	eventPoint, trackId, err := parsePointForm(w, r)
 	if err != nil {
-		onError(w, err, "Can not parse form", http.StatusBadRequest)
 		return
-	}
-	point := Point{};
-	err = json.Unmarshal([]byte(r.FormValue("point")), &point)
-	if err != nil {
-		onError(w, err, "Can not parse form", http.StatusBadRequest)
-		return
-	}
-
-	eventPoint := EventPoint{
-		Type:pType,
-		Title:title,
-		Content:content,
-		Point:point,
-		Time:JSONTime(time.Now()),
 	}
 
 	id, err := storage.AddEventPoint(trackId, eventPoint)
@@ -273,6 +286,38 @@ func AddPoint(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write([]byte(strconv.FormatInt(id, 10)))
+}
+
+func parsePointForm(w http.ResponseWriter, r *http.Request) (EventPoint, int64, error) {
+	trackId, err := strconv.ParseInt(r.FormValue("track_id"), 10, 64)
+	if err != nil {
+		onError(w, err, "Can not parse form", http.StatusBadRequest)
+		return EventPoint{}, 0, err
+	}
+
+	title := r.FormValue("title")
+	content := r.FormValue("content")
+	pType, err := parseEventPointType(r.FormValue("type"))
+	if err != nil {
+		onError(w, err, "Can not parse form", http.StatusBadRequest)
+		return EventPoint{}, 0, err
+	}
+	point := Point{};
+	err = json.Unmarshal([]byte(r.FormValue("point")), &point)
+	if err != nil {
+		onError(w, err, "Can not parse form", http.StatusBadRequest)
+		return EventPoint{}, 0, err
+	}
+
+	eventPoint := EventPoint{
+		Type:pType,
+		Title:title,
+		Content:content,
+		Point:point,
+		Time:JSONTime(time.Now()),
+	}
+
+	return eventPoint, trackId, nil
 }
 
 func UploadTrack(w http.ResponseWriter, r *http.Request) {
@@ -328,6 +373,58 @@ func UploadTrack(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, redirectTo, http.StatusFound)
 }
 
+func PictureMetadataHandler(w http.ResponseWriter, r *http.Request) {
+	corsHeaders(w, "POST")
+
+	requestBody := r.Body
+	defer requestBody.Close()
+
+	imgUrl, err := ioutil.ReadAll(requestBody)
+	if err != nil {
+		onError(w, err, "Can not read request body", http.StatusBadRequest)
+		return
+	}
+
+	imgResp, err := http.Get(string(imgUrl))
+	if err != nil {
+		onError(w, err, "Can not fetch image", 422)
+		return
+	}
+
+	defer imgResp.Body.Close()
+
+	tmpFile, err := ioutil.TempFile(os.TempDir(), "img")
+	if err != nil {
+		onError500(w, err, "Can not create temp file")
+		return
+	}
+	defer CloseAndRemove(tmpFile)
+
+	_, err = io.Copy(tmpFile, imgResp.Body)
+	if err != nil {
+		onError500(w, err, "Can not fetch image from server: " + string(imgUrl))
+		return
+	}
+	_, err = tmpFile.Seek(0, os.SEEK_SET)
+	if err != nil {
+		onError500(w, err, "Can not seek on img file")
+		return
+	}
+
+	imgData, err := GetImgProperties(tmpFile)
+	if err != nil {
+		onError500(w, err, "Can not get img properties")
+		return
+	}
+
+	w.Write([]byte(JsonStr(imgData, "{}")))
+}
+
+func CloseAndRemove(f *os.File) {
+	f.Close()
+	os.Remove(f.Name())
+}
+
 func onError(w http.ResponseWriter, err error, msg string, statusCode int) {
 	errStr := fmt.Sprintf("%s: %v", msg, err)
 	log.Errorf(errStr)
@@ -373,8 +470,10 @@ func main() {
 	r.HandleFunc("/tracks", TracksHandler)
 	r.HandleFunc("/upload-track", UploadTrack).Methods("POST")
 	r.HandleFunc("/point", AddPoint).Methods("POST")
-	r.HandleFunc("/point", DelPoint).Methods("DELETE")
-	r.HandleFunc("/point", GetPoint).Methods("OPTIONS", "GET")
+	r.HandleFunc("/point/{id}", EditPoint).Methods("PUT")
+	r.HandleFunc("/point/{id}", DelPoint).Methods("DELETE")
+	r.HandleFunc("/point/{id}", GetPoint).Methods("OPTIONS", "GET")
+	r.HandleFunc("/picture-metadata", PictureMetadataHandler).Methods("POST")
 
 	httpStr := fmt.Sprintf(":%d", 7007)
 	log.Infof("Starting http server on %s", httpStr)

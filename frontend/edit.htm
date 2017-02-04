@@ -110,24 +110,27 @@
             $('#pageTitle').html(page.title);
             myMap.setBounds(page.trackBounds);
             for (var i in page.eventPoints) {
-                var articleHtml;
                 var eventPointId = page.eventPoints[i].id;
                 var content = page.eventPoints[i].content;
                 var type = page.eventPoints[i].type;
-                switch (type) {
-                    case VIDEO:
-                        articleHtml = mkVideoHtml(eventPointId, content)
-                        break;
-                    case PHOTO:
-                        articleHtml = mkPhotoHtml(eventPointId, content)
-                        break;
-                    case POST:
-                        articleHtml = mkPostHtml(eventPointId, content)
-                        break
-                }
+                var articleHtml = mkWrappedHtml(eventPointId, type, content);
+
                 $('#articles').append(articleHtml);
+
+                $('body').on('input', '.monitored-img-url', throttle(fetchImgOptions, 1500));
             }
         });
+
+        function throttle(func, interval) {
+            var lastCall = 0;
+            return function (args) {
+                var now = Date.now();
+                if (lastCall + interval < now) {
+                    lastCall = now;
+                    return func(args);
+                }
+            };
+        }
 
         myMap.events.add('click', showMapMenu);
         myMap.events.add('contextmenu', showMapMenu);
@@ -147,6 +150,9 @@
     function showMapMenu(e) {
         var coords = e.get('coords');
 
+        // remove context menu
+        $('#menu').remove();
+
         vex.dialog.open({
                     buttons: [
                         $.extend({}, vex.dialog.buttons.YES, {text: 'Фото', click: vexButtonVal(PHOTO)}),
@@ -158,51 +164,72 @@
                         })
                     ],
                     callback: function (type) {
-                        if (!type) {
-                            return
-                        }
-                        switch (type) {
-                            case PHOTO:
-                                vex.dialog.prompt({
-                                    placeholder: 'Прямая ссылка на фото в интернете',
-                                    callback: function (value) {
-                                        if (value) {
-                                            addObject(coords, value, type, "")
-                                        }
-                                    }
-                                });
-                                break;
-                            case VIDEO:
-                                vex.dialog.prompt({
-                                    placeholder: 'Ссылка на youtube',
-                                    callback: function (value) {
-                                        if (value) {
-                                            addObject(coords, value, type, "")
-                                        }
-                                    }
-                                });
-                                break;
-                            case POST:
-                                vex.dialog.open({
-                                    input: '<textarea name="article" class="editorEx"></textarea>',
-                                    callback: function (articleData) {
-                                        if (articleData) {
-                                            addObject(coords, articleData['article'], type, "")
-                                        }
-                                    },
-                                    contentClassName: 'vex-wide'
-                                });
-                                $(".editorEx").jqte();
-                                break;
-                            default:
-                                vex.dialog.alert('Это ещё не сделано!')
-                        }
+                        showAddOrEditDialog(coords, "", type, "", addPlacemark)
                     }
                 }
         );
     }
 
-    function addObject(coords, content, type, title) {
+    function showAddOrEditDialog(coords, content, type, title, editFunc) {
+        if (!type) {
+            return
+        }
+        switch (type) {
+            case PHOTO:
+                vex.dialog.open({
+                    input: '<label for="url">Прямая ссылка на фото в интернете</label>' +
+                    '<input id="url" style="width: 100%" class="monitored-img-url" name="url" value="' + content + '"/>' +
+                    '<div id="img_options" style="margin-top: 8px;"></div>',
+                    callback: function (value) {
+                        if (value) {
+                            editFunc(coords, value.url, type, "")
+                        }
+                    }
+                });
+                break;
+            case VIDEO:
+                vex.dialog.prompt({
+                    placeholder: 'Ссылка на youtube',
+                    callback: function (value) {
+                        if (value) {
+                            editFunc(coords, value, type, "")
+                        }
+                    }
+                });
+                break;
+            case POST:
+                vex.dialog.open({
+                    input: '<textarea name="article" class="editorEx">' + content + '</textarea>',
+                    callback: function (articleData) {
+                        if (articleData) {
+                            editFunc(coords, articleData['article'], type, "")
+                        }
+                    },
+                    contentClassName: 'vex-wide'
+                });
+                $(".editorEx").jqte();
+                break;
+            default:
+                vex.dialog.alert('Это ещё не сделано!')
+        }
+    }
+
+    function fetchImgOptions(e) {
+        var url = $(e.target).val();
+        $.post(apiBase + '/picture-metadata', url.trim(), function (data) {
+            var imgOptions = $('#img_options');
+            imgOptions.html("");
+            metadata = $.parseJSON(data);
+            if (metadata.timestamp) {
+                imgOptions.append("<p><b>Дата снимка: </b>" + metadata.timestamp + "</p>");
+            }
+            if (metadata.coords) {
+                imgOptions.append("<p><b>Место снимка: </b>" + metadata.coords + "</p>");
+            }
+        });
+    }
+
+    function addPlacemark(coords, content, type, title) {
         $.post(apiBase + '/point', {
             track_id: id,
             type: type,
@@ -213,24 +240,24 @@
             // this workaround used to prevent data reload on placemark add.
             // there is screen flicker on data reload
             var placemark = new ymaps.Placemark(coords, {
-                id: eventPointId
+                id: eventPointId,
+                type: type,
             }, {});
-            var articleHtml;
 
             switch (type) {
                 case VIDEO:
                     placemark.options.set({preset: 'islands#blueVideoIcon'});
-                    articleHtml = mkVideoHtml(eventPointId, content)
                     break;
                 case PHOTO:
                     placemark.options.set({preset: 'islands#blueVegetationIcon'});
-                    articleHtml = mkPhotoHtml(eventPointId, content)
                     break;
                 case POST:
                     placemark.options.set({preset: 'islands#blueBookIcon'});
-                    articleHtml = mkPostHtml(eventPointId, content)
                     break
             }
+
+            var articleHtml = mkWrappedHtml(eventPointId, type, content);
+
             addContextMenu(placemark);
             myMap.geoObjects.add(placemark);
 
@@ -238,16 +265,48 @@
         });
     }
 
-    function mkPostHtml(id, content) {
-        return '<p id="article' + id + '">' + content + '</p>';
+    function modifyPlacemark(id, coords, content, type, title) {
+        $.ajax({
+            url: apiBase + '/point/' + id,
+            type: 'PUT',
+            data: {
+                track_id: id,
+                type: type,
+                title: title,
+                content: content,
+                point: JSON.stringify(coords)
+            }
+        }).done(function (data) {
+            var pointData = $.parseJSON(data);
+            $('#article' + pointData.id).html(mkHtml(pointData.type, pointData.content))
+        });
     }
 
-    function mkPhotoHtml(id, content) {
-        return '<p id="article' + id + '"><img src="' + content + '"/></p>';
+    function mkWrappedHtml(id, type, content) {
+        return '<p id="article' + id + '" class="' + type + '-article">' + mkHtml(type, content) + "</p>"
     }
 
-    function mkVideoHtml(id, content) {
-        return '<p id="article' + id + '">Not supported yet</p>';
+    function mkHtml(type, content) {
+        switch (type) {
+            case VIDEO:
+                return mkVideoHtml(content);
+            case PHOTO:
+                return mkPhotoHtml(content);
+            case POST:
+                return mkPostHtml(content);
+        }
+    }
+
+    function mkPostHtml(content) {
+        return content;
+    }
+
+    function mkPhotoHtml(content) {
+        return '<img src="' + content + '"/>';
+    }
+
+    function mkVideoHtml(content) {
+        return 'Not supported yet';
     }
 
     function vexButtonVal(val) {
@@ -273,7 +332,8 @@
             // HTML-содержимое контекстного меню.
             var menuContent =
                     '<div id="menu">\
-                    <div align="center"><input type="submit" value="Удалить"/></div>\
+                    <div align="center"><input type="submit" name="editPlacemark" value="Редактировать"/></div>\
+                    <div align="center"><input type="submit" name="delPlacemark" value="Удалить"/></div>\
                     </div>';
 
             // Размещаем контекстное меню на странице
@@ -285,14 +345,14 @@
                 top: e.get('pagePixels')[1]
             });
 
-            $('#menu input[type="submit"]').click(function () {
+            $('#menu input[name="delPlacemark"]').click(function () {
                 // id of object loaded by object manager
                 var objectManagerPlacemarkId = e.get("objectId");
                 var newlyCreatedPlacemarkId = placemark.properties ? placemark.properties.get("id") : null;
                 var placemarkId = objectManagerPlacemarkId ? objectManagerPlacemarkId : newlyCreatedPlacemarkId;
 
                 $.ajax({
-                    url: apiBase + '/point?id=' + placemarkId,
+                    url: apiBase + '/point/' + placemarkId,
                     type: 'DELETE',
                     success: function (result) {
                         if (newlyCreatedPlacemarkId) {
@@ -303,6 +363,24 @@
                         }
                         $('#article' + placemarkId).remove()
                     }
+                });
+                $('#menu').remove();
+            });
+
+            $('#menu input[name="editPlacemark"]').click(function () {
+                // id of object loaded by object manager
+                var objectManagerPlacemarkId = e.get("objectId");
+                var newlyCreatedPlacemarkId = placemark.properties ? placemark.properties.get("id") : null;
+                var placemarkId = objectManagerPlacemarkId ? objectManagerPlacemarkId : newlyCreatedPlacemarkId;
+
+                $.get(apiBase + '/point/' + placemarkId, function (data) {
+                    var pointData = $.parseJSON(data);
+                    var coords = e.get('coords');
+
+                    showAddOrEditDialog(coords, pointData.content, pointData.type, pointData.title,
+                            function (coords, content, type, title) {
+                                modifyPlacemark(pointData.id, pointData.point, content, pointData.type, title)
+                            })
                 });
                 $('#menu').remove();
             });

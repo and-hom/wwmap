@@ -7,6 +7,7 @@ import (
 	_ "github.com/lib/pq"
 	"encoding/json"
 	"errors"
+	"fmt"
 )
 
 type TrackList []Track;
@@ -28,6 +29,7 @@ type Storage interface {
 	getTracks(bbox Bbox) TrackList
 	insert(track ...Track) error
 	AddEventPoint(trackId int64, eventPoint EventPoint) (int64, error)
+	UpdateEventPoint(eventPoint EventPoint) error
 	DeleteEventPoint(id int64) error
 	FindEventPoint(id int64, eventPoint *EventPoint) (bool, error)
 }
@@ -104,6 +106,10 @@ func (s DummyStorage) AddEventPoint(trackId int64, eventPoint EventPoint) (int64
 }
 
 func (s DummyStorage) DeleteEventPoint(id int64) error {
+	return nil
+}
+
+func (s DummyStorage) UpdateEventPoint(eventPoint EventPoint) error {
 	return nil
 }
 
@@ -299,6 +305,47 @@ func (s postgresStorage) AddEventPoint(trackId int64, eventPoint EventPoint) (in
 		return -1, errors.New("Not inserted")
 	}
 	return lastId, nil
+}
+
+func (s postgresStorage) UpdateEventPoint(eventPoint EventPoint) (error) {
+	log.Info("Update event point")
+	tx, err := s.db.Begin()
+	if err != nil {
+		return err
+	}
+
+	stmt, err := tx.Prepare("UPDATE point SET type=$2, title=$3, point=ST_GeomFromGeoJSON($4), content=$5 WHERE id=$1")
+	if err != nil {
+		return err
+	}
+
+	pointBytes, err := json.Marshal(NewGeoPoint(eventPoint.Point))
+	if err != nil {
+		return err
+	}
+
+	result, err := stmt.Exec(eventPoint.Id, string(eventPoint.Type), eventPoint.Title,
+		string(pointBytes), eventPoint.Content)
+	if err != nil {
+		return err
+	}
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected != 1 {
+		return fmt.Errorf("Updated %d rows for event point %d", rowsAffected, eventPoint.Id)
+	}
+
+	err = stmt.Close()
+	if err != nil {
+		return err
+	}
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s postgresStorage) DeleteEventPoint(id int64) error {
