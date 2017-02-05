@@ -41,7 +41,9 @@
     </div>
 </header>
 
-<h2 id="title">Трек без названия</h2>
+<h2 id="title" style="display: inline;">Трек без названия</h2>
+<div
+        style="display: inline; padding-left: 7px; padding-bottom: 3px;"><img id="edit-title" src="img/edit.png"/></div>
 <div style="height: 30px;"></div>
 <div class="container-fluid">
     <div class="row">
@@ -140,16 +142,28 @@
         myMap.geoObjects.add(objectManager);
 
         $('body').on('input', '.monitored-img-url', throttle(fetchImgOptions, 1500));
-        $('#pathType').on('change', function () {
-            $.ajax({
-                url: apiBase + '/track/' + id,
-                type: 'PUT',
-                data: {
-                    type: $('#pathType').val(),
-                    title: $('#title').html()
+        $('#pathType').on('change', updateTrackData);
+        $('#edit-title').on('click', function () {
+            vex.dialog.prompt({
+                placeholder: 'Новое название',
+                value: $('#title').html(),
+                callback: function (value) {
+                    $('#title').html(value);
+                    updateTrackData();
                 }
-            }).done(function (data) {
             });
+        })
+    }
+
+    function updateTrackData() {
+        $.ajax({
+            url: apiBase + '/track/' + id,
+            type: 'PUT',
+            data: {
+                type: $('#pathType').val(),
+                title: $('#title').html()
+            }
+        }).done(function (data) {
         });
     }
 
