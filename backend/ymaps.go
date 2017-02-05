@@ -52,12 +52,12 @@ func NewBbox(data string) (Bbox, error) {
 }
 
 func (this Bbox) Center() Point {
-	return Point{x:(this.X1 + this.X2) / 2, y:(this.Y1 + this.Y2) / 2, }
+	return Point{lat:(this.X1 + this.X2) / 2, lon:(this.Y1 + this.Y2) / 2, }
 
 }
 
 func (this Bbox) Contains(p Point) bool {
-	return this.X1 <= p.x && p.x <= this.X2 && this.Y1 <= p.y && p.y <= this.Y2;
+	return this.X1 <= p.lat && p.lat <= this.X2 && this.Y1 <= p.lon && p.lon <= this.Y2;
 }
 
 type BboxInt struct {
@@ -269,10 +269,10 @@ func tileToCoords(x int, y int, z uint32) BboxInt {
 func toTileCoords(z uint32, p Point) (PointInt, int, int) {
 	ppm := pixelsPerMeter(z)
 
-	mercatorXPixels := longitudeToMercatorMeters(p.y) * ppm
-	mercatorYPixels := (EQUATOR / 2 - latitudeToMercatorMeters(p.x)) * ppm
+	mercatorXPixels := longitudeToMercatorMeters(p.lon) * ppm
+	mercatorYPixels := (EQUATOR / 2 - latitudeToMercatorMeters(p.lat)) * ppm
 
-	logrus.Info(latitudeToMercatorMeters(p.x), ppm)
+	logrus.Info(latitudeToMercatorMeters(p.lat), ppm)
 
 	x := int(mercatorXPixels / 256.0)
 	y := int(mercatorYPixels / 256.0)

@@ -9,15 +9,15 @@ import (
 )
 
 type Point struct {
-	x float64
-	y float64
+	lat float64
+	lon float64
 }
 
 func (this Point) MarshalJSON() ([]byte, error) {
 	buffer := bytes.NewBufferString("[")
-	buffer.WriteString(fmt.Sprint(this.x))
+	buffer.WriteString(fmt.Sprint(this.lat))
 	buffer.WriteString(",")
-	buffer.WriteString(fmt.Sprint(this.y))
+	buffer.WriteString(fmt.Sprint(this.lon))
 	buffer.WriteString("]")
 	return buffer.Bytes(), nil
 }
@@ -28,8 +28,8 @@ func (this *Point) UnmarshalJSON(data []byte) error {
 	if (err != nil) {
 		return err
 	}
-	this.x = arr[0]
-	this.y = arr[1]
+	this.lat = arr[0]
+	this.lon = arr[1]
 	return nil
 }
 
@@ -106,18 +106,18 @@ func (this Track) Bounds(withEventPoints bool) Bbox {
 	var yMax float64 = -90
 
 	for _, p := range this.Path {
-		xMin = math.Min(xMin, p.x)
-		yMin = math.Min(yMin, p.y)
-		xMax = math.Max(xMax, p.x)
-		yMax = math.Max(yMax, p.y)
+		xMin = math.Min(xMin, p.lat)
+		yMin = math.Min(yMin, p.lon)
+		xMax = math.Max(xMax, p.lat)
+		yMax = math.Max(yMax, p.lon)
 	}
 
 	if withEventPoints {
 		for _, ep := range this.Points {
-			xMin = math.Min(xMin, ep.Point.x)
-			yMin = math.Min(yMin, ep.Point.y)
-			xMax = math.Max(xMax, ep.Point.x)
-			yMax = math.Max(yMax, ep.Point.y)
+			xMin = math.Min(xMin, ep.Point.lat)
+			yMin = math.Min(yMin, ep.Point.lon)
+			xMax = math.Max(xMax, ep.Point.lat)
+			yMax = math.Max(yMax, ep.Point.lon)
 		}
 	}
 

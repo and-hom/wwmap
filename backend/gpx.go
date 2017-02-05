@@ -54,8 +54,8 @@ func convertWaypoints(wpts gpx.Waypoints) []Point {
 
 	for _, wpt := range wpts {
 		p := Point{
-			x:wpt.Lat,
-			y:wpt.Lon,
+			lat:wpt.Lat,
+			lon:wpt.Lon,
 		}
 		points = append(points, p)
 	}

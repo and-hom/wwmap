@@ -123,8 +123,8 @@ func (this KmlParser) getTracks() ([]Track, error) {
 						return nil, fmt.Errorf("Can not parse y: %s", pointsStr)
 					}
 					path[i] = Point{
-						x:x,
-						y:y,
+						lat:x,
+						lon:y,
 					}
 				}
 				tracks = append(tracks, Track{

@@ -40,8 +40,8 @@ func addCoords(_exif *exif.Exif, imgData *ImgProperties) {
 	lat, lon, err := _exif.LatLong()
 	if err == nil {
 		point := Point{
-			x:lon,
-			y:lat,
+			lat:lon,
+			lon:lat,
 		}
 		imgData.Coords = &point
 	}
