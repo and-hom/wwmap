@@ -82,6 +82,7 @@ func TrackEditorPageHandler(w http.ResponseWriter, req *http.Request) {
 		track := tracks[0]
 		bytes, err := json.Marshal(TrackEditorPage{
 			Title:track.Title,
+			Type: track.Type,
 			TrackBounds: track.Bounds(true),
 			EventPoints: track.Points,
 		})
@@ -188,6 +189,74 @@ func JsonStr(f interface{}, _default string) string {
 		return _default
 	}
 	return string(bytes)
+}
+
+func GetTrack(w http.ResponseWriter, r *http.Request) {
+	corsHeaders(w, "POST, GET, OPTIONS, PUT, DELETE")
+	// for cors only
+}
+
+func EditTrack(w http.ResponseWriter, r *http.Request) {
+	corsHeaders(w, "POST, GET, OPTIONS, PUT, DELETE")
+	err := r.ParseForm()
+	if err != nil {
+		onError(w, err, "Can not parse form", http.StatusBadRequest)
+		return
+	}
+
+	pathParams := mux.Vars(r)
+	id, err := strconv.ParseInt(pathParams["id"], 10, 64)
+	if err != nil {
+		onError(w, err, "Can not parse id", http.StatusBadRequest)
+		return
+	}
+
+	track, err := parseTrackForm(w, r)
+	if err != nil {
+		onError(w, err, "Can not parse form", http.StatusBadRequest)
+		return
+	}
+	track.Id = id
+
+	err = storage.UpdateTrack(track)
+	if err != nil {
+		onError500(w, err, "Can not edit track	")
+		return
+	}
+	writeTrackToResponse(id, w)
+}
+
+func writeTrackToResponse(id int64, w http.ResponseWriter) {
+	track := Track{}
+	found, err := storage.FindTrack(id, &track)
+	if err != nil {
+		onError500(w, err, "Can not find")
+		return
+	}
+	if !found {
+		onError(w, fmt.Errorf("Point with id %d does not exist", id), "Not found", http.StatusNotFound)
+	}
+	bytes, err := json.Marshal(track)
+	if err != nil {
+		onError500(w, err, "Can not marshal")
+		return
+	}
+	w.Write(bytes)
+}
+
+func parseTrackForm(w http.ResponseWriter, r *http.Request) (Track, error) {
+	title := r.FormValue("title")
+	tType, err := parseTrackType(r.FormValue("type"))
+	if err != nil {
+		onError(w, err, "Can not parse form", http.StatusBadRequest)
+		return Track{}, err
+	}
+	track := Track{
+		Type:tType,
+		Title:title,
+	}
+
+	return track, nil
 }
 
 func GetPoint(w http.ResponseWriter, r *http.Request) {
@@ -350,7 +419,7 @@ func UploadTrack(w http.ResponseWriter, r *http.Request) {
 		onError500(w, err, "Bad geo data symantics")
 		return
 	}
-	err = storage.insert(tracks...)
+	err = storage.AddTracks(tracks...)
 	if err != nil {
 		onError500(w, err, "Can not insert tracks")
 		return
@@ -468,7 +537,12 @@ func main() {
 	r.HandleFunc("/track-editor-page", TrackEditorPageHandler)
 	r.HandleFunc("/track-active-areas/{id:[0-9]+}/{x:[0-9]+}/{y:[0-9]+}/{z:[0-9]+}", TrackPointsToClickHandler)
 	r.HandleFunc("/tracks", TracksHandler)
+
+	r.HandleFunc("/track/{id}", EditTrack).Methods("PUT")
+	r.HandleFunc("/track/{id}", GetTrack).Methods("GET", "OPTIONS")
+
 	r.HandleFunc("/upload-track", UploadTrack).Methods("POST")
+
 	r.HandleFunc("/point", AddPoint).Methods("POST")
 	r.HandleFunc("/point/{id}", EditPoint).Methods("PUT")
 	r.HandleFunc("/point/{id}", DelPoint).Methods("DELETE")

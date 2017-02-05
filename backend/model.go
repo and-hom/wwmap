@@ -52,7 +52,7 @@ const (
 var EventPointAvailableTypes []EventPointType = []EventPointType{PHOTO, VIDEO, POST}
 
 func parseEventPointType(s string) (EventPointType, error) {
-	for _,t := range EventPointAvailableTypes {
+	for _, t := range EventPointAvailableTypes {
 		if s == string(t) {
 			return t, nil
 		}
@@ -69,11 +69,31 @@ type EventPoint struct {
 	Time    JSONTime `json:"time"`
 }
 
+type TrackType string;
+
+const (
+	PEDESTRIAN TrackType = "pd"
+	BIKE TrackType = "bk"
+	WATER TrackType = "ww"
+)
+
+var TrackAvailableTypes []TrackType = []TrackType{PEDESTRIAN, BIKE, WATER}
+
+func parseTrackType(s string) (TrackType, error) {
+	for _, t := range TrackAvailableTypes {
+		if s == string(t) {
+			return t, nil
+		}
+	}
+	return "", fmt.Errorf("Unsupported track type %s", s)
+}
+
 type Track struct {
 	Id     int64 `json:"id"`
 	Title  string `json:"title"`
 	Path   []Point `json:"path"`
 	Points []EventPoint `json:"points"` // points with articles
+	Type   TrackType `json:"type"`
 }
 
 func (this Track) Bounds(withEventPoints bool) Bbox {
@@ -93,7 +113,7 @@ func (this Track) Bounds(withEventPoints bool) Bbox {
 	}
 
 	if withEventPoints {
-		for _,ep := range this.Points {
+		for _, ep := range this.Points {
 			xMin = math.Min(xMin, ep.Point.x)
 			yMin = math.Min(yMin, ep.Point.y)
 			xMax = math.Max(xMax, ep.Point.x)

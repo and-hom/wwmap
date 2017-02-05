@@ -41,7 +41,7 @@
     </div>
 </header>
 
-<h2 id="pageTitle">Трек без названия</h2>
+<h2 id="title">Трек без названия</h2>
 <div style="height: 30px;"></div>
 <div class="container-fluid">
     <div class="row">
@@ -49,7 +49,13 @@
             <div id="map" style="witdh:800px; height: 400px; margin: 10px;"></div>
         </div>
         <div class="col-sm-4">
-            <ul id="tracks" class="trackMenu"></ul>
+            <label for="pathType">Тип трека</label>
+            <select id="pathType">
+                <option></option>
+                <option value="pd">Пеший</option>
+                <option value="bk">Вело</option>
+                <option value="ww">Вода</option>
+            </select>
         </div>
     </div>
     <div class="row">
@@ -107,7 +113,8 @@
 
         $.get(apiBase + '/track-editor-page?id=' + id, function (data) {
             page = $.parseJSON(data);
-            $('#pageTitle').html(page.title);
+            $('#title').html(page.title);
+            $('#pathType').val(page.type)
             myMap.setBounds(page.trackBounds);
             for (var i in page.eventPoints) {
                 var eventPointId = page.eventPoints[i].id;
@@ -116,21 +123,8 @@
                 var articleHtml = mkWrappedHtml(eventPointId, type, content);
 
                 $('#articles').append(articleHtml);
-
-                $('body').on('input', '.monitored-img-url', throttle(fetchImgOptions, 1500));
             }
         });
-
-        function throttle(func, interval) {
-            var lastCall = 0;
-            return function (args) {
-                var now = Date.now();
-                if (lastCall + interval < now) {
-                    lastCall = now;
-                    return func(args);
-                }
-            };
-        }
 
         myMap.events.add('click', showMapMenu);
         myMap.events.add('contextmenu', showMapMenu);
@@ -145,6 +139,29 @@
 
         myMap.geoObjects.add(objectManager);
 
+        $('body').on('input', '.monitored-img-url', throttle(fetchImgOptions, 1500));
+        $('#pathType').on('change', function () {
+            $.ajax({
+                url: apiBase + '/track/' + id,
+                type: 'PUT',
+                data: {
+                    type: $('#pathType').val(),
+                    title: $('#title').html()
+                }
+            }).done(function (data) {
+            });
+        });
+    }
+
+    function throttle(func, interval) {
+        var lastCall = 0;
+        return function (args) {
+            var now = Date.now();
+            if (lastCall + interval < now) {
+                lastCall = now;
+                return func(args);
+            }
+        };
     }
 
     function showMapMenu(e) {
