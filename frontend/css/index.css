@@ -1,23 +1,23 @@
-.trackMenu {
+.routeMenu {
     list-style-type: none;
     padding-left: 0px;
 }
 
-.trackMenu .title {
+.routeMenu .title {
     font-weight: bold;
     margin-right: 11px;
 }
 
-.trackMenu li:nth-child(odd) {
+.routeMenu li:nth-child(odd) {
     background: #f0fcf0;
 }
 
-.trackMenu li a img {
+.routeMenu li a img {
     vertical-align: top;
     float: right;
 }
 
-.trackMenu li ul {
+.routeMenu li ul {
     list-style-type: none;
     padding-left: 0px;
 }
@@ -96,6 +96,9 @@ h2 {
     padding: 30px 40px 0px;
 }
 .photo-article img {
-    width: 100%;
     padding: 30px 40px 0px;
+}
+
+.track-type-select {
+    margin-left: 8px;
 }

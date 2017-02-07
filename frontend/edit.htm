@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="css/vex.css"/>
     <link rel="stylesheet" href="css/vex-theme-default.css"/>
     <link rel="stylesheet" href="css/jquery-te-1.4.0.css"/>
+    <link rel="stylesheet" href="./bootstrap-editable.css"/>
 </head>
 <body>
 <header class="navbar navbar-light navbar-static-top bd-navbar">
@@ -41,9 +42,7 @@
     </div>
 </header>
 
-<h2 id="title" style="display: inline;">Трек без названия</h2>
-<div
-        style="display: inline; padding-left: 7px; padding-bottom: 3px;"><img id="edit-title" src="img/edit.png"/></div>
+<h2 id="title" style="display: inline;" class="route-name-edit">Трек без названия</h2>
 <div style="height: 30px;"></div>
 <div class="container-fluid">
     <div class="row">
@@ -51,13 +50,7 @@
             <div id="map" style="witdh:800px; height: 400px; margin: 10px;"></div>
         </div>
         <div class="col-sm-4">
-            <label for="pathType">Тип трека</label>
-            <select id="pathType">
-                <option></option>
-                <option value="pd">Пеший</option>
-                <option value="bk">Вело</option>
-                <option value="ww">Вода</option>
-            </select>
+            <div id="trackList"></div>
         </div>
     </div>
     <div class="row">
@@ -73,6 +66,25 @@
     <textarea name="article" class="editorEx"></textarea>
 </div>
 
+<script type="text/x-jquery-tmpl" id="tracksMenuTemplate">
+        <ul>
+        {{each tracks}}
+            <li class='track-list-item'><span class="time">${$value.time}</span>
+            <span id="track-name-${$value.id}" class="track-name-edit">${$value.title}</span>
+            <span><select class="track-type-select" id="track-type-${$value.id}">
+                <option></option>
+                <option value="pd" {{if $value.type == "pd"}} selected="selected" {{/if}}>Пеший</option>
+                <option value="bk" {{if $value.type == "bk"}} selected="selected" {{/if}}>Вело</option>
+                <option value="ww" {{if $value.type == "ww"}} selected="selected" {{/if}}>Вода</option>
+            </select></span></li>
+        {{/each}}
+        </ul>
+
+
+
+
+</script>
+
 <script type="text/javascript" src="./js/jquery-3.1.1.min.js"></script>
 <script type="text/javascript" src="./js/jquery.tmpl.js"></script>
 <script type="text/javascript" src="./js/tether.min.js"></script>
@@ -81,9 +93,9 @@
 <script type="text/javascript" src="./js/jquery.json.js"></script>
 <script type="text/javascript" src="./js/vex.combined.min.js"></script>
 <script type="text/javascript" src="./js/jquery-te-1.4.0.min.js"></script>
+<script type="text/javascript" src="./js/bootstrap-editable.min.js"></script>
 
-<script type="text/javascript" src="http://jqueryte.com/js/jquery.snippet.min.js" charset="utf-8"></script>
-<script type="text/javascript" src="http://jqueryte.com/js/site.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js/jquery.snippet.min.js" charset="utf-8"></script>
 
 <script type="text/javascript" src="https://api-maps.yandex.ru/2.1/?lang=tr_TR"></script>
 <script type="text/javascript">
@@ -113,25 +125,46 @@
             controls: ["zoomControl", "fullscreenControl"]
         });
 
-        $.get(apiBase + '/track-editor-page?id=' + id, function (data) {
+        $.get(apiBase + '/route-editor-page?id=' + id, function (data) {
             page = $.parseJSON(data);
             $('#title').html(page.title);
-            $('#pathType').val(page.type)
-            myMap.setBounds(page.trackBounds);
-            for (var i in page.eventPoints) {
-                var eventPointId = page.eventPoints[i].id;
-                var content = page.eventPoints[i].content;
-                var type = page.eventPoints[i].type;
+            myMap.setBounds(page.bounds);
+            for (var i in page.points) {
+                var eventPointId = page.points[i].id;
+                var content = page.points[i].content;
+                var type = page.points[i].type;
                 var articleHtml = mkWrappedHtml(eventPointId, type, content);
 
                 $('#articles').append(articleHtml);
             }
+            $('#trackList').html('');
+            $('#tracksMenuTemplate').tmpl(page).appendTo('#trackList');
+            $('.track-type-select').on('change', function (e) {
+                updateTrackData($(e.target).attr("id").substring(11))
+            });
+            $.fn.editable.defaults.mode = 'inline';
+            $('.track-name-edit').editable({
+                type: 'text',
+                send: 'never',
+                showbuttons: false,
+                url: function (params) {
+                    updateTrackData(params.name.substring(11), params.value)
+                }
+            });
+            $('.route-name-edit').editable({
+                type: 'text',
+                send: 'never',
+                showbuttons: false,
+                url: function (params) {
+                    updateRouteData(params.value)
+                }
+            });
         });
 
         myMap.events.add('click', showMapMenu);
         myMap.events.add('contextmenu', showMapMenu);
 
-        objectManager = new ymaps.LoadingObjectManager(apiBase + '/single-track-tile?id=' + id, {
+        objectManager = new ymaps.LoadingObjectManager(apiBase + '/ymaps-single-route-tile?id=' + id, {
             geoObjectHasBalloon: false,
             splitRequests: true,
             geoObjectStrokeWidth: 3
@@ -142,26 +175,37 @@
         myMap.geoObjects.add(objectManager);
 
         $('body').on('input', '.monitored-img-url', throttle(fetchImgOptions, 1500));
-        $('#pathType').on('change', updateTrackData);
+
         $('#edit-title').on('click', function () {
             vex.dialog.prompt({
                 placeholder: 'Новое название',
                 value: $('#title').html(),
                 callback: function (value) {
                     $('#title').html(value);
-                    updateTrackData();
+                    updateRouteData();
                 }
             });
         })
     }
 
-    function updateTrackData() {
+    function updateRouteData(title) {
         $.ajax({
-            url: apiBase + '/track/' + id,
+            url: apiBase + '/route/' + id,
             type: 'PUT',
             data: {
-                type: $('#pathType').val(),
-                title: $('#title').html()
+                title: title ? title : $('#title').html()
+            }
+        }).done(function (data) {
+        });
+    }
+
+    function updateTrackData(trackId, titleOptional) {
+        $.ajax({
+            url: apiBase + '/track/' + trackId,
+            type: 'PUT',
+            data: {
+                type: $('#track-type-' + trackId).val(),
+                title: titleOptional ? titleOptional : $('#track-name-' + trackId).html()
             }
         }).done(function (data) {
         });

@@ -43,17 +43,22 @@
             <div id="map" style="witdh:800px; height: 600px; margin: 10px;"></div>
         </div>
         <div class="col-sm-4">
-            <ul id="tracks" class="trackMenu"></ul>
+            <ul id="routes" class="routeMenu"></ul>
         </div>
     </div>
 </div>
 
-<script type="text/x-jquery-tmpl" id="trackMenuTemplate">
+<script type="text/x-jquery-tmpl" id="routesMenuTemplate">
     <li>
         <span class="title">${title}</span><a href="./edit.htm?id=${id}"><img src="img/edit.png"/></a>
         <ul>
+        {{each tracks}}
+            <li class='track-list-item'><span class="time">${$value.time}</span> ${$value.title}</li>
+        {{/each}}
+        </ul>
+        <ul>
         {{each points}}
-            <li><span class="time">${$value.time}</span> ${$value.title}</li>
+            <li class='point-list-item'><span class="time">${$value.time}</span> ${$value.title}</li>
         {{/each}}
         </ul>
     </li>
@@ -74,9 +79,9 @@
     var myMap;
 
     function loadTrackList(bounds) {
-        $.get(apiBase + "/tracks?bbox=" + bounds.join(','), function (data) {
-            $('#tracks').html('');
-            $('#trackMenuTemplate').tmpl($.parseJSON(data)).appendTo('#tracks');
+        $.get(apiBase + "/visible-routes?bbox=" + bounds.join(','), function (data) {
+            $('#routes').html('');
+            $('#routesMenuTemplate').tmpl($.parseJSON(data)).appendTo('#routes');
         });
     }
 
@@ -96,7 +101,7 @@
             myMap.balloon.close()
         });
 
-        var objectManager = new ymaps.LoadingObjectManager(apiBase + '/tile?bbox=%b', {
+        var objectManager = new ymaps.LoadingObjectManager(apiBase + '/ymaps-tile?bbox=%b', {
             clusterHasBalloon: false,
             geoObjectOpenBalloonOnClick: false,
             geoObjectStrokeWidth: 3,

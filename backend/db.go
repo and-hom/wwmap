@@ -12,32 +12,27 @@ import (
 
 type TrackList []Track;
 
-func (t TrackList) withoutPath() TrackList {
-	newList := make([]Track, len(t))
-	for i := 0; i < len(t); i++ {
-		newList[i] = Track{
-			Id:t[i].Id,
-			Title:t[i].Title,
-			Points:t[i].Points,
-		}
-	}
-	return newList
-}
-
 type Storage interface {
-	getTrack(id int64) TrackList
-	getTracks(bbox Bbox) TrackList
+	FindTrackAsList(id int64) TrackList
+	FindTracksForRoute(routeId int64) TrackList
+	ListTracks(bbox Bbox) TrackList
 
-	AddTracks(track ...Track) error
+	FindRoute(id int64, route *Route) (bool, error)
+	ListRoutes(bbox Bbox) []Route
+	UpdateRoute(route Route) error
+	AddRoute(route Route) (int64, error)
+
+	AddTracks(routeId int64, track ...Track) error
 	UpdateTrack(track Track) error
-	FindTrack(id int64, track *Track) (bool, error) 
+	FindTrack(id int64, track *Track) (bool, error)
 
 	AddEventPoint(trackId int64, eventPoint EventPoint) (int64, error)
 	UpdateEventPoint(eventPoint EventPoint) error
 	DeleteEventPoint(id int64) error
 	FindEventPoint(id int64, eventPoint *EventPoint) (bool, error)
+	ListPoints(bbox Bbox) []EventPoint
+	FindEventPointsForRoute(routeId int64) []EventPoint
 }
-
 
 type postgresStorage struct {
 	db *sql.DB
@@ -53,8 +48,16 @@ func NewPostgresStorage() Storage {
 	}
 }
 
-func (s postgresStorage) getTrack(id int64) TrackList {
-	return s.getTracksInternal("t.id=$1", id)
+func (s postgresStorage) FindTrackAsList(id int64) TrackList {
+	return s.listTracksInternal("id=$1", id)
+}
+
+func (s postgresStorage) FindTracksForRoute(routeId int64) TrackList {
+	return s.listTracksInternal("route_id=$1", routeId)
+}
+
+func (s postgresStorage) ListTracks(bbox Bbox) TrackList {
+	return s.listTracksInternal("path && ST_MakeEnvelope($1,$2,$3,$4)", bbox.X1, bbox.Y1, bbox.X2, bbox.Y2)
 }
 
 func (s postgresStorage) FindTrack(id int64, track *Track) (bool, error) {
@@ -82,114 +85,102 @@ func (s postgresStorage) FindTrack(id int64, track *Track) (bool, error) {
 	return false, nil
 }
 
-func (s postgresStorage) getTracks(bbox Bbox) TrackList {
-	return s.getTracksInternal("path && ST_MakeEnvelope($1,$2,$3,$4)", bbox.X1, bbox.Y1, bbox.X2, bbox.Y2)
-}
-
-func (s postgresStorage) getTracksInternal(whereClause string, queryParams ...interface{}) TrackList {
-	rows, err := s.db.Query(`SELECT t.id, t.title, ST_AsGeoJSON(t.path) as path, t.type as type,
-	COALESCE(p.id, -1), COALESCE(p.type,''), COALESCE(p.title,''), COALESCE(p.content,''),
-	COALESCE(ST_AsGeoJSON(p.point),'') as point, COALESCE(p.time, now())
-	FROM track t LEFT OUTER JOIN point p ON t.id=p.track_id
-	WHERE ` + whereClause + `
-	ORDER BY t.id, p.time`, queryParams...)
+func (s postgresStorage) listTracksInternal(whereClause string, queryParams ...interface{}) TrackList {
+	rows, err := s.db.Query("SELECT id,type,title, ST_AsGeoJSON(path) as path FROM track WHERE " +
+		whereClause, queryParams...)
 	if err != nil {
-		log.Errorf("Can not load track list: %v", err)
+		log.Error("Can not load track list", err)
 		return []Track{}
 	}
 	defer rows.Close()
 
 	results := make([]Track, 0)
-	var current Track
-	var prevTrackId int64 = -1
-
 	for rows.Next() {
-		var id int64
-		var title string
-		var pathStr string
-		var t_type string
-		var p_id int64
-		var p_type string
-		var p_title string
-		var p_content string
-		var p_pointStr string
-		var p_time time.Time
+		id := int64(-1)
+		_type := ""
+		title := ""
+		pathStr := ""
+		rows.Scan(&id, &_type, &title, &pathStr)
 
-		err := rows.Scan(&id, &title, &pathStr, &t_type, &p_id, &p_type, &p_title, &p_content, &p_pointStr, &p_time)
+		track := Track{}
+		track.Id = id
+		track.Type, err = parseTrackType(_type)
 		if err != nil {
-			log.Fatal(err)
+			log.Error("Invalid track type", err)
+			return []Track{}
 		}
-
-		if prevTrackId != id {
-
-			if (prevTrackId > 0) {
-				results = append(results, current)
-			}
-
-			var path LineString
-			err := json.Unmarshal([]byte(pathStr), &path)
-			if err != nil {
-				log.Errorf("Can not parse path for track %s: %v", path, err)
-				continue
-			}
-
-			trackType, err := parseTrackType(t_type)
-			if err != nil {
-				log.Errorf("Can not parse track type for track %s: %v", id, err.Error())
-				continue
-			}
-
-			current = Track{
-				Id:id,
-				Title:title,
-				Points:make([]EventPoint, 0),
-				Path: path.Coordinates,
-				Type: trackType,
-			}
-			prevTrackId = id
-		}
-
-		if p_id < 0 {
+		var path LineString
+		err := json.Unmarshal([]byte(pathStr), &path)
+		if err != nil {
+			log.Errorf("Can not parse path for track %s: %v", path, err)
 			continue
 		}
+		track.Path = path.Coordinates
+		track.Title = title
 
-		var point PgPoint
-		err = json.Unmarshal([]byte(p_pointStr), &point)
-		if err != nil {
-			log.Errorf("Can not parse point for track %s: %v", p_pointStr, err)
-			continue
-		}
-		eventPointType, err := parseEventPointType(p_type)
-		if err != nil {
-			log.Errorf("Can not parse point type for track %s: %v", p_pointStr, err)
-			continue
-		}
-
-		current.Points = append(current.Points, EventPoint{
-			Id:p_id,
-			Type:eventPointType,
-			Title:p_title,
-			Content:p_content,
-			Time: JSONTime(p_time),
-			Point: point.Coordinates,
-		})
+		results = append(results, track)
 	}
-
-	if (prevTrackId > 0) {
-		results = append(results, current)
-	}
-
 	return results
 }
 
-func (s postgresStorage) AddTracks(tracks ...Track) error {
+func (s postgresStorage) FindRoute(id int64, route *Route) (bool, error) {
+	rows, err := s.db.Query("SELECT id,title FROM route WHERE id=$1", id)
+	if err != nil {
+		return false, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		id := int64(-1)
+		title := ""
+		rows.Scan(&id, &title)
+
+		route.Id = id
+		route.Title = title
+
+		return true, nil
+	}
+	return false, nil
+}
+
+func (s postgresStorage) ListRoutes(bbox Bbox) []Route {
+	return s.listRoutesInternal(`id in (SELECT route_id FROM track WHERE path && ST_MakeEnvelope($1,$2,$3,$4)
+	UNION ALL SELECT route_id FROM point WHERE point && ST_MakeEnvelope($1,$2,$3,$4))`,
+		bbox.X1, bbox.Y1, bbox.X2, bbox.Y2)
+}
+
+func (s postgresStorage) listRoutesInternal(whereClause string, queryParams ...interface{}) []Route {
+	rows, err := s.db.Query("SELECT id,title FROM route WHERE " +
+		whereClause, queryParams...)
+	if err != nil {
+		log.Error("Can not load route list", err)
+		return []Route{}
+	}
+	defer rows.Close()
+
+	results := make([]Route, 0)
+	for rows.Next() {
+		id := int64(-1)
+		title := ""
+		rows.Scan(&id, &title)
+
+		route := Route{}
+		route.Id = id
+		route.Title = title
+
+		results = append(results, route)
+	}
+	return results
+}
+
+func (s postgresStorage) AddTracks(routeId int64, tracks ...Track) error {
 	log.Info("Inserting tracks")
 	tx, err := s.db.Begin()
 	if err != nil {
 		return err
 	}
 
-	stmt, err := tx.Prepare("INSERT INTO track(title, path, type) VALUES ($1, ST_GeomFromGeoJSON($2), $3)")
+	stmt, err := tx.Prepare("INSERT INTO track(route_id, title, path, type) VALUES ($1 ,$2, ST_GeomFromGeoJSON($3), $4)")
 	if err != nil {
 		return err
 	}
@@ -202,7 +193,7 @@ func (s postgresStorage) AddTracks(tracks ...Track) error {
 		if err != nil {
 			return err
 		}
-		r, err := stmt.Exec(track.Title, string(pathBytes), string(track.Type))
+		r, err := stmt.Exec(routeId, track.Title, string(pathBytes), string(track.Type))
 		if err != nil {
 			return err
 		}
@@ -214,6 +205,77 @@ func (s postgresStorage) AddTracks(tracks ...Track) error {
 		return err
 	}
 	return tx.Commit()
+}
+
+func (s postgresStorage) UpdateRoute(route Route) error {
+	log.Info("Update route")
+	tx, err := s.db.Begin()
+	if err != nil {
+		return err
+	}
+
+	stmt, err := tx.Prepare("UPDATE route SET title=$2 WHERE id=$1")
+	if err != nil {
+		return err
+	}
+
+	result, err := stmt.Exec(route.Id, route.Title)
+	if err != nil {
+		return err
+	}
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected != 1 {
+		return fmt.Errorf("Updated %d rows for route %d", rowsAffected, route.Id)
+	}
+
+	err = stmt.Close()
+	if err != nil {
+		return err
+	}
+	return tx.Commit()
+}
+
+func (s postgresStorage) AddRoute(route Route) (int64, error) {
+	log.Info("Inserting event point")
+	tx, err := s.db.Begin()
+	if err != nil {
+		return -1, err
+	}
+
+	stmt, err := tx.Prepare("INSERT INTO route(title) VALUES($1) RETURNING id")
+	if err != nil {
+		return -1, err
+	}
+
+	rows, err := stmt.Query(route.Title)
+	if err != nil {
+		return -1, err
+	}
+
+	lastId := int64(-1)
+	for rows.Next() {
+		rows.Scan(&lastId)
+	}
+
+	err = rows.Close()
+	if err != nil {
+		return -1, err
+	}
+	err = stmt.Close()
+	if err != nil {
+		return -1, err
+	}
+	err = tx.Commit()
+	if err != nil {
+		return -1, err
+	}
+	if lastId < 0 {
+		return -1, errors.New("Not inserted")
+	}
+	return lastId, nil
 }
 
 func (s postgresStorage) UpdateTrack(track Track) error {
@@ -237,7 +299,7 @@ func (s postgresStorage) UpdateTrack(track Track) error {
 		return err
 	}
 	if rowsAffected != 1 {
-		return fmt.Errorf("Updated %d rows for event point %d", rowsAffected, track.Id)
+		return fmt.Errorf("Updated %d rows for track %d", rowsAffected, track.Id)
 	}
 
 	err = stmt.Close()
@@ -384,6 +446,56 @@ func (s postgresStorage)FindEventPoint(id int64, eventPoint *EventPoint) (bool, 
 		return true, nil
 	}
 	return false, nil
+}
+
+func (s postgresStorage) ListPoints(bbox Bbox) []EventPoint {
+	return s.listPointsInternal("point && ST_MakeEnvelope($1,$2,$3,$4)", bbox.X1, bbox.Y1, bbox.X2, bbox.Y2)
+}
+
+func (s postgresStorage) FindEventPointsForRoute(routeId int64) []EventPoint {
+	return s.listPointsInternal("route_id=$1", routeId)
+}
+
+func (s postgresStorage) listPointsInternal(whereClause string, queryParams ...interface{}) []EventPoint {
+	rows, err := s.db.Query("SELECT id, type, title, content, ST_AsGeoJSON(point) as point, time FROM point WHERE " +
+		whereClause, queryParams...)
+	if err != nil {
+		log.Error("Can not load point list", err)
+		return []EventPoint{}
+	}
+	defer rows.Close()
+
+	results := make([]EventPoint, 0)
+	for rows.Next() {
+		id := int64(-1)
+		_type := ""
+		title := ""
+		content := ""
+		t := time.Now() // any stub time
+		pointStr := ""
+		rows.Scan(&id, &_type, &title, &content, &pointStr, &t)
+
+		eventPoint := EventPoint{}
+		eventPoint.Id = id
+		eventPoint.Type, err = parseEventPointType(_type)
+		if err != nil {
+			log.Errorf("Can not parse point type %s for point %d: %v", _type, id, err)
+			continue
+		}
+		eventPoint.Title = title
+		eventPoint.Content = content
+
+		var pgPoint PgPoint
+		err = json.Unmarshal([]byte(pointStr), &pgPoint)
+		if err != nil {
+			log.Errorf("Can not parse point %s for point %d: %v", pointStr, id, err)
+			continue
+		}
+		eventPoint.Point = pgPoint.Coordinates
+		eventPoint.Time = JSONTime(t)
+		results = append(results, eventPoint)
+	}
+	return results
 }
 
 type PgPoint struct {

@@ -26,14 +26,16 @@ func TileHandler(w http.ResponseWriter, req *http.Request) {
 		onError500(w, err, "Can not parse bbox")
 		return
 	}
-	tracks := storage.getTracks(bbox)
-	features := TracksToYmaps(tracks)
-	log.Infof("Found %d", len(tracks))
+	tracks := storage.ListTracks(bbox)
+	points := storage.ListPoints(bbox)
 
-	w.Write(JsonpAnswer(callback, features, "{}"))
+	featureCollection := mkFeatureCollection(append(pointsToYmaps(points), tracksToYmaps(tracks)...))
+	log.Infof("Found %d", len(featureCollection.Features))
+
+	w.Write(JsonpAnswer(callback, featureCollection, "{}"))
 }
 
-func SingleTrackTileHandler(w http.ResponseWriter, req *http.Request) {
+func SingleRouteTileHandler(w http.ResponseWriter, req *http.Request) {
 	corsHeaders(w, "GET, OPTIONS")
 
 	callback := req.FormValue("callback")
@@ -42,13 +44,16 @@ func SingleTrackTileHandler(w http.ResponseWriter, req *http.Request) {
 		onError(w, err, "Can not parse id", http.StatusBadRequest)
 		return
 	}
-	track := storage.getTrack(id)
-	features := TracksToYmaps(track)
+	tracks := storage.FindTracksForRoute(id)
+	points := storage.FindEventPointsForRoute(id)
 
-	w.Write(JsonpAnswer(callback, features, "{}"))
+	featureCollection := mkFeatureCollection(append(pointsToYmaps(points), tracksToYmaps(tracks)...))
+	log.Infof("Found %d", len(featureCollection.Features))
+
+	w.Write(JsonpAnswer(callback, featureCollection, "{}"))
 }
 
-func SingleTrackBoundsHandler(w http.ResponseWriter, req *http.Request) {
+func RouteEditorPageHandler(w http.ResponseWriter, req *http.Request) {
 	corsHeaders(w, "GET, OPTIONS")
 
 	id, err := strconv.ParseInt(req.FormValue("id"), 10, 64)
@@ -56,35 +61,16 @@ func SingleTrackBoundsHandler(w http.ResponseWriter, req *http.Request) {
 		onError(w, err, "Can not parse id", http.StatusBadRequest)
 		return
 	}
-	tracks := storage.getTrack(id)
-	if len(tracks) > 0 {
-		bytes, err := json.Marshal(tracks[0].Bounds(true))
-		if err != nil {
-			onError500(w, err, "Can not serialize track")
-			return
-		}
-		w.Write(bytes)
-	} else {
-		onError500(w, err, "Track not found")
-	}
-}
-
-func TrackEditorPageHandler(w http.ResponseWriter, req *http.Request) {
-	corsHeaders(w, "GET, OPTIONS")
-
-	id, err := strconv.ParseInt(req.FormValue("id"), 10, 64)
-	if err != nil {
-		onError(w, err, "Can not parse id", http.StatusBadRequest)
-		return
-	}
-	tracks := storage.getTrack(id)
-	if len(tracks) > 0 {
-		track := tracks[0]
-		bytes, err := json.Marshal(TrackEditorPage{
-			Title:track.Title,
-			Type: track.Type,
-			TrackBounds: track.Bounds(true),
-			EventPoints: track.Points,
+	route := Route{}
+	found, err := storage.FindRoute(id, &route)
+	if found {
+		tracks := storage.FindTracksForRoute(route.Id)
+		points := storage.FindEventPointsForRoute(route.Id)
+		bytes, err := json.Marshal(RouteEditorPage{
+			Title:route.Title,
+			Bounds: Bounds(tracks, points),
+			Tracks: tracks,
+			EventPoints:points,
 		})
 		if err != nil {
 			onError500(w, err, "Can not serialize track")
@@ -126,7 +112,7 @@ func TrackPointsToClickHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	tracks := storage.getTrack(id)
+	tracks := storage.FindTrackAsList(id)
 	var t Track
 	if len(tracks) > 0 {
 		t = tracks[0]
@@ -164,7 +150,7 @@ func TrackPointsToClickHandler(w http.ResponseWriter, req *http.Request) {
 	w.Write(JsonpAnswer(callback, featureCollection, "{}"))
 }
 
-func TracksHandler(w http.ResponseWriter, req *http.Request) {
+func GetVisibleRoutes(w http.ResponseWriter, req *http.Request) {
 	corsHeaders(w, "GET")
 
 	bbox, err := NewBbox(req.FormValue("bbox"))
@@ -172,10 +158,22 @@ func TracksHandler(w http.ResponseWriter, req *http.Request) {
 		onError500(w, err, "Can not parse bbox")
 		return
 	}
-	tracks := storage.getTracks(bbox)
-	log.Infof("Found %d", len(tracks))
 
-	w.Write([]byte(JsonStr(tracks.withoutPath(), "[]")))
+	routes := storage.ListRoutes(bbox)
+	log.Infof("Found %d", len(routes))
+
+	routeInfos := make([]RouteEditorPage, len(routes))
+	for i := 0; i < len(routes); i++ {
+		route := routes[i]
+		routeInfos[i] = RouteEditorPage{
+			Id:route.Id,
+			Title:route.Title,
+			Tracks:storage.FindTracksForRoute(route.Id),
+			EventPoints:storage.FindEventPointsForRoute(route.Id),
+		}
+	}
+
+	w.Write([]byte(JsonStr(routeInfos, "[]")))
 }
 
 func JsonpAnswer(callback string, object interface{}, _default string) []byte {
@@ -191,7 +189,7 @@ func JsonStr(f interface{}, _default string) string {
 	return string(bytes)
 }
 
-func GetTrack(w http.ResponseWriter, r *http.Request) {
+func CorsGetOptionsStub(w http.ResponseWriter, r *http.Request) {
 	corsHeaders(w, "POST, GET, OPTIONS, PUT, DELETE")
 	// for cors only
 }
@@ -226,6 +224,54 @@ func EditTrack(w http.ResponseWriter, r *http.Request) {
 	writeTrackToResponse(id, w)
 }
 
+func EditRoute(w http.ResponseWriter, r *http.Request) {
+	corsHeaders(w, "POST, GET, OPTIONS, PUT, DELETE")
+	err := r.ParseForm()
+	if err != nil {
+		onError(w, err, "Can not parse form", http.StatusBadRequest)
+		return
+	}
+
+	pathParams := mux.Vars(r)
+	id, err := strconv.ParseInt(pathParams["id"], 10, 64)
+	if err != nil {
+		onError(w, err, "Can not parse id", http.StatusBadRequest)
+		return
+	}
+
+	route, err := parseRouteForm(w, r)
+	if err != nil {
+		onError(w, err, "Can not parse form", http.StatusBadRequest)
+		return
+	}
+	route.Id = id
+
+	err = storage.UpdateRoute(route)
+	if err != nil {
+		onError500(w, err, "Can not edit route	")
+		return
+	}
+	writeRouteToResponse(id, w)
+}
+
+func writeRouteToResponse(id int64, w http.ResponseWriter) {
+	route := Route{}
+	found, err := storage.FindRoute(id, &route)
+	if err != nil {
+		onError500(w, err, "Can not find")
+		return
+	}
+	if !found {
+		onError(w, fmt.Errorf("Route with id %d does not exist", id), "Not found", http.StatusNotFound)
+	}
+	bytes, err := json.Marshal(route)
+	if err != nil {
+		onError500(w, err, "Can not marshal")
+		return
+	}
+	w.Write(bytes)
+}
+
 func writeTrackToResponse(id int64, w http.ResponseWriter) {
 	track := Track{}
 	found, err := storage.FindTrack(id, &track)
@@ -234,7 +280,7 @@ func writeTrackToResponse(id int64, w http.ResponseWriter) {
 		return
 	}
 	if !found {
-		onError(w, fmt.Errorf("Point with id %d does not exist", id), "Not found", http.StatusNotFound)
+		onError(w, fmt.Errorf("Track with id %d does not exist", id), "Not found", http.StatusNotFound)
 	}
 	bytes, err := json.Marshal(track)
 	if err != nil {
@@ -257,6 +303,14 @@ func parseTrackForm(w http.ResponseWriter, r *http.Request) (Track, error) {
 	}
 
 	return track, nil
+}
+
+func parseRouteForm(w http.ResponseWriter, r *http.Request) (Route, error) {
+	title := r.FormValue("title")
+	route := Route{
+		Title:title,
+	}
+	return route, nil
 }
 
 func GetPoint(w http.ResponseWriter, r *http.Request) {
@@ -398,10 +452,19 @@ func UploadTrack(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//title := r.FormValue("title")
+	title := r.FormValue("title")
 	redirectTo := r.FormValue("redirect_to")
 	cookieDomain := r.FormValue("cookie_domain")
 	cookiePath := r.FormValue("cookie_path")
+
+	route := Route{
+		Title: title,
+	}
+	id,err := storage.AddRoute(route)
+	if err != nil {
+		onError500(w, err, "Can not create route")
+		return
+	}
 
 	file, _, err := r.FormFile("geo_file")
 	if err != nil {
@@ -419,7 +482,7 @@ func UploadTrack(w http.ResponseWriter, r *http.Request) {
 		onError500(w, err, "Bad geo data symantics")
 		return
 	}
-	err = storage.AddTracks(tracks...)
+	err = storage.AddTracks(id, tracks...)
 	if err != nil {
 		onError500(w, err, "Can not insert tracks")
 		return
@@ -531,15 +594,17 @@ func main() {
 	storage = NewPostgresStorage()
 
 	r := mux.NewRouter()
-	r.HandleFunc("/tile", TileHandler)
-	r.HandleFunc("/single-track-tile", SingleTrackTileHandler)
-	r.HandleFunc("/single-track-bounds", SingleTrackBoundsHandler)
-	r.HandleFunc("/track-editor-page", TrackEditorPageHandler)
-	r.HandleFunc("/track-active-areas/{id:[0-9]+}/{x:[0-9]+}/{y:[0-9]+}/{z:[0-9]+}", TrackPointsToClickHandler)
-	r.HandleFunc("/tracks", TracksHandler)
+	r.HandleFunc("/ymaps-tile", TileHandler)
+	r.HandleFunc("/ymaps-single-route-tile", SingleRouteTileHandler)
+	//r.HandleFunc("/track-active-areas/{id:[0-9]+}/{x:[0-9]+}/{y:[0-9]+}/{z:[0-9]+}", TrackPointsToClickHandler)
+	r.HandleFunc("/visible-routes", GetVisibleRoutes)
+
+	r.HandleFunc("/route/{id}", CorsGetOptionsStub).Methods("GET", "OPTIONS")
+	r.HandleFunc("/route/{id}", EditRoute).Methods("PUT")
+	r.HandleFunc("/route-editor-page", RouteEditorPageHandler)
 
 	r.HandleFunc("/track/{id}", EditTrack).Methods("PUT")
-	r.HandleFunc("/track/{id}", GetTrack).Methods("GET", "OPTIONS")
+	r.HandleFunc("/track/{id}", CorsGetOptionsStub).Methods("GET", "OPTIONS")
 
 	r.HandleFunc("/upload-track", UploadTrack).Methods("POST")
 
@@ -547,6 +612,7 @@ func main() {
 	r.HandleFunc("/point/{id}", EditPoint).Methods("PUT")
 	r.HandleFunc("/point/{id}", DelPoint).Methods("DELETE")
 	r.HandleFunc("/point/{id}", GetPoint).Methods("OPTIONS", "GET")
+
 	r.HandleFunc("/picture-metadata", PictureMetadataHandler).Methods("POST")
 
 	httpStr := fmt.Sprintf(":%d", 7007)

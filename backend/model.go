@@ -72,12 +72,13 @@ type EventPoint struct {
 type TrackType string;
 
 const (
+	UNKNOWN TrackType = ""
 	PEDESTRIAN TrackType = "pd"
 	BIKE TrackType = "bk"
 	WATER TrackType = "ww"
 )
 
-var TrackAvailableTypes []TrackType = []TrackType{PEDESTRIAN, BIKE, WATER}
+var TrackAvailableTypes []TrackType = []TrackType{PEDESTRIAN, BIKE, WATER, UNKNOWN}
 
 func parseTrackType(s string) (TrackType, error) {
 	for _, t := range TrackAvailableTypes {
@@ -89,14 +90,13 @@ func parseTrackType(s string) (TrackType, error) {
 }
 
 type Track struct {
-	Id     int64 `json:"id"`
-	Title  string `json:"title"`
-	Path   []Point `json:"path"`
-	Points []EventPoint `json:"points"` // points with articles
-	Type   TrackType `json:"type"`
+	Id    int64 `json:"id"`
+	Title string `json:"title"`
+	Path  []Point `json:"path"`
+	Type  TrackType `json:"type"`
 }
 
-func (this Track) Bounds(withEventPoints bool) Bbox {
+func (this Track) Bounds() Bbox {
 	if len(this.Path) == 0 {
 		return Bbox{-180, -90, 180, 90}
 	}
@@ -112,13 +112,39 @@ func (this Track) Bounds(withEventPoints bool) Bbox {
 		yMax = math.Max(yMax, p.lon)
 	}
 
-	if withEventPoints {
-		for _, ep := range this.Points {
-			xMin = math.Min(xMin, ep.Point.lat)
-			yMin = math.Min(yMin, ep.Point.lon)
-			xMax = math.Max(xMax, ep.Point.lat)
-			yMax = math.Max(yMax, ep.Point.lon)
-		}
+	return Bbox{
+		X1:xMin,
+		Y1:yMin,
+		X2:xMax,
+		Y2:yMax,
+	}
+}
+
+type Route struct {
+	Id     int64 `json:"id"`
+	Title  string `json:"title"`
+	Tracks []Track `json:"tracks"`
+	Points []EventPoint `json:"points"` // points with articles
+}
+
+func Bounds(tracks []Track, points []EventPoint) Bbox {
+	var xMin float64 = 180
+	var yMin float64 = 90
+	var xMax float64 = -180
+	var yMax float64 = -90
+
+	for _, tr := range tracks {
+		trackBounds := tr.Bounds()
+		xMin = math.Min(xMin, trackBounds.X1)
+		yMin = math.Min(yMin, trackBounds.Y1)
+		xMax = math.Max(xMax, trackBounds.X2)
+		yMax = math.Max(yMax, trackBounds.Y2)
+	}
+	for _, ep := range points {
+		xMin = math.Min(xMin, ep.Point.lat)
+		yMin = math.Min(yMin, ep.Point.lon)
+		xMax = math.Max(xMax, ep.Point.lat)
+		yMax = math.Max(yMax, ep.Point.lon)
 	}
 
 	return Bbox{
