@@ -1,5 +1,8 @@
 package main
 
+import . "github.com/and-hom/wwmap/backend/dao"
+import . "github.com/and-hom/wwmap/backend/geo"
+
 type RouteEditorPage struct {
 	Id int64 `json:"id,omitempty"`
 	Title string `json:"title"`

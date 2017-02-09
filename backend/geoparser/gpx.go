@@ -1,9 +1,11 @@
-package main
+package geoparser
 
 import (
 	gpx "github.com/ptrv/go-gpx"
 	log "github.com/Sirupsen/logrus"
 	"io"
+	. "github.com/and-hom/wwmap/backend/dao"
+	. "github.com/and-hom/wwmap/backend/geo"
 )
 
 type GpxParser struct {
@@ -21,7 +23,7 @@ func InitGpxParser(reader io.Reader) (*GpxParser, error) {
 	return &parser, nil
 }
 
-func (this GpxParser) getTracks() ([]Track, error) {
+func (this GpxParser) GetTracks() ([]Track, error) {
 	tracks := make([]Track, 0)
 
 	log.Infof("%d tracks detected", len(this.gpx_data.Tracks))
@@ -54,8 +56,8 @@ func convertWaypoints(wpts gpx.Waypoints) []Point {
 
 	for _, wpt := range wpts {
 		p := Point{
-			lat:wpt.Lat,
-			lon:wpt.Lon,
+			Lat:wpt.Lat,
+			Lon:wpt.Lon,
 		}
 		points = append(points, p)
 	}

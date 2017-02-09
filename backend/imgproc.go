@@ -7,6 +7,7 @@ import (
 	"github.com/rwcarlsen/goexif/mknote"
 	"time"
 	"fmt"
+	. "github.com/and-hom/wwmap/backend/geo"
 )
 
 type ImgProperties struct {
@@ -40,8 +41,8 @@ func addCoords(_exif *exif.Exif, imgData *ImgProperties) {
 	lat, lon, err := _exif.LatLong()
 	if err == nil {
 		point := Point{
-			lat:lon,
-			lon:lat,
+			Lat:lat,
+			Lon:lon,
 		}
 		imgData.Coords = &point
 	}

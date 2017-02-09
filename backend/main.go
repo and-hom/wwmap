@@ -13,6 +13,9 @@ import (
 	"strconv"
 	"time"
 	"io/ioutil"
+	. "github.com/and-hom/wwmap/backend/dao"
+	. "github.com/and-hom/wwmap/backend/geo"
+	. "github.com/and-hom/wwmap/backend/geoparser"
 )
 
 var storage Storage
@@ -29,7 +32,7 @@ func TileHandler(w http.ResponseWriter, req *http.Request) {
 	tracks := storage.ListTracks(bbox)
 	points := storage.ListPoints(bbox)
 
-	featureCollection := mkFeatureCollection(append(pointsToYmaps(points), tracksToYmaps(tracks)...))
+	featureCollection := MkFeatureCollection(append(pointsToYmaps(points), tracksToYmaps(tracks)...))
 	log.Infof("Found %d", len(featureCollection.Features))
 
 	w.Write(JsonpAnswer(callback, featureCollection, "{}"))
@@ -47,7 +50,7 @@ func SingleRouteTileHandler(w http.ResponseWriter, req *http.Request) {
 	tracks := storage.FindTracksForRoute(id)
 	points := storage.FindEventPointsForRoute(id)
 
-	featureCollection := mkFeatureCollection(append(pointsToYmaps(points), tracksToYmaps(tracks)...))
+	featureCollection :=MkFeatureCollection(append(pointsToYmaps(points), tracksToYmaps(tracks)...))
 	log.Infof("Found %d", len(featureCollection.Features))
 
 	w.Write(JsonpAnswer(callback, featureCollection, "{}"))
@@ -124,15 +127,15 @@ func TrackPointsToClickHandler(w http.ResponseWriter, req *http.Request) {
 
 	features := make([]Feature, 0)
 	for i, point := range track.Path {
-		tilePoint, tileX, tileY := toTileCoords(uint32(z), point)
+		tilePoint, tileX, tileY := ToTileCoords(uint32(z), point)
 		if x == tileX && y == tileY {
 			features = append(features, Feature{
 				Properties:FeatureProperties{
 					HotspotMetaData : HotspotMetaData{
 						Id:int64(i * 30 + int(z)),
 						RenderedGeometry: NewYRectangleInt([][]int{
-							{tilePoint.x - 15, tilePoint.y - 15, },
-							{tilePoint.x + 15, tilePoint.y + 15, },
+							{tilePoint.X - 15, tilePoint.Y - 15, },
+							{tilePoint.X + 15, tilePoint.Y + 15, },
 						}),
 					},
 				},
@@ -292,7 +295,7 @@ func writeTrackToResponse(id int64, w http.ResponseWriter) {
 
 func parseTrackForm(w http.ResponseWriter, r *http.Request) (Track, error) {
 	title := r.FormValue("title")
-	tType, err := parseTrackType(r.FormValue("type"))
+	tType, err := ParseTrackType(r.FormValue("type"))
 	if err != nil {
 		onError(w, err, "Can not parse form", http.StatusBadRequest)
 		return Track{}, err
@@ -396,12 +399,12 @@ func AddPoint(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	eventPoint, trackId, err := parsePointForm(w, r)
+	eventPoint, routeId, err := parsePointForm(w, r)
 	if err != nil {
 		return
 	}
 
-	id, err := storage.AddEventPoint(trackId, eventPoint)
+	id, err := storage.AddEventPoint(routeId, eventPoint)
 
 	if err != nil {
 		onError500(w, err, "Can not insert")
@@ -412,7 +415,7 @@ func AddPoint(w http.ResponseWriter, r *http.Request) {
 }
 
 func parsePointForm(w http.ResponseWriter, r *http.Request) (EventPoint, int64, error) {
-	trackId, err := strconv.ParseInt(r.FormValue("track_id"), 10, 64)
+	route_id, err := strconv.ParseInt(r.FormValue("route_id"), 10, 64)
 	if err != nil {
 		onError(w, err, "Can not parse form", http.StatusBadRequest)
 		return EventPoint{}, 0, err
@@ -420,7 +423,7 @@ func parsePointForm(w http.ResponseWriter, r *http.Request) (EventPoint, int64, 
 
 	title := r.FormValue("title")
 	content := r.FormValue("content")
-	pType, err := parseEventPointType(r.FormValue("type"))
+	pType, err := ParseEventPointType(r.FormValue("type"))
 	if err != nil {
 		onError(w, err, "Can not parse form", http.StatusBadRequest)
 		return EventPoint{}, 0, err
@@ -440,7 +443,7 @@ func parsePointForm(w http.ResponseWriter, r *http.Request) (EventPoint, int64, 
 		Time:JSONTime(time.Now()),
 	}
 
-	return eventPoint, trackId, nil
+	return eventPoint, route_id, nil
 }
 
 func UploadTrack(w http.ResponseWriter, r *http.Request) {
@@ -477,7 +480,7 @@ func UploadTrack(w http.ResponseWriter, r *http.Request) {
 		onError500(w, err, "Can not parse geo data")
 		return
 	}
-	tracks, err := parser.getTracks()
+	tracks, err := parser.GetTracks()
 	if err != nil {
 		onError500(w, err, "Bad geo data symantics")
 		return

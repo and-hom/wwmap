@@ -1,4 +1,4 @@
-package main
+package geoparser
 
 import (
 	"io"
@@ -7,6 +7,8 @@ import (
 	"strings"
 	"fmt"
 	"strconv"
+	. "github.com/and-hom/wwmap/backend/dao"
+	. "github.com/and-hom/wwmap/backend/geo"
 )
 
 type Kml struct {
@@ -100,7 +102,7 @@ func InitKmlParser(reader io.Reader) (*KmlParser, error) {
 	return &parser, nil
 }
 
-func (this KmlParser) getTracks() ([]Track, error) {
+func (this KmlParser) GetTracks() ([]Track, error) {
 	tracks := make([]Track, 0)
 
 	for _, folder := range this.kml_data.Document.Folders {
@@ -114,17 +116,17 @@ func (this KmlParser) getTracks() ([]Track, error) {
 					if len(coords) < 2 {
 						return nil, fmt.Errorf("Invalid coords %s", pointsStr)
 					}
-					x, err := strconv.ParseFloat(coords[1], 64)
-					if err != nil {
-						return nil, fmt.Errorf("Can not parse x: %s", pointsStr)
-					}
-					y, err := strconv.ParseFloat(coords[0], 64)
+					lon, err := strconv.ParseFloat(coords[0], 64)
 					if err != nil {
 						return nil, fmt.Errorf("Can not parse y: %s", pointsStr)
 					}
+					lat, err := strconv.ParseFloat(coords[1], 64)
+					if err != nil {
+						return nil, fmt.Errorf("Can not parse x: %s", pointsStr)
+					}
 					path[i] = Point{
-						lat:x,
-						lon:y,
+						Lat:lat,
+						Lon:lon,
 					}
 				}
 				tracks = append(tracks, Track{

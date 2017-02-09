@@ -1,37 +1,11 @@
-package main
+package dao
 
 import (
-	"bytes"
 	"fmt"
 	"time"
-	"encoding/json"
 	"math"
+	. "github.com/and-hom/wwmap/backend/geo"
 )
-
-type Point struct {
-	lat float64
-	lon float64
-}
-
-func (this Point) MarshalJSON() ([]byte, error) {
-	buffer := bytes.NewBufferString("[")
-	buffer.WriteString(fmt.Sprint(this.lat))
-	buffer.WriteString(",")
-	buffer.WriteString(fmt.Sprint(this.lon))
-	buffer.WriteString("]")
-	return buffer.Bytes(), nil
-}
-
-func (this *Point) UnmarshalJSON(data []byte) error {
-	arr := make([]float64, 2)
-	err := json.Unmarshal(data, &arr)
-	if (err != nil) {
-		return err
-	}
-	this.lat = arr[0]
-	this.lon = arr[1]
-	return nil
-}
 
 type JSONTime time.Time
 
@@ -51,7 +25,7 @@ const (
 
 var EventPointAvailableTypes []EventPointType = []EventPointType{PHOTO, VIDEO, POST}
 
-func parseEventPointType(s string) (EventPointType, error) {
+func ParseEventPointType(s string) (EventPointType, error) {
 	for _, t := range EventPointAvailableTypes {
 		if s == string(t) {
 			return t, nil
@@ -80,7 +54,7 @@ const (
 
 var TrackAvailableTypes []TrackType = []TrackType{PEDESTRIAN, BIKE, WATER, UNKNOWN}
 
-func parseTrackType(s string) (TrackType, error) {
+func ParseTrackType(s string) (TrackType, error) {
 	for _, t := range TrackAvailableTypes {
 		if s == string(t) {
 			return t, nil
@@ -106,10 +80,10 @@ func (this Track) Bounds() Bbox {
 	var yMax float64 = -90
 
 	for _, p := range this.Path {
-		xMin = math.Min(xMin, p.lat)
-		yMin = math.Min(yMin, p.lon)
-		xMax = math.Max(xMax, p.lat)
-		yMax = math.Max(yMax, p.lon)
+		xMin = math.Min(xMin, p.Lat)
+		yMin = math.Min(yMin, p.Lon)
+		xMax = math.Max(xMax, p.Lat)
+		yMax = math.Max(yMax, p.Lon)
 	}
 
 	return Bbox{
@@ -141,10 +115,10 @@ func Bounds(tracks []Track, points []EventPoint) Bbox {
 		yMax = math.Max(yMax, trackBounds.Y2)
 	}
 	for _, ep := range points {
-		xMin = math.Min(xMin, ep.Point.lat)
-		yMin = math.Min(yMin, ep.Point.lon)
-		xMax = math.Max(xMax, ep.Point.lat)
-		yMax = math.Max(yMax, ep.Point.lon)
+		xMin = math.Min(xMin, ep.Point.Lat)
+		yMin = math.Min(yMin, ep.Point.Lon)
+		xMax = math.Max(xMax, ep.Point.Lat)
+		yMax = math.Max(yMax, ep.Point.Lon)
 	}
 
 	return Bbox{
