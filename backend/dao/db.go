@@ -25,7 +25,8 @@ type Storage interface {
 	UpdateTrack(track Track) error
 	FindTrack(id int64, track *Track) (bool, error)
 
-	AddEventPoint(trackId int64, eventPoint EventPoint) (int64, error)
+	AddEventPoint(routeId int64, eventPoint EventPoint) (int64, error)
+	AddEventPoints(routeId int64, eventPoints ...EventPoint) error
 	UpdateEventPoint(eventPoint EventPoint) error
 	DeleteEventPoint(id int64) error
 	FindEventPoint(id int64, eventPoint *EventPoint) (bool, error)
@@ -142,6 +143,10 @@ func (s postgresStorage) listTracksInternal(whereClause string, queryParams ...i
 
 func (s postgresStorage) AddTracks(routeId int64, tracks ...Track) error {
 	log.Info("Inserting tracks")
+	vars := make([]interface{}, len(tracks))
+	for i, p := range tracks {
+		vars[i] = p
+	}
 	return s.performUpdates("INSERT INTO track(route_id, title, path, type) VALUES ($1 ,$2, ST_GeomFromGeoJSON($3), $4)", func(entity interface{}) ([]interface{}, error) {
 		t := entity.(Track)
 
@@ -152,8 +157,8 @@ func (s postgresStorage) AddTracks(routeId int64, tracks ...Track) error {
 		if err != nil {
 			return nil, err
 		}
-		return []interface{}{t.Id, t.Title, string(pathBytes), string(t.Type)}, nil;
-	}, tracks)
+		return []interface{}{routeId, t.Title, string(pathBytes), string(t.Type)}, nil;
+	}, vars...)
 }
 
 func (s postgresStorage) UpdateTrack(track Track) error {
@@ -163,6 +168,29 @@ func (s postgresStorage) UpdateTrack(track Track) error {
 			t := entity.(Track)
 			return []interface{}{t.Id, t.Title, string(t.Type)}, nil;
 		}, track)
+}
+
+func (s postgresStorage) AddEventPoints(routeId int64, eventPoints ...EventPoint) error {
+	log.Info("Inserting eventPoints")
+	vars := make([]interface{}, len(eventPoints))
+	for i, p := range eventPoints {
+		vars[i] = p
+	}
+	return s.performUpdates("INSERT INTO point(route_id, type, title, point, content, time) " +
+		"VALUES ($1, $2, $3, ST_GeomFromGeoJSON($4), $5, $6)",
+		func(entity interface{}) ([]interface{}, error) {
+			p := entity.(EventPoint)
+
+			pointBytes, err := json.Marshal(NewGeoPoint(p.Point))
+			if err != nil {
+				return nil, err
+			}
+			if err != nil {
+				return nil, err
+			}
+			return []interface{}{routeId, string(p.Type), p.Title,
+				string(pointBytes), p.Content, time.Time(p.Time)}, nil;
+		}, vars...)
 }
 
 func (s postgresStorage) AddEventPoint(routeId int64, eventPoint EventPoint) (int64, error) {
@@ -365,7 +393,6 @@ func (s postgresStorage)performUpdates(query string, mapper func(entity interfac
 		return err
 	}
 	for _, entity := range values {
-		log.Infof("Update %v", entity)
 		values, err := mapper(entity)
 		if err != nil {
 			log.Errorf("Can not update %v", err)

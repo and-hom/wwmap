@@ -133,7 +133,8 @@
                 var eventPointId = page.points[i].id;
                 var content = page.points[i].content;
                 var type = page.points[i].type;
-                var articleHtml = mkWrappedHtml(eventPointId, type, content);
+                var title = page.points[i].title;
+                var articleHtml = mkWrappedHtml(eventPointId, type, title, content);
 
                 $('#articles').append(articleHtml);
             }
@@ -353,34 +354,34 @@
             }
         }).done(function (data) {
             var pointData = $.parseJSON(data);
-            $('#article' + pointData.id).html(mkHtml(pointData.type, pointData.content))
+            $('#article' + pointData.id).html(mkHtml(pointData.title, pointData.type, pointData.content))
         });
     }
 
-    function mkWrappedHtml(id, type, content) {
-        return '<p id="article' + id + '" class="' + type + '-article">' + mkHtml(type, content) + "</p>"
+    function mkWrappedHtml(id, type, title, content) {
+        return '<p id="article' + id + '" class="' + type + '-article">' + mkHtml(title, type, content) + "</p>"
     }
 
-    function mkHtml(type, content) {
+    function mkHtml(title, type, content) {
         switch (type) {
             case VIDEO:
-                return mkVideoHtml(content);
+                return mkVideoHtml(title, content);
             case PHOTO:
-                return mkPhotoHtml(content);
+                return mkPhotoHtml(title, content);
             case POST:
-                return mkPostHtml(content);
+                return mkPostHtml(title, content);
         }
     }
 
-    function mkPostHtml(content) {
-        return content;
+    function mkPostHtml(title, content) {
+        return '<span class="article-title">' + title + '</span>&nbsp;&nbsp;' + content;
     }
 
-    function mkPhotoHtml(content) {
-        return '<img src="' + content + '"/>';
+    function mkPhotoHtml(title, content) {
+        return '<span class="article-title">' + title + '</span><img src="' + content + '"/>';
     }
 
-    function mkVideoHtml(content) {
+    function mkVideoHtml(title, content) {
         return 'Not supported yet';
     }
 

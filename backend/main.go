@@ -50,7 +50,7 @@ func SingleRouteTileHandler(w http.ResponseWriter, req *http.Request) {
 	tracks := storage.FindTracksForRoute(id)
 	points := storage.FindEventPointsForRoute(id)
 
-	featureCollection :=MkFeatureCollection(append(pointsToYmaps(points), tracksToYmaps(tracks)...))
+	featureCollection := MkFeatureCollection(append(pointsToYmaps(points), tracksToYmaps(tracks)...))
 	log.Infof("Found %d", len(featureCollection.Features))
 
 	w.Write(JsonpAnswer(callback, featureCollection, "{}"))
@@ -463,7 +463,7 @@ func UploadTrack(w http.ResponseWriter, r *http.Request) {
 	route := Route{
 		Title: title,
 	}
-	id,err := storage.AddRoute(route)
+	routeId, err := storage.AddRoute(route)
 	if err != nil {
 		onError500(w, err, "Can not create route")
 		return
@@ -480,12 +480,17 @@ func UploadTrack(w http.ResponseWriter, r *http.Request) {
 		onError500(w, err, "Can not parse geo data")
 		return
 	}
-	tracks, err := parser.GetTracks()
+	tracks, points, err := parser.GetTracksAndPoints()
 	if err != nil {
 		onError500(w, err, "Bad geo data symantics")
 		return
 	}
-	err = storage.AddTracks(id, tracks...)
+	err = storage.AddTracks(routeId, tracks...)
+	if err != nil {
+		onError500(w, err, "Can not insert tracks")
+		return
+	}
+	err = storage.AddEventPoints(routeId, points...)
 	if err != nil {
 		onError500(w, err, "Can not insert tracks")
 		return

@@ -9,6 +9,8 @@ import (
 	"strconv"
 	. "github.com/and-hom/wwmap/backend/dao"
 	. "github.com/and-hom/wwmap/backend/geo"
+	"time"
+	"github.com/Sirupsen/logrus"
 )
 
 type Kml struct {
@@ -86,6 +88,45 @@ type KmlParser struct {
 	kml_data Kml
 }
 
+type Point3 struct {
+	Lat float64
+	Lon float64
+	Alt float64
+}
+
+func (this *Point3) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf("%d,%d,%d", this.Lon, this.Lat, this.Alt)), nil
+}
+
+func (this *Point3) UnmarshalJSON(data []byte) error {
+	dataStr := string(data)
+	parts := strings.Split(dataStr, ",")
+	if len(parts) != 3 {
+		return fmt.Errorf("Invalid KML point format: %s", dataStr)
+	}
+	var err error
+	this.Lat, err = strconv.ParseFloat(strings.TrimSpace(parts[0]), 64)
+	if err != nil {
+		return err
+	}
+	this.Lon, err = strconv.ParseFloat(strings.TrimSpace(parts[1]), 64)
+	if err != nil {
+		return err
+	}
+	this.Alt, err = strconv.ParseFloat(strings.TrimSpace(parts[2]), 64)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (this *Point3) toPointSwappingLatLon() Point {
+	return Point{
+		Lat : this.Lon,
+		Lon : this.Lat,
+	}
+}
+
 func InitKmlParser(reader io.Reader) (*KmlParser, error) {
 	bytes, err := ioutil.ReadAll(reader)
 	if err != nil {
@@ -102,8 +143,9 @@ func InitKmlParser(reader io.Reader) (*KmlParser, error) {
 	return &parser, nil
 }
 
-func (this KmlParser) GetTracks() ([]Track, error) {
+func (this KmlParser) GetTracksAndPoints() ([]Track, []EventPoint, error) {
 	tracks := make([]Track, 0)
+	points := make([]EventPoint, 0)
 
 	for _, folder := range this.kml_data.Document.Folders {
 		for _, placemark := range folder.Placemarks {
@@ -114,15 +156,15 @@ func (this KmlParser) GetTracks() ([]Track, error) {
 				for i, pointStr := range pointsStr {
 					coords := strings.Split(pointStr, ",")
 					if len(coords) < 2 {
-						return nil, fmt.Errorf("Invalid coords %s", pointsStr)
+						return nil, nil, fmt.Errorf("Invalid coords %s", pointsStr)
 					}
 					lon, err := strconv.ParseFloat(coords[0], 64)
 					if err != nil {
-						return nil, fmt.Errorf("Can not parse y: %s", pointsStr)
+						return nil, nil, fmt.Errorf("Can not parse y: %s", pointsStr)
 					}
 					lat, err := strconv.ParseFloat(coords[1], 64)
 					if err != nil {
-						return nil, fmt.Errorf("Can not parse x: %s", pointsStr)
+						return nil, nil, fmt.Errorf("Can not parse x: %s", pointsStr)
 					}
 					path[i] = Point{
 						Lat:lat,
@@ -134,7 +176,23 @@ func (this KmlParser) GetTracks() ([]Track, error) {
 					Path:path,
 				})
 			}
+
+			if len(placemark.Point) != 0 {
+				point := Point3{}
+				err := point.UnmarshalJSON([]byte(placemark.Point))
+				if err != nil {
+					logrus.Infof("Can not parse point: %s", placemark.Point)
+					return nil, nil, err
+				}
+				points = append(points, EventPoint{
+					Title: placemark.Name,
+					Content: placemark.Description,
+					Type: POST,
+					Time: JSONTime(time.Now()),
+					Point: point.toPointSwappingLatLon(),
+				})
+			}
 		}
 	}
-	return tracks, nil
+	return tracks, points, nil
 }

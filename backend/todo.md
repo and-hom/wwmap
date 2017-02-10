@@ -1,6 +1,7 @@
 1. graphQL?
-2. points from kml/gpx
-3. refactoring
+3. refactoring: dao
 4. meteo-data
 5. hydro-data
 6. hosting
+7. remove tracks
+8. highlight selected tracks

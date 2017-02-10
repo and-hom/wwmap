@@ -23,12 +23,13 @@ func InitGpxParser(reader io.Reader) (*GpxParser, error) {
 	return &parser, nil
 }
 
-func (this GpxParser) GetTracks() ([]Track, error) {
+func (this GpxParser) GetTracksAndPoints() ([]Track, []EventPoint, error) {
 	tracks := make([]Track, 0)
+	points := make([]EventPoint, 0)
 
 	log.Infof("%d tracks detected", len(this.gpx_data.Tracks))
 	for _, trk := range this.gpx_data.Tracks {
-		log.Infof("Importing %s", trk.Name)
+		log.Infof("Importing track %s", trk.Name)
 		points := make([]Point, 0)
 		for _, seg := range trk.Segments {
 			points = append(points, convertWaypoints(seg.Waypoints)...)
@@ -40,6 +41,18 @@ func (this GpxParser) GetTracks() ([]Track, error) {
 		})
 	}
 
+	for _, wpt := range this.gpx_data.Waypoints {
+		log.Infof("Importing waypoint %s", wpt.Name)
+		points = append(points, EventPoint{
+			Title:wpt.Name,
+			Time:JSONTime(wpt.Time()),
+			Point:Point{
+				Lat:wpt.Lat,
+				Lon:wpt.Lon,
+			},
+		})
+	}
+
 	log.Infof("%d routes detected", len(this.gpx_data.Routes))
 	for _, route := range this.gpx_data.Routes {
 		log.Infof("Importing %s", route.Name)
@@ -48,7 +61,7 @@ func (this GpxParser) GetTracks() ([]Track, error) {
 			Path:convertWaypoints(route.Waypoints),
 		})
 	}
-	return tracks, nil
+	return tracks, points, nil
 }
 
 func convertWaypoints(wpts gpx.Waypoints) []Point {

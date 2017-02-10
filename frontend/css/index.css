@@ -99,6 +99,10 @@ h2 {
     padding: 30px 40px 0px;
 }
 
+.article-title {
+    font-weight: bold;
+}
+
 .track-type-select {
     margin-left: 8px;
 }
