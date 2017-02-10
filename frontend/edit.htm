@@ -43,6 +43,7 @@
 </header>
 
 <h2 id="title" style="display: inline;" class="route-name-edit">Трек без названия</h2>
+<img id="del-route" style="float:right; margin-right: 10px;" src="./img/del.png" width="32" height="32"/>
 <div style="height: 30px;"></div>
 <div class="container-fluid">
     <div class="row">
@@ -79,6 +80,7 @@
             </select></span></li>
         {{/each}}
         </ul>
+
 
 
 
@@ -187,6 +189,23 @@
                 }
             });
         })
+
+        $('#del-route').on('click', function () {
+            vex.dialog.confirm({
+                message: 'Удалить маршрут вместе со всеми треками и точками?',
+                callback: function (value) {
+                    if (value) {
+                        $.ajax({
+                            url: apiBase + '/route/' + id,
+                            type: 'DELETE',
+                            success: function (result) {
+                                window.location.href='./'
+                            }
+                        });
+                    }
+                }
+            });
+        });
     }
 
     function updateRouteData(title) {

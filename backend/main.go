@@ -257,6 +257,33 @@ func EditRoute(w http.ResponseWriter, r *http.Request) {
 	writeRouteToResponse(id, w)
 }
 
+func DelRoute(w http.ResponseWriter, r *http.Request) {
+	corsHeaders(w, "POST, GET, OPTIONS, PUT, DELETE")
+
+	pathParams := mux.Vars(r)
+	id, err := strconv.ParseInt(pathParams["id"], 10, 64)
+	if err != nil {
+		onError(w, err, "Can not parse id", http.StatusBadRequest)
+		return
+	}
+
+	err = storage.DeleteTracksForRoute(id)
+	if err != nil {
+		onError500(w, err, "Can not remove tracks")
+		return
+	}
+	err = storage.DeleteEventPointsForRoute(id)
+	if err != nil {
+		onError500(w, err, "Can not remove points")
+		return
+	}
+	err = storage.DeleteRoute(id)
+	if err != nil {
+		onError500(w, err, "Can not remove route")
+		return
+	}
+}
+
 func writeRouteToResponse(id int64, w http.ResponseWriter) {
 	route := Route{}
 	found, err := storage.FindRoute(id, &route)
@@ -609,6 +636,7 @@ func main() {
 
 	r.HandleFunc("/route/{id}", CorsGetOptionsStub).Methods("GET", "OPTIONS")
 	r.HandleFunc("/route/{id}", EditRoute).Methods("PUT")
+	r.HandleFunc("/route/{id}", DelRoute).Methods("DELETE")
 	r.HandleFunc("/route-editor-page", RouteEditorPageHandler)
 
 	r.HandleFunc("/track/{id}", EditTrack).Methods("PUT")

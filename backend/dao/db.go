@@ -20,15 +20,18 @@ type Storage interface {
 	ListRoutes(bbox Bbox) []Route
 	UpdateRoute(route Route) error
 	AddRoute(route Route) (int64, error)
+	DeleteRoute(id int64) error
 
 	AddTracks(routeId int64, track ...Track) error
 	UpdateTrack(track Track) error
 	FindTrack(id int64, track *Track) (bool, error)
+	DeleteTracksForRoute(routeId int64) error
 
 	AddEventPoint(routeId int64, eventPoint EventPoint) (int64, error)
 	AddEventPoints(routeId int64, eventPoints ...EventPoint) error
 	UpdateEventPoint(eventPoint EventPoint) error
 	DeleteEventPoint(id int64) error
+	DeleteEventPointsForRoute(routeId int64) error
 	FindEventPoint(id int64, eventPoint *EventPoint) (bool, error)
 	ListPoints(bbox Bbox) []EventPoint
 	FindEventPointsForRoute(routeId int64) []EventPoint
@@ -86,6 +89,13 @@ func (s postgresStorage) UpdateRoute(route Route) error {
 func (s postgresStorage) AddRoute(route Route) (int64, error) {
 	log.Info("Inserting route")
 	return s.insertReturningId("INSERT INTO route(title) VALUES($1) RETURNING id", route.Title)
+}
+
+func (s postgresStorage) DeleteRoute(id int64) error {
+	log.Infof("Delete route %s", id)
+	return s.performUpdates("DELETE FROM route WHERE id=$1", func(_id interface{}) ([]interface{}, error) {
+		return []interface{}{_id}, nil;
+	}, id)
 }
 
 func (s postgresStorage) FindTrack(id int64, track *Track) (bool, error) {
@@ -170,6 +180,13 @@ func (s postgresStorage) UpdateTrack(track Track) error {
 		}, track)
 }
 
+func (s postgresStorage) DeleteTracksForRoute(routeId int64) error {
+	log.Infof("Delete all tracks for route %s", routeId)
+	return s.performUpdates("DELETE FROM track WHERE route_id=$1", func(_id interface{}) ([]interface{}, error) {
+		return []interface{}{_id}, nil;
+	}, routeId)
+}
+
 func (s postgresStorage) AddEventPoints(routeId int64, eventPoints ...EventPoint) error {
 	log.Info("Inserting eventPoints")
 	vars := make([]interface{}, len(eventPoints))
@@ -221,14 +238,16 @@ func (s postgresStorage) UpdateEventPoint(eventPoint EventPoint) (error) {
 
 func (s postgresStorage) DeleteEventPoint(id int64) error {
 	log.Infof("Delete event point %s", id)
-	ch := make(chan []interface{})
-	go func() {
-		ch <- []interface{}{id}
-		close(ch)
-	}()
 	return s.performUpdates("DELETE FROM point WHERE id=$1", func(_id interface{}) ([]interface{}, error) {
 		return []interface{}{_id}, nil;
 	}, id)
+}
+
+func (s postgresStorage) DeleteEventPointsForRoute(routeId int64) error {
+	log.Infof("Delete all event points for route %s", routeId)
+	return s.performUpdates("DELETE FROM point WHERE route_id=$1", func(_id interface{}) ([]interface{}, error) {
+		return []interface{}{_id}, nil;
+	}, routeId)
 }
 
 func (s postgresStorage)FindEventPoint(id int64, eventPoint *EventPoint) (bool, error) {
