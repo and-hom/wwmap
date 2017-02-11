@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="css/vex-theme-default.css"/>
     <link rel="stylesheet" href="css/jquery-te-1.4.0.css"/>
     <link rel="stylesheet" href="./bootstrap-editable.css"/>
+    <script src="js/bootstrap.min.js"></script>
 </head>
 <body>
 <header class="navbar navbar-light navbar-static-top bd-navbar">
@@ -43,7 +44,8 @@
 </header>
 
 <h2 id="title" style="display: inline;" class="route-name-edit">Трек без названия</h2>
-<img id="del-route" style="float:right; margin-right: 10px;" src="./img/del.png" width="32" height="32"/>
+<img id="del-route" class="img-button" style="float:right; margin-right: 10px;" src="./img/del.png" width="32"
+     height="32"/>
 <div style="height: 30px;"></div>
 <div class="container-fluid">
     <div class="row">
@@ -70,16 +72,18 @@
 <script type="text/x-jquery-tmpl" id="tracksMenuTemplate">
         <ul>
         {{each tracks}}
-            <li class='track-list-item'><span class="time">${$value.time}</span>
+            <li class='track-list-item' id='track-item-${$value.id}'><span class="time">${$value.time}</span>
             <span id="track-name-${$value.id}" class="track-name-edit">${$value.title}</span>
             <span><select class="track-type-select" id="track-type-${$value.id}">
                 <option></option>
                 <option value="pd" {{if $value.type == "pd"}} selected="selected" {{/if}}>Пеший</option>
                 <option value="bk" {{if $value.type == "bk"}} selected="selected" {{/if}}>Вело</option>
                 <option value="ww" {{if $value.type == "ww"}} selected="selected" {{/if}}>Вода</option>
-            </select></span></li>
+            </select></span><span><img id="track-del-${$value.id}" class="img-button track-del" style="float:right; margin-right: 10px;" src="./img/del.png" width="16" height="16"/></span></li>
         {{/each}}
         </ul>
+
+
 
 
 
@@ -118,7 +122,7 @@
     var myMap;
     var objectManager;
 
-    vex.defaultOptions.className = 'vex-theme-default'
+    vex.defaultOptions.className = 'vex-theme-default';
 
     function init() {
         myMap = new ymaps.Map("map", {
@@ -154,6 +158,24 @@
                     updateTrackData(params.name.substring(11), params.value)
                 }
             });
+            $('.track-del').on('click', function (e) {
+                var trackId = $(e.target).attr("id").substring(10);
+
+                vex.dialog.confirm({
+                    message: 'Удалить трек ' + $('#track-name-' + trackId).html() + '?',
+                    callback: function (value) {
+                        if (value) {
+                            $.ajax({
+                                url: apiBase + '/track/' + trackId,
+                                type: 'DELETE',
+                                success: function (result) {
+                                    $('#track-item-' + trackId).remove()
+                                }
+                            });
+                        }
+                    }
+                });
+            });
             $('.route-name-edit').editable({
                 type: 'text',
                 send: 'never',
@@ -188,7 +210,7 @@
                     updateRouteData();
                 }
             });
-        })
+        });
 
         $('#del-route').on('click', function () {
             vex.dialog.confirm({
@@ -199,7 +221,7 @@
                             url: apiBase + '/route/' + id,
                             type: 'DELETE',
                             success: function (result) {
-                                window.location.href='./'
+                                window.location.href = './'
                             }
                         });
                     }

@@ -25,6 +25,7 @@ type Storage interface {
 	AddTracks(routeId int64, track ...Track) error
 	UpdateTrack(track Track) error
 	FindTrack(id int64, track *Track) (bool, error)
+	DeleteTrack(id int64) error
 	DeleteTracksForRoute(routeId int64) error
 
 	AddEventPoint(routeId int64, eventPoint EventPoint) (int64, error)
@@ -178,6 +179,13 @@ func (s postgresStorage) UpdateTrack(track Track) error {
 			t := entity.(Track)
 			return []interface{}{t.Id, t.Title, string(t.Type)}, nil;
 		}, track)
+}
+
+func (s postgresStorage) DeleteTrack(id int64) error {
+	log.Infof("Delete track %s", id)
+	return s.performUpdates("DELETE FROM track WHERE id=$1", func(_id interface{}) ([]interface{}, error) {
+		return []interface{}{_id}, nil;
+	}, id)
 }
 
 func (s postgresStorage) DeleteTracksForRoute(routeId int64) error {

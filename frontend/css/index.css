@@ -106,3 +106,7 @@ h2 {
 .track-type-select {
     margin-left: 8px;
 }
+
+.img-button {
+    cursor: pointer;
+}

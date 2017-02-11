@@ -227,6 +227,24 @@ func EditTrack(w http.ResponseWriter, r *http.Request) {
 	writeTrackToResponse(id, w)
 }
 
+func DelTrack(w http.ResponseWriter, r *http.Request) {
+	corsHeaders(w, "POST, GET, OPTIONS, PUT, DELETE")
+
+	pathParams := mux.Vars(r)
+	id, err := strconv.ParseInt(pathParams["id"], 10, 64)
+	if err != nil {
+		onError(w, err, "Can not parse id", http.StatusBadRequest)
+		return
+	}
+
+	err = storage.DeleteTrack(id)
+	if err != nil {
+		onError500(w, err, "Can not remove track")
+		return
+	}
+}
+
+
 func EditRoute(w http.ResponseWriter, r *http.Request) {
 	corsHeaders(w, "POST, GET, OPTIONS, PUT, DELETE")
 	err := r.ParseForm()
@@ -640,6 +658,7 @@ func main() {
 	r.HandleFunc("/route-editor-page", RouteEditorPageHandler)
 
 	r.HandleFunc("/track/{id}", EditTrack).Methods("PUT")
+	r.HandleFunc("/track/{id}", DelTrack).Methods("DELETE")
 	r.HandleFunc("/track/{id}", CorsGetOptionsStub).Methods("GET", "OPTIONS")
 
 	r.HandleFunc("/upload-track", UploadTrack).Methods("POST")
