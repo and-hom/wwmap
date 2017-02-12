@@ -11,4 +11,5 @@ type RouteEditorPage struct {
 	Bounds Bbox `json:"bounds"`
 	Tracks []Track `json:"tracks,omitempty"`
 	EventPoints []EventPoint `json:"points,omitempty"`
+	Category RouteCategory `json:"category"`
 }

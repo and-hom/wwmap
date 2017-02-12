@@ -94,7 +94,7 @@ type Point3 struct {
 	Alt float64
 }
 
-func (this *Point3) MarshalJSON() ([]byte, error) {
+func (this Point3) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf("%d,%d,%d", this.Lon, this.Lat, this.Alt)), nil
 }
 

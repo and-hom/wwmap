@@ -8,8 +8,7 @@
     <link rel="stylesheet" href="css/vex.css"/>
     <link rel="stylesheet" href="css/vex-theme-default.css"/>
     <link rel="stylesheet" href="css/jquery-te-1.4.0.css"/>
-    <link rel="stylesheet" href="./bootstrap-editable.css"/>
-    <script src="js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="css/bootstrap-editable.css"/>
 </head>
 <body>
 <header class="navbar navbar-light navbar-static-top bd-navbar">
@@ -44,6 +43,15 @@
 </header>
 
 <h2 id="title" style="display: inline;" class="route-name-edit">Трек без названия</h2>
+<select id="category" style="margin-left: 30px; padding: 0px 0px 0px 9px;">
+    <option/>
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="4">4</option>
+    <option value="5">5</option>
+    <option value="6">6</option>
+</select>
 <img id="del-route" class="img-button" style="float:right; margin-right: 10px;" src="./img/del.png" width="32"
      height="32"/>
 <div style="height: 30px;"></div>
@@ -92,6 +100,7 @@
 
 
 
+
 </script>
 
 <script type="text/javascript" src="./js/jquery-3.1.1.min.js"></script>
@@ -124,7 +133,7 @@
     ymaps.ready(init);
     var myMap;
     var objectManager;
-    var trackHighlighter = {val:null};
+    var trackHighlighter = {val: null};
 
     vex.defaultOptions.className = 'vex-theme-default';
 
@@ -138,6 +147,7 @@
         $.get(apiBase + '/route-editor-page?id=' + id, function (data) {
             page = $.parseJSON(data);
             $('#title').html(page.title);
+            $('#category').val(page.category)
             myMap.setBounds(page.bounds);
             for (var i in page.points) {
                 var eventPointId = page.points[i].id;
@@ -188,6 +198,9 @@
                     updateRouteData(params.value)
                 }
             });
+            $('#category').on("change", function () {
+                updateRouteData()
+            })
 
 
             addMouseOverOutHighliterListeners('.track-list-item', '.track-geodata', 'track-list-item-selected', function (geoData) {
@@ -250,7 +263,8 @@
             url: apiBase + '/route/' + id,
             type: 'PUT',
             data: {
-                title: title ? title : $('#title').html()
+                title: title ? title : $('#title').html(),
+                category: $('#category').val()
             }
         }).done(function (data) {
         });

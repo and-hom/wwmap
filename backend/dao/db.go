@@ -53,8 +53,17 @@ func NewPostgresStorage() Storage {
 }
 
 func (s postgresStorage) FindRoute(id int64, route *Route) (bool, error) {
-	return s.doFind("SELECT id,title FROM route WHERE id=$1", func(rows *sql.Rows) error {
-		rows.Scan(&(route.Id), &(route.Title))
+	return s.doFind("SELECT id,title,COALESCE(category,'') FROM route WHERE id=$1", func(rows *sql.Rows) error {
+		var categoryStr string
+		var err error
+		err = rows.Scan(&(route.Id), &(route.Title), &categoryStr)
+		if err != nil {
+			return err
+		}
+		err = route.Category.UnmarshalJSON([]byte(categoryStr))
+		if err != nil {
+			return err
+		}
 		return nil
 	}, id)
 }
@@ -66,10 +75,20 @@ func (s postgresStorage) ListRoutes(bbox Bbox) []Route {
 }
 
 func (s postgresStorage) listRoutesInternal(whereClause string, queryParams ...interface{}) []Route {
-	result, err := s.doFindList("SELECT id,title FROM route WHERE " + whereClause,
+	result, err := s.doFindList("SELECT id,title,COALESCE(category,'') FROM route WHERE " + whereClause,
 		func(rows *sql.Rows) (Route, error) {
+			var err error
 			route := Route{}
-			rows.Scan(&(route.Id), &(route.Title))
+			var categoryStr string
+			err = rows.Scan(&(route.Id), &(route.Title), &categoryStr)
+			if err != nil {
+				return Route{}, err
+			}
+			err = route.Category.UnmarshalJSON([]byte(categoryStr))
+			if err != nil {
+				return Route{}, err
+			}
+			log.Errorf("%v", route)
 			return route, nil
 		}, queryParams...)
 	if err != nil {
@@ -80,16 +99,24 @@ func (s postgresStorage) listRoutesInternal(whereClause string, queryParams ...i
 }
 
 func (s postgresStorage) UpdateRoute(route Route) error {
-	return s.performUpdates("UPDATE route SET title=$2 WHERE id=$1",
+	return s.performUpdates("UPDATE route SET title=$2, category=$3 WHERE id=$1",
 		func(entity interface{}) ([]interface{}, error) {
 			r := entity.(Route)
-			return []interface{}{r.Id, r.Title}, nil;
+			catJson, err := r.Category.MarshalJSON()
+			if err != nil {
+				return nil, err
+			}
+			return []interface{}{r.Id, r.Title, catJson}, nil;
 		}, route)
 }
 
 func (s postgresStorage) AddRoute(route Route) (int64, error) {
 	log.Info("Inserting route")
-	return s.insertReturningId("INSERT INTO route(title) VALUES($1) RETURNING id", route.Title)
+	categoryBytes, err := route.Category.MarshalJSON()
+	if err != nil {
+		return -1, err
+	}
+	return s.insertReturningId("INSERT INTO route(title,category) VALUES($1,$2) RETURNING id", route.Title, string(categoryBytes))
 }
 
 func (s postgresStorage) DeleteRoute(id int64) error {
@@ -364,9 +391,10 @@ func (s postgresStorage)doFindList(query string, callback interface{}, args ...i
 
 	for rows.Next() {
 		val := funcValue.Call([]reflect.Value{reflect.ValueOf(rows)})
-		//obj, err := callback(rows)
-		if err == nil {
+		if val[1].Interface() == nil {
 			result = reflect.Append(result, val[0])
+		} else {
+			log.Error(val[1])
 		}
 	}
 	return result.Interface(), nil

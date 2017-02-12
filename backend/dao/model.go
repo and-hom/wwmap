@@ -5,6 +5,9 @@ import (
 	"time"
 	"math"
 	. "github.com/and-hom/wwmap/backend/geo"
+	"regexp"
+	"strconv"
+	"strings"
 )
 
 type JSONTime time.Time
@@ -64,11 +67,11 @@ func ParseTrackType(s string) (TrackType, error) {
 }
 
 type Track struct {
-	Id    int64 `json:"id"`
-	Title string `json:"title"`
-	Path  []Point `json:"path"`
-	Length  float64 `json:"length"`
-	Type  TrackType `json:"type"`
+	Id     int64 `json:"id"`
+	Title  string `json:"title"`
+	Path   []Point `json:"path"`
+	Length float64 `json:"length"`
+	Type   TrackType `json:"type"`
 }
 
 func (this Track) Bounds() Bbox {
@@ -95,11 +98,47 @@ func (this Track) Bounds() Bbox {
 	}
 }
 
+type RouteCategory struct {
+	Category int
+	Sub      string
+}
+
+func (this RouteCategory) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf("%d%s", this.Category, this.Sub)), nil
+}
+
+func (this *RouteCategory) UnmarshalJSON(data []byte) error {
+	dataStr := string(data)
+	if len(strings.TrimSpace(dataStr)) == 0 {
+		// no category specified
+		return nil
+	}
+
+	re := regexp.MustCompile("^(\\d+)([A-Za-z]+)?$")
+	var err error
+
+	match := re.FindStringSubmatch(dataStr)
+	if match == nil {
+		return fmt.Errorf("Can not parse route category: %s", dataStr)
+	}
+	this.Category, err = strconv.Atoi(match[1])
+	if err != nil {
+		return err
+	}
+	if len(match) >= 3 {
+		this.Sub = match[2]
+	} else {
+		this.Sub = ""
+	}
+	return nil
+}
+
 type Route struct {
-	Id     int64 `json:"id"`
-	Title  string `json:"title"`
-	Tracks []Track `json:"tracks"`
-	Points []EventPoint `json:"points"` // points with articles
+	Id       int64 `json:"id"`
+	Title    string `json:"title"`
+	Tracks   []Track `json:"tracks"`
+	Points   []EventPoint `json:"points"` // points with articles
+	Category RouteCategory `json:"category"`
 }
 
 func Bounds(tracks []Track, points []EventPoint) Bbox {

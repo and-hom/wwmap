@@ -74,6 +74,7 @@ func RouteEditorPageHandler(w http.ResponseWriter, req *http.Request) {
 			Bounds: Bounds(tracks, points),
 			Tracks: tracks,
 			EventPoints:points,
+			Category:route.Category,
 		})
 		if err != nil {
 			onError500(w, err, "Can not serialize track")
@@ -173,6 +174,7 @@ func GetVisibleRoutes(w http.ResponseWriter, req *http.Request) {
 			Title:route.Title,
 			Tracks:storage.FindTracksForRoute(route.Id),
 			EventPoints:storage.FindEventPointsForRoute(route.Id),
+			Category: route.Category,
 		}
 	}
 
@@ -243,7 +245,6 @@ func DelTrack(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
-
 
 func EditRoute(w http.ResponseWriter, r *http.Request) {
 	corsHeaders(w, "POST, GET, OPTIONS, PUT, DELETE")
@@ -355,8 +356,14 @@ func parseTrackForm(w http.ResponseWriter, r *http.Request) (Track, error) {
 
 func parseRouteForm(w http.ResponseWriter, r *http.Request) (Route, error) {
 	title := r.FormValue("title")
+	category := RouteCategory{}
+	err := json.Unmarshal([]byte(r.FormValue("category")), &category)
+	if err != nil {
+		return Route{}, err
+	}
 	route := Route{
 		Title:title,
+		Category: category,
 	}
 	return route, nil
 }
