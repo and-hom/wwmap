@@ -100,10 +100,10 @@ func (s postgresStorage) DeleteRoute(id int64) error {
 }
 
 func (s postgresStorage) FindTrack(id int64, track *Track) (bool, error) {
-	return s.doFind("SELECT id,type,title FROM track WHERE id=$1", func(rows *sql.Rows) error {
+	return s.doFind("SELECT id,type,title, length FROM track WHERE id=$1", func(rows *sql.Rows) error {
 		var err error
 		_type := ""
-		rows.Scan(&(track.Id), &_type, &(track.Title))
+		rows.Scan(&(track.Id), &_type, &(track.Title), &(track.Length))
 
 		track.Type, err = ParseTrackType(_type)
 		return err
@@ -123,13 +123,13 @@ func (s postgresStorage) ListTracks(bbox Bbox) []Track {
 }
 
 func (s postgresStorage) listTracksInternal(whereClause string, queryParams ...interface{}) []Track {
-	result, err := s.doFindList("SELECT id,type,title, ST_AsGeoJSON(path) as path FROM track WHERE " + whereClause,
+	result, err := s.doFindList("SELECT id,type,title, ST_AsGeoJSON(path) as path, length FROM track WHERE " + whereClause,
 		func(rows *sql.Rows) (Track, error) {
 			var err error
 			var _type string
 			var pathStr string
 			track := Track{}
-			rows.Scan(&(track.Id), &_type, &(track.Title), &pathStr)
+			rows.Scan(&(track.Id), &_type, &(track.Title), &pathStr, &(track.Length))
 
 			track.Type, err = ParseTrackType(_type)
 			if err != nil {
@@ -158,18 +158,20 @@ func (s postgresStorage) AddTracks(routeId int64, tracks ...Track) error {
 	for i, p := range tracks {
 		vars[i] = p
 	}
-	return s.performUpdates("INSERT INTO track(route_id, title, path, type) VALUES ($1 ,$2, ST_GeomFromGeoJSON($3), $4)", func(entity interface{}) ([]interface{}, error) {
-		t := entity.(Track)
+	return s.performUpdates(`INSERT INTO track(route_id, title, path, length, type)
+	VALUES ($1 ,$2, ST_GeomFromGeoJSON($3),ST_Length(ST_GeomFromGeoJSON($3)::geography), $4)`,
+		func(entity interface{}) ([]interface{}, error) {
+			t := entity.(Track)
 
-		pathBytes, err := json.Marshal(LineString{
-			Coordinates:t.Path,
-			Type:LINE_STRING,
-		})
-		if err != nil {
-			return nil, err
-		}
-		return []interface{}{routeId, t.Title, string(pathBytes), string(t.Type)}, nil;
-	}, vars...)
+			pathBytes, err := json.Marshal(LineString{
+				Coordinates:t.Path,
+				Type:LINE_STRING,
+			})
+			if err != nil {
+				return nil, err
+			}
+			return []interface{}{routeId, t.Title, string(pathBytes), string(t.Type)}, nil;
+		}, vars...)
 }
 
 func (s postgresStorage) UpdateTrack(track Track) error {

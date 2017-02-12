@@ -56,7 +56,7 @@
         <ul>
         {{each tracks}}
             <li class='track-list-item' id='track-list-item-${$value.title.id}'>
-            <span class="time">${$value.time}</span> ${$value.title}
+            ${$value.title} <span class="track-length">${Math.round(($value.length)/1000)}&nbsp;км</span>
             <div class="track-geodata" style="display:none">${JSON.stringify($value.path)}</div></li>
         {{/each}}
         </ul>

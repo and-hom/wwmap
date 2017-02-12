@@ -116,6 +116,14 @@ h2 {
     cursor: default;
 }
 
+.track-list-item span {
+    padding-right: 10px !important;
+}
+
+.track-list-item .track-length {
+    font-color:gray; font-size:80%; float:right;
+}
+
 .point-list-item {
     cursor: pointer;
 }
