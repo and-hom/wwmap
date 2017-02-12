@@ -79,7 +79,8 @@
                 <option value="pd" {{if $value.type == "pd"}} selected="selected" {{/if}}>Пеший</option>
                 <option value="bk" {{if $value.type == "bk"}} selected="selected" {{/if}}>Вело</option>
                 <option value="ww" {{if $value.type == "ww"}} selected="selected" {{/if}}>Вода</option>
-            </select></span><span><img id="track-del-${$value.id}" class="img-button track-del" style="float:right; margin-right: 10px;" src="./img/del.png" width="16" height="16"/></span></li>
+            </select></span><span><img id="track-del-${$value.id}" class="img-button track-del" style="float:right; margin-right: 10px;" src="./img/del.png" width="16" height="16"/></span>
+            <div class="track-geodata" style="display:none">${JSON.stringify($value.path)}</div></li>
         {{/each}}
         </ul>
 
@@ -100,8 +101,8 @@
 <script type="text/javascript" src="./js/vex.combined.min.js"></script>
 <script type="text/javascript" src="./js/jquery-te-1.4.0.min.js"></script>
 <script type="text/javascript" src="./js/bootstrap-editable.min.js"></script>
-
 <script type="text/javascript" src="./js/jquery.snippet.min.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js/index.js" charset="utf-8"></script>
 
 <script type="text/javascript" src="https://api-maps.yandex.ru/2.1/?lang=tr_TR"></script>
 <script type="text/javascript">
@@ -121,6 +122,7 @@
     ymaps.ready(init);
     var myMap;
     var objectManager;
+    var trackHighlighter = {val:null};
 
     vex.defaultOptions.className = 'vex-theme-default';
 
@@ -184,6 +186,17 @@
                     updateRouteData(params.value)
                 }
             });
+
+
+            addMouseOverOutHighliterListeners('.track-list-item', '.track-geodata', 'track-list-item-selected', function (geoData) {
+                return new ymaps.Polyline(
+                        geoData, {},
+                        {
+                            strokeColor: 'ff0000ff',
+                            strokeWidth: 3
+                        }
+                );
+            }, trackHighlighter);
         });
 
         myMap.events.add('click', showMapMenu);
@@ -251,17 +264,6 @@
             }
         }).done(function (data) {
         });
-    }
-
-    function throttle(func, interval) {
-        var lastCall = 0;
-        return function (args) {
-            var now = Date.now();
-            if (lastCall + interval < now) {
-                lastCall = now;
-                return func(args);
-            }
-        };
     }
 
     function showMapMenu(e) {

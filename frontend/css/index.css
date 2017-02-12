@@ -95,6 +95,7 @@ h2 {
     width: 100%;
     padding: 30px 40px 0px;
 }
+
 .photo-article img {
     padding: 30px 40px 0px;
 }
@@ -109,4 +110,16 @@ h2 {
 
 .img-button {
     cursor: pointer;
+}
+
+.track-list-item {
+    cursor: default;
+}
+
+.point-list-item {
+    cursor: pointer;
+}
+
+.track-list-item-selected, .point-list-item-selected {
+    background: #f3c17a !important;
 }

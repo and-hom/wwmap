@@ -11,7 +11,9 @@
     <div class="container">
         <nav>
             <div class="clearfix">
-                <button class="navbar-toggler float-xs-right hidden-sm-up" type="button" data-toggle="collapse" data-target="#bd-main-nav" aria-controls="bd-main-nav" aria-expanded="false" aria-label="Toggle navigation"></button>
+                <button class="navbar-toggler float-xs-right hidden-sm-up" type="button" data-toggle="collapse"
+                        data-target="#bd-main-nav" aria-controls="bd-main-nav" aria-expanded="false"
+                        aria-label="Toggle navigation"></button>
                 <a class="navbar-brand hidden-sm-up" href="/">
                     Home
                 </a>
@@ -53,15 +55,21 @@
         <span class="title">${title}</span><a href="./edit.htm?id=${id}"><img src="img/edit.png"/></a>
         <ul>
         {{each tracks}}
-            <li class='track-list-item'><span class="time">${$value.time}</span> ${$value.title}</li>
+            <li class='track-list-item' id='track-list-item-${$value.title.id}'>
+            <span class="time">${$value.time}</span> ${$value.title}
+            <div class="track-geodata" style="display:none">${JSON.stringify($value.path)}</div></li>
         {{/each}}
         </ul>
         <ul>
         {{each points}}
-            <li class='point-list-item'><span class="time">${$value.time}</span> ${$value.title}</li>
+            <li class='point-list-item'><span class="time">${$value.time}</span> ${$value.title}
+            <div class="point-geodata" style="display:none">${JSON.stringify($value.point)}</div></li>
         {{/each}}
         </ul>
     </li>
+
+
+
 </script>
 
 <script type="text/javascript" src="./js/jquery-3.1.1.min.js"></script>
@@ -70,6 +78,7 @@
 <script type="text/javascript" src="./js/bootstrap.min.js"></script>
 <script type="text/javascript" src="./js/jquery.cookie.js"></script>
 <script type="text/javascript" src="./js/jquery.json.js"></script>
+<script type="text/javascript" src="./js/index.js"></script>
 <script type="text/javascript" src="https://api-maps.yandex.ru/2.1/?lang=tr_TR"></script>
 <script type="text/javascript">
     const LAST_POS_COOKIE_NAME = "last-map-pos";
@@ -77,6 +86,8 @@
 
     ymaps.ready(init);
     var myMap;
+    var trackHighlighter = {val:null};
+    var pointHighlighter = {val:null};
 
     function loadTrackList(bounds) {
         $.get(apiBase + "/visible-routes?bbox=" + bounds.join(','), function (data) {
@@ -115,6 +126,37 @@
         myMap.geoObjects.add(objectManager);
 
         loadTrackList(myMap.getBounds())
+
+
+        addMouseOverOutHighliterListeners('.track-list-item', '.track-geodata', 'track-list-item-selected', function (geoData) {
+            return new ymaps.Polyline(
+                    geoData, {},
+                    {
+                        strokeColor: 'ff0000ff',
+                        strokeWidth: 3
+                    }
+            );
+        }, trackHighlighter);
+        addMouseOverOutHighliterListeners('.point-list-item', '.point-geodata', 'point-list-item-selected', function (geoData) {
+            return new ymaps.Placemark(
+                    geoData,
+                    {},
+                    {
+                        preset: 'islands#redBookIcon',
+                        zIndex: 3000
+                    }
+            );
+        }, pointHighlighter);
+
+
+        $(document).on('click', '.point-list-item', function (obj) {
+            var geodataDiv = $(obj.target).find(".point-geodata")
+            if (geodataDiv.length) {
+                var geodataStr = geodataDiv.html();
+                var geodata = $.parseJSON(geodataStr);
+                myMap.setCenter(geodata);
+            }
+        });
     }
 
     function lastPosition() {
