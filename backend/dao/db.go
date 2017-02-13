@@ -21,6 +21,8 @@ type Storage interface {
 	UpdateRoute(route Route) error
 	AddRoute(route Route) (int64, error)
 	DeleteRoute(id int64) error
+	ListUnExportedRoutes(limit int) ([]Route, error)
+	MarkRouteExported(id int64) error
 
 	AddTracks(routeId int64, track ...Track) error
 	UpdateTrack(track Track) error
@@ -88,7 +90,6 @@ func (s postgresStorage) listRoutesInternal(whereClause string, queryParams ...i
 			if err != nil {
 				return Route{}, err
 			}
-			log.Errorf("%v", route)
 			return route, nil
 		}, queryParams...)
 	if err != nil {
@@ -99,7 +100,7 @@ func (s postgresStorage) listRoutesInternal(whereClause string, queryParams ...i
 }
 
 func (s postgresStorage) UpdateRoute(route Route) error {
-	return s.performUpdates("UPDATE route SET title=$2, category=$3 WHERE id=$1",
+	return s.performUpdates("UPDATE route SET title=$2, category=$3, exported=false WHERE id=$1",
 		func(entity interface{}) ([]interface{}, error) {
 			r := entity.(Route)
 			catJson, err := r.Category.MarshalJSON()
@@ -124,6 +125,17 @@ func (s postgresStorage) DeleteRoute(id int64) error {
 	return s.performUpdates("DELETE FROM route WHERE id=$1", func(_id interface{}) ([]interface{}, error) {
 		return []interface{}{_id}, nil;
 	}, id)
+}
+
+func (s postgresStorage) ListUnExportedRoutes(limit int) ([]Route, error) {
+		return s.listRoutesInternal("NOT exported LIMIT $1", limit), nil
+}
+
+func (s postgresStorage) MarkRouteExported(id int64) error {
+	return s.performUpdates("UPDATE route SET exported=true WHERE id=$1",
+		func(_id interface{}) ([]interface{}, error) {
+			return []interface{}{_id}, nil;
+		}, id)
 }
 
 func (s postgresStorage) FindTrack(id int64, track *Track) (bool, error) {

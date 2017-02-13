@@ -17,3 +17,7 @@ https://apidata.mos.ru/
 __кадастр__
 http://gis.vodinfo.ru/informer/
 (обещают обновить базу к марту и открыть доступ)
+
+__osm__
+http://download.geofabrik.de/europe.html
+https://habrahabr.ru/post/270513/
