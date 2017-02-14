@@ -2,3 +2,5 @@ pages:
     pages-dir: "../frontend/pages"
     portion-size: 100
     sleep-if-nothing-to-do-sec: 10
+database:
+    connection-string: "postgres://wwmap:wwmap@localhost:5432/wwmap?sslmode=require"

@@ -17,6 +17,7 @@ import (
 	. "github.com/and-hom/wwmap/backend/geo"
 	. "github.com/and-hom/wwmap/backend/geoparser"
 	"strings"
+	"github.com/and-hom/wwmap/utils"
 )
 
 var storage Storage
@@ -656,10 +657,29 @@ func corsHeaders(w http.ResponseWriter, methods string) {
 	w.Header().Add("Access-Control-Allow-Headers", "origin, x-csrftoken, content-type, accept")
 }
 
+type Database struct {
+	ConnString string `yaml:"connection-string"`
+}
+
+type Config struct {
+	Database Database `yaml:"database"`
+}
+
 func main() {
 	log.Infof("Starting wwmap")
 
-	storage = NewPostgresStorage()
+	log.Infof("Loading config")
+	config := Config{}
+	_, err := utils.LoadTemplatedConfig([]string{
+		"/etc/wwmap/config.yaml",
+		"../config.yaml",
+	}, make(map[string]string), &config)
+	if err != nil {
+		log.Errorf("Can not load config: %v", err)
+		os.Exit(1)
+	}
+
+	storage = NewPostgresStorage(config.Database.ConnString)
 
 	r := mux.NewRouter()
 	r.HandleFunc("/ymaps-tile", TileHandler)
@@ -688,7 +708,7 @@ func main() {
 	httpStr := fmt.Sprintf(":%d", 7007)
 	log.Infof("Starting http server on %s", httpStr)
 	http.Handle("/", r)
-	err := http.ListenAndServe(httpStr, handlers.LoggingHandler(os.Stdout, http.DefaultServeMux))
+	err = http.ListenAndServe(httpStr, handlers.LoggingHandler(os.Stdout, http.DefaultServeMux))
 	if err != nil {
 		log.Fatalf("Can not start server: %v", err)
 	}

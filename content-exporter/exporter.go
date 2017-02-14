@@ -15,8 +15,13 @@ type ConfigPages struct {
 	SleepIfNothingToDo int64           `yaml:"sleep-if-nothing-to-do-sec"`
 }
 
+type Database struct {
+	ConnString string `yaml:"connection-string"`
+}
+
 type Config struct {
 	Pages ConfigPages `yaml:"pages"`
+	Database Database `yaml:"database"`
 }
 
 func main() {
@@ -43,7 +48,7 @@ func main() {
 	}
 
 	log.Infof("Connect to database")
-	storage := dao.NewPostgresStorage()
+	storage := dao.NewPostgresStorage(config.Database.ConnString)
 
 	log.Infof("Start processing")
 	for {
