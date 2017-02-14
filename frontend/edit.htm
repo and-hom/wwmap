@@ -52,6 +52,7 @@
     <option value="5">5</option>
     <option value="6">6</option>
 </select>
+<input type="checkbox" id="publish" style="margin-left: 10px; width:20px;"><label for="publish">Опубликовать</label>
 <img id="del-route" class="img-button" style="float:right; margin-right: 10px;" src="./img/del.png" width="32"
      height="32"/>
 <div style="height: 30px;"></div>
@@ -93,13 +94,6 @@
             <div class="track-geodata" style="display:none">${JSON.stringify($value.path)}</div></li>
         {{/each}}
         </ul>
-
-
-
-
-
-
-
 
 </script>
 
@@ -148,6 +142,7 @@
             page = $.parseJSON(data);
             $('#title').html(page.title);
             $('#category').val(page.category)
+            $('#publish').prop('checked', page.publish)
             myMap.setBounds(page.bounds);
             for (var i in page.points) {
                 var eventPointId = page.points[i].id;
@@ -199,6 +194,9 @@
                 }
             });
             $('#category').on("change", function () {
+                updateRouteData()
+            })
+            $('#publish').on("change", function () {
                 updateRouteData()
             })
 
@@ -264,7 +262,8 @@
             type: 'PUT',
             data: {
                 title: title ? title : $('#title').html(),
-                category: $('#category').val()
+                category: $('#category').val(),
+                publish: $('#publish').is(':checked')
             }
         }).done(function (data) {
         });

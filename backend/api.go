@@ -12,4 +12,5 @@ type RouteEditorPage struct {
 	Tracks []Track `json:"tracks,omitempty"`
 	EventPoints []EventPoint `json:"points,omitempty"`
 	Category RouteCategory `json:"category"`
+	Publish bool `json:"publish"`
 }

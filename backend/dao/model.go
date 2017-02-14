@@ -139,6 +139,7 @@ type Route struct {
 	Tracks   []Track `json:"tracks"`
 	Points   []EventPoint `json:"points"` // points with articles
 	Category RouteCategory `json:"category"`
+	Publish  bool `json:"publish"`
 }
 
 func Bounds(tracks []Track, points []EventPoint) Bbox {

@@ -16,6 +16,7 @@ import (
 	. "github.com/and-hom/wwmap/backend/dao"
 	. "github.com/and-hom/wwmap/backend/geo"
 	. "github.com/and-hom/wwmap/backend/geoparser"
+	"strings"
 )
 
 var storage Storage
@@ -75,6 +76,7 @@ func RouteEditorPageHandler(w http.ResponseWriter, req *http.Request) {
 			Tracks: tracks,
 			EventPoints:points,
 			Category:route.Category,
+			Publish: route.Publish,
 		})
 		if err != nil {
 			onError500(w, err, "Can not serialize track")
@@ -175,6 +177,7 @@ func GetVisibleRoutes(w http.ResponseWriter, req *http.Request) {
 			Tracks:storage.FindTracksForRoute(route.Id),
 			EventPoints:storage.FindEventPointsForRoute(route.Id),
 			Category: route.Category,
+			Publish: route.Publish,
 		}
 	}
 
@@ -357,13 +360,18 @@ func parseTrackForm(w http.ResponseWriter, r *http.Request) (Track, error) {
 func parseRouteForm(w http.ResponseWriter, r *http.Request) (Route, error) {
 	title := r.FormValue("title")
 	category := RouteCategory{}
-	err := json.Unmarshal([]byte(r.FormValue("category")), &category)
-	if err != nil {
-		return Route{}, err
+	categoryStr := r.FormValue("category")
+	if len(strings.TrimSpace(categoryStr)) > 0 {
+		err := json.Unmarshal([]byte(categoryStr), &category)
+		if err != nil {
+			return Route{}, err
+		}
 	}
+	publish := r.FormValue("publish")
 	route := Route{
 		Title:title,
 		Category: category,
+		Publish:(publish == "true"),
 	}
 	return route, nil
 }

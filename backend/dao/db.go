@@ -55,10 +55,10 @@ func NewPostgresStorage() Storage {
 }
 
 func (s postgresStorage) FindRoute(id int64, route *Route) (bool, error) {
-	return s.doFind("SELECT id,title,COALESCE(category,'') FROM route WHERE id=$1", func(rows *sql.Rows) error {
+	return s.doFind("SELECT id,title,COALESCE(category,'') AS catetgory,publish FROM route WHERE id=$1", func(rows *sql.Rows) error {
 		var categoryStr string
 		var err error
-		err = rows.Scan(&(route.Id), &(route.Title), &categoryStr)
+		err = rows.Scan(&(route.Id), &(route.Title), &categoryStr, &(route.Publish))
 		if err != nil {
 			return err
 		}
@@ -77,12 +77,12 @@ func (s postgresStorage) ListRoutes(bbox Bbox) []Route {
 }
 
 func (s postgresStorage) listRoutesInternal(whereClause string, queryParams ...interface{}) []Route {
-	result, err := s.doFindList("SELECT id,title,COALESCE(category,'') FROM route WHERE " + whereClause,
+	result, err := s.doFindList("SELECT id,title,COALESCE(category,''),publish FROM route WHERE " + whereClause,
 		func(rows *sql.Rows) (Route, error) {
 			var err error
 			route := Route{}
 			var categoryStr string
-			err = rows.Scan(&(route.Id), &(route.Title), &categoryStr)
+			err = rows.Scan(&(route.Id), &(route.Title), &categoryStr, &(route.Publish))
 			if err != nil {
 				return Route{}, err
 			}
@@ -100,14 +100,14 @@ func (s postgresStorage) listRoutesInternal(whereClause string, queryParams ...i
 }
 
 func (s postgresStorage) UpdateRoute(route Route) error {
-	return s.performUpdates("UPDATE route SET title=$2, category=$3, exported=false WHERE id=$1",
+	return s.performUpdates("UPDATE route SET title=$2, category=$3, publish=$4, exported=false WHERE id=$1",
 		func(entity interface{}) ([]interface{}, error) {
 			r := entity.(Route)
 			catJson, err := r.Category.MarshalJSON()
 			if err != nil {
 				return nil, err
 			}
-			return []interface{}{r.Id, r.Title, catJson}, nil;
+			return []interface{}{r.Id, r.Title, catJson, r.Publish}, nil;
 		}, route)
 }
 
@@ -117,7 +117,8 @@ func (s postgresStorage) AddRoute(route Route) (int64, error) {
 	if err != nil {
 		return -1, err
 	}
-	return s.insertReturningId("INSERT INTO route(title,category) VALUES($1,$2) RETURNING id", route.Title, string(categoryBytes))
+	return s.insertReturningId(`INSERT INTO route(title,category,publish)
+	VALUES($1,$2,$3) RETURNING id`, route.Title, string(categoryBytes), route.Publish)
 }
 
 func (s postgresStorage) DeleteRoute(id int64) error {
@@ -128,7 +129,7 @@ func (s postgresStorage) DeleteRoute(id int64) error {
 }
 
 func (s postgresStorage) ListUnExportedRoutes(limit int) ([]Route, error) {
-		return s.listRoutesInternal("NOT exported LIMIT $1", limit), nil
+	return s.listRoutesInternal("NOT exported LIMIT $1", limit), nil
 }
 
 func (s postgresStorage) MarkRouteExported(id int64) error {
@@ -474,7 +475,6 @@ func (s postgresStorage)performUpdates(query string, mapper func(entity interfac
 		}
 	}
 
-	log.Infof("Update completed. Commit.")
 	err = stmt.Close()
 	if err != nil {
 		return err
