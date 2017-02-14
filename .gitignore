@@ -2,3 +2,4 @@
 backend/.drafts
 backend/backend
 content-exporter/content-exporter
+frontend/pages/*

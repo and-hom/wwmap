@@ -7,51 +7,58 @@ import (
 	"time"
 	"os"
 	"fmt"
-	"text/template"
 )
 
-const PORTION_SIZE int = 100
-const SLEEP_IF_NOTHING_FOUND time.Duration = 10 * time.Second
-const OUTPUT_DIR string = "/tmp"
+type ConfigPages struct {
+	PagesDir           string        `yaml:"pages-dir"`
+	PortionSize        int           `yaml:"portion-size"`
+	SleepIfNothingToDo int64           `yaml:"sleep-if-nothing-to-do-sec"`
+}
+
+type Config struct {
+	Pages ConfigPages `yaml:"pages"`
+}
 
 func main() {
 	log.Infof("Starting wwmap static content exporter")
 
+	log.Infof("Loading config")
+	config := Config{}
+	_, err := utils.LoadTemplatedConfig([]string{
+		"/etc/wwmap/config.yaml",
+		"../config.yaml",
+	}, make(map[string]string), &config)
+	if err != nil {
+		log.Errorf("Can not load config: %v", err)
+		os.Exit(1)
+	}
+
 	log.Infof("Compile template")
-	tmplObj, err := utils.LoadTemplate([]string{
+	tmpl, err := utils.LoadTemplate([]string{
 		"/etc/wwmap/export-template",
 		"template.htm",
-	}, func(data string, filename string) (interface{}, error) {
-		t, err := template.New("config").Parse(string(data))
-		if err != nil {
-			log.Errorf("Template error for %s: %v", filename, err)
-			return nil, err
-		}
-		return t, nil
 	})
 	if err != nil {
 		log.Errorf("Can not parse template")
 	}
-
-	tmpl := tmplObj.(*template.Template)
 
 	log.Infof("Connect to database")
 	storage := dao.NewPostgresStorage()
 
 	log.Infof("Start processing")
 	for {
-		routes, err := storage.ListUnExportedRoutes(PORTION_SIZE);
+		routes, err := storage.ListUnExportedRoutes(config.Pages.PortionSize);
 		if err != nil {
 			log.Errorf("Can not get unexported routes: %s", err.Error())
 			continue;
 		}
 		if len(routes) == 0 {
-			log.Infof("Nothing found. Sleep %v", SLEEP_IF_NOTHING_FOUND)
-			time.Sleep(SLEEP_IF_NOTHING_FOUND)
+			log.Infof("Nothing found. Sleep %v", config.Pages.SleepIfNothingToDo)
+			time.Sleep(time.Duration(config.Pages.SleepIfNothingToDo) * time.Second)
 			continue
 		}
 		for _, route := range routes {
-			path := fmt.Sprintf("%s/%d", OUTPUT_DIR, route.Id)
+			path := fmt.Sprintf("%s/%d.htm", config.Pages.PagesDir, route.Id)
 			if route.Publish {
 				var success bool = true
 				outFile, err := os.Create(path)

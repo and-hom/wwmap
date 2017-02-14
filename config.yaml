@@ -1,0 +1,4 @@
+pages:
+    pages-dir: "../frontend/pages"
+    portion-size: 100
+    sleep-if-nothing-to-do-sec: 10
