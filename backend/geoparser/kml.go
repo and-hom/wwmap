@@ -174,6 +174,8 @@ func (this KmlParser) GetTracksAndPoints() ([]Track, []EventPoint, error) {
 				tracks = append(tracks, Track{
 					Title:placemark.Name,
 					Path:path,
+					StartTime:JSONTime(time.Now()),
+					EndTime:JSONTime(time.Now()),
 				})
 			}
 

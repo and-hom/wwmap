@@ -67,11 +67,13 @@ func ParseTrackType(s string) (TrackType, error) {
 }
 
 type Track struct {
-	Id     int64 `json:"id"`
-	Title  string `json:"title"`
-	Path   []Point `json:"path"`
-	Length float64 `json:"length"`
-	Type   TrackType `json:"type"`
+	Id        int64 `json:"id"`
+	Title     string `json:"title"`
+	Path      []Point `json:"path"`
+	Length    float64 `json:"length"`
+	Type      TrackType `json:"type"`
+	StartTime JSONTime `json:"start"`
+	EndTime   JSONTime `json:"end"`
 }
 
 func (this Track) Bounds() Bbox {

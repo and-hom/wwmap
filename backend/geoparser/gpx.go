@@ -35,9 +35,12 @@ func (this GpxParser) GetTracksAndPoints() ([]Track, []EventPoint, error) {
 			points = append(points, convertWaypoints(seg.Waypoints)...)
 		}
 
+		startTime, endTime := trk.TimeBounds()
 		tracks = append(tracks, Track{
 			Title:trk.Name,
 			Path:points,
+			StartTime:JSONTime(startTime),
+			EndTime:JSONTime(endTime),
 		})
 	}
 
@@ -46,6 +49,8 @@ func (this GpxParser) GetTracksAndPoints() ([]Track, []EventPoint, error) {
 		points = append(points, EventPoint{
 			Title:wpt.Name,
 			Time:JSONTime(wpt.Time()),
+			Type:POST,
+			Content : wpt.Desc,
 			Point:Point{
 				Lat:wpt.Lat,
 				Lon:wpt.Lon,
