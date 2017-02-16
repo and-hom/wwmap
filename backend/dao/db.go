@@ -12,10 +12,6 @@ import (
 )
 
 type Storage interface {
-	FindTrackAsList(id int64) []Track
-	FindTracksForRoute(routeId int64) []Track
-	ListTracks(bbox Bbox) []Track
-
 	FindRoute(id int64, route *Route) (bool, error)
 	ListRoutes(bbox Bbox) []Route
 	UpdateRoute(route Route) error
@@ -25,6 +21,9 @@ type Storage interface {
 	AddTracks(routeId int64, track ...Track) error
 	UpdateTrack(track Track) error
 	FindTrack(id int64, track *Track) (bool, error)
+	FindTrackAsList(id int64) []Track
+	FindTracksForRoute(routeId int64) []Track
+	ListTracks(bbox Bbox) []Track
 	DeleteTrack(id int64) error
 	DeleteTracksForRoute(routeId int64) error
 
@@ -142,7 +141,7 @@ func (s postgresStorage) FindTrackAsList(id int64) []Track {
 }
 
 func (s postgresStorage) FindTracksForRoute(routeId int64) []Track {
-	return s.listTracksInternal("route_id=$1", routeId)
+	return s.listTracksInternal("route_id=$1 ORDER BY start_time ASC", routeId)
 }
 
 func (s postgresStorage) ListTracks(bbox Bbox) []Track {
@@ -185,8 +184,8 @@ func (s postgresStorage) AddTracks(routeId int64, tracks ...Track) error {
 	for i, p := range tracks {
 		vars[i] = p
 	}
-	return s.performUpdates(`INSERT INTO track(route_id, title, path, length, type)
-	VALUES ($1 ,$2, ST_GeomFromGeoJSON($3),ST_Length(ST_GeomFromGeoJSON($3)::geography), $4)`,
+	return s.performUpdates(`INSERT INTO track(route_id, title, path, length, type, start_time, end_time)
+	VALUES ($1 ,$2, ST_GeomFromGeoJSON($3), ST_Length(ST_GeomFromGeoJSON($3)::geography), $4, $5, $6)`,
 		func(entity interface{}) ([]interface{}, error) {
 			t := entity.(Track)
 
@@ -197,7 +196,8 @@ func (s postgresStorage) AddTracks(routeId int64, tracks ...Track) error {
 			if err != nil {
 				return nil, err
 			}
-			return []interface{}{routeId, t.Title, string(pathBytes), string(t.Type)}, nil;
+			return []interface{}{routeId, t.Title, string(pathBytes), string(t.Type),
+				time.Time(t.StartTime), time.Time(t.EndTime)}, nil;
 		}, vars...)
 }
 
