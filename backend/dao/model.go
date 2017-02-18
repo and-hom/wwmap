@@ -100,16 +100,16 @@ func (this Track) Bounds() Bbox {
 	}
 }
 
-type RouteCategory struct {
+type SportCategory struct {
 	Category int
 	Sub      string
 }
 
-func (this RouteCategory) MarshalJSON() ([]byte, error) {
+func (this SportCategory) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf("%d%s", this.Category, this.Sub)), nil
 }
 
-func (this *RouteCategory) UnmarshalJSON(data []byte) error {
+func (this *SportCategory) UnmarshalJSON(data []byte) error {
 	dataStr := string(data)
 	if len(strings.TrimSpace(dataStr)) == 0 {
 		// no category specified
@@ -140,7 +140,7 @@ type Route struct {
 	Title    string `json:"title"`
 	Tracks   []Track `json:"tracks"`
 	Points   []EventPoint `json:"points"` // points with articles
-	Category RouteCategory `json:"category"`
+	Category SportCategory `json:"category"`
 }
 
 func Bounds(tracks []Track, points []EventPoint) Bbox {
@@ -174,4 +174,23 @@ func Bounds(tracks []Track, points []EventPoint) Bbox {
 type ExtDataTrack struct {
 	Title   string `json:"title"`
 	FileIds []string `json:"fileIds"`
+}
+
+type WaterWay struct {
+	Id       int64 `json:"id"`
+	Title    string `json:"title"`
+	Type     string `json:"type"`
+	Path     []Point `json:"path"`
+	ParentId int64 `json:"parentId"`
+	Comment  string `json:"comment"`
+}
+
+type WhiteWaterPoint struct {
+	Id         int64 `json:"id"`
+	WaterWayId int64 `json:"waterWayId"`
+	Type       string `json:"type"`
+	Category   SportCategory `json:"type"`
+	Point      Point `json:"point"`
+	Title      string `json:"title"`
+	Comment    string `json:"comment"`
 }

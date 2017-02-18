@@ -356,7 +356,7 @@ func parseTrackForm(w http.ResponseWriter, r *http.Request) (Track, error) {
 
 func parseRouteForm(w http.ResponseWriter, r *http.Request) (Route, error) {
 	title := r.FormValue("title")
-	category := RouteCategory{}
+	category := SportCategory{}
 	err := json.Unmarshal([]byte(r.FormValue("category")), &category)
 	if err != nil {
 		return Route{}, err

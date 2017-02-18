@@ -1,1 +1,2 @@
+TRUNCATE TABLE "route" CASCADE;
 DROP TABLE "route";

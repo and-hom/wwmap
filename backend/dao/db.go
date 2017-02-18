@@ -35,9 +35,13 @@ type Storage interface {
 	FindEventPoint(id int64, eventPoint *EventPoint) (bool, error)
 	ListPoints(bbox Bbox) []EventPoint
 	FindEventPointsForRoute(routeId int64) []EventPoint
+
+	AddWaterWays(waterways ...WaterWay) error
+
+	AddWhiteWaterPoints(whiteWaterPoint ...WhiteWaterPoint) error
 }
 
-type postgresStorage struct {
+type PostgresStorage struct {
 	db *sql.DB
 }
 
@@ -46,12 +50,12 @@ func NewPostgresStorage() Storage {
 	if err != nil {
 		log.Fatalf("Can not connect to postgres: %v", err)
 	}
-	return postgresStorage{
+	return PostgresStorage{
 		db:db,
 	}
 }
 
-func (s postgresStorage) FindRoute(id int64, route *Route) (bool, error) {
+func (s PostgresStorage) FindRoute(id int64, route *Route) (bool, error) {
 	return s.doFind("SELECT id,title,COALESCE(category,'') FROM route WHERE id=$1", func(rows *sql.Rows) error {
 		var categoryStr string
 		var err error
@@ -67,13 +71,13 @@ func (s postgresStorage) FindRoute(id int64, route *Route) (bool, error) {
 	}, id)
 }
 
-func (s postgresStorage) ListRoutes(bbox Bbox) []Route {
+func (s PostgresStorage) ListRoutes(bbox Bbox) []Route {
 	return s.listRoutesInternal(`id in (SELECT route_id FROM track WHERE path && ST_MakeEnvelope($1,$2,$3,$4)
 	UNION ALL SELECT route_id FROM point WHERE point && ST_MakeEnvelope($1,$2,$3,$4))`,
 		bbox.X1, bbox.Y1, bbox.X2, bbox.Y2)
 }
 
-func (s postgresStorage) listRoutesInternal(whereClause string, queryParams ...interface{}) []Route {
+func (s PostgresStorage) listRoutesInternal(whereClause string, queryParams ...interface{}) []Route {
 	result, err := s.doFindList("SELECT id,title,COALESCE(category,'') FROM route WHERE " + whereClause,
 		func(rows *sql.Rows) (Route, error) {
 			var err error
@@ -97,7 +101,7 @@ func (s postgresStorage) listRoutesInternal(whereClause string, queryParams ...i
 	return result.([]Route)
 }
 
-func (s postgresStorage) UpdateRoute(route Route) error {
+func (s PostgresStorage) UpdateRoute(route Route) error {
 	return s.performUpdates("UPDATE route SET title=$2, category=$3 WHERE id=$1",
 		func(entity interface{}) ([]interface{}, error) {
 			r := entity.(Route)
@@ -109,7 +113,7 @@ func (s postgresStorage) UpdateRoute(route Route) error {
 		}, route)
 }
 
-func (s postgresStorage) AddRoute(route Route) (int64, error) {
+func (s PostgresStorage) AddRoute(route Route) (int64, error) {
 	log.Info("Inserting route")
 	categoryBytes, err := route.Category.MarshalJSON()
 	if err != nil {
@@ -118,14 +122,14 @@ func (s postgresStorage) AddRoute(route Route) (int64, error) {
 	return s.insertReturningId("INSERT INTO route(title,category) VALUES($1,$2) RETURNING id", route.Title, string(categoryBytes))
 }
 
-func (s postgresStorage) DeleteRoute(id int64) error {
+func (s PostgresStorage) DeleteRoute(id int64) error {
 	log.Infof("Delete route %s", id)
 	return s.performUpdates("DELETE FROM route WHERE id=$1", func(_id interface{}) ([]interface{}, error) {
 		return []interface{}{_id}, nil;
 	}, id)
 }
 
-func (s postgresStorage) FindTrack(id int64, track *Track) (bool, error) {
+func (s PostgresStorage) FindTrack(id int64, track *Track) (bool, error) {
 	return s.doFind("SELECT id,type,title, length FROM track WHERE id=$1", func(rows *sql.Rows) error {
 		var err error
 		_type := ""
@@ -136,19 +140,19 @@ func (s postgresStorage) FindTrack(id int64, track *Track) (bool, error) {
 	}, id)
 }
 
-func (s postgresStorage) FindTrackAsList(id int64) []Track {
+func (s PostgresStorage) FindTrackAsList(id int64) []Track {
 	return s.listTracksInternal("id=$1", id)
 }
 
-func (s postgresStorage) FindTracksForRoute(routeId int64) []Track {
+func (s PostgresStorage) FindTracksForRoute(routeId int64) []Track {
 	return s.listTracksInternal("route_id=$1 ORDER BY start_time ASC", routeId)
 }
 
-func (s postgresStorage) ListTracks(bbox Bbox) []Track {
+func (s PostgresStorage) ListTracks(bbox Bbox) []Track {
 	return s.listTracksInternal("path && ST_MakeEnvelope($1,$2,$3,$4)", bbox.X1, bbox.Y1, bbox.X2, bbox.Y2)
 }
 
-func (s postgresStorage) listTracksInternal(whereClause string, queryParams ...interface{}) []Track {
+func (s PostgresStorage) listTracksInternal(whereClause string, queryParams ...interface{}) []Track {
 	result, err := s.doFindList("SELECT id,type,title, ST_AsGeoJSON(path) as path, length FROM track WHERE " + whereClause,
 		func(rows *sql.Rows) (Track, error) {
 			var err error
@@ -178,7 +182,7 @@ func (s postgresStorage) listTracksInternal(whereClause string, queryParams ...i
 	return result.([]Track)
 }
 
-func (s postgresStorage) AddTracks(routeId int64, tracks ...Track) error {
+func (s PostgresStorage) AddTracks(routeId int64, tracks ...Track) error {
 	log.Info("Inserting tracks")
 	vars := make([]interface{}, len(tracks))
 	for i, p := range tracks {
@@ -189,10 +193,7 @@ func (s postgresStorage) AddTracks(routeId int64, tracks ...Track) error {
 		func(entity interface{}) ([]interface{}, error) {
 			t := entity.(Track)
 
-			pathBytes, err := json.Marshal(LineString{
-				Coordinates:t.Path,
-				Type:LINE_STRING,
-			})
+			pathBytes, err := json.Marshal(NewLineString(t.Path))
 			if err != nil {
 				return nil, err
 			}
@@ -201,7 +202,7 @@ func (s postgresStorage) AddTracks(routeId int64, tracks ...Track) error {
 		}, vars...)
 }
 
-func (s postgresStorage) UpdateTrack(track Track) error {
+func (s PostgresStorage) UpdateTrack(track Track) error {
 	log.Infof("Update track %d", track.Id)
 	return s.performUpdates("UPDATE track SET title=$2, type=$3 WHERE id=$1",
 		func(entity interface{}) ([]interface{}, error) {
@@ -210,21 +211,21 @@ func (s postgresStorage) UpdateTrack(track Track) error {
 		}, track)
 }
 
-func (s postgresStorage) DeleteTrack(id int64) error {
+func (s PostgresStorage) DeleteTrack(id int64) error {
 	log.Infof("Delete track %s", id)
 	return s.performUpdates("DELETE FROM track WHERE id=$1", func(_id interface{}) ([]interface{}, error) {
 		return []interface{}{_id}, nil;
 	}, id)
 }
 
-func (s postgresStorage) DeleteTracksForRoute(routeId int64) error {
+func (s PostgresStorage) DeleteTracksForRoute(routeId int64) error {
 	log.Infof("Delete all tracks for route %s", routeId)
 	return s.performUpdates("DELETE FROM track WHERE route_id=$1", func(_id interface{}) ([]interface{}, error) {
 		return []interface{}{_id}, nil;
 	}, routeId)
 }
 
-func (s postgresStorage) AddEventPoints(routeId int64, eventPoints ...EventPoint) error {
+func (s PostgresStorage) AddEventPoints(routeId int64, eventPoints ...EventPoint) error {
 	log.Info("Inserting eventPoints")
 	vars := make([]interface{}, len(eventPoints))
 	for i, p := range eventPoints {
@@ -247,7 +248,7 @@ func (s postgresStorage) AddEventPoints(routeId int64, eventPoints ...EventPoint
 		}, vars...)
 }
 
-func (s postgresStorage) AddEventPoint(routeId int64, eventPoint EventPoint) (int64, error) {
+func (s PostgresStorage) AddEventPoint(routeId int64, eventPoint EventPoint) (int64, error) {
 	log.Info("Inserting event point")
 	pointBytes, err := json.Marshal(NewGeoPoint(eventPoint.Point))
 	if err != nil {
@@ -258,7 +259,7 @@ func (s postgresStorage) AddEventPoint(routeId int64, eventPoint EventPoint) (in
 		string(pointBytes), eventPoint.Content, time.Time(eventPoint.Time))
 }
 
-func (s postgresStorage) UpdateEventPoint(eventPoint EventPoint) (error) {
+func (s PostgresStorage) UpdateEventPoint(eventPoint EventPoint) (error) {
 	log.Info("Update event point")
 	return s.performUpdates("UPDATE point SET type=$2, title=$3, point=ST_GeomFromGeoJSON($4), content=$5 WHERE id=$1",
 		func(entity interface{}) ([]interface{}, error) {
@@ -273,21 +274,21 @@ func (s postgresStorage) UpdateEventPoint(eventPoint EventPoint) (error) {
 		}, eventPoint)
 }
 
-func (s postgresStorage) DeleteEventPoint(id int64) error {
+func (s PostgresStorage) DeleteEventPoint(id int64) error {
 	log.Infof("Delete event point %s", id)
 	return s.performUpdates("DELETE FROM point WHERE id=$1", func(_id interface{}) ([]interface{}, error) {
 		return []interface{}{_id}, nil;
 	}, id)
 }
 
-func (s postgresStorage) DeleteEventPointsForRoute(routeId int64) error {
+func (s PostgresStorage) DeleteEventPointsForRoute(routeId int64) error {
 	log.Infof("Delete all event points for route %s", routeId)
 	return s.performUpdates("DELETE FROM point WHERE route_id=$1", func(_id interface{}) ([]interface{}, error) {
 		return []interface{}{_id}, nil;
 	}, routeId)
 }
 
-func (s postgresStorage)FindEventPoint(id int64, eventPoint *EventPoint) (bool, error) {
+func (s PostgresStorage)FindEventPoint(id int64, eventPoint *EventPoint) (bool, error) {
 	return s.doFind(
 		"SELECT id,type,title,content,ST_AsGeoJSON(point) as point,time FROM point WHERE id=$1",
 		func(rows *sql.Rows) error {
@@ -315,15 +316,15 @@ func (s postgresStorage)FindEventPoint(id int64, eventPoint *EventPoint) (bool, 
 		id)
 }
 
-func (s postgresStorage) ListPoints(bbox Bbox) []EventPoint {
+func (s PostgresStorage) ListPoints(bbox Bbox) []EventPoint {
 	return s.listPointsInternal("point && ST_MakeEnvelope($1,$2,$3,$4)", bbox.X1, bbox.Y1, bbox.X2, bbox.Y2)
 }
 
-func (s postgresStorage) FindEventPointsForRoute(routeId int64) []EventPoint {
+func (s PostgresStorage) FindEventPointsForRoute(routeId int64) []EventPoint {
 	return s.listPointsInternal("route_id=$1", routeId)
 }
 
-func (s postgresStorage) listPointsInternal(whereClause string, queryParams ...interface{}) []EventPoint {
+func (s PostgresStorage) listPointsInternal(whereClause string, queryParams ...interface{}) []EventPoint {
 	result, err := s.doFindList("SELECT id, type, title, content, ST_AsGeoJSON(point) as point, time FROM point WHERE " +
 		whereClause, func(rows *sql.Rows) (EventPoint, error) {
 		var err error
@@ -361,7 +362,44 @@ func (s postgresStorage) listPointsInternal(whereClause string, queryParams ...i
 	return result.([]EventPoint)
 }
 
-func (s postgresStorage)doFind(query string, callback func(rows *sql.Rows) error, args ...interface{}) (bool, error) {
+func (this PostgresStorage) AddWaterWays(waterways ...WaterWay) error {
+	vars := make([]interface{}, len(waterways))
+	for i, p := range waterways {
+		vars[i] = p
+	}
+	return this.performUpdates("INSERT INTO waterway(title, type, comment, path) VALUES ($1, $2, $3, ST_GeomFromGeoJSON($4))",
+		func(entity interface{}) ([]interface{}, error) {
+			waterway := entity.(WaterWay)
+
+			pathBytes, err := json.Marshal(NewLineString(waterway.Path))
+			if err != nil {
+				return nil, err
+			}
+			return []interface{}{waterway.Title, waterway.Type, waterway.Comment, string(pathBytes)}, nil;
+		}, vars...)
+}
+
+func (this PostgresStorage) AddWhiteWaterPoints(whiteWaterPoints ...WhiteWaterPoint) error {
+	vars := make([]interface{}, len(whiteWaterPoints))
+	for i, p := range whiteWaterPoints {
+		vars[i] = p
+	}
+	return this.performUpdates("INSERT INTO white_water_rapid(title,type,category,comment,point) VALUES ($1, $2, $3, $4, ST_GeomFromGeoJSON($5))",
+		func(entity interface{}) ([]interface{}, error) {
+			wwp := entity.(WhiteWaterPoint)
+			categoryBytes, err := wwp.Category.MarshalJSON()
+			if err != nil {
+				return nil, err
+			}
+			pathBytes, err := json.Marshal(NewGeoPoint(wwp.Point))
+			if err != nil {
+				return nil, err
+			}
+			return []interface{}{wwp.Title, wwp.Type, string(categoryBytes), wwp.Comment, string(pathBytes)}, nil
+		}, vars...)
+}
+
+func (s PostgresStorage)doFind(query string, callback func(rows *sql.Rows) error, args ...interface{}) (bool, error) {
 	rows, err := s.db.Query(query, args...)
 	if err != nil {
 		return false, err
@@ -378,7 +416,7 @@ func (s postgresStorage)doFind(query string, callback func(rows *sql.Rows) error
 	return false, nil
 }
 
-func (s postgresStorage)doFindList(query string, callback interface{}, args ...interface{}) (interface{}, error) {
+func (s PostgresStorage)doFindList(query string, callback interface{}, args ...interface{}) (interface{}, error) {
 	rows, err := s.db.Query(query, args...)
 	if err != nil {
 		return []interface{}{}, err
@@ -400,7 +438,7 @@ func (s postgresStorage)doFindList(query string, callback interface{}, args ...i
 	return result.Interface(), nil
 }
 
-func (s postgresStorage)insertReturningId(query string, args ...interface{}) (int64, error) {
+func (s PostgresStorage)insertReturningId(query string, args ...interface{}) (int64, error) {
 	tx, err := s.db.Begin()
 	if err != nil {
 		return -1, err
@@ -439,7 +477,7 @@ func (s postgresStorage)insertReturningId(query string, args ...interface{}) (in
 
 }
 
-func (s postgresStorage)performUpdates(query string, mapper func(entity interface{}) ([]interface{}, error), values ...interface{}) error {
+func (s PostgresStorage)performUpdates(query string, mapper func(entity interface{}) ([]interface{}, error), values ...interface{}) error {
 	tx, err := s.db.Begin()
 	if err != nil {
 		return err
