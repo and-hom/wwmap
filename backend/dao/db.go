@@ -37,6 +37,7 @@ type Storage interface {
 	FindEventPointsForRoute(routeId int64) []EventPoint
 
 	AddWaterWays(waterways ...WaterWay) error
+	//FindMaxCrossWaterway(path []Point, waterWay *WaterWay) (bool, error)
 
 	AddWhiteWaterPoints(whiteWaterPoint ...WhiteWaterPoint) error
 }
@@ -72,8 +73,9 @@ func (s PostgresStorage) FindRoute(id int64, route *Route) (bool, error) {
 }
 
 func (s PostgresStorage) ListRoutes(bbox Bbox) []Route {
-	return s.listRoutesInternal(`id in (SELECT route_id FROM track WHERE path && ST_MakeEnvelope($1,$2,$3,$4)
-	UNION ALL SELECT route_id FROM point WHERE point && ST_MakeEnvelope($1,$2,$3,$4))`,
+	return s.listRoutesInternal(
+		`id in (SELECT route_id FROM track WHERE ST_FlipCoordinates(path) && ST_MakeEnvelope($1,$2,$3,$4)
+		UNION ALL SELECT route_id FROM point WHERE ST_FlipCoordinates(point) && ST_MakeEnvelope($1,$2,$3,$4))`,
 		bbox.X1, bbox.Y1, bbox.X2, bbox.Y2)
 }
 
@@ -149,11 +151,11 @@ func (s PostgresStorage) FindTracksForRoute(routeId int64) []Track {
 }
 
 func (s PostgresStorage) ListTracks(bbox Bbox) []Track {
-	return s.listTracksInternal("path && ST_MakeEnvelope($1,$2,$3,$4)", bbox.X1, bbox.Y1, bbox.X2, bbox.Y2)
+	return s.listTracksInternal("ST_FlipCoordinates(path) && ST_MakeEnvelope($1,$2,$3,$4)", bbox.X1, bbox.Y1, bbox.X2, bbox.Y2)
 }
 
 func (s PostgresStorage) listTracksInternal(whereClause string, queryParams ...interface{}) []Track {
-	result, err := s.doFindList("SELECT id,type,title, ST_AsGeoJSON(path) as path, length FROM track WHERE " + whereClause,
+	result, err := s.doFindList("SELECT id,type,title, ST_AsGeoJSON(ST_FlipCoordinates(path)) as path, length FROM track WHERE " + whereClause,
 		func(rows *sql.Rows) (Track, error) {
 			var err error
 			var _type string
@@ -189,7 +191,8 @@ func (s PostgresStorage) AddTracks(routeId int64, tracks ...Track) error {
 		vars[i] = p
 	}
 	return s.performUpdates(`INSERT INTO track(route_id, title, path, length, type, start_time, end_time)
-	VALUES ($1 ,$2, ST_GeomFromGeoJSON($3), ST_Length(ST_GeomFromGeoJSON($3)::geography), $4, $5, $6)`,
+	VALUES ($1 ,$2, ST_FlipCoordinates(ST_GeomFromGeoJSON($3)),
+	ST_Length(ST_FlipCoordinates(ST_GeomFromGeoJSON($3))::geography), $4, $5, $6)`,
 		func(entity interface{}) ([]interface{}, error) {
 			t := entity.(Track)
 
@@ -232,7 +235,7 @@ func (s PostgresStorage) AddEventPoints(routeId int64, eventPoints ...EventPoint
 		vars[i] = p
 	}
 	return s.performUpdates("INSERT INTO point(route_id, type, title, point, content, time) " +
-		"VALUES ($1, $2, $3, ST_GeomFromGeoJSON($4), $5, $6)",
+		"VALUES ($1, $2, $3, ST_FlipCoordinates(ST_GeomFromGeoJSON($4)), $5, $6)",
 		func(entity interface{}) ([]interface{}, error) {
 			p := entity.(EventPoint)
 
@@ -255,13 +258,14 @@ func (s PostgresStorage) AddEventPoint(routeId int64, eventPoint EventPoint) (in
 		return -1, err
 	}
 	return s.insertReturningId("INSERT INTO point(route_id, type, title, point, content, time) " +
-		"VALUES ($1, $2, $3, ST_GeomFromGeoJSON($4), $5, $6) RETURNING id", routeId, string(eventPoint.Type), eventPoint.Title,
+		"VALUES ($1, $2, $3, ST_FlipCoordinates(ST_GeomFromGeoJSON($4)), $5, $6) RETURNING id",
+		routeId, string(eventPoint.Type), eventPoint.Title,
 		string(pointBytes), eventPoint.Content, time.Time(eventPoint.Time))
 }
 
 func (s PostgresStorage) UpdateEventPoint(eventPoint EventPoint) (error) {
 	log.Info("Update event point")
-	return s.performUpdates("UPDATE point SET type=$2, title=$3, point=ST_GeomFromGeoJSON($4), content=$5 WHERE id=$1",
+	return s.performUpdates("UPDATE point SET type=$2, title=$3, point=ST_FlipCoordinates(ST_GeomFromGeoJSON($4)), content=$5 WHERE id=$1",
 		func(entity interface{}) ([]interface{}, error) {
 			p := entity.(EventPoint)
 
@@ -290,7 +294,7 @@ func (s PostgresStorage) DeleteEventPointsForRoute(routeId int64) error {
 
 func (s PostgresStorage)FindEventPoint(id int64, eventPoint *EventPoint) (bool, error) {
 	return s.doFind(
-		"SELECT id,type,title,content,ST_AsGeoJSON(point) as point,time FROM point WHERE id=$1",
+		"SELECT id,type,title,content,ST_AsGeoJSON(ST_FlipCoordinates(point)) as point,time FROM point WHERE id=$1",
 		func(rows *sql.Rows) error {
 			var err error
 
@@ -317,7 +321,7 @@ func (s PostgresStorage)FindEventPoint(id int64, eventPoint *EventPoint) (bool, 
 }
 
 func (s PostgresStorage) ListPoints(bbox Bbox) []EventPoint {
-	return s.listPointsInternal("point && ST_MakeEnvelope($1,$2,$3,$4)", bbox.X1, bbox.Y1, bbox.X2, bbox.Y2)
+	return s.listPointsInternal("ST_FlipCoordinates(point) && ST_MakeEnvelope($1,$2,$3,$4)", bbox.X1, bbox.Y1, bbox.X2, bbox.Y2)
 }
 
 func (s PostgresStorage) FindEventPointsForRoute(routeId int64) []EventPoint {
@@ -325,7 +329,7 @@ func (s PostgresStorage) FindEventPointsForRoute(routeId int64) []EventPoint {
 }
 
 func (s PostgresStorage) listPointsInternal(whereClause string, queryParams ...interface{}) []EventPoint {
-	result, err := s.doFindList("SELECT id, type, title, content, ST_AsGeoJSON(point) as point, time FROM point WHERE " +
+	result, err := s.doFindList("SELECT id, type, title, content, ST_AsGeoJSON(ST_FlipCoordinates(point)) as point, time FROM point WHERE " +
 		whereClause, func(rows *sql.Rows) (EventPoint, error) {
 		var err error
 		id := int64(-1)
@@ -367,7 +371,8 @@ func (this PostgresStorage) AddWaterWays(waterways ...WaterWay) error {
 	for i, p := range waterways {
 		vars[i] = p
 	}
-	return this.performUpdates("INSERT INTO waterway(title, type, comment, path) VALUES ($1, $2, $3, ST_GeomFromGeoJSON($4))",
+	return this.performUpdates(`INSERT INTO waterway(title, type, comment, path, epsilon_area)
+	VALUES ($1, $2, $3, ST_FlipCoordinates(ST_GeomFromGeoJSON($4)), (ST_Buffer($5::geography, 50))::geometry)`,
 		func(entity interface{}) ([]interface{}, error) {
 			waterway := entity.(WaterWay)
 
@@ -378,13 +383,30 @@ func (this PostgresStorage) AddWaterWays(waterways ...WaterWay) error {
 			return []interface{}{waterway.Title, waterway.Type, waterway.Comment, string(pathBytes)}, nil;
 		}, vars...)
 }
+//
+//func (this PostgresStorage) FindMaxCrossWaterway(path []Point, waterWay *WaterWay) (bool, error) {
+//	return this.doFindList(`SELECT id,title,ST_Length(ST_Intersection(ST_FlipCoordinates(ST_GeomFromGeoJSON($1)), epsilon_area))/ST_Length(ST_FlipCoordinates(ST_GeomFromGeoJSON($1))) FROM waterway ORDER BY 3 DESC LIMIT 10`, func(rows *sql.Rows) error {
+//		var len int64
+//		var err error
+//		err = rows.Scan(&(waterWay.Id), &(waterWay.Title), &len)
+//		if err != nil {
+//			return err
+//		}
+//		err = route.Category.UnmarshalJSON([]byte(categoryStr))
+//		if err != nil {
+//			return err
+//		}
+//		return nil
+//	}, id)
+//}
 
 func (this PostgresStorage) AddWhiteWaterPoints(whiteWaterPoints ...WhiteWaterPoint) error {
 	vars := make([]interface{}, len(whiteWaterPoints))
 	for i, p := range whiteWaterPoints {
 		vars[i] = p
 	}
-	return this.performUpdates("INSERT INTO white_water_rapid(title,type,category,comment,point) VALUES ($1, $2, $3, $4, ST_GeomFromGeoJSON($5))",
+	return this.performUpdates(`INSERT INTO white_water_rapid(title,type,category,comment,point)
+	VALUES ($1, $2, $3, $4, ST_FlipCoordinates(ST_GeomFromGeoJSON($5)))`,
 		func(entity interface{}) ([]interface{}, error) {
 			wwp := entity.(WhiteWaterPoint)
 			categoryBytes, err := wwp.Category.MarshalJSON()

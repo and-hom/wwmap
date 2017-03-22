@@ -59,8 +59,9 @@ func (h *WayIterHandler) StartElement(element xml.StartElement) {
 		found, exists := h.reverseWayIndex[refIdInt]
 		if exists {
 			h.reverseWayIndex[refIdInt] = append(found, h.wayId)
+		} else {
+			h.reverseWayIndex[refIdInt] = []int64{h.wayId}
 		}
-		h.reverseWayIndex[refIdInt] = []int64{h.wayId}
 	}
 }
 

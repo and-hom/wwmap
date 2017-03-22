@@ -26,30 +26,42 @@ func main() {
 		reverseWayIndex: wayIterHandler.reverseWayIndex,
 	}
 
-	r, err := os.Open(os.Args[1])
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer r.Close()
+	//r, err := os.Open(os.Args[1])
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//defer r.Close()
+	r := os.Stdin
 
 	mainParser := saxlike.NewParser(r, pointHandler)
 	mainParser.Parse()
 
-	waterways := make([]dao.WaterWay, len(pointHandler.result))
-	var i int = 0
+	log.Println("Create entries")
+	waterways := make([]dao.WaterWay, 0)
 	for way, points := range pointHandler.result {
-		waterways[i] = dao.WaterWay{
+		var shouldSkip bool = false
+		for _, p := range points {
+			if p.Lat == 0 && p.Lon == 0 {
+				log.Printf("Broken path for way %d %v\n", way, points)
+				shouldSkip = true
+				break;
+			}
+		}
+		if shouldSkip {
+			continue
+		}
+		waterways = append(waterways, dao.WaterWay{
 			Title:wayIterHandler.nameIndex[way],
 			Type:wayIterHandler.typeIndex[way],
 			Path: points,
 			Comment: r.Name(),
-		}
-		i += 1
+		})
 	}
 
+	log.Println("Insert found rivers")
 	storage := dao.NewPostgresStorage()
 	err = storage.AddWaterWays(waterways...)
-	if err!=nil {
+	if err != nil {
 		log.Fatal(err)
 	}
 }

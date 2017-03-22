@@ -25,7 +25,7 @@ func main() {
 	log.Print(handler.result)
 
 	storage := dao.NewPostgresStorage()
-	err := storage.AddWhiteWaterPoints(handler.result...)
+	err = storage.AddWhiteWaterPoints(handler.result...)
 	if err != nil {
 		log.Fatal(err)
 	}

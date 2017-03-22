@@ -612,6 +612,31 @@ func PictureMetadataHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(JsonStr(imgData, "{}")))
 }
 
+func RiversForTrack(w http.ResponseWriter, req *http.Request) {
+	corsHeaders(w, "GET")
+	id, err := strconv.ParseInt(req.FormValue("id"), 10, 64)
+	if err != nil {
+		onError(w, err, "Can not parse id", http.StatusBadRequest)
+		return
+	}
+
+	track := Track{}
+	storage.FindTrack(id, &track)
+
+	//waterway := WaterWay{}
+	//found, err := storage.FindMaxCrossWaterway(track.Path, &waterway)
+	//if err != nil {
+	//	onError500(w, err, "Unknown error")
+	//	return
+	//}
+	//if !found {
+	//	onError(w, err, "No river found", http.StatusNotFound)
+	//	return
+	//}
+	//
+	//w.Write([]byte(waterway.Title))
+}
+
 func CloseAndRemove(f *os.File) {
 	f.Close()
 	os.Remove(f.Name())
@@ -676,6 +701,8 @@ func main() {
 	r.HandleFunc("/point/{id}", GetPoint).Methods("OPTIONS", "GET")
 
 	r.HandleFunc("/picture-metadata", PictureMetadataHandler).Methods("POST")
+
+	r.HandleFunc("/rivers-for-track", RiversForTrack).Methods("GET")
 
 	httpStr := fmt.Sprintf(":%d", 7007)
 	log.Infof("Starting http server on %s", httpStr)
