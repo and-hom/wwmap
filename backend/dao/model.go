@@ -187,10 +187,25 @@ type WaterWay struct {
 
 type WhiteWaterPoint struct {
 	Id         int64 `json:"id"`
+	OsmId      int64 `json:"osm_id"`
 	WaterWayId int64 `json:"waterWayId"`
 	Type       string `json:"type"`
 	Category   SportCategory `json:"type"`
 	Point      Point `json:"point"`
 	Title      string `json:"title"`
 	Comment    string `json:"comment"`
+}
+
+type WaterWayTmp struct {
+	Id       int64 `json:"id"`
+	Title    string `json:"title"`
+	Type     string `json:"type"`
+	ParentId int64 `json:"parentId"`
+	Comment  string `json:"comment"`
+}
+
+type PointRef struct {
+	Id       int64 `json:"id"`
+	ParentId int64 `json:"parent_id"`
+	Idx      int `json:"idx"`
 }

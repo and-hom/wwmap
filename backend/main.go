@@ -38,6 +38,23 @@ func TileHandler(w http.ResponseWriter, req *http.Request) {
 	w.Write(JsonpAnswer(callback, featureCollection, "{}"))
 }
 
+func TileWaterRapidHandler(w http.ResponseWriter, req *http.Request) {
+	corsHeaders(w, "GET, OPTIONS")
+
+	callback := req.FormValue("callback")
+	bbox, err := NewBbox(req.FormValue("bbox"))
+	if err != nil {
+		onError500(w, err, "Can not parse bbox")
+		return
+	}
+	points := storage.ListWhiteWaterPoints(bbox)
+
+	featureCollection := MkFeatureCollection(whiteWaterPointsToYmaps(points))
+	log.Infof("Found %d", len(featureCollection.Features))
+
+	w.Write(JsonpAnswer(callback, featureCollection, "{}"))
+}
+
 func SingleRouteTileHandler(w http.ResponseWriter, req *http.Request) {
 	corsHeaders(w, "GET, OPTIONS")
 
@@ -655,6 +672,7 @@ func main() {
 
 	r := mux.NewRouter()
 	r.HandleFunc("/ymaps-tile", TileHandler)
+	r.HandleFunc("/ymaps-tile-wr", TileWaterRapidHandler)
 	r.HandleFunc("/ymaps-single-route-tile", SingleRouteTileHandler)
 	//r.HandleFunc("/track-active-areas/{id:[0-9]+}/{x:[0-9]+}/{y:[0-9]+}/{z:[0-9]+}", TrackPointsToClickHandler)
 	r.HandleFunc("/visible-routes", GetVisibleRoutes)

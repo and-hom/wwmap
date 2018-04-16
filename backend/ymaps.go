@@ -3,6 +3,7 @@ package main
 import (
 	. "github.com/and-hom/wwmap/backend/dao"
 	. "github.com/and-hom/wwmap/backend/geo"
+	"fmt"
 )
 
 func toYmapsPreset(epType EventPointType) string {
@@ -15,6 +16,10 @@ func toYmapsPreset(epType EventPointType) string {
 		return "islands#blueBookIcon";
 	}
 	return "islands#blueDotIcon";
+}
+
+func toYmapsPresetWW(cat SportCategory) string {
+	return "default#image";
 }
 
 func routeToYmaps(route Route) []Feature {
@@ -83,6 +88,33 @@ func pointsToYmaps(points []EventPoint) []Feature {
 			},
 			Options:FeatureOptions{
 				Preset: toYmapsPreset(point.Type),
+				Id: point.Id,
+			},
+		}
+	}
+
+	return result
+}
+
+func whiteWaterPointsToYmaps(points []WhiteWaterPoint) []Feature {
+	pLength := len(points)
+
+	result := make([]Feature, pLength)
+	for i := 0; i < pLength; i++ {
+		point := points[i]
+		result[i] = Feature{
+			Id:point.Id,
+			Geometry:NewGeoPoint(point.Point),
+			Type:"Feature",
+			Properties:FeatureProperties{
+				HintContent: point.Title,
+				Id: point.Id,
+			},
+			Options:FeatureOptions{
+				IconLayout: IMAGE,
+				IconImageHref: fmt.Sprintf("img/cat%d.png", point.Category.Category),
+				IconImageSize: []int{32, 32},
+				IconImageOffset: []int{-16, -16},
 				Id: point.Id,
 			},
 		}

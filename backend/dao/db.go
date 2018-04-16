@@ -9,6 +9,7 @@ import (
 	"errors"
 	"reflect"
 	. "github.com/and-hom/wwmap/backend/geo"
+	"fmt"
 )
 
 type Storage interface {
@@ -38,7 +39,14 @@ type Storage interface {
 
 	AddWaterWays(waterways ...WaterWay) error
 
+	// tmp
+	AddTmpWaterWay(wwts ...WaterWayTmp) error
+	AddTmpRef(pnts ...PointRef) error
+	GetUniquePointRefIds() ([]int64, error)
+	// end of tmp
+
 	AddWhiteWaterPoints(whiteWaterPoint ...WhiteWaterPoint) error
+	ListWhiteWaterPoints(bbox Bbox) []WhiteWaterPoint
 }
 
 type PostgresStorage struct {
@@ -379,12 +387,53 @@ func (this PostgresStorage) AddWaterWays(waterways ...WaterWay) error {
 		}, vars...)
 }
 
+func (this PostgresStorage) AddTmpWaterWay(wwts ...WaterWayTmp) error {
+	vars := make([]interface{}, len(wwts))
+	for i, p := range wwts {
+		vars[i] = p
+	}
+	return this.performUpdates("INSERT INTO waterway_tmp(id, title, type, comment) VALUES ($1, $2, $3, $4)",
+		func(entity interface{}) ([]interface{}, error) {
+			waterway := entity.(WaterWayTmp)
+			return []interface{}{waterway.Id, waterway.Title, waterway.Type, waterway.Comment}, nil;
+		}, vars...)
+}
+
+func (this PostgresStorage) AddTmpRef(pnts ...PointRef) error {
+	vars := make([]interface{}, len(pnts))
+	for i, p := range pnts {
+		vars[i] = p
+	}
+	return this.performUpdates("INSERT INTO point_ref_tmp(id, parent_id, idx) VALUES ($1,$2,$3)",
+		func(entity interface{}) ([]interface{}, error) {
+			pnt := entity.(PointRef)
+			return []interface{}{pnt.Id, pnt.ParentId, pnt.Idx}, nil;
+		}, vars...)
+}
+
+func (this PostgresStorage) GetUniquePointRefIds() ([]int64, error) {
+	result, err := this.doFindList("SELECT distinct(id) FROM point_ref_tmp ",
+		func(rows *sql.Rows) (int64, error) {
+			id := int64(0)
+			err := rows.Scan(&(id))
+			if err != nil {
+				return 0, err
+			}
+			return id, nil
+		})
+	if err != nil {
+		log.Error("Can not load point ids list", err)
+		return []int64{}, err
+	}
+	return result.([]int64), nil
+}
+
 func (this PostgresStorage) AddWhiteWaterPoints(whiteWaterPoints ...WhiteWaterPoint) error {
 	vars := make([]interface{}, len(whiteWaterPoints))
 	for i, p := range whiteWaterPoints {
 		vars[i] = p
 	}
-	return this.performUpdates("INSERT INTO white_water_rapid(title,type,category,comment,point) VALUES ($1, $2, $3, $4, ST_GeomFromGeoJSON($5))",
+	return this.performUpdates("INSERT INTO white_water_rapid(osm_id, title,type,category,comment,point) VALUES ($1, $2, $3, $4, $5, ST_GeomFromGeoJSON($6))",
 		func(entity interface{}) ([]interface{}, error) {
 			wwp := entity.(WhiteWaterPoint)
 			categoryBytes, err := wwp.Category.MarshalJSON()
@@ -395,8 +444,69 @@ func (this PostgresStorage) AddWhiteWaterPoints(whiteWaterPoints ...WhiteWaterPo
 			if err != nil {
 				return nil, err
 			}
-			return []interface{}{wwp.Title, wwp.Type, string(categoryBytes), wwp.Comment, string(pathBytes)}, nil
+			fmt.Printf("id = %d", wwp.Id)
+			return []interface{}{wwp.OsmId, wwp.Title, wwp.Type, string(categoryBytes), wwp.Comment, string(pathBytes)}, nil
 		}, vars...)
+}
+
+func getOrElse(val sql.NullInt64, _default int64) int64 {
+	if val.Valid {
+		return val.Int64
+	} else {
+		return _default
+	}
+}
+
+func (this PostgresStorage) ListWhiteWaterPoints(bbox Bbox) []WhiteWaterPoint {
+	fmt.Printf("SELECT id, osm_id, water_way_id, type, title, comment, ST_AsGeoJSON(point) as point, category FROM white_water_rapid WHERE point && ST_MakeEnvelope( %f, %f, %f, %f)", bbox.X1, bbox.Y1, bbox.X2, bbox.Y2)
+	result, err := this.doFindList("SELECT id, osm_id, water_way_id, type, title, comment, ST_AsGeoJSON(point) as point, category FROM white_water_rapid WHERE point && ST_MakeEnvelope($1,$2,$3,$4)",
+		func(rows *sql.Rows) (WhiteWaterPoint, error) {
+			var err error
+			id := int64(-1)
+			osmId := sql.NullInt64{}
+			waterWayId := sql.NullInt64{}
+			_type := ""
+			title := ""
+			comment := ""
+			pointStr := ""
+			categoryStr := ""
+			err = rows.Scan(&id, &osmId, &waterWayId, &_type, &title, &comment, &pointStr, &categoryStr)
+			if err != nil {
+				log.Errorf("Can not read from db: %v", err)
+				return WhiteWaterPoint{}, err
+			}
+
+			var pgPoint PgPoint
+			fmt.Printf("\n======================= %d %v %v %s %s %s %s %s\n\n" ,id, osmId, waterWayId, _type, title, comment, pointStr, categoryStr)
+			err = json.Unmarshal([]byte(pointStr), &pgPoint)
+			if err != nil {
+				log.Errorf("Can not parse point %s for white water object %d: %v", pointStr, id, err)
+				return WhiteWaterPoint{}, err
+			}
+
+			var category SportCategory
+			err = json.Unmarshal([]byte(categoryStr), &category)
+			if err != nil {
+				log.Errorf("Can not parse category %s for white water object %d: %v", categoryStr, id, err)
+				return WhiteWaterPoint{}, err
+			}
+
+			eventPoint := WhiteWaterPoint{
+				Id:id,
+				OsmId:getOrElse(osmId, -1),
+				WaterWayId:getOrElse(waterWayId, -1),
+				Title: title,
+				Type: _type,
+				Point: pgPoint.Coordinates,
+				Comment: comment,
+				Category: category,
+			}
+			return eventPoint, nil
+		}, bbox.X1, bbox.Y1, bbox.X2, bbox.Y2)
+	if (err != nil ) {
+		return []WhiteWaterPoint{}
+	}
+	return result.([]WhiteWaterPoint)
 }
 
 func (s PostgresStorage)doFind(query string, callback func(rows *sql.Rows) error, args ...interface{}) (bool, error) {

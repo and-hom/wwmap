@@ -1,8 +1,19 @@
+### SQL migrations
+
+Migration files for https://github.com/mattes/migrate
+
+#### Before first usage
+1. Perform installation instructions https://github.com/mattes/migrate/blob/master/cli/README.md
+2. Install postgres and postgis
+3. Create database wwmap owned to user wwmap
+4. Add postgis extension to database: ``CREATE EXTENSION postgis;``
+
+#### Upgrade db:
 ```
-migrate -url postgres://wwmap@localhost:5432/wwmap -path ./db/migrations
+migrate -database 'postgres://wwmap:<your secret password>@localhost:5432/wwmap' -source file://. up
 ```
 
-Revert latest
+#### Revert latest
 ```
-migrate -url postgres://wwmap:wwmap@localhost:5432/wwmap -path ./ migrate -1
+migrate -database 'postgres://wwmap:<your secret password>@localhost:5432/wwmap' -source file://. down 1
 ```

@@ -96,9 +96,19 @@ type FeatureProperties struct {
 	Id              int64 `json:"id,omitempty"`
 }
 
+type IconLayout string
+const (
+	IMAGE IconLayout = "default#image"
+	IMAGE_WITH_CONTENT IconLayout = "default#imageWithContent"
+)
+
 type FeatureOptions struct {
-	Preset string `json:"preset,omitempty"`
-	Id     int64 `json:"id,omitempty"`
+	Preset          string `json:"preset,omitempty"`
+	Id              int64 `json:"id,omitempty"`
+	IconLayout      IconLayout `json:"iconLayout,omitempty"`
+	IconImageHref   string `json:"iconImageHref,omitempty"`
+	IconImageSize   []int `json:"iconImageSize,omitempty"`
+	IconImageOffset []int `json:"iconImageOffset,omitempty"`
 }
 
 type Feature struct {

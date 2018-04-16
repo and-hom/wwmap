@@ -15,21 +15,24 @@ import (
 type NodeSearchHandler struct {
 	saxlike.VoidHandler
 
-	grade    string
-	name     string
-	rname    string
-	lat      float64
-	lon      float64
-	_type    string
+	grade      string
+	name       string
+	rname      string
+	lat        float64
+	lon        float64
+	_type      string
+	id	   int64
 
-	comment string
+	comment    string
 
-	cnt      int
-	foundcnt int
-	Node     bool
-	Found    bool
+	cnt        int
+	foundcnt   int
+	Node       bool
+	Found      bool
 
-	result   []dao.WhiteWaterPoint
+	result_buf []dao.WhiteWaterPoint
+	buf_size   int
+	store      func([]dao.WhiteWaterPoint)
 }
 
 func (h *NodeSearchHandler) StartElement(element xml.StartElement) {
@@ -52,6 +55,12 @@ func (h *NodeSearchHandler) StartElement(element xml.StartElement) {
 		h.lon, err = strconv.ParseFloat(data.Attr(element.Attr, "lon"), 64)
 		if err != nil {
 			log.Print("Lat not found", err)
+			h.Found = false
+			return
+		}
+		h.id, err = strconv.ParseInt(data.Attr(element.Attr, "id"), 10, 64)
+		if err != nil {
+			log.Print("Id found", err)
 			h.Found = false
 			return
 		}
@@ -84,7 +93,7 @@ func hasEqAttr(attrs []xml.Attr, name string, value string) bool {
 func (h *NodeSearchHandler) EndElement(element xml.EndElement) {
 	if element.Name.Local == "node" {
 		if h.cnt % 100000 == 0 {
-			fmt.Fprintf(os.Stderr, "%d\t%d\t%d%%\n", h.cnt, h.foundcnt, int(float64(h.foundcnt) * 100.0 / float64(h.cnt)))
+			fmt.Fprintf(os.Stderr, "objects processed %d\tobjects filtered %d\tratio %.5f%%\n", h.cnt, h.foundcnt, float64(h.foundcnt) / float64(h.cnt))
 		}
 		if h.Found {
 			category := dao.SportCategory{}
@@ -98,6 +107,7 @@ func (h *NodeSearchHandler) EndElement(element xml.EndElement) {
 			}
 
 			point := dao.WhiteWaterPoint{
+				OsmId: h.id,
 				Point:geo.Point{
 					Lat:h.lat,
 					Lon: h.lon,
@@ -107,10 +117,25 @@ func (h *NodeSearchHandler) EndElement(element xml.EndElement) {
 				Type:h._type,
 				Comment:h.comment,
 			}
-			h.result = append(h.result, point)
+			h.result_buf = append(h.result_buf, point)
+
+			if len(h.result_buf) >= h.buf_size {
+				h.flush()
+			}
 		}
 		h.Node = false
 		h.Found = false
 	}
+}
+
+func (h *NodeSearchHandler) EndDocument() {
+	if len(h.result_buf) > 0 {
+		h.flush()
+	}
+}
+
+func (h* NodeSearchHandler) flush() {
+	h.store(h.result_buf)
+	h.result_buf = nil
 }
 
