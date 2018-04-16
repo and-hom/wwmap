@@ -5,9 +5,7 @@ import (
 	"time"
 	"math"
 	. "github.com/and-hom/wwmap/backend/geo"
-	"regexp"
-	"strconv"
-	"strings"
+	"github.com/and-hom/wwmap/backend/model"
 )
 
 type JSONTime time.Time
@@ -100,47 +98,12 @@ func (this Track) Bounds() Bbox {
 	}
 }
 
-type SportCategory struct {
-	Category int
-	Sub      string
-}
-
-func (this SportCategory) MarshalJSON() ([]byte, error) {
-	return []byte(fmt.Sprintf("%d%s", this.Category, this.Sub)), nil
-}
-
-func (this *SportCategory) UnmarshalJSON(data []byte) error {
-	dataStr := string(data)
-	if len(strings.TrimSpace(dataStr)) == 0 {
-		// no category specified
-		return nil
-	}
-
-	re := regexp.MustCompile("^(\\d+)([A-Za-z]+)?$")
-	var err error
-
-	match := re.FindStringSubmatch(dataStr)
-	if match == nil {
-		return fmt.Errorf("Can not parse route category: %s", dataStr)
-	}
-	this.Category, err = strconv.Atoi(match[1])
-	if err != nil {
-		return err
-	}
-	if len(match) >= 3 {
-		this.Sub = match[2]
-	} else {
-		this.Sub = ""
-	}
-	return nil
-}
-
 type Route struct {
 	Id       int64 `json:"id"`
 	Title    string `json:"title"`
 	Tracks   []Track `json:"tracks"`
 	Points   []EventPoint `json:"points"` // points with articles
-	Category SportCategory `json:"category"`
+	Category model.SportCategory `json:"category"`
 }
 
 func Bounds(tracks []Track, points []EventPoint) Bbox {
@@ -190,10 +153,12 @@ type WhiteWaterPoint struct {
 	OsmId      int64 `json:"osm_id"`
 	WaterWayId int64 `json:"waterWayId"`
 	Type       string `json:"type"`
-	Category   SportCategory `json:"type"`
+	Category   model.SportCategory `json:"type"`
 	Point      Point `json:"point"`
 	Title      string `json:"title"`
+	Link       string `json:"title"`
 	Comment    string `json:"comment"`
+	ShortDesc    string `json:"short_description"`
 }
 
 type WaterWayTmp struct {

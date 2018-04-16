@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"math"
 	"github.com/Sirupsen/logrus"
+	"github.com/and-hom/wwmap/backend/model"
 )
 
 type Bbox struct {
@@ -94,9 +95,17 @@ type FeatureProperties struct {
 	HintContent     string `json:"hintContent,omitempty"`
 	HotspotMetaData HotspotMetaData `json:"HotspotMetaData,omitempty"`
 	Id              int64 `json:"id,omitempty"`
+
+	// custom fields
+	Title           string `json:"title,omitempty"`
+	Link            string `json:"link,omitempty"`
+	Comment            string `json:"comment,omitempty"`
+	ShortDesc            string `json:"short_description,omitempty"`
+	Category        model.SportCategory `json:"category,omitempty"`
 }
 
 type IconLayout string
+
 const (
 	IMAGE IconLayout = "default#image"
 	IMAGE_WITH_CONTENT IconLayout = "default#imageWithContent"
@@ -105,6 +114,7 @@ const (
 type FeatureOptions struct {
 	Preset          string `json:"preset,omitempty"`
 	Id              int64 `json:"id,omitempty"`
+
 	IconLayout      IconLayout `json:"iconLayout,omitempty"`
 	IconImageHref   string `json:"iconImageHref,omitempty"`
 	IconImageSize   []int `json:"iconImageSize,omitempty"`

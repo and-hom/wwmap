@@ -1,7 +1,10 @@
 package main
 
 import . "github.com/and-hom/wwmap/backend/dao"
-import . "github.com/and-hom/wwmap/backend/geo"
+import (
+	. "github.com/and-hom/wwmap/backend/geo"
+	"github.com/and-hom/wwmap/backend/model"
+)
 
 type RouteEditorPage struct {
 	Id          int64 `json:"id,omitempty"`
@@ -11,5 +14,5 @@ type RouteEditorPage struct {
 	Bounds      Bbox `json:"bounds"`
 	Tracks      []Track `json:"tracks,omitempty"`
 	EventPoints []EventPoint `json:"points,omitempty"`
-	Category    SportCategory `json:"category"`
+	Category    model.SportCategory `json:"category"`
 }

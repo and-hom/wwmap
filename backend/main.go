@@ -16,6 +16,7 @@ import (
 	. "github.com/and-hom/wwmap/backend/dao"
 	. "github.com/and-hom/wwmap/backend/geo"
 	. "github.com/and-hom/wwmap/backend/geoparser"
+	"github.com/and-hom/wwmap/backend/model"
 )
 
 var storage Storage
@@ -373,7 +374,7 @@ func parseTrackForm(w http.ResponseWriter, r *http.Request) (Track, error) {
 
 func parseRouteForm(w http.ResponseWriter, r *http.Request) (Route, error) {
 	title := r.FormValue("title")
-	category := SportCategory{}
+	category := model.SportCategory{}
 	err := json.Unmarshal([]byte(r.FormValue("category")), &category)
 	if err != nil {
 		return Route{}, err

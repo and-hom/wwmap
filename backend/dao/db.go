@@ -10,6 +10,7 @@ import (
 	"reflect"
 	. "github.com/and-hom/wwmap/backend/geo"
 	"fmt"
+	"github.com/and-hom/wwmap/backend/model"
 )
 
 type Storage interface {
@@ -458,8 +459,7 @@ func getOrElse(val sql.NullInt64, _default int64) int64 {
 }
 
 func (this PostgresStorage) ListWhiteWaterPoints(bbox Bbox) []WhiteWaterPoint {
-	fmt.Printf("SELECT id, osm_id, water_way_id, type, title, comment, ST_AsGeoJSON(point) as point, category FROM white_water_rapid WHERE point && ST_MakeEnvelope( %f, %f, %f, %f)", bbox.X1, bbox.Y1, bbox.X2, bbox.Y2)
-	result, err := this.doFindList("SELECT id, osm_id, water_way_id, type, title, comment, ST_AsGeoJSON(point) as point, category FROM white_water_rapid WHERE point && ST_MakeEnvelope($1,$2,$3,$4)",
+	result, err := this.doFindList("SELECT id, osm_id, water_way_id, type, title, comment, ST_AsGeoJSON(point) as point, category, short_description FROM white_water_rapid WHERE point && ST_MakeEnvelope($1,$2,$3,$4)",
 		func(rows *sql.Rows) (WhiteWaterPoint, error) {
 			var err error
 			id := int64(-1)
@@ -470,7 +470,8 @@ func (this PostgresStorage) ListWhiteWaterPoints(bbox Bbox) []WhiteWaterPoint {
 			comment := ""
 			pointStr := ""
 			categoryStr := ""
-			err = rows.Scan(&id, &osmId, &waterWayId, &_type, &title, &comment, &pointStr, &categoryStr)
+			shortDesc := sql.NullString{}
+			err = rows.Scan(&id, &osmId, &waterWayId, &_type, &title, &comment, &pointStr, &categoryStr, &shortDesc)
 			if err != nil {
 				log.Errorf("Can not read from db: %v", err)
 				return WhiteWaterPoint{}, err
@@ -484,7 +485,7 @@ func (this PostgresStorage) ListWhiteWaterPoints(bbox Bbox) []WhiteWaterPoint {
 				return WhiteWaterPoint{}, err
 			}
 
-			var category SportCategory
+			var category model.SportCategory
 			err = json.Unmarshal([]byte(categoryStr), &category)
 			if err != nil {
 				log.Errorf("Can not parse category %s for white water object %d: %v", categoryStr, id, err)
@@ -500,6 +501,7 @@ func (this PostgresStorage) ListWhiteWaterPoints(bbox Bbox) []WhiteWaterPoint {
 				Point: pgPoint.Coordinates,
 				Comment: comment,
 				Category: category,
+				ShortDesc: shortDesc.String,
 			}
 			return eventPoint, nil
 		}, bbox.X1, bbox.Y1, bbox.X2, bbox.Y2)
