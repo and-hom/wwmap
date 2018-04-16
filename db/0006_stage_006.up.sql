@@ -22,7 +22,7 @@ CREATE TABLE white_water_rapid (
   CONSTRAINT point_is_point CHECK (GeometryType(point) = 'POINT')
 );
 CREATE INDEX white_water_rapid_river
-  ON white_water_rapid (whater_way_id);
+  ON white_water_rapid (water_way_id);
 CREATE INDEX white_water_rapid_osm_id
   ON white_water_rapid (osm_id);
 
