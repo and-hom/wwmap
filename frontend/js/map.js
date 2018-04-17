@@ -22,7 +22,7 @@
                 '<h3 class="popover-title">'+
                 '[if properties.link]<a target="_blank" href="$[properties.link]">$[properties.title]</a>[else]$[properties.title][endif]</h3>'+
                     '<div class="popover-content">' +
-                    '<div>Категория сложности: $[properties.category]</div>' +
+                    '<div>Категория сложности: [if properties.category=="0"]не определена[else]$[properties.category][endif]</div>' +
                     '<div>$[properties.short_desc]</div>' +
                     '<a id="report_$[properties.link]" href="button">Сообщить о неточном местоположении<a/>' +
                     '</div>'
