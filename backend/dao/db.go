@@ -434,7 +434,7 @@ func (this PostgresStorage) AddWhiteWaterPoints(whiteWaterPoints ...WhiteWaterPo
 	for i, p := range whiteWaterPoints {
 		vars[i] = p
 	}
-	return this.performUpdates("INSERT INTO white_water_rapid(osm_id, title,type,category,comment,point) VALUES ($1, $2, $3, $4, $5, ST_GeomFromGeoJSON($6))",
+	return this.performUpdates("INSERT INTO white_water_rapid(osm_id, title,type,category,comment,point,short_description, link) VALUES ($1, $2, $3, $4, $5, ST_GeomFromGeoJSON($6), $7, $8)",
 		func(entity interface{}) ([]interface{}, error) {
 			wwp := entity.(WhiteWaterPoint)
 			categoryBytes, err := wwp.Category.MarshalJSON()
@@ -446,7 +446,7 @@ func (this PostgresStorage) AddWhiteWaterPoints(whiteWaterPoints ...WhiteWaterPo
 				return nil, err
 			}
 			fmt.Printf("id = %d", wwp.Id)
-			return []interface{}{wwp.OsmId, wwp.Title, wwp.Type, string(categoryBytes), wwp.Comment, string(pathBytes)}, nil
+			return []interface{}{wwp.OsmId, wwp.Title, wwp.Type, string(categoryBytes), wwp.Comment, string(pathBytes), wwp.ShortDesc, wwp.Link}, nil
 		}, vars...)
 }
 
@@ -459,7 +459,7 @@ func getOrElse(val sql.NullInt64, _default int64) int64 {
 }
 
 func (this PostgresStorage) ListWhiteWaterPoints(bbox Bbox) []WhiteWaterPoint {
-	result, err := this.doFindList("SELECT id, osm_id, water_way_id, type, title, comment, ST_AsGeoJSON(point) as point, category, short_description FROM white_water_rapid WHERE point && ST_MakeEnvelope($1,$2,$3,$4)",
+	result, err := this.doFindList("SELECT id, osm_id, water_way_id, type, title, comment, ST_AsGeoJSON(point) as point, category, short_description, link FROM white_water_rapid WHERE point && ST_MakeEnvelope($1,$2,$3,$4)",
 		func(rows *sql.Rows) (WhiteWaterPoint, error) {
 			var err error
 			id := int64(-1)
@@ -471,7 +471,8 @@ func (this PostgresStorage) ListWhiteWaterPoints(bbox Bbox) []WhiteWaterPoint {
 			pointStr := ""
 			categoryStr := ""
 			shortDesc := sql.NullString{}
-			err = rows.Scan(&id, &osmId, &waterWayId, &_type, &title, &comment, &pointStr, &categoryStr, &shortDesc)
+			link := sql.NullString{}
+			err = rows.Scan(&id, &osmId, &waterWayId, &_type, &title, &comment, &pointStr, &categoryStr, &shortDesc, &link)
 			if err != nil {
 				log.Errorf("Can not read from db: %v", err)
 				return WhiteWaterPoint{}, err
@@ -502,6 +503,7 @@ func (this PostgresStorage) ListWhiteWaterPoints(bbox Bbox) []WhiteWaterPoint {
 				Comment: comment,
 				Category: category,
 				ShortDesc: shortDesc.String,
+				Link: link.String,
 			}
 			return eventPoint, nil
 		}, bbox.X1, bbox.Y1, bbox.X2, bbox.Y2)

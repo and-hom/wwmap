@@ -150,13 +150,13 @@ type WaterWay struct {
 
 type WhiteWaterPoint struct {
 	Id         int64 `json:"id"`
-	OsmId      int64 `json:"osm_id"`
-	WaterWayId int64 `json:"waterWayId"`
+	OsmId      int64 `json:"osm_id,string"`
+	WaterWayId int64 `json:"waterWayId,string"`
 	Type       string `json:"type"`
-	Category   model.SportCategory `json:"type"`
+	Category   model.SportCategory `json:"category"`
 	Point      Point `json:"point"`
 	Title      string `json:"title"`
-	Link       string `json:"title"`
+	Link       string `json:"link"`
 	Comment    string `json:"comment"`
 	ShortDesc    string `json:"short_description"`
 }

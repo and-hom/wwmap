@@ -20,6 +20,7 @@ CREATE TABLE white_water_rapid (
   point         GEOMETRY NOT NULL,
   comment       TEXT,
   short_description       VARCHAR(512),
+  link       VARCHAR(512),
   CONSTRAINT point_is_point CHECK (GeometryType(point) = 'POINT')
 );
 CREATE INDEX white_water_rapid_river
