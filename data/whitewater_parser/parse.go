@@ -5,17 +5,19 @@ import (
 	"os"
 	"github.com/and-hom/wwmap/backend/dao"
 	"log"
+	"github.com/and-hom/wwmap/config"
 )
 
 func main() {
+	configuration := config.Load("")
+
 	r, err := os.Open(os.Args[1])
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer r.Close()
 
-
-	storage := dao.NewPostgresStorage()
+	storage := dao.NewPostgresStorage(configuration.DbConnString)
 	store := func(wpts[]dao.WhiteWaterPoint) {
 		err:=storage.AddWhiteWaterPoints(wpts...)
 		if err != nil {

@@ -80,9 +80,8 @@
 <script type="text/javascript" src="./js/jquery.json.js"></script>
 <script type="text/javascript" src="./js/index.js"></script>
 <script type="text/javascript" src="https://api-maps.yandex.ru/2.1/?lang=tr_TR"></script>
+<script type="text/javascript" src="./js/config.js"></script>
 <script type="text/javascript">
-    const LAST_POS_COOKIE_NAME = "last-map-pos";
-    const apiBase = "http://localhost:7007";
 
     ymaps.ready(init);
     var myMap;
@@ -98,13 +97,14 @@
 
     function init() {
         myMap = new ymaps.Map("map", {
-            center: lastPosition(),
-            zoom: 7,
+            center: getLastPosition(),
+            zoom: getLastZoom(),
             controls: ["zoomControl", "fullscreenControl"]
         });
 
         myMap.events.add('boundschange', function (e) {
-            $.cookie(LAST_POS_COOKIE_NAME, $.toJSON(myMap.getCenter()), {path: '/'})
+            setLastPosition(myMap.getCenter())
+            setLastZoom(myMap.getZoom())
             var bounds = e.get("newBounds");
             loadTrackList(bounds);
         });
@@ -159,14 +159,6 @@
         });
     }
 
-    function lastPosition() {
-        lastPos = $.cookie(LAST_POS_COOKIE_NAME);
-        if (lastPos) {
-            return $.parseJSON(lastPos)
-        } else {
-            return [55.76, 37.64]
-        }
-    }
 </script>
 </body>
 </html>

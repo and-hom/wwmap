@@ -53,8 +53,8 @@ type PostgresStorage struct {
 	db *sql.DB
 }
 
-func NewPostgresStorage() Storage {
-	db, err := sql.Open("postgres", "postgres://wwmap:wwmap@localhost:5432/wwmap?sslmode=require")
+func NewPostgresStorage(connStr string) Storage {
+	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatalf("Can not connect to postgres: %v", err)
 	}

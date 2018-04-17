@@ -1,10 +1,3 @@
-    const LAST_POS_COOKIE_NAME = "last-map-pos";
-    const apiBase = "http://localhost:7007";
-
-    const STANDARD_TILES = 'http://tile.openstreetmap.org/%z/%x/%y.png';
-    const THUNDERFOREST_OUTDOOR_TILES = 'http://a.tile.thunderforest.com/outdoors/%z/%x/%y.png';
-    const THUNDERFOREST_LANDSCAPE_TILES = 'http://a.tile.thunderforest.com/landscape/%z/%x/%y.png';
-
     ymaps.ready(init);
     var myMap;
     var trackHighlighter = {val:null};
@@ -12,8 +5,8 @@
 
     function init() {
         myMap = new ymaps.Map("map", {
-            center: lastPosition(),
-            zoom: 7,
+            center: getLastPosition(),
+            zoom: getLastZoom(),
             controls: ["zoomControl", "fullscreenControl"],
             type: 'yandex#satellite'
         });
@@ -26,6 +19,11 @@
 
         myMap.events.add('click', function (e) {
             myMap.balloon.close()
+        });
+
+        myMap.events.add('boundschange', function (e) {
+            setLastPosition(myMap.getCenter())
+            setLastZoom(myMap.getZoom())
         });
 
         var objectManager = new ymaps.LoadingObjectManager(apiBase + '/ymaps-tile-wr?bbox=%b', {
@@ -71,13 +69,4 @@
                 myMap.setCenter(geodata);
             }
         });
-    }
-
-    function lastPosition() {
-        lastPos = $.cookie(LAST_POS_COOKIE_NAME);
-        if (lastPos) {
-            return $.parseJSON(lastPos)
-        } else {
-            return [55.76, 37.64]
-        }
     }
