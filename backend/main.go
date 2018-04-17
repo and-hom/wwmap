@@ -16,6 +16,7 @@ import (
 	. "github.com/and-hom/wwmap/backend/dao"
 	. "github.com/and-hom/wwmap/backend/geo"
 	. "github.com/and-hom/wwmap/backend/geoparser"
+	"github.com/and-hom/wwmap/config"
 	"github.com/and-hom/wwmap/backend/model"
 )
 
@@ -669,7 +670,9 @@ func corsHeaders(w http.ResponseWriter, methods string) {
 func main() {
 	log.Infof("Starting wwmap")
 
-	storage = NewPostgresStorage()
+	configuration := config.Load("")
+
+	storage = NewPostgresStorage(configuration.DbConnString)
 
 	r := mux.NewRouter()
 	r.HandleFunc("/ymaps-tile", TileHandler)

@@ -114,6 +114,7 @@
 <script type="text/javascript" src="./js/bootstrap-editable.min.js"></script>
 <script type="text/javascript" src="./js/jquery.snippet.min.js" charset="utf-8"></script>
 <script type="text/javascript" src="./js/index.js" charset="utf-8"></script>
+<script type="text/javascript" src="./js/config.js" charset="utf-8"></script>
 
 <script type="text/javascript" src="https://api-maps.yandex.ru/2.1/?lang=tr_TR"></script>
 <script type="text/javascript">
@@ -121,8 +122,6 @@
         var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
         return results[1] || 0;
     };
-
-    const apiBase = "http://localhost:7007";
     const id = $.urlParam('id');
 
     const PHOTO = 'photo';

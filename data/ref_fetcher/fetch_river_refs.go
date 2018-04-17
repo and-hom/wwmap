@@ -6,6 +6,7 @@ import (
 	"log"
 	"github.com/and-hom/wwmap/backend/dao"
 	//"github.com/and-hom/wwmap/backend/geo"
+	"github.com/and-hom/wwmap/config"
 )
 
 func load_waterways(fname string, storage  dao.Storage) {
@@ -39,7 +40,8 @@ func load_point_refs(fname string, storage  dao.Storage, ids []int64) {
 //
 
 func main() {
-	storage := dao.NewPostgresStorage()
+	configuration := config.Load("")
+	storage := dao.NewPostgresStorage(configuration.DbConnString)
 	fname := os.Args[1]
 
 	load_waterways(fname, storage)
