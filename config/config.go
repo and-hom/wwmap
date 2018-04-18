@@ -91,6 +91,13 @@ func Load(configLocationOverride string) Configuration {
 		return c4
 	}
 
+	p5 := "../config.yaml"
+	log.Infof("Try to load config from %s", p4)
+	c5, err := loadConf(p5)
+	if err == nil {
+		return c5
+	}
+
 	return Configuration{}
 }
 

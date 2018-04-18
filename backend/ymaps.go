@@ -18,10 +18,6 @@ func toYmapsPreset(epType EventPointType) string {
 	return "islands#blueDotIcon";
 }
 
-func toYmapsPresetWW(cat SportCategory) string {
-	return "default#image";
-}
-
 func routeToYmaps(route Route) []Feature {
 	pointCount := len(route.Points)
 	trackCount := len(route.Tracks)
@@ -109,12 +105,18 @@ func whiteWaterPointsToYmaps(points []WhiteWaterPoint) []Feature {
 			Properties:FeatureProperties{
 				HintContent: point.Title,
 				Id: point.Id,
+
+				Title: point.Title,
+				Category: point.Category,
+				Link: point.Link,
+				ShortDesc: point.ShortDesc,
 			},
 			Options:FeatureOptions{
 				IconLayout: IMAGE,
 				IconImageHref: fmt.Sprintf("img/cat%d.png", point.Category.Category),
 				IconImageSize: []int{32, 32},
 				IconImageOffset: []int{-16, -16},
+
 				Id: point.Id,
 			},
 		}

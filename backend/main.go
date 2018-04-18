@@ -17,6 +17,7 @@ import (
 	. "github.com/and-hom/wwmap/backend/geo"
 	. "github.com/and-hom/wwmap/backend/geoparser"
 	"github.com/and-hom/wwmap/config"
+	"github.com/and-hom/wwmap/backend/model"
 )
 
 var storage Storage
@@ -39,7 +40,7 @@ func TileHandler(w http.ResponseWriter, req *http.Request) {
 	w.Write(JsonpAnswer(callback, featureCollection, "{}"))
 }
 
-func TileWaterRapidHandler(w http.ResponseWriter, req *http.Request) {
+func TileWhiteWaterHandler(w http.ResponseWriter, req *http.Request) {
 	corsHeaders(w, "GET, OPTIONS")
 
 	callback := req.FormValue("callback")
@@ -54,6 +55,42 @@ func TileWaterRapidHandler(w http.ResponseWriter, req *http.Request) {
 	log.Infof("Found %d", len(featureCollection.Features))
 
 	w.Write(JsonpAnswer(callback, featureCollection, "{}"))
+}
+
+func AddWhiteWaterPoints(w http.ResponseWriter, r *http.Request) {
+	corsHeaders(w, "POST, GET, OPTIONS, PUT, DELETE")
+	err := r.ParseForm()
+	if err != nil {
+		onError(w, err, "Can not parse form", http.StatusBadRequest)
+		return
+	}
+
+	wwPoints, err := parseWhiteWaterPointsForm(w, r)
+	if err != nil {
+		onError500(w, err, "Can not read request")
+		return
+	}
+
+	err = storage.AddWhiteWaterPoints(wwPoints...)
+	fmt.Printf("%v\n", wwPoints)
+
+	if err != nil {
+		onError500(w, err, "Can not insert")
+		return
+	}
+}
+
+func parseWhiteWaterPointsForm(w http.ResponseWriter, r *http.Request) ([]WhiteWaterPoint, error) {
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		return []WhiteWaterPoint{}, err
+	}
+	var points []WhiteWaterPoint
+	err = json.Unmarshal(body, &points)
+	if err != nil {
+		return []WhiteWaterPoint{}, err
+	}
+	return points, nil
 }
 
 func SingleRouteTileHandler(w http.ResponseWriter, req *http.Request) {
@@ -374,7 +411,7 @@ func parseTrackForm(w http.ResponseWriter, r *http.Request) (Track, error) {
 
 func parseRouteForm(w http.ResponseWriter, r *http.Request) (Route, error) {
 	title := r.FormValue("title")
-	category := SportCategory{}
+	category := model.SportCategory{}
 	err := json.Unmarshal([]byte(r.FormValue("category")), &category)
 	if err != nil {
 		return Route{}, err
@@ -675,7 +712,6 @@ func main() {
 
 	r := mux.NewRouter()
 	r.HandleFunc("/ymaps-tile", TileHandler)
-	r.HandleFunc("/ymaps-tile-wr", TileWaterRapidHandler)
 	r.HandleFunc("/ymaps-single-route-tile", SingleRouteTileHandler)
 	//r.HandleFunc("/track-active-areas/{id:[0-9]+}/{x:[0-9]+}/{y:[0-9]+}/{z:[0-9]+}", TrackPointsToClickHandler)
 	r.HandleFunc("/visible-routes", GetVisibleRoutes)
@@ -697,6 +733,10 @@ func main() {
 	r.HandleFunc("/point/{id}", GetPoint).Methods("OPTIONS", "GET")
 
 	r.HandleFunc("/picture-metadata", PictureMetadataHandler).Methods("POST")
+
+	r.HandleFunc("/ymaps-tile-ww", TileWhiteWaterHandler)
+	r.HandleFunc("/ww", CorsGetOptionsStub).Methods("OPTIONS")
+	r.HandleFunc("/ww", AddWhiteWaterPoints).Methods("PUT", "POST")
 
 	httpStr := fmt.Sprintf(":%d", 7007)
 	log.Infof("Starting http server on %s", httpStr)

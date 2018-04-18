@@ -10,6 +10,16 @@
             controls: ["zoomControl", "fullscreenControl"],
             type: 'yandex#satellite'
         });
+        // Создание вложенного макета содержимого балуна.
+            LabelBalloonContentLayout = ymaps.templateLayoutFactory.createClass(
+                '<h3 class="popover-title">'+
+                '[if properties.link]<a target="_blank" href="$[properties.link]">$[properties.title]</a>[else]$[properties.title][endif]</h3>'+
+                    '<div class="popover-content">' +
+                    '<div>Категория сложности: [if properties.category=="0"]не определена[else]$[properties.category][endif]</div>' +
+                    '<div>$[properties.short_desc]</div>' +
+                    '<a id="report_$[properties.link]" href="button">Сообщить о неточном местоположении<a/>' +
+                    '</div>'
+            );
 
         myMap.layers.add(new ymaps.Layer(
         STANDARD_TILES, {
@@ -26,9 +36,10 @@
             setLastZoom(myMap.getZoom())
         });
 
-        var objectManager = new ymaps.LoadingObjectManager(apiBase + '/ymaps-tile-wr?bbox=%b', {
+        var objectManager = new ymaps.LoadingObjectManager(apiBase + '/ymaps-tile-ww?bbox=%b', {
             clusterHasBalloon: false,
             geoObjectOpenBalloonOnClick: false,
+            geoObjectBalloonContentLayout: LabelBalloonContentLayout,
             geoObjectStrokeWidth: 3,
             splitRequests: true
         });
