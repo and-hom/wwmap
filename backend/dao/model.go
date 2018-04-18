@@ -139,34 +139,42 @@ type ExtDataTrack struct {
 	FileIds []string `json:"fileIds"`
 }
 
+type WaterWayTitle struct {
+	Id    int64 `json:"id"`
+	Title string `json:"title"`
+}
+
 type WaterWay struct {
-	Id       int64 `json:"id"`
-	Title    string `json:"title"`
-	Type     string `json:"type"`
-	Path     []Point `json:"path"`
-	ParentId int64 `json:"parentId"`
-	Comment  string `json:"comment"`
+	Id         int64 `json:"id"`
+	Title      string `json:"title"`
+	Type       string `json:"type"`
+	Path       []Point `json:"path"`
+	ParentId   int64 `json:"parentId"`
+	Comment    string `json:"comment"`
+	Verified   bool `json:"verified"`
+	Popularity int16 `json:"popularity"`
 }
 
 type WhiteWaterPoint struct {
 	Id         int64 `json:"id"`
 	OsmId      int64 `json:"osm_id,string"`
-	WaterWayId int64 `json:"waterWayId,string"`
+	WaterWayId int64 `json:"waterway_id"`
 	Type       string `json:"type"`
 	Category   model.SportCategory `json:"category"`
 	Point      Point `json:"point"`
 	Title      string `json:"title"`
 	Link       string `json:"link"`
 	Comment    string `json:"comment"`
-	ShortDesc    string `json:"short_description"`
+	ShortDesc  string `json:"short_description"`
 }
 
 type WaterWayTmp struct {
-	Id       int64 `json:"id"`
-	Title    string `json:"title"`
-	Type     string `json:"type"`
-	ParentId int64 `json:"parentId"`
-	Comment  string `json:"comment"`
+	Id            int64 `json:"id"`
+	Title         string `json:"title"`
+	Type          string `json:"type"`
+	ParentId      int64 `json:"parentId"`
+	Comment       string `json:"comment"`
+	PathPointRefs []int64 `json:"path_point_refs"`
 }
 
 type PointRef struct {

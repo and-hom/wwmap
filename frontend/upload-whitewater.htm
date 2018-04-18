@@ -21,39 +21,49 @@
                             <th>Широта (lat)</th>
                             <th>Долгота (lon)</th>
                             <th>Категория</th>
+                            <th>Река</th>
                             <th>Краткое описание</th>
                             <th>Ссылка на вики</th>
                             <th/>
                         </tr>
                         <tr ng-repeat="point in points | filter : filterPoints">
                             <td>
-                                <span editable-text="point.title" e-name="title" e-form="rowform"
-                                      onbeforesave="checkTitle($data)">{{ point.title || 'empty' }}</span>
+                                <span editable-text="point.title" e-name="title" e-form="tableform"
+                                      onbeforesave="checkTitle($data)">{{ point.title || 'Не задано' }}</span>
                             </td>
                             <td>
-                                <span editable-text="point.osm_id" e-name="osm_id" e-form="rowform"
-                                      onbeforesave="checkNumber($data, true)">{{ point.osm_id || 'empty' }}</span>
+                                <span editable-text="point.osm_id" e-name="osm_id" e-form="tableform"
+                                      onbeforesave="checkNumber($data, true)">{{ point.osm_id || 'Не задан' }}</span>
                             </td>
                             <td>
-                                <span editable-text="point.lat" e-name="lat" e-form="rowform"
-                                      onbeforesave="checkNumber($data)">{{ point.lat || 'empty' }}</span>
+                                <span editable-text="point.lat" e-name="lat" e-form="tableform"
+                                      onbeforesave="checkNumber($data)">{{ point.lat || 'Не задана' }}</span>
                             </td>
                             <td>
-                                <span editable-text="point.lon" e-name="lon" e-form="rowform"
-                                      onbeforesave="checkNumber($data)">{{ point.lon || 'empty' }}</span>
+                                <span editable-text="point.lon" e-name="lon" e-form="tableform"
+                                      onbeforesave="checkNumber($data)">{{ point.lon || 'Не задана' }}</span>
                             </td>
                             <td>
-                            <span editable-select="point.category" e-name="category" e-form="rowform" e-style="width: 60px"
+                            <span editable-select="point.category" e-name="category" e-form="tableform" e-style="width: 60px"
                                   e-ng-options="c.value as c.text for c in categories">
-                                {{ showCategory(point) }}
+                                {{ showCategory(point) || 'Не выбрана' }}
+                            </span>
+                            </td>
+                            <td>
+                            <!--<span editable-select="point.waterway_id" e-name="waterway_id" e-form="tableform" e-style="width: 100px"-->
+                                  <!--onshow="loadRivers(point)" e-ng-options="c.value as c.text for c in categories)">-->
+                            <!--</span>-->
+                                <span editable-select="point.waterway_id" e-name="waterway_id" e-form="tableform" e-style="width: 100px"
+                                      onshow="loadRivers(point)" e-ng-options="c.id as c.title for c in getRivers(point)">
+                                {{ showRiver(point) || 'Не выбрана' }}
                             </span>
                             </td>
                             <td>
                                 <span editable-textarea="point.short_description" e-name="short_description" e-rows="5" e-cols="40"
-                                      e-form="rowform" onbeforesave="checkLength($data, 512)">{{ point.short_description || 'empty' }}</span>
+                                      e-form="tableform" onbeforesave="checkLength($data, 512)">{{ point.short_description || 'Не задано' }}</span>
                             </td>
                             <td>
-                                <span editable-text="point.link" e-name="link" e-form="rowform">{{ point.link || 'empty' }}</span>
+                                <span editable-text="point.link" e-name="link" e-form="tableform">{{ point.link || 'Не задана' }}</span>
                             </td>
                             <td><button type="button" ng-show="tableform.$visible" ng-click="deletePoint(point.title)" class="btn btn-danger pull-right">Del</button></td>
                         </tr>

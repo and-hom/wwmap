@@ -57,6 +57,29 @@ func TileWhiteWaterHandler(w http.ResponseWriter, req *http.Request) {
 	w.Write(JsonpAnswer(callback, featureCollection, "{}"))
 }
 
+func GetNearestRivers(w http.ResponseWriter, r *http.Request) {
+	corsHeaders(w, "GET")
+	lat_s := r.FormValue("lat")
+	lat, err := strconv.ParseFloat(lat_s, 64)
+	if err != nil {
+		onError(w, err, fmt.Sprintf("Can not parse lat parameter: %s", lat_s), 400)
+		return
+	}
+	lon_s := r.FormValue("lon")
+	lon, err := strconv.ParseFloat(lon_s, 64)
+	if err != nil {
+		onError(w, err, fmt.Sprintf("Can not parse lon parameter: %s", lon_s), 400)
+		return
+	}
+	point := Point{Lat:lat, Lon:lon}
+	waterways, err := storage.NearestWaterWays(point, 5)
+	if err != nil {
+		onError500(w, err, "Can not select rivers")
+		return
+	}
+	w.Write([]byte(JsonStr(waterways, "[]")))
+}
+
 func AddWhiteWaterPoints(w http.ResponseWriter, r *http.Request) {
 	corsHeaders(w, "POST, GET, OPTIONS, PUT, DELETE")
 	err := r.ParseForm()
@@ -737,6 +760,7 @@ func main() {
 	r.HandleFunc("/ymaps-tile-ww", TileWhiteWaterHandler)
 	r.HandleFunc("/ww", CorsGetOptionsStub).Methods("OPTIONS")
 	r.HandleFunc("/ww", AddWhiteWaterPoints).Methods("PUT", "POST")
+	r.HandleFunc("/nearest-rivers", GetNearestRivers).Methods("GET")
 
 	httpStr := fmt.Sprintf(":%d", 7007)
 	log.Infof("Starting http server on %s", httpStr)

@@ -39,6 +39,7 @@ type Storage interface {
 	FindEventPointsForRoute(routeId int64) []EventPoint
 
 	AddWaterWays(waterways ...WaterWay) error
+	NearestWaterWays(point Point, limit int) ([]WaterWayTitle, error)
 
 	// tmp
 	AddTmpWaterWay(wwts ...WaterWayTmp) error
@@ -376,7 +377,7 @@ func (this PostgresStorage) AddWaterWays(waterways ...WaterWay) error {
 	for i, p := range waterways {
 		vars[i] = p
 	}
-	return this.performUpdates("INSERT INTO waterway(title, type, comment, path) VALUES ($1, $2, $3, ST_GeomFromGeoJSON($4))",
+	return this.performUpdates("INSERT INTO waterway(id, title, type, comment, path, verified, popularity) VALUES ($1, $2, $3, $4, ST_GeomFromGeoJSON($5), $6, $7)",
 		func(entity interface{}) ([]interface{}, error) {
 			waterway := entity.(WaterWay)
 
@@ -384,8 +385,33 @@ func (this PostgresStorage) AddWaterWays(waterways ...WaterWay) error {
 			if err != nil {
 				return nil, err
 			}
-			return []interface{}{waterway.Title, waterway.Type, waterway.Comment, string(pathBytes)}, nil;
+			return []interface{}{waterway.Id, waterway.Title, waterway.Type, waterway.Comment, string(pathBytes), waterway.Verified, waterway.Popularity}, nil;
 		}, vars...)
+}
+
+func (this PostgresStorage) NearestWaterWays(point Point, limit int) ([]WaterWayTitle, error) {
+	pointBytes, err := json.Marshal(NewGeoPoint(point))
+	if err != nil {
+		return []WaterWayTitle{}, err
+	}
+	result, err := this.doFindList("SELECT id, title FROM waterway ORDER BY ST_Distance(path,  ST_GeomFromGeoJSON($1)) LIMIT $2",
+		func(rows *sql.Rows) (WaterWayTitle, error) {
+			id := int64(-1)
+			title := ""
+			err := rows.Scan(&id, &title)
+			if err != nil {
+				return WaterWayTitle{}, err
+			}
+
+			return WaterWayTitle{
+				Id:id,
+				Title:title,
+			}, nil
+		}, string(pointBytes), limit)
+	if (err != nil ) {
+		return []WaterWayTitle{}, err
+	}
+	return result.([]WaterWayTitle), nil
 }
 
 func (this PostgresStorage) AddTmpWaterWay(wwts ...WaterWayTmp) error {
@@ -434,7 +460,7 @@ func (this PostgresStorage) AddWhiteWaterPoints(whiteWaterPoints ...WhiteWaterPo
 	for i, p := range whiteWaterPoints {
 		vars[i] = p
 	}
-	return this.performUpdates("INSERT INTO white_water_rapid(osm_id, title,type,category,comment,point,short_description, link) VALUES ($1, $2, $3, $4, $5, ST_GeomFromGeoJSON($6), $7, $8)",
+	return this.performUpdates("INSERT INTO white_water_rapid(osm_id, title,type,category,comment,point,short_description, link, water_way_id) VALUES ($1, $2, $3, $4, $5, ST_GeomFromGeoJSON($6), $7, $8, $9)",
 		func(entity interface{}) ([]interface{}, error) {
 			wwp := entity.(WhiteWaterPoint)
 			categoryBytes, err := wwp.Category.MarshalJSON()
@@ -446,8 +472,21 @@ func (this PostgresStorage) AddWhiteWaterPoints(whiteWaterPoints ...WhiteWaterPo
 				return nil, err
 			}
 			fmt.Printf("id = %d", wwp.Id)
-			return []interface{}{wwp.OsmId, wwp.Title, wwp.Type, string(categoryBytes), wwp.Comment, string(pathBytes), wwp.ShortDesc, wwp.Link}, nil
+			return []interface{}{wwp.OsmId, wwp.Title, wwp.Type, string(categoryBytes), wwp.Comment, string(pathBytes), wwp.ShortDesc, wwp.Link, nullIf0(wwp.WaterWayId)}, nil
 		}, vars...)
+}
+
+func nullIf0(x int64) sql.NullInt64 {
+	if x==0 {
+		return sql.NullInt64{
+			Int64:0,
+			Valid:false,
+		}
+	}
+	return sql.NullInt64{
+		Int64:x,
+		Valid:true,
+	}
 }
 
 func getOrElse(val sql.NullInt64, _default int64) int64 {
@@ -479,7 +518,7 @@ func (this PostgresStorage) ListWhiteWaterPoints(bbox Bbox) []WhiteWaterPoint {
 			}
 
 			var pgPoint PgPoint
-			fmt.Printf("\n======================= %d %v %v %s %s %s %s %s\n\n" ,id, osmId, waterWayId, _type, title, comment, pointStr, categoryStr)
+			fmt.Printf("\n======================= %d %v %v %s %s %s %s %s\n\n", id, osmId, waterWayId, _type, title, comment, pointStr, categoryStr)
 			err = json.Unmarshal([]byte(pointStr), &pgPoint)
 			if err != nil {
 				log.Errorf("Can not parse point %s for white water object %d: %v", pointStr, id, err)

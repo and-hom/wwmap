@@ -16,20 +16,31 @@ wwmap.controller('Ctrl', function($scope, $filter, $http, $q) {
     {value: '6', text: '6'}
   ];
 
-  $scope.groups = [];
-  $scope.loadGroups = function() {
-    return $scope.groups.length ? null : $http.get('/groups').success(function(data) {
-      $scope.groups = data;
+  $scope.rivers = {};
+  $scope.loadRivers = function(point) {
+    url = apiBase + '/nearest-rivers?lat=' + point.lat + '&lon=' + point.lon
+    return $http.get(url).success(function(data) {
+      data.push({"id":null,"title":"Нет в этом списке"})
+      $scope.setRivers(point, data)
     });
   };
+  $scope.setRivers = function(point,rivers) {
+    $scope.rivers[point.lat+'-'+point.lon] = rivers
+  }
 
-  $scope.showGroup = function(point) {
-    if(point.group && $scope.groups.length) {
-      var selected = $filter('filter')($scope.groups, {id: point.group});
-      return selected.length ? selected[0].text : 'Not set';
-    } else {
-      return point.groupName || 'Not set';
+  $scope.getRivers = function(point) {
+    return $scope.rivers[point.lat+'-'+point.lon]
+  }
+
+  $scope.showRiver = function(point) {
+    if (!point.waterway_id || point.waterway_id==0) {
+      return null
     }
+    selected = $filter('filter')($scope.getRivers(point), {id: point.waterway_id})
+    if (selected.length == 0) {
+        return null
+    }
+    return selected[0].title + ' (' + selected[0].id + ')'
   };
 
   $scope.showCategory = function(point) {
