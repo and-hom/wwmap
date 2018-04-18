@@ -143,7 +143,7 @@ wwmap.controller('Ctrl', function($scope, $filter, $http, $q) {
     .then(function successCallback(response) {
         window.location.href="./map.htm"
     }, function errorCallback(response) {
-        alert("Publish failed: " + statusText)
+        window.alert("Publish failed: " + response.statusText)
     });
 
     return $q.all(results);
