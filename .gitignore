@@ -4,3 +4,16 @@
 backend/.drafts
 backend/backend
 
+**/debian/files
+**/debian/.debhelper
+**/debian/debhelper*
+**/debian/wwmap-*
+
+*.deb
+*.ddeb
+*.tar.gz
+*.build
+*.buildinfo
+*.dsc
+*.changes
+

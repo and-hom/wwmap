@@ -1,0 +1,11 @@
+Source: wwmap-frontend
+Maintainer: Andrey Khomyakov <and.hom@gmail.com>
+Build-Depends: debhelper (>= 8.0.0)
+Standards-Version: 3.9.3
+Section: misc
+
+Package: wwmap-frontend
+Priority: extra
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Frontend (html/js/css) for whitewater map

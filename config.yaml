@@ -1,1 +1,1 @@
-db-connection-string: "postgres://wwmap:wwmap@localhost:5432/wwmap?sslmode=require"
+db-connection-string: "postgres://wwmap:$WWMAP_POSTGRES_PASSWORD@localhost:5432/wwmap?sslmode=require"

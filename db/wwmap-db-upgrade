@@ -1,0 +1,3 @@
+#!/bin/sh
+
+migrate -database "postgres://wwmap:$WWMAP_POSTGRES_PASSWORD@localhost:5432/wwmap" -source file:///var/lib/wwmap/db/ $@

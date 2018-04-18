@@ -1,0 +1,10 @@
+#!/usr/bin/make -f
+%:
+	dh $@
+
+override_dh_auto_install:
+	install -d $$(pwd)/debian/wwmap-db/var/lib/wwmap/db
+
+	install -D -m 0755 wwmap-db-upgrade $$(pwd)/debian/wwmap-db/usr/bin/wwmap-db-upgrade
+	install -D -m 0644 *.sql $$(pwd)/debian/wwmap-db/var/lib/wwmap/db/
+	install -D -m 0644 README.md $$(pwd)/debian/wwmap-db/var/lib/wwmap/db/
