@@ -10,31 +10,31 @@ import (
 	"log"
 	"github.com/and-hom/wwmap/backend/geo"
 	"github.com/and-hom/wwmap/data"
+	"github.com/and-hom/wwmap/backend/dao"
 )
 
 type PointHandler struct {
 	saxlike.VoidHandler
-	point_ids_by_way    map[int64][]int64
-	way_ids_by_point_id map[int64][]int64
-	points_by_way       map[int64][]geo.Point
-	found_count_by_way  map[int64]int
 
-	cnt                 int
-	foundcnt            int
-	Node                bool
-	Found               bool
-	Buffer              bytes.Buffer
+	waterwayIdx        map[int64]dao.WaterWayTmp
+	waterwayReverseIdx map[int64][]int64
+	points_by_way      map[int64][]geo.Point
+	found_count_by_way map[int64]int
 
-	flush_way           func(int64, []geo.Point)
+	cnt                int
+	foundcnt           int
+	Node               bool
+	Found              bool
+	Buffer             bytes.Buffer
+
+	flush_way          func(int64, dao.WaterWay)
 }
 
 func (h *PointHandler) StartDocument() {
 	h.points_by_way = make(map[int64]([]geo.Point))
 	h.found_count_by_way = make(map[int64]int)
-	//for wayId, refs := range h.point_ids_by_way {
-	//	h.points_by_way[wayId] = make([]geo.Point, len(refs))
-	//}
-	for wayId, _ := range h.point_ids_by_way {
+	for wayId, refs := range h.waterwayIdx {
+		h.points_by_way[wayId] = make([]geo.Point, len(refs.PathPointRefs))
 		h.found_count_by_way[wayId] = 0
 	}
 }
@@ -45,11 +45,13 @@ func (h *PointHandler) StartElement(element xml.StartElement) {
 			fmt.Fprintf(os.Stderr, "%d nodes processed. %d found\n", h.cnt, h.foundcnt)
 		}
 		h.cnt += 1
+
 		id, err := strconv.ParseInt(data.Attr(element.Attr, "id"), 10, 64)
 		if err != nil {
 			log.Fatal(err)
 		}
-		ways, found := h.way_ids_by_point_id[id]
+
+		ways, found := h.waterwayReverseIdx[id]
 		if !found {
 			return
 		}
@@ -69,19 +71,15 @@ func (h *PointHandler) StartElement(element xml.StartElement) {
 		}
 
 		for _, wayId := range ways {
-			points, _ := h.point_ids_by_way[wayId]
+			waterWayTmp, _ := h.waterwayIdx[wayId]
+			pointsForWay, _ := h.points_by_way[wayId]
 
-			pointsForWay, found := h.points_by_way[wayId]
-			if !found {
-				h.points_by_way[wayId] = make([]geo.Point, len(points))
-			}
-
-			for idx, p := range points {
+			for idx, p := range waterWayTmp.PathPointRefs {
 				if p == id {
 					pointsForWay[idx] = coords
-
 					h.found_count_by_way[wayId] += 1
-					if h.found_count_by_way[wayId] == len(points) {
+					fmt.Printf("id=%d points %d of %d", waterWayTmp.Id, h.found_count_by_way[wayId], len(waterWayTmp.PathPointRefs))
+					if h.found_count_by_way[wayId] == len(waterWayTmp.PathPointRefs) {
 						h.flush(wayId)
 					}
 				}
@@ -92,7 +90,7 @@ func (h *PointHandler) StartElement(element xml.StartElement) {
 
 func (h *PointHandler) EndDocument() {
 	if len(h.points_by_way) > 0 {
-		for k,_ := range h.points_by_way {
+		for k, _ := range h.points_by_way {
 			h.flush(k)
 		}
 	}
@@ -100,7 +98,18 @@ func (h *PointHandler) EndDocument() {
 
 func (h *PointHandler) flush(wayId int64) {
 	points, _ := h.points_by_way[wayId]
-	h.flush_way(wayId, points)
+	waterWayTmp, _ := h.waterwayIdx[wayId]
+	h.flush_way(wayId, dao.WaterWay{
+		Id:waterWayTmp.Id,
+		Title:waterWayTmp.Title,
+		ParentId:waterWayTmp.ParentId,
+		Comment:waterWayTmp.Comment,
+		Type:waterWayTmp.Type,
+		Path:points,
+		Verified:false,
+		Popularity:0,
+	})
+
 	delete(h.points_by_way, wayId)
 }
 

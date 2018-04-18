@@ -1,3 +1,2 @@
-DROP TABLE point_ref_tmp;
-DROP TABLE waterway_tmp;
-
+ALTER table waterway DROP COLUMN verified;
+ALTER table waterway DROP COLUMN popularity;
