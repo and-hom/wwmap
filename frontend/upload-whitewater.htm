@@ -117,12 +117,14 @@
                     points = []
                     $xml.find("wpt").each(function() {
                         name = ($(this).find("name").html())
+                        desc = ($(this).find("cmt").html())
                         lon = ($(this).attr("lon"))
                         lat = ($(this).attr("lat"))
                         point = {
                             "title" : name,
                             "lat" : lat,
-                            "lon" : lon
+                            "lon" : lon,
+                            "short_description": desc
                         }
                         points.push(point)
                     })
