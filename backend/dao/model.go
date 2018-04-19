@@ -141,11 +141,13 @@ type ExtDataTrack struct {
 
 type WaterWayTitle struct {
 	Id    int64 `json:"id"`
+	OsmId      int64 `json:"osm_id"`
 	Title string `json:"title"`
 }
 
 type WaterWay struct {
 	Id         int64 `json:"id"`
+	OsmId      int64 `json:"osm_id"`
 	Title      string `json:"title"`
 	Type       string `json:"type"`
 	Path       []Point `json:"path"`

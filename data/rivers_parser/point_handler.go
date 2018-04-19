@@ -78,7 +78,6 @@ func (h *PointHandler) StartElement(element xml.StartElement) {
 				if p == id {
 					pointsForWay[idx] = coords
 					h.found_count_by_way[wayId] += 1
-					fmt.Printf("id=%d points %d of %d", waterWayTmp.Id, h.found_count_by_way[wayId], len(waterWayTmp.PathPointRefs))
 					if h.found_count_by_way[wayId] == len(waterWayTmp.PathPointRefs) {
 						h.flush(wayId)
 					}
@@ -100,14 +99,14 @@ func (h *PointHandler) flush(wayId int64) {
 	points, _ := h.points_by_way[wayId]
 	waterWayTmp, _ := h.waterwayIdx[wayId]
 	h.flush_way(wayId, dao.WaterWay{
-		Id:waterWayTmp.Id,
-		Title:waterWayTmp.Title,
-		ParentId:waterWayTmp.ParentId,
-		Comment:waterWayTmp.Comment,
-		Type:waterWayTmp.Type,
-		Path:points,
-		Verified:false,
-		Popularity:0,
+		OsmId: waterWayTmp.Id,
+		Title: waterWayTmp.Title,
+		ParentId: waterWayTmp.ParentId,
+		Comment: waterWayTmp.Comment,
+		Type: waterWayTmp.Type,
+		Path: points,
+		Verified: false,
+		Popularity: 0,
 	})
 
 	delete(h.points_by_way, wayId)

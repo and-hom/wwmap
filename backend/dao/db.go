@@ -377,7 +377,7 @@ func (this PostgresStorage) AddWaterWays(waterways ...WaterWay) error {
 	for i, p := range waterways {
 		vars[i] = p
 	}
-	return this.performUpdates("INSERT INTO waterway(id, title, type, comment, path, verified, popularity) VALUES ($1, $2, $3, $4, ST_GeomFromGeoJSON($5), $6, $7)",
+	return this.performUpdates("INSERT INTO waterway(osm_id, title, type, comment, path, verified, popularity) VALUES ($1, $2, $3, $4, ST_GeomFromGeoJSON($5), $6, $7)",
 		func(entity interface{}) ([]interface{}, error) {
 			waterway := entity.(WaterWay)
 
@@ -385,7 +385,7 @@ func (this PostgresStorage) AddWaterWays(waterways ...WaterWay) error {
 			if err != nil {
 				return nil, err
 			}
-			return []interface{}{waterway.Id, waterway.Title, waterway.Type, waterway.Comment, string(pathBytes), waterway.Verified, waterway.Popularity}, nil;
+			return []interface{}{waterway.OsmId, waterway.Title, waterway.Type, waterway.Comment, string(pathBytes), waterway.Verified, waterway.Popularity}, nil;
 		}, vars...)
 }
 

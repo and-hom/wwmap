@@ -40,7 +40,9 @@ wwmap.controller('Ctrl', function($scope, $filter, $http, $q) {
     if (selected.length == 0) {
         return null
     }
-    return selected[0].title + ' (' + selected[0].id + ')'
+    var river_label = selected[0].title
+    if (selected[0].osm_id) river_label +=' (' + selected[0].osm_id + ')'
+    return river_label
   };
 
   $scope.showCategory = function(point) {
