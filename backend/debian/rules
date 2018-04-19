@@ -3,9 +3,9 @@
 	dh $@
 
 build:
-	go build
+	GOPATH="$(HOME)/.go" go build
 
-install:
+override_dh_auto_install:
 	install -D -m 0755 backend $$(pwd)/debian/wwmap-backend/usr/bin/wwmap-backend
 	install -D -m 0644 ../config.yaml $$(pwd)/debian/wwmap-backend/etc/wwmap/config.yaml
 	install -D -m 0644 etc/wwmap-backend.systemd $$(pwd)/debian/wwmap-backend/lib/systemd/system/wwmap-backend.service

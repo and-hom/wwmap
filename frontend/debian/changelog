@@ -1,3 +1,13 @@
+wwmap-frontend (0.0.2) unstable; urgency=medium
+
+  * Can set river for whitewater point
+  * GPX file extension filter on upload
+  * Map type selector added to map
+  * Whitewater points publishing alert fixed
+  * Import whitewater point description from GPX
+
+ -- Andrey Khomyakov <and.hom@gmail.com>>  Thu, 19 Apr 2018 16:17:33 +0300
+
 wwmap-frontend (0.0.1) unstable; urgency=medium
 
   * Initial release. 
