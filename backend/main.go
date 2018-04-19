@@ -758,8 +758,8 @@ func main() {
 	r.HandleFunc("/picture-metadata", PictureMetadataHandler).Methods("POST")
 
 	r.HandleFunc("/ymaps-tile-ww", TileWhiteWaterHandler)
-	r.HandleFunc("/ww", CorsGetOptionsStub).Methods("OPTIONS")
-	r.HandleFunc("/ww", AddWhiteWaterPoints).Methods("PUT", "POST")
+	r.HandleFunc("/whitewater", CorsGetOptionsStub).Methods("OPTIONS")
+	r.HandleFunc("/whitewater", AddWhiteWaterPoints).Methods("PUT", "POST")
 	r.HandleFunc("/nearest-rivers", GetNearestRivers).Methods("GET")
 
 	httpStr := fmt.Sprintf(":%d", 7007)

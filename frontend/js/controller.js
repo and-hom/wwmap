@@ -140,7 +140,7 @@ wwmap.controller('Ctrl', function($scope, $filter, $http, $q) {
        })
     $http({
         method: 'POST',
-        url:apiBase + '/ww',
+        url:apiBase + '/whitewater',
         data:dataForBackend})
     .then(function successCallback(response) {
         window.location.href="./map.htm"
