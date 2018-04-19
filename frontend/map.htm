@@ -8,6 +8,12 @@
 <body>
 
 <div id="map" style="witdh:800px; height: 600px; margin: 10px;"></div>
+<ul id="rivers" class="riversMenu"></ul>
+<script type="text/x-jquery-tmpl" id="riversMenuTemplate">
+    {{each rivers}}
+        <li>${title} <a href="" alt="Скачать GPX с точками порогов">GPX</a></li>
+    {{/each}}
+</script>
 
 
 <script type="text/javascript" src="./js/jquery-3.1.1.min.js"></script>

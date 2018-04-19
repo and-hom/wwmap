@@ -3,6 +3,13 @@
     var trackHighlighter = {val:null};
     var pointHighlighter = {val:null};
 
+    function loadRivers(bounds) {
+        $.get(apiBase + "/visible-rivers?bbox=" + bounds.join(','), function (data) {
+            $('#rivers').html('');
+            $('#riversMenuTemplate').tmpl({"rivers" : $.parseJSON(data)}).appendTo('#rivers');
+        });
+    }
+
     function init() {
         var OsmLayer = function () {
             var layer = new ymaps.Layer(STANDARD_TILES, { projection: ymaps.projection.sphericalMercator });
@@ -49,6 +56,7 @@
 
         myMap.events.add('boundschange', function (e) {
             setLastPositionAndZoom(myMap.getCenter(), myMap.getZoom())
+            loadRivers(e.get("newBounds"))
         });
 
         myMap.events.add('typechange', function (e) {
@@ -69,34 +77,5 @@
 
         myMap.geoObjects.add(objectManager);
 
-
-        addMouseOverOutHighliterListeners('.track-list-item', '.track-geodata', 'track-list-item-selected', function (geoData) {
-            return new ymaps.Polyline(
-                    geoData, {},
-                    {
-                        strokeColor: 'ff0000ff',
-                        strokeWidth: 3
-                    }
-            );
-        }, trackHighlighter);
-        addMouseOverOutHighliterListeners('.point-list-item', '.point-geodata', 'point-list-item-selected', function (geoData) {
-            return new ymaps.Placemark(
-                    geoData,
-                    {},
-                    {
-                        preset: 'islands#redBookIcon',
-                        zIndex: 3000
-                    }
-            );
-        }, pointHighlighter);
-
-
-        $(document).on('click', '.point-list-item', function (obj) {
-            var geodataDiv = $(obj.target).find(".point-geodata")
-            if (geodataDiv.length) {
-                var geodataStr = geodataDiv.html();
-                var geodata = $.parseJSON(geodataStr);
-                myMap.setCenter(geodata);
-            }
-        });
+        loadRivers(myMap.getBounds())
     }
