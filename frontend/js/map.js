@@ -5,7 +5,7 @@
 
     function init() {
         var OsmLayer = function () {
-            var layer = new ymaps.Layer(STANDARD_TILES);
+            var layer = new ymaps.Layer(STANDARD_TILES, { projection: ymaps.projection.sphericalMercator });
             //  Копирайты.
             layer.getCopyrights = function () {
                 return ymaps.vow.resolve('OpenStreetMap contributors, CC-BY-SA');
