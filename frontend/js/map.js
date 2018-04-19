@@ -4,28 +4,43 @@
     var pointHighlighter = {val:null};
 
     function init() {
+        var OsmLayer = function () {
+            var layer = new ymaps.Layer(STANDARD_TILES);
+            //  Копирайты.
+            layer.getCopyrights = function () {
+                return ymaps.vow.resolve('OpenStreetMap contributors, CC-BY-SA');
+            };
+            layer.getZoomRange = function () {
+                return ymaps.vow.resolve([0, 18]);
+            };
+            return layer;
+        };
+        ymaps.layer.storage.add('osm#standard', OsmLayer)
+        ymaps.mapType.storage.add('osm#standard', new ymaps.MapType('OSM', ['osm#standard']));
+
+
         myMap = new ymaps.Map("map", {
             center: getLastPosition(),
             zoom: getLastZoom(),
             controls: ["zoomControl", "fullscreenControl"],
-            type: 'yandex#satellite'
+            type: getLastMapType()
         });
-        // Создание вложенного макета содержимого балуна.
-            LabelBalloonContentLayout = ymaps.templateLayoutFactory.createClass(
-                '<h3 class="popover-title">'+
-                '[if properties.link]<a target="_blank" href="$[properties.link]">$[properties.title]</a>[else]$[properties.title][endif]</h3>'+
-                    '<div class="popover-content">' +
-                    '<div>Категория сложности: [if properties.category=="0"]не определена[else]$[properties.category][endif]</div>' +
-                    '<div>$[properties.short_desc]</div>' +
-                    '<a id="report_$[properties.link]" href="button">Сообщить о неточном местоположении<a/>' +
-                    '</div>'
-            );
 
-        myMap.layers.add(new ymaps.Layer(
-        STANDARD_TILES, {
-            projection: ymaps.projection.sphericalMercator
-        }));
-        myMap.copyrights.add(' OpenStreetMap contributors, CC-BY-SA');
+        LabelBalloonContentLayout = ymaps.templateLayoutFactory.createClass(
+            '<h3 class="popover-title">'+
+            '[if properties.link]<a target="_blank" href="$[properties.link]">$[properties.title]</a>[else]$[properties.title][endif]</h3>'+
+                '<div class="popover-content">' +
+                '<div>Категория сложности: [if properties.category=="0"]не определена[else]$[properties.category][endif]</div>' +
+                '<div>$[properties.short_desc]</div>' +
+                '<a id="report_$[properties.link]" href="button">Сообщить о неточном местоположении<a/>' +
+                '</div>'
+        );
+
+        myMap.controls.add(
+            new ymaps.control.TypeSelector(
+                ['osm#standard', 'yandex#satellite']
+            )
+        );
 
         myMap.events.add('click', function (e) {
             myMap.balloon.close()
@@ -34,6 +49,10 @@
         myMap.events.add('boundschange', function (e) {
             setLastPosition(myMap.getCenter())
             setLastZoom(myMap.getZoom())
+        });
+
+        myMap.events.add('typechange', function (e) {
+            setLastMapType(myMap.getType())
         });
 
         var objectManager = new ymaps.LoadingObjectManager(apiBase + '/ymaps-tile-ww?bbox=%b', {
