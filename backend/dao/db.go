@@ -49,6 +49,8 @@ type Storage interface {
 
 	AddWhiteWaterPoints(whiteWaterPoint ...WhiteWaterPoint) error
 	ListWhiteWaterPoints(bbox Bbox) []WhiteWaterPoint
+
+	ListWaterWayTitles(bbox Bbox, limit int) ([]WaterWayTitle, error)
 }
 
 type PostgresStorage struct {
@@ -387,7 +389,17 @@ func (this PostgresStorage) NearestWaterWays(point Point, limit int) ([]WaterWay
 	if err != nil {
 		return []WaterWayTitle{}, err
 	}
-	result, err := this.doFindList("SELECT id, title FROM waterway ORDER BY ST_Distance(path,  ST_GeomFromGeoJSON($1)) LIMIT $2",
+	return this.listWaterWayTitles("ORDER BY ST_Distance(path,  ST_GeomFromGeoJSON($1)) LIMIT $2", string(pointBytes), limit)
+}
+
+func (this PostgresStorage) ListWaterWayTitles(bbox Bbox, limit int) ([]WaterWayTitle, error) {
+	return this.listWaterWayTitles(
+		"WHERE path && ST_MakeEnvelope($1,$2,$3,$4) ORDER BY popularity DESC LIMIT $5",
+		bbox.X1, bbox.Y1, bbox.X2, bbox.Y2, limit)
+}
+
+func (this PostgresStorage) listWaterWayTitles(condition string, queryParams ...interface{}) ([]WaterWayTitle, error) {
+	result, err := this.doFindList("SELECT id, title FROM waterway " + condition,
 		func(rows *sql.Rows) (WaterWayTitle, error) {
 			id := int64(-1)
 			title := ""
@@ -400,7 +412,7 @@ func (this PostgresStorage) NearestWaterWays(point Point, limit int) ([]WaterWay
 				Id:id,
 				Title:title,
 			}, nil
-		}, string(pointBytes), limit)
+		}, queryParams...)
 	if (err != nil ) {
 		return []WaterWayTitle{}, err
 	}
@@ -507,7 +519,6 @@ func (this PostgresStorage) ListWhiteWaterPoints(bbox Bbox) []WhiteWaterPoint {
 			}
 
 			var pgPoint PgPoint
-			fmt.Printf("\n======================= %d %v %v %s %s %s %s %s\n\n", id, osmId, waterWayId, _type, title, comment, pointStr, categoryStr)
 			err = json.Unmarshal([]byte(pointStr), &pgPoint)
 			if err != nil {
 				log.Errorf("Can not parse point %s for white water object %d: %v", pointStr, id, err)

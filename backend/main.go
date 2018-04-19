@@ -80,6 +80,24 @@ func GetNearestRivers(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(JsonStr(waterways, "[]")))
 }
 
+func GetVisibleRivers(w http.ResponseWriter, req *http.Request) {
+	corsHeaders(w, "GET")
+
+	bbox, err := NewBbox(req.FormValue("bbox"))
+	if err != nil {
+		onError500(w, err, "Can not parse bbox")
+		return
+	}
+
+	waterways, err := storage.ListWaterWayTitles(bbox, 30)
+	if err != nil {
+		onError500(w, err, "Can not select rivers")
+		return
+	}
+	w.Write([]byte(JsonStr(waterways, "[]")))
+}
+
+
 func AddWhiteWaterPoints(w http.ResponseWriter, r *http.Request) {
 	corsHeaders(w, "POST, GET, OPTIONS, PUT, DELETE")
 	err := r.ParseForm()
@@ -761,6 +779,7 @@ func main() {
 	r.HandleFunc("/whitewater", CorsGetOptionsStub).Methods("OPTIONS")
 	r.HandleFunc("/whitewater", AddWhiteWaterPoints).Methods("PUT", "POST")
 	r.HandleFunc("/nearest-rivers", GetNearestRivers).Methods("GET")
+	r.HandleFunc("/visible-rivers", GetVisibleRivers).Methods("GET")
 
 	httpStr := fmt.Sprintf(":%d", 7007)
 	log.Infof("Starting http server on %s", httpStr)
