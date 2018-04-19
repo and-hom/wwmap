@@ -10,6 +10,7 @@ import (
 	"log"
 	"github.com/and-hom/wwmap/data"
 	"strconv"
+	"github.com/and-hom/wwmap/backend/model"
 )
 
 type NodeSearchHandler struct {
@@ -95,8 +96,8 @@ func (h *NodeSearchHandler) EndElement(element xml.EndElement) {
 		if h.cnt % 100000 == 0 {
 			fmt.Fprintf(os.Stderr, "objects processed %d\tobjects filtered %d\tratio %.5f%%\n", h.cnt, h.foundcnt, float64(h.foundcnt) / float64(h.cnt))
 		}
-		if h.Found {
-			category := dao.SportCategory{}
+		if h.Found && h.name != "" {
+			category := model.SportCategory{}
 			err := category.UnmarshalJSON([]byte(h.grade))
 			if err != nil {
 				log.Fatal(h.grade, err)
