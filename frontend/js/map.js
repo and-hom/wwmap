@@ -18,10 +18,11 @@
         ymaps.layer.storage.add('osm#standard', OsmLayer)
         ymaps.mapType.storage.add('osm#standard', new ymaps.MapType('OSM', ['osm#standard']));
 
+        positionAndZoom = getLastPositionAndZoom()
 
         myMap = new ymaps.Map("map", {
-            center: getLastPosition(),
-            zoom: getLastZoom(),
+            center: positionAndZoom.position,
+            zoom: positionAndZoom.zoom,
             controls: ["zoomControl", "fullscreenControl"],
             type: getLastMapType()
         });
@@ -47,8 +48,7 @@
         });
 
         myMap.events.add('boundschange', function (e) {
-            setLastPosition(myMap.getCenter())
-            setLastZoom(myMap.getZoom())
+            setLastPositionAndZoom(myMap.getCenter(), myMap.getZoom())
         });
 
         myMap.events.add('typechange', function (e) {
