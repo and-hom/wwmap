@@ -55,7 +55,7 @@
             setLastMapType(myMap.getType())
         });
 
-        var objectManager = new ymaps.LoadingObjectManager(apiBase + '/ymaps-tile-ww?bbox=%b', {
+        var objectManager = new ymaps.LoadingObjectManager(apiBase + '/ymaps-tile-ww?bbox=%b&zoom=%z', {
             clusterHasBalloon: false,
             geoObjectOpenBalloonOnClick: false,
             geoObjectBalloonContentLayout: LabelBalloonContentLayout,
