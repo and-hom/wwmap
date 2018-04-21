@@ -125,6 +125,27 @@ func whiteWaterPointsToYmaps(points []WhiteWaterPoint) []Feature {
 	return result
 }
 
+func waterwaysToYmaps(waterWays []WaterWay) []Feature {
+	features := make([]Feature, len(waterWays))
+	for i := 0; i < len(waterWays); i++ {
+		points := waterWays[i].Path
+		non_zero_points := []Point{}
+
+		for j:=0; j<len(points); j++ {
+			if !(points[j].Lon==0 && points[j].Lat==0) {
+				non_zero_points = append(non_zero_points, points[j])
+			}
+		}
+
+		features[i] = Feature{
+			Id: waterWays[i].Id,
+			Geometry: NewLineString(non_zero_points),
+			Type:"Feature",
+		}
+	}
+	return features
+}
+
 func RoutesToYmaps(route []Route) FeatureCollection {
 	var features = []Feature{}
 	for i := 0; i < len(route); i++ {

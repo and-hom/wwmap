@@ -15,9 +15,9 @@ import (
 	"io/ioutil"
 	. "github.com/and-hom/wwmap/backend/dao"
 	. "github.com/and-hom/wwmap/backend/geo"
-	. "github.com/and-hom/wwmap/backend/geoparser"
 	"github.com/and-hom/wwmap/config"
 	"github.com/and-hom/wwmap/backend/model"
+	"github.com/and-hom/wwmap/backend/geoparser"
 )
 
 var storage Storage
@@ -50,8 +50,9 @@ func TileWhiteWaterHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	points := storage.ListWhiteWaterPoints(bbox)
+	waterWays,_ := storage.ListVerifiedWaterWays(bbox)
 
-	featureCollection := MkFeatureCollection(whiteWaterPointsToYmaps(points))
+	featureCollection := MkFeatureCollection(append(whiteWaterPointsToYmaps(points), waterwaysToYmaps(waterWays)...))
 	log.Infof("Found %d", len(featureCollection.Features))
 
 	w.Write(JsonpAnswer(callback, featureCollection, "{}"))
@@ -705,14 +706,14 @@ func onError500(w http.ResponseWriter, err error, msg string) {
 	onError(w, err, msg, http.StatusInternalServerError)
 }
 
-func geoParser(r io.ReadSeeker) (GeoParser, error) {
-	gpxParser, err := InitGpxParser(r)
+func geoParser(r io.ReadSeeker) (geoparser.GeoParser, error) {
+	gpxParser, err := geoparser.InitGpxParser(r)
 	if err == nil {
 		return gpxParser, nil
 	}
 	log.Warn(err)
 	r.Seek(0, 0)
-	kmlParser, err := InitKmlParser(r)
+	kmlParser, err := geoparser.InitKmlParser(r)
 	if err == nil {
 		return kmlParser, nil
 	}
