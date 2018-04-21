@@ -49,6 +49,8 @@ type Storage interface {
 
 	AddWhiteWaterPoints(whiteWaterPoint ...WhiteWaterPoint) error
 	ListWhiteWaterPoints(bbox Bbox) []WhiteWaterPoint
+
+	AddReport(report Report) error
 }
 
 type PostgresStorage struct {
@@ -539,6 +541,11 @@ func (this PostgresStorage) ListWhiteWaterPoints(bbox Bbox) []WhiteWaterPoint {
 		return []WhiteWaterPoint{}
 	}
 	return result.([]WhiteWaterPoint)
+}
+
+func (this PostgresStorage) AddReport(report Report) error {
+	_,err := this.insertReturningId("INSERT INTO report(object_id,comment) VALUES($1,$2) RETURNING id", report.ObjectId, report.Comment)
+	return err;
 }
 
 func (s PostgresStorage)doFind(query string, callback func(rows *sql.Rows) error, args ...interface{}) (bool, error) {

@@ -131,3 +131,59 @@ h2 {
 .track-list-item-selected, .point-list-item-selected {
     background: #f3c17a !important;
 }
+
+ /* Popup container */
+.popup {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.popup_area {
+    visibility: hidden;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+}
+
+/* The actual popup (appears on top) */
+.popuptext {
+    width: 600px;
+    background-color: #eeeedd;
+    text-align: left;
+    border-radius: 3px;
+    padding: 8px 0;
+
+    margin: 0 auto;
+
+    z-index: 1000000;
+    padding: 20px;
+    margin-top:80px;
+    border: 1px solid black;
+}
+
+.popuptext textarea {
+    resize: none;
+    width: 90%;
+}
+
+/* Toggle this class when clicking on the popup container (hide and show the popup) */
+.show {
+    visibility: visible;
+    -webkit-animation: fadeIn 1s;
+    animation: fadeIn 1s
+}
+
+/* Add animation (fade in the popup) */
+@-webkit-keyframes fadeIn {
+    from {opacity: 0;}
+    to {opacity: 1;}
+}
+
+@keyframes fadeIn {
+    from {opacity: 0;}
+    to {opacity:1 ;}
+}
