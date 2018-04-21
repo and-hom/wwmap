@@ -13,10 +13,18 @@ type SportCategory struct {
 }
 
 func (this SportCategory) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf("\"%s\"", this.String())), nil
+}
+
+func (this SportCategory) String() string {
+	return this.Serialize();
+}
+
+func (this SportCategory) Serialize() string {
 	if this.Category == 0 {
-		return []byte("0"), nil
+		return "0"
 	}
-	return []byte(fmt.Sprintf("\"%d%s\"", this.Category, this.Sub)), nil
+	return fmt.Sprintf("%d%s", this.Category, this.Sub)
 }
 
 func (this *SportCategory) UnmarshalJSON(data []byte) error {
