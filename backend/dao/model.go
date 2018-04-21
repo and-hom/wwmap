@@ -151,7 +151,7 @@ type WaterWay struct {
 	Title      string `json:"title"`
 	Type       string `json:"type"`
 	Path       []Point `json:"path"`
-	ParentId   int64 `json:"parentId"`
+	ParentId   int64 `json:"parent_id"`
 	Comment    string `json:"comment"`
 	Verified   bool `json:"verified"`
 	Popularity int16 `json:"popularity"`

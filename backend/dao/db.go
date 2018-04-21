@@ -40,6 +40,7 @@ type Storage interface {
 
 	AddWaterWays(waterways ...WaterWay) error
 	NearestWaterWays(point Point, limit int) ([]WaterWayTitle, error)
+	ListVerifiedWaterWays(bbox Bbox) ([]WaterWay, error)
 
 	// tmp
 	AddTmpWaterWay(wwts ...WaterWayTmp) error
@@ -414,6 +415,49 @@ func (this PostgresStorage) NearestWaterWays(point Point, limit int) ([]WaterWay
 	return result.([]WaterWayTitle), nil
 }
 
+func (this PostgresStorage) ListVerifiedWaterWays(bbox Bbox) ([]WaterWay, error) {
+	result, err := this.doFindList("SELECT id, osm_id, title, type, ST_AsGeoJSON(path) as path, parent_id,comment,verified,popularity " +
+		"FROM waterway WHERE verified AND path && ST_MakeEnvelope($1,$2,$3,$4)",
+		func(rows *sql.Rows) (WaterWay, error) {
+			id := int64(-1)
+			osmId := sql.NullInt64{}
+			parentId := sql.NullInt64{}
+			title := ""
+			_type := ""
+			comment := ""
+			pathStr := ""
+			verified := false
+			popularity := int16(0)
+			err := rows.Scan(&id, &osmId, &title, &_type, &pathStr, &parentId, &comment, &verified, &popularity)
+			if err != nil {
+				return WaterWay{}, err
+			}
+
+			path := LineString{}
+			err = json.Unmarshal([]byte(pathStr), &path)
+			if err != nil {
+				log.Errorf("Can not parse path for track %s: %v", path, err)
+				return WaterWay{}, err
+			}
+
+			return WaterWay{
+				Id:id,
+				OsmId:getOrElse(osmId, 0),
+				ParentId:getOrElse(parentId, 0),
+				Title:title,
+				Type:_type,
+				Path:path.Coordinates,
+				Comment:comment,
+				Popularity:popularity,
+				Verified:verified,
+			}, nil
+		}, bbox.X1, bbox.Y1, bbox.X2, bbox.Y2)
+	if (err != nil ) {
+		return []WaterWay{}, err
+	}
+	return result.([]WaterWay), nil
+}
+
 func (this PostgresStorage) AddTmpWaterWay(wwts ...WaterWayTmp) error {
 	vars := make([]interface{}, len(wwts))
 	for i, p := range wwts {
@@ -477,7 +521,7 @@ func (this PostgresStorage) AddWhiteWaterPoints(whiteWaterPoints ...WhiteWaterPo
 }
 
 func nullIf0(x int64) sql.NullInt64 {
-	if x==0 {
+	if x == 0 {
 		return sql.NullInt64{
 			Int64:0,
 			Valid:false,
