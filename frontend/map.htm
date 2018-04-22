@@ -11,7 +11,7 @@
 <ul id="rivers" class="riversMenu"></ul>
 <script type="text/x-jquery-tmpl" id="riversMenuTemplate">
     {{each rivers}}
-        <li>${title} <a href="" alt="Скачать GPX с точками порогов">GPX</a></li>
+        <li>${title} <a href="${apiUrl}/${id}" alt="Скачать GPX с точками порогов">GPX</a></li>
     {{/each}}
 </script>
 

@@ -40,6 +40,7 @@ type Storage interface {
 
 	AddWaterWays(waterways ...WaterWay) error
 	NearestWaterWays(point Point, limit int) ([]WaterWayTitle, error)
+	WaterWayById(id int64) (WaterWayTitle, error)
 
 	// tmp
 	AddTmpWaterWay(wwts ...WaterWayTmp) error
@@ -49,6 +50,7 @@ type Storage interface {
 
 	AddWhiteWaterPoints(whiteWaterPoint ...WhiteWaterPoint) error
 	ListWhiteWaterPoints(bbox Bbox) []WhiteWaterPoint
+	ListWhiteWaterPointsByRiver(id int64) []WhiteWaterPoint
 
 	ListWaterWayTitles(bbox Bbox, limit int) ([]WaterWayTitle, error)
 }
@@ -384,6 +386,17 @@ func (this PostgresStorage) AddWaterWays(waterways ...WaterWay) error {
 		}, vars...)
 }
 
+func (this PostgresStorage) WaterWayById(id int64) (WaterWayTitle, error) {
+	found,err := this.listWaterWayTitles("WHERE id=$1", id)
+	if err!=nil {
+		return WaterWayTitle{}, err
+	}
+	if len(found)==0 {
+		return WaterWayTitle{}, fmt.Errorf("Waterway with id %d not found", id)
+	}
+	return found[0], nil
+}
+
 func (this PostgresStorage) NearestWaterWays(point Point, limit int) ([]WaterWayTitle, error) {
 	pointBytes, err := json.Marshal(NewGeoPoint(point))
 	if err != nil {
@@ -394,7 +407,9 @@ func (this PostgresStorage) NearestWaterWays(point Point, limit int) ([]WaterWay
 
 func (this PostgresStorage) ListWaterWayTitles(bbox Bbox, limit int) ([]WaterWayTitle, error) {
 	return this.listWaterWayTitles(
-		"WHERE path && ST_MakeEnvelope($1,$2,$3,$4) ORDER BY popularity DESC LIMIT $5",
+		"WHERE verified AND path && ST_MakeEnvelope($1,$2,$3,$4) " +
+			"AND exists(SELECT 1 FROM white_water_rapid WHERE white_water_rapid.water_way_id=waterway.id) " +
+			"ORDER BY popularity, title DESC LIMIT $5",
 		bbox.X1, bbox.Y1, bbox.X2, bbox.Y2, limit)
 }
 
@@ -499,7 +514,14 @@ func getOrElse(val sql.NullInt64, _default int64) int64 {
 }
 
 func (this PostgresStorage) ListWhiteWaterPoints(bbox Bbox) []WhiteWaterPoint {
-	result, err := this.doFindList("SELECT id, osm_id, water_way_id, type, title, comment, ST_AsGeoJSON(point) as point, category, short_description, link FROM white_water_rapid WHERE point && ST_MakeEnvelope($1,$2,$3,$4)",
+	return this.listWhiteWaterPoints("WHERE point && ST_MakeEnvelope($1,$2,$3,$4)", bbox.X1, bbox.Y1, bbox.X2, bbox.Y2)
+}
+func (this PostgresStorage) ListWhiteWaterPointsByRiver(id int64) []WhiteWaterPoint {
+	return this.listWhiteWaterPoints("WHERE water_way_id=$1", id)
+}
+
+func (this PostgresStorage) listWhiteWaterPoints(condition string, vars ...interface{}) []WhiteWaterPoint {
+	result, err := this.doFindList("SELECT id, osm_id, water_way_id, type, title, comment, ST_AsGeoJSON(point) as point, category, short_description, link FROM white_water_rapid " + condition,
 		func(rows *sql.Rows) (WhiteWaterPoint, error) {
 			var err error
 			id := int64(-1)
@@ -545,7 +567,7 @@ func (this PostgresStorage) ListWhiteWaterPoints(bbox Bbox) []WhiteWaterPoint {
 				Link: link.String,
 			}
 			return eventPoint, nil
-		}, bbox.X1, bbox.Y1, bbox.X2, bbox.Y2)
+		}, vars...)
 	if (err != nil ) {
 		return []WhiteWaterPoint{}
 	}

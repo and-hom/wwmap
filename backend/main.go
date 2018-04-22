@@ -18,6 +18,7 @@ import (
 	. "github.com/and-hom/wwmap/backend/geoparser"
 	"github.com/and-hom/wwmap/config"
 	"github.com/and-hom/wwmap/backend/model"
+	gpx "github.com/ptrv/go-gpx"
 )
 
 var storage Storage
@@ -97,6 +98,42 @@ func GetVisibleRivers(w http.ResponseWriter, req *http.Request) {
 	w.Write([]byte(JsonStr(waterways, "[]")))
 }
 
+func DownloadGpx(w http.ResponseWriter, req *http.Request) {
+	corsHeaders(w, "GET")
+	pathParams := mux.Vars(req)
+
+	id, err := strconv.ParseInt(pathParams["id"], 10, 64)
+	if err != nil {
+		onError(w, err, "Can not parse id", http.StatusBadRequest)
+		return
+	}
+
+	waterway, err := storage.WaterWayById(id)
+	if err != nil {
+		onError(w, err, fmt.Sprintf("Can not find river with id %d", id), http.StatusNotFound)
+		return
+	}
+
+	whitewaterPoints := storage.ListWhiteWaterPointsByRiver(id)
+	waypoints := make([]gpx.Wpt, len(whitewaterPoints))
+	for i := 0; i < len(whitewaterPoints); i++ {
+		whitewaterPoint := whitewaterPoints[i]
+		waypoints[i] = gpx.Wpt{
+			Lat: whitewaterPoint.Point.Lat,
+			Lon: whitewaterPoint.Point.Lon,
+			Name: whitewaterPoint.Title,
+			Cmt: whitewaterPoint.Comment,
+		}
+	}
+	gpxData := gpx.Gpx{
+		Waypoints: waypoints,
+	}
+	w.Header().Add("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s.gpx\"", waterway.Title))
+	w.Header().Add("Content-Type", "application/gpx+xml")
+
+	xmlBytes := gpxData.ToXML()
+	w.Write(xmlBytes)
+}
 
 func AddWhiteWaterPoints(w http.ResponseWriter, r *http.Request) {
 	corsHeaders(w, "POST, GET, OPTIONS, PUT, DELETE")
@@ -780,6 +817,8 @@ func main() {
 	r.HandleFunc("/whitewater", AddWhiteWaterPoints).Methods("PUT", "POST")
 	r.HandleFunc("/nearest-rivers", GetNearestRivers).Methods("GET")
 	r.HandleFunc("/visible-rivers", GetVisibleRivers).Methods("GET")
+
+	r.HandleFunc("/gpx/{id}", DownloadGpx).Methods("GET")
 
 	httpStr := fmt.Sprintf(":%d", 7007)
 	log.Infof("Starting http server on %s", httpStr)

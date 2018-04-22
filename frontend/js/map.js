@@ -6,7 +6,11 @@
     function loadRivers(bounds) {
         $.get(apiBase + "/visible-rivers?bbox=" + bounds.join(','), function (data) {
             $('#rivers').html('');
-            $('#riversMenuTemplate').tmpl({"rivers" : $.parseJSON(data)}).appendTo('#rivers');
+            var dataObj = {
+                "rivers" : $.parseJSON(data),
+                "apiUrl": apiBase + "/gpx"
+            }
+            $('#riversMenuTemplate').tmpl(dataObj).appendTo('#rivers');
         });
     }
 
