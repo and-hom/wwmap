@@ -12,8 +12,14 @@ import (
 	"strings"
 )
 
+type ClusterizationParams struct {
+	BarrierRatio float64 `yaml:"barrier_ratio"`
+	MinDistRatio float64 `yaml:"min_dist_ratio"`
+}
+
 type Configuration struct {
 	DbConnString string `yaml:"db-connection-string"`
+	ClusterizationParams ClusterizationParams `yaml:"clusterization"`
 }
 
 func loadConf(filename string) (Configuration, error) {

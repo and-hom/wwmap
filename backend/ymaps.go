@@ -5,6 +5,7 @@ import (
 	. "github.com/and-hom/wwmap/backend/geo"
 	"fmt"
 	"math"
+	"encoding/json"
 )
 
 func toYmapsPreset(epType EventPointType) string {
@@ -94,7 +95,12 @@ func pointsToYmaps(points []EventPoint) []Feature {
 }
 
 
-func mkFeature(point WhiteWaterPoint) Feature {
+func mkFeature(point WhiteWaterPoint, withDescription bool) Feature {
+	var description = ""
+	if withDescription {
+		description = point.ShortDesc
+	}
+
 	return Feature{
 		Id:point.Id,
 		Geometry:NewGeoPoint(point.Point),
@@ -106,7 +112,7 @@ func mkFeature(point WhiteWaterPoint) Feature {
 			Title: point.Title,
 			Category: point.Category,
 			Link: point.Link,
-			ShortDesc: point.ShortDesc,
+			ShortDesc: description,
 		},
 		Options:FeatureOptions{
 			IconLayout: IMAGE,
@@ -154,10 +160,11 @@ func mkCluster(Id ClusterId, points []WhiteWaterPoint) Feature {
 	features := make([]Feature, len(points))
 
 	for i := 0; i < len(points); i++ {
-		features[i] = mkFeature(points[i])
+		features[i] = mkFeature(points[i], false)
 	}
 
 	return Feature{
+		Id: int64(Id.Id) + 10 * Id.WaterWayId,
 		Type: CLUSTER,
 		Geometry:NewGeoPoint(center),
 		Bbox: bounds,
@@ -180,14 +187,20 @@ func mkCluster(Id ClusterId, points []WhiteWaterPoint) Feature {
 }
 
 func whiteWaterPointsToYmaps(points []WhiteWaterPoint, width float64, height float64) []Feature {
-	by_cluster := clusterizePoints(points, width, height)
+	by_cluster := clusterMaker.clusterizePoints(points, width, height)
 
 	result := make([]Feature, 0)
-	for id, cluste_points := range by_cluster {
-		if len(cluste_points) == 1 {
-			result = append(result, mkFeature(points[0]))
+	for id, cluster_points := range by_cluster {
+		if len(cluster_points) == 1 {
+			result = append(result, mkFeature(cluster_points[0], true))
 		} else {
-			result = append(result, mkCluster(id, points))
+			result = append(result, mkCluster(id, cluster_points))
+		}
+	}
+	if len(result)>0 {
+		r,e := json.Marshal(result)
+		if e==nil {
+			fmt.Printf("%s\n", string(r))
 		}
 	}
 

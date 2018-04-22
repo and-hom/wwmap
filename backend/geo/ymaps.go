@@ -19,13 +19,13 @@ type Bbox struct {
 
 func (this Bbox) MarshalJSON() ([]byte, error) {
 	buffer := bytes.NewBufferString("[[")
-	buffer.WriteString(fmt.Sprint(this.X1))
-	buffer.WriteString(",")
 	buffer.WriteString(fmt.Sprint(this.Y1))
-	buffer.WriteString("],[")
-	buffer.WriteString(fmt.Sprint(this.X2))
 	buffer.WriteString(",")
+	buffer.WriteString(fmt.Sprint(this.X1))
+	buffer.WriteString("],[")
 	buffer.WriteString(fmt.Sprint(this.Y2))
+	buffer.WriteString(",")
+	buffer.WriteString(fmt.Sprint(this.X2))
 	buffer.WriteString("]]")
 	return buffer.Bytes(), nil
 }

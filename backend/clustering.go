@@ -6,21 +6,39 @@ import (
 	"github.com/and-hom/wwmap/backend/geo"
 )
 
-const CLUSTERING_DISTANCE_KOEFF float64 = float64(0.025)
+// CLusterization
+type ClusterMaker struct {
+	BarrierDistance float64 // When some points placed closer then min(width,heigth) * BarrierDistance clusterization will be applied on this river
+	MinDistance     float64 // if clusterization is started for this river it's a minimal distance from cluster center to this point
+}
 
-func clusterWaterWay(riverPoints []dao.WhiteWaterPoint, minDistance float64) []Cluster {
+
+func clusterWaterWay(waterWayId int64, points []dao.WhiteWaterPoint, barrierMinDistance float64, minDistance float64) []Cluster {
 	riverClusters := []Cluster{}
+
+	var actualMinDist = math.MaxFloat64
+	if waterWayId > 0 {
+		for i := 0; i < len(points); i++ {
+			for j := i + 1; j < len(points); j++ {
+				actualMinDist = math.Min(actualMinDist, points[i].Point.DistanceTo(points[j].Point))
+			}
+		}
+	}
+
 	PointsLoop:
-	for i := 0; i < len(riverPoints); i++ {
-		for j := 0; j < len(riverClusters); j++ {
-			if riverClusters[j].Center.DistanceTo(riverPoints[i].Point) < minDistance {
-				riverClusters[j].Points = append(riverClusters[j].Points, riverPoints[i])
-				continue PointsLoop
+	for i := 0; i < len(points); i++ {
+		if actualMinDist < barrierMinDistance {
+			for j := 0; j < len(riverClusters); j++ {
+				if riverClusters[j].Center.DistanceTo(points[i].Point) < minDistance {
+					riverClusters[j].Points = append(riverClusters[j].Points, points[i])
+					riverClusters[j].RecalculateCenter()
+					continue PointsLoop
+				}
 			}
 		}
 		riverClusters = append(riverClusters, Cluster{
-			Center:riverPoints[i].Point,
-			Points:[]dao.WhiteWaterPoint{riverPoints[i], },
+			Center:points[i].Point,
+			Points:[]dao.WhiteWaterPoint{points[i], },
 		})
 	}
 	return riverClusters
@@ -35,17 +53,18 @@ func groupByRiver(points []dao.WhiteWaterPoint) map[int64][]dao.WhiteWaterPoint 
 	return byRiver
 }
 
-func clusterizePoints(points []dao.WhiteWaterPoint, width float64, height float64) map[ClusterId][]dao.WhiteWaterPoint {
-	minDistance := math.Max(width * CLUSTERING_DISTANCE_KOEFF, height * CLUSTERING_DISTANCE_KOEFF)
+func (this *ClusterMaker) clusterizePoints(points []dao.WhiteWaterPoint, width float64, height float64) map[ClusterId][]dao.WhiteWaterPoint {
+	minDistance := math.Max(width, height) * this.MinDistance
+	barrierMinDistance :=  math.Max(width, height) * this.BarrierDistance
 	result := make(map[ClusterId][]dao.WhiteWaterPoint)
 
 	for waterWayId, riverPoints := range groupByRiver(points) {
-		riverClusters := clusterWaterWay(riverPoints, minDistance)
+		riverClusters := clusterWaterWay(waterWayId, riverPoints, barrierMinDistance, minDistance)
 		for idx, cluster := range riverClusters {
 			clusterId := ClusterId{
 				WaterWayId:waterWayId,
 				Id: idx,
-				Title: "Cluter",
+				Title: "Cluster",
 			}
 			result[clusterId] = cluster.Points
 		}
@@ -62,4 +81,17 @@ type ClusterId struct {
 type Cluster struct {
 	Center geo.Point
 	Points []dao.WhiteWaterPoint
+}
+
+func (this *Cluster) RecalculateCenter() {
+	var latSum = float64(0)
+	var lonSum = float64(0)
+	for i := 0; i < len(this.Points); i++ {
+		latSum += this.Points[i].Point.Lat
+		lonSum += this.Points[i].Point.Lon
+	}
+	this.Center = geo.Point{
+		Lat: latSum / float64(len(this.Points)),
+		Lon: lonSum / float64(len(this.Points)),
+	}
 }

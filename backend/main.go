@@ -21,6 +21,7 @@ import (
 )
 
 var storage Storage
+var clusterMaker ClusterMaker
 
 func TileHandler(w http.ResponseWriter, req *http.Request) {
 	corsHeaders(w, "GET, OPTIONS")
@@ -730,8 +731,13 @@ func main() {
 	log.Infof("Starting wwmap")
 
 	configuration := config.Load("")
+	fmt.Printf("======%v\n", configuration)
 
 	storage = NewPostgresStorage(configuration.DbConnString)
+	clusterMaker = ClusterMaker {
+		BarrierDistance: configuration.ClusterizationParams.BarrierRatio,
+		MinDistance: configuration.ClusterizationParams.MinDistRatio,
+	}
 
 	r := mux.NewRouter()
 	r.HandleFunc("/ymaps-tile", TileHandler)
