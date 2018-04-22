@@ -131,3 +131,28 @@ h2 {
 .track-list-item-selected, .point-list-item-selected {
     background: #f3c17a !important;
 }
+
+.waterwayMenu {
+    list-style-type: none;
+    padding-left: 0px;
+    width: 300px;
+}
+
+.waterwayMenu .title {
+    font-weight: bold;
+    margin-right: 11px;
+}
+
+.waterwayMenu li a {
+    vertical-align: top;
+    float: right;
+    display: inline-block;
+    height: 16px;
+    width: 16px;
+}
+
+.waterwayMenu li {
+    list-style-type: none;
+    padding-left: 0px;
+    padding-bottom:10px;
+}
