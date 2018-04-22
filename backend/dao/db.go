@@ -487,7 +487,8 @@ func getOrElse(val sql.NullInt64, _default int64) int64 {
 }
 
 func (this PostgresStorage) ListWhiteWaterPoints(bbox Bbox) []WhiteWaterPoint {
-	result, err := this.doFindList("SELECT id, osm_id, water_way_id, type, title, comment, ST_AsGeoJSON(point) as point, category, short_description, link FROM white_water_rapid WHERE point && ST_MakeEnvelope($1,$2,$3,$4)",
+	result, err := this.doFindList("SELECT id, osm_id, water_way_id, type, title, comment, ST_AsGeoJSON(point) as point, category, short_description, link " +
+		"FROM white_water_rapid WHERE point && ST_MakeEnvelope($1,$2,$3,$4) ORDER BY water_way_id",
 		func(rows *sql.Rows) (WhiteWaterPoint, error) {
 			var err error
 			id := int64(-1)

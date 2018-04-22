@@ -46,12 +46,12 @@ func TileWhiteWaterHandler(w http.ResponseWriter, req *http.Request) {
 	callback := req.FormValue("callback")
 	bbox, err := NewBbox(req.FormValue("bbox"))
 	if err != nil {
-		onError500(w, err, "Can not parse bbox")
+		onError(w, err, "Can not parse bbox", http.StatusBadRequest)
 		return
 	}
 	points := storage.ListWhiteWaterPoints(bbox)
 
-	featureCollection := MkFeatureCollection(whiteWaterPointsToYmaps(points))
+	featureCollection := MkFeatureCollection(whiteWaterPointsToYmaps(points, bbox.Width(), bbox.Height()))
 	log.Infof("Found %d", len(featureCollection.Features))
 
 	w.Write(JsonpAnswer(callback, featureCollection, "{}"))

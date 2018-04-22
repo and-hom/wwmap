@@ -57,6 +57,14 @@ func (this Bbox) Center() Point {
 
 }
 
+func (this Bbox) Width() float64 {
+	return math.Abs(this.X1 - this.X2)
+}
+
+func (this Bbox) Height() float64 {
+	return math.Abs(this.Y1 - this.Y2)
+}
+
 func (this Bbox) Contains(p Point) bool {
 	return this.X1 <= p.Lat && p.Lat <= this.X2 && this.Y1 <= p.Lon && p.Lon <= this.Y2;
 }
@@ -99,8 +107,8 @@ type FeatureProperties struct {
 	// custom fields
 	Title           string `json:"title,omitempty"`
 	Link            string `json:"link,omitempty"`
-	Comment            string `json:"comment,omitempty"`
-	ShortDesc            string `json:"short_description,omitempty"`
+	Comment         string `json:"comment,omitempty"`
+	ShortDesc       string `json:"short_description,omitempty"`
 	Category        model.SportCategory `json:"category,omitempty"`
 }
 
@@ -121,8 +129,15 @@ type FeatureOptions struct {
 	IconImageOffset []int `json:"iconImageOffset,omitempty"`
 }
 
+type FeatureType string;
+
+const (
+	FEATURE FeatureType = "Feature"
+	CLUSTER FeatureType = "Cluster"
+)
+
 type Feature struct {
-	Type       string `json:"type"`
+	Type       FeatureType `json:"type"`
 	Id         int64 `json:"id,omitempty"`
 	Geometry   Geometry `json:"geometry,omitempty"`
 	Properties FeatureProperties `json:"properties,omitempty"`

@@ -30,7 +30,7 @@ func routeToYmaps(route Route) []Feature {
 		result[i] = Feature{
 			Id:point.Id,
 			Geometry:NewGeoPoint(point.Point),
-			Type:"Feature",
+			Type: FEATURE,
 			Properties:FeatureProperties{
 				HintContent: point.Title,
 				Id: point.Id,
@@ -46,7 +46,7 @@ func routeToYmaps(route Route) []Feature {
 		result[i] = Feature{
 			Id:track.Id,
 			Geometry:NewLineString(track.Path),
-			Type:"Feature",
+			Type: FEATURE,
 		}
 	}
 
@@ -62,7 +62,7 @@ func tracksToYmaps(tracks []Track) []Feature {
 		result[i] = Feature{
 			Id:track.Id,
 			Geometry:NewLineString(track.Path),
-			Type:"Feature",
+			Type: FEATURE,
 		}
 	}
 	return result
@@ -77,7 +77,7 @@ func pointsToYmaps(points []EventPoint) []Feature {
 		result[i] = Feature{
 			Id:point.Id,
 			Geometry:NewGeoPoint(point.Point),
-			Type:"Feature",
+			Type: FEATURE,
 			Properties:FeatureProperties{
 				HintContent: point.Title,
 				Id: point.Id,
@@ -92,33 +92,46 @@ func pointsToYmaps(points []EventPoint) []Feature {
 	return result
 }
 
-func whiteWaterPointsToYmaps(points []WhiteWaterPoint) []Feature {
-	pLength := len(points)
+func clusterizePoints(points []WhiteWaterPoint, width float64, height float64) map[int][]WhiteWaterPoint {
+	result := make(map[int][]WhiteWaterPoint)
+	for i := 0; i < len(points); i++ {
+		result[i] = []WhiteWaterPoint{points[i]}
+	}
+	return result
+}
 
-	result := make([]Feature, pLength)
-	for i := 0; i < pLength; i++ {
-		point := points[i]
-		result[i] = Feature{
-			Id:point.Id,
-			Geometry:NewGeoPoint(point.Point),
-			Type:"Feature",
-			Properties:FeatureProperties{
-				HintContent: point.Title,
-				Id: point.Id,
+func mkFeature(point WhiteWaterPoint) Feature {
+	return Feature{
+		Id:point.Id,
+		Geometry:NewGeoPoint(point.Point),
+		Type: FEATURE,
+		Properties:FeatureProperties{
+			HintContent: point.Title,
+			Id: point.Id,
 
-				Title: point.Title,
-				Category: point.Category,
-				Link: point.Link,
-				ShortDesc: point.ShortDesc,
-			},
-			Options:FeatureOptions{
-				IconLayout: IMAGE,
-				IconImageHref: fmt.Sprintf("img/cat%d.png", point.Category.Category),
-				IconImageSize: []int{32, 32},
-				IconImageOffset: []int{-16, -16},
+			Title: point.Title,
+			Category: point.Category,
+			Link: point.Link,
+			ShortDesc: point.ShortDesc,
+		},
+		Options:FeatureOptions{
+			IconLayout: IMAGE,
+			IconImageHref: fmt.Sprintf("img/cat%d.png", point.Category.Category),
+			IconImageSize: []int{32, 32},
+			IconImageOffset: []int{-16, -16},
 
-				Id: point.Id,
-			},
+			Id: point.Id,
+		},
+	}
+}
+
+func whiteWaterPointsToYmaps(points []WhiteWaterPoint, width float64, height float64) []Feature {
+	by_cluster := clusterizePoints(points, width, height)
+
+	result := make([]Feature, 0)
+	for _, cluste_points := range by_cluster {
+		if len(cluste_points) == 1 {
+			result = append(result, mkFeature(points[0]))
 		}
 	}
 

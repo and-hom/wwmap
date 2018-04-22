@@ -55,14 +55,13 @@
             setLastPositionZoomType(myMap.getCenter(), myMap.getZoom(), myMap.getType())
         });
 
-        var objectManager = new ymaps.LoadingObjectManager(apiBase + '/ymaps-tile-ww?bbox=%b', {
+        var objectManager = new ymaps.RemoteObjectManager(apiBase + '/ymaps-tile-ww?bbox=%b', {
             clusterHasBalloon: false,
             geoObjectOpenBalloonOnClick: false,
             geoObjectBalloonContentLayout: LabelBalloonContentLayout,
             geoObjectStrokeWidth: 3,
             splitRequests: true,
 
-            clusterize: true,
             clusterHasBalloon: false,
         });
         objectManager.clusters.options.set('preset', 'islands#greenClusterIcons');
