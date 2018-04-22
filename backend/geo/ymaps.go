@@ -101,6 +101,7 @@ type FeatureProperties struct {
 	BalloonContent  string `json:"balloonContent,omitempty"`
 	ClusterCaption  string `json:"clusterCaption,omitempty"`
 	HintContent     string `json:"hintContent,omitempty"`
+	IconContent     string `json:"iconContent,omitempty"`
 	HotspotMetaData HotspotMetaData `json:"HotspotMetaData,omitempty"`
 	Id              int64 `json:"id,omitempty"`
 
@@ -110,6 +111,7 @@ type FeatureProperties struct {
 	Comment         string `json:"comment,omitempty"`
 	ShortDesc       string `json:"short_description,omitempty"`
 	Category        model.SportCategory `json:"category,omitempty"`
+	RiverName       string `json:"river_name,omitempty"`
 }
 
 type IconLayout string
@@ -142,7 +144,7 @@ type Feature struct {
 	Geometry   Geometry `json:"geometry,omitempty"`
 	Bbox       Bbox `json:"bbox,omitempty"`
 	Number     int `json:"number,omitempty"`
-	Features    []Feature `json:"features,omitempty"`
+	Features   []Feature `json:"features,omitempty"`
 	Properties FeatureProperties `json:"properties,omitempty"`
 	Options    FeatureOptions `json:"options,omitempty"`
 }

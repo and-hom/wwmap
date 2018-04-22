@@ -14,7 +14,8 @@
     </h3>
 
     <div class="popover-content">
-        <div>Категория сложности: [if properties.category=="0"]&mdash;[else]$[properties.category][endif]</div>
+        [if properties.category!="0"]<div>Категория сложности: $[properties.category][endif]</div>
+        [if properties.river_name]<div>Река: $[properties.river_name]</div>[endif]
         <div>$[properties.short_description]</div>
         <a target="_top" href="" onclick="show_report_popup($[properties.id]); return false">Сообщить о неточном местоположении</a>
     </div>

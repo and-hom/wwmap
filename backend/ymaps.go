@@ -95,7 +95,7 @@ func pointsToYmaps(points []EventPoint) []Feature {
 }
 
 
-func mkFeature(point WhiteWaterPoint, withDescription bool) Feature {
+func mkFeature(point WhiteWaterPoint, withDescription bool, waterwayTitles map[int64]string) Feature {
 	var description = ""
 	if withDescription {
 		description = point.ShortDesc
@@ -113,6 +113,7 @@ func mkFeature(point WhiteWaterPoint, withDescription bool) Feature {
 			Category: point.Category,
 			Link: point.Link,
 			ShortDesc: description,
+			RiverName: waterwayTitles[point.WaterWayId],
 		},
 		Options:FeatureOptions{
 			IconLayout: IMAGE,
@@ -155,15 +156,17 @@ func ClusterGeom(points []WhiteWaterPoint) (Point, Bbox) {
 	}
 }
 
-func mkCluster(Id ClusterId, points []WhiteWaterPoint) Feature {
+func mkCluster(Id ClusterId, points []WhiteWaterPoint, waterwayTitles map[int64]string) Feature {
 	center, bounds := ClusterGeom(points)
 	features := make([]Feature, len(points))
 
 	for i := 0; i < len(points); i++ {
-		features[i] = mkFeature(points[i], false)
+		features[i] = mkFeature(points[i], false, waterwayTitles)
 	}
 
-	return Feature{
+	iconText, _ := waterwayTitles[Id.WaterWayId]
+
+	return Feature {
 		Id: int64(Id.Id) + 10 * Id.WaterWayId,
 		Type: CLUSTER,
 		Geometry:NewGeoPoint(center),
@@ -171,30 +174,24 @@ func mkCluster(Id ClusterId, points []WhiteWaterPoint) Feature {
 		Number: len(points),
 		Features: features,
 		Properties:FeatureProperties{
-			HintContent: Id.Title,
+			IconContent: iconText,
 
 			Title: Id.Title,
+		}, Options: FeatureOptions{
+			Preset: "islands#greenStretchyIcon",
 		},
-		//Options:FeatureOptions{
-		//	IconLayout: IMAGE,
-		//	IconImageHref: fmt.Sprintf("img/cat%d.png", point.Category.Category),
-		//	IconImageSize: []int{32, 32},
-		//	IconImageOffset: []int{-16, -16},
-		//
-		//	Id: point.Id,
-		//},
 	}
 }
 
-func whiteWaterPointsToYmaps(points []WhiteWaterPoint, width float64, height float64) []Feature {
+func whiteWaterPointsToYmaps(points []WhiteWaterPoint, width float64, height float64, waterwayTitles map[int64]string) []Feature {
 	by_cluster := clusterMaker.clusterizePoints(points, width, height)
 
 	result := make([]Feature, 0)
 	for id, cluster_points := range by_cluster {
 		if len(cluster_points) == 1 {
-			result = append(result, mkFeature(cluster_points[0], true))
+			result = append(result, mkFeature(cluster_points[0], true, waterwayTitles))
 		} else {
-			result = append(result, mkCluster(id, cluster_points))
+			result = append(result, mkCluster(id, cluster_points, waterwayTitles))
 		}
 	}
 	if len(result)>0 {

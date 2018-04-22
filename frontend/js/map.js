@@ -68,7 +68,6 @@
 
             clusterHasBalloon: false,
         });
-        objectManager.clusters.options.set('preset', 'islands#greenClusterIcons');
 
         objectManager.objects.events.add(['click'], function (e) {
             objectManager.objects.balloon.open(e.get('objectId'));

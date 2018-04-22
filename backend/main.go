@@ -52,8 +52,17 @@ func TileWhiteWaterHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	points := storage.ListWhiteWaterPoints(bbox)
+	waterwayTitles, err := storage.ListWaterWayTitles(bbox, 1024)
+	if err != nil {
+		onError500(w, err, "Can not select waterways")
+		return
+	}
+	waterwayTitlesMap := make(map[int64]string)
+	for _, ww := range waterwayTitles {
+		waterwayTitlesMap[ww.Id] = ww.Title
+	}
 
-	featureCollection := MkFeatureCollection(whiteWaterPointsToYmaps(points, bbox.Width(), bbox.Height()))
+	featureCollection := MkFeatureCollection(whiteWaterPointsToYmaps(points, bbox.Width(), bbox.Height(), waterwayTitlesMap))
 	log.Infof("Found %d", len(featureCollection.Features))
 
 	w.Write(JsonpAnswer(callback, featureCollection, "{}"))
@@ -809,7 +818,7 @@ func main() {
 	fmt.Printf("======%v\n", configuration)
 
 	storage = NewPostgresStorage(configuration.DbConnString)
-	clusterMaker = ClusterMaker {
+	clusterMaker = ClusterMaker{
 		BarrierDistance: configuration.ClusterizationParams.BarrierRatio,
 		MinDistance: configuration.ClusterizationParams.MinDistRatio,
 	}
