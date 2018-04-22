@@ -1,3 +1,9 @@
+wwmap-db (0.0.3) unstable; urgency=medium
+
+  * unstable
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sun, 22 Apr 2018 19:30:03 +0300
+
 wwmap-db (0.0.2) unstable; urgency=medium
 
   * Waterway table column changes
