@@ -4,6 +4,7 @@ import (
 	. "github.com/and-hom/wwmap/backend/dao"
 	. "github.com/and-hom/wwmap/backend/geo"
 	"fmt"
+	"math"
 )
 
 func toYmapsPreset(epType EventPointType) string {
@@ -92,13 +93,6 @@ func pointsToYmaps(points []EventPoint) []Feature {
 	return result
 }
 
-func clusterizePoints(points []WhiteWaterPoint, width float64, height float64) map[int][]WhiteWaterPoint {
-	result := make(map[int][]WhiteWaterPoint)
-	for i := 0; i < len(points); i++ {
-		result[i] = []WhiteWaterPoint{points[i]}
-	}
-	return result
-}
 
 func mkFeature(point WhiteWaterPoint) Feature {
 	return Feature{
@@ -125,13 +119,75 @@ func mkFeature(point WhiteWaterPoint) Feature {
 	}
 }
 
+func ClusterGeom(points []WhiteWaterPoint) (Point, Bbox) {
+	var minLat = math.MaxFloat64
+	var minLon = math.MaxFloat64
+	var maxLat = - math.MaxFloat64
+	var maxLon = - math.MaxFloat64
+	var latSum = float64(0)
+	var lonSum = float64(0)
+	for i := 0; i < len(points); i++ {
+		lat := points[i].Point.Lat
+		lon := points[i].Point.Lon
+
+		minLat = math.Min(minLat, lat)
+		minLon = math.Min(minLon, lon)
+		maxLat = math.Max(maxLat, lat)
+		maxLon = math.Max(maxLon, lon)
+
+		latSum += lat
+		lonSum += lon
+	}
+	return Point{
+		Lat: latSum / float64(len(points)),
+		Lon: lonSum / float64(len(points)),
+	}, Bbox{
+		X1:minLon,
+		Y1: minLat,
+		X2:maxLon,
+		Y2:maxLat,
+	}
+}
+
+func mkCluster(Id ClusterId, points []WhiteWaterPoint) Feature {
+	center, bounds := ClusterGeom(points)
+	features := make([]Feature, len(points))
+
+	for i := 0; i < len(points); i++ {
+		features[i] = mkFeature(points[i])
+	}
+
+	return Feature{
+		Type: CLUSTER,
+		Geometry:NewGeoPoint(center),
+		Bbox: bounds,
+		Number: len(points),
+		Features: features,
+		Properties:FeatureProperties{
+			HintContent: Id.Title,
+
+			Title: Id.Title,
+		},
+		//Options:FeatureOptions{
+		//	IconLayout: IMAGE,
+		//	IconImageHref: fmt.Sprintf("img/cat%d.png", point.Category.Category),
+		//	IconImageSize: []int{32, 32},
+		//	IconImageOffset: []int{-16, -16},
+		//
+		//	Id: point.Id,
+		//},
+	}
+}
+
 func whiteWaterPointsToYmaps(points []WhiteWaterPoint, width float64, height float64) []Feature {
 	by_cluster := clusterizePoints(points, width, height)
 
 	result := make([]Feature, 0)
-	for _, cluste_points := range by_cluster {
+	for id, cluste_points := range by_cluster {
 		if len(cluste_points) == 1 {
 			result = append(result, mkFeature(points[0]))
+		} else {
+			result = append(result, mkCluster(id, points))
 		}
 	}
 

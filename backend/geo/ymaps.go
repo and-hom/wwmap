@@ -140,6 +140,9 @@ type Feature struct {
 	Type       FeatureType `json:"type"`
 	Id         int64 `json:"id,omitempty"`
 	Geometry   Geometry `json:"geometry,omitempty"`
+	Bbox       Bbox `json:"bbox,omitempty"`
+	Number     int `json:"number,omitempty"`
+	Features    []Feature `json:"features,omitempty"`
 	Properties FeatureProperties `json:"properties,omitempty"`
 	Options    FeatureOptions `json:"options,omitempty"`
 }

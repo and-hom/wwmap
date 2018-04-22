@@ -508,7 +508,6 @@ func (this PostgresStorage) ListWhiteWaterPoints(bbox Bbox) []WhiteWaterPoint {
 			}
 
 			var pgPoint PgPoint
-			fmt.Printf("\n======================= %d %v %v %s %s %s %s %s\n\n", id, osmId, waterWayId, _type, title, comment, pointStr, categoryStr)
 			err = json.Unmarshal([]byte(pointStr), &pgPoint)
 			if err != nil {
 				log.Errorf("Can not parse point %s for white water object %d: %v", pointStr, id, err)

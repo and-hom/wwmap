@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"encoding/json"
+	"math"
 )
 
 type GeometryType string
@@ -33,6 +34,10 @@ func (this *Point) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+func (this *Point) DistanceTo(p Point) float64 {
+	return math.Sqrt((this.Lat - p.Lat) * (this.Lat - p.Lat) + (this.Lon - p.Lon) * (this.Lon - p.Lon))
+}
+
 const (
 	POINT GeometryType = "Point"
 	RECTANGLE GeometryType = "Rectangle"
@@ -51,7 +56,6 @@ func NewLineString(points []Point) Geometry {
 		Type:LINE_STRING,
 	}
 }
-
 
 type geoPoint struct {
 	Type        GeometryType `json:"type"`
