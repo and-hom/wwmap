@@ -745,6 +745,26 @@ func PictureMetadataHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(JsonStr(imgData, "{}")))
 }
 
+func AddReport(w http.ResponseWriter, r *http.Request) {
+	corsHeaders(w, "POST")
+
+	comment := r.FormValue("comment")
+	objectIdStr := r.FormValue("object_id")
+	objectId, err := strconv.ParseInt(objectIdStr, 10, 64)
+	if err != nil {
+		onError(w, err, fmt.Sprintf("Can not parse object id: %s", objectIdStr), 400)
+		return
+	}
+	err = storage.AddReport(Report{
+		ObjectId: objectId,
+		Comment: comment,
+	})
+	if err != nil {
+		onError500(w, err, "Can not add report")
+		return
+	}
+}
+
 func CloseAndRemove(f *os.File) {
 	f.Close()
 	os.Remove(f.Name())
@@ -819,6 +839,8 @@ func main() {
 	r.HandleFunc("/visible-rivers", GetVisibleRivers).Methods("GET")
 
 	r.HandleFunc("/gpx/{id}", DownloadGpx).Methods("GET")
+
+	r.HandleFunc("/report", AddReport).Methods("POST")
 
 	httpStr := fmt.Sprintf(":%d", 7007)
 	log.Infof("Starting http server on %s", httpStr)
