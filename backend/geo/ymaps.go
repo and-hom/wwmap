@@ -119,6 +119,9 @@ type FeatureOptions struct {
 	IconImageHref   string `json:"iconImageHref,omitempty"`
 	IconImageSize   []int `json:"iconImageSize,omitempty"`
 	IconImageOffset []int `json:"iconImageOffset,omitempty"`
+
+	StrokeColor	string `json:"strokeColor,omitempty"`
+	StrokeWidth	string `json:"strokeWidth,omitempty"`
 }
 
 type Feature struct {

@@ -28,7 +28,7 @@
         });
 
         LabelBalloonContentLayout = ymaps.templateLayoutFactory.createClass(
-            '<h3 class="popover-title">'+
+            '<h3 class="popover-title">$[properties.id]#$[properties.osm_id]'+
             '[if properties.link]<a target="_blank" href="$[properties.link]">$[properties.title]</a>[else]$[properties.title][endif]</h3>'+
                 '<div class="popover-content">' +
                 '<div>Категория сложности: [if properties.category=="0"]&mdash;[else]$[properties.category][endif]</div>' +

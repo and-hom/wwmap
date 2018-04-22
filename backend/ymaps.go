@@ -141,9 +141,19 @@ func waterwaysToYmaps(waterWays []WaterWay) []Feature {
 			Id: waterWays[i].Id,
 			Geometry: NewLineString(non_zero_points),
 			Type:"Feature",
+			Options: FeatureOptions{
+				StrokeColor: colorGen(i+1),
+			},
 		}
 	}
 	return features
+}
+
+func colorGen(i int) string {
+	red := (i % 4) * 64
+	green := (i % 5) * 51
+	blue := (i % 6) * 42
+	return fmt.Sprintf("#%02x%02x%02x", red, green, blue)
 }
 
 func RoutesToYmaps(route []Route) FeatureCollection {
