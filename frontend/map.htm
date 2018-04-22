@@ -7,7 +7,42 @@
 </head>
 <body>
 
+
+<div id="bubble_template" style="display:none">
+    <h3 class="popover-title">
+        [if properties.link]<a target="_blank" href="$[properties.link]">$[properties.title]</a>[else]$[properties.title][endif]
+    </h3>
+
+    <div class="popover-content">
+        <div>Категория сложности: [if properties.category=="0"]&mdash;[else]$[properties.category][endif]</div>
+        <div>$[properties.short_description]</div>
+        <a target="_top" href="" onclick="show_report_popup($[properties.id]); return false">Сообщить о неточном местоположении</a>
+    </div>
+</div>
+
 <div id="map" style="witdh:800px; height: 600px; margin: 10px;"></div>
+<ul id="rivers" class="waterwayMenu"></ul>
+<script type="text/x-jquery-tmpl" id="riversMenuTemplate">
+    {{each rivers}}
+        <li>${title} <a href="${apiUrl}/${id}" alt="Скачать GPX с точками порогов">GPX</a></li>
+    {{/each}}
+</script>
+
+<div class="popup_area">
+    <div class="popuptext" id="report_popup">
+        <form>
+            <label for="object_id">ID</label>
+            <input type="text" id="object_id" name="object_id" readonly style="margin-bottom:10px;"/><br/>
+            <label for="comment" style="width:400px">Исправления происходят в ручном режиме и после проверки. Пожалуйста, расскажите коротко,
+                что не так. Будет полезным добавить источники информации (отчёты, например) и указать реальные координаты точки.
+                <u>Оставьте контакт для обратной связи</u> на случай, если у меня возникнет вопрос.</label><br/>
+            <textarea id="comment" name="comment" rows="20" maxlength="4000" style="margin-top:10px; margin-bottom:20px; "></textarea>
+            <input type="submit" value="Отправить" width="600px; align: center;"/>
+            <input type="button" name="cancel" value="Отмена" width="600px; align: center;"/>
+        </form>
+    </div>
+</div>
+
 
 
 <script type="text/javascript" src="./js/jquery-3.1.1.min.js"></script>
@@ -19,5 +54,27 @@
 <script type="text/javascript" src="https://api-maps.yandex.ru/2.1/?lang=tr_TR"></script>
 <script type="text/javascript" src="./js/config.js"></script>
 <script type="text/javascript" src="./js/map.js"></script>
+<script type="text/javascript">
+  function show_report_popup(id){
+      $(".popuptext #object_id").val(id)
+      $(".popuptext").addClass("show");
+  }
+  $(document).ready(function() {
+    $(".popuptext input[name=cancel]").click(function(){
+        $(".popuptext").removeClass("show")
+    });
+    $(".popuptext input[type=submit]").click(function(){
+        $.post(apiBase + "/report", $( ".popuptext form" ).serialize() )
+        .done(function( data ) {
+            window.alert( "Запрос отправлен. Я прочитаю его по мере наличия свободного времени." );
+            $(".popuptext").removeClass("show")
+            $('#comment').val('')
+        })  .fail(function() {
+            window.alert( "Что-то пошло не так..." );
+        });
+        return false;
+    });
+  });
+</script>
 </body>
 </html>

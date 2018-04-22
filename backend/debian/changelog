@@ -1,8 +1,15 @@
+wwmap-backend (0.0.3) unstable; urgency=medium
+
+  * Invalid whitewater choords reporting
+  * Download GPX by river
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sun, 22 Apr 2018 19:24:31 +0300
+
 wwmap-backend (0.0.2) unstable; urgency=medium
 
   * Can set river for whitewater point
 
- -- Andrey Khomyakov <and.hom@gmail.com>>  Thu, 19 Apr 2018 16:17:33 +0300
+ -- Andrey Khomyakov <and.hom@gmail.com>  Thu, 19 Apr 2018 16:17:33 +0300
 
 wwmap-backend (0.0.1) unstable; urgency=medium
 
