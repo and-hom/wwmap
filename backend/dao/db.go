@@ -115,21 +115,14 @@ func (s PostgresStorage) UpdateRoute(route Route) error {
 	return s.performUpdates("UPDATE route SET title=$2, category=$3 WHERE id=$1",
 		func(entity interface{}) ([]interface{}, error) {
 			r := entity.(Route)
-			catJson, err := r.Category.MarshalJSON()
-			if err != nil {
-				return nil, err
-			}
+			catJson := r.Category.Serialize()
 			return []interface{}{r.Id, r.Title, catJson}, nil;
 		}, route)
 }
 
 func (s PostgresStorage) AddRoute(route Route) (int64, error) {
 	log.Info("Inserting route")
-	categoryBytes, err := route.Category.MarshalJSON()
-	if err != nil {
-		return -1, err
-	}
-	return s.insertReturningId("INSERT INTO route(title,category) VALUES($1,$2) RETURNING id", route.Title, string(categoryBytes))
+	return s.insertReturningId("INSERT INTO route(title,category) VALUES($1,$2) RETURNING id", route.Title, route.Category.Serialize())
 }
 
 func (s PostgresStorage) DeleteRoute(id int64) error {
@@ -463,16 +456,12 @@ func (this PostgresStorage) AddWhiteWaterPoints(whiteWaterPoints ...WhiteWaterPo
 	return this.performUpdates("INSERT INTO white_water_rapid(osm_id, title,type,category,comment,point,short_description, link, water_way_id) VALUES ($1, $2, $3, $4, $5, ST_GeomFromGeoJSON($6), $7, $8, $9)",
 		func(entity interface{}) ([]interface{}, error) {
 			wwp := entity.(WhiteWaterPoint)
-			categoryBytes, err := wwp.Category.MarshalJSON()
-			if err != nil {
-				return nil, err
-			}
 			pathBytes, err := json.Marshal(NewGeoPoint(wwp.Point))
 			if err != nil {
 				return nil, err
 			}
 			fmt.Printf("id = %d", wwp.Id)
-			return []interface{}{wwp.OsmId, wwp.Title, wwp.Type, string(categoryBytes), wwp.Comment, string(pathBytes), wwp.ShortDesc, wwp.Link, nullIf0(wwp.WaterWayId)}, nil
+			return []interface{}{wwp.OsmId, wwp.Title, wwp.Type, wwp.Category.Serialize(), wwp.Comment, string(pathBytes), wwp.ShortDesc, wwp.Link, nullIf0(wwp.WaterWayId)}, nil
 		}, vars...)
 }
 

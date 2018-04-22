@@ -1,3 +1,19 @@
+wwmap-frontend (0.0.3) unstable; urgency=medium
+
+  * Use page anchor to store current map position and zoom
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Fri, 20 Apr 2018 21:04:09 +0300
+http://67.209.114.168/map.htm#43.10223940854098,41.793604417364925,16
+wwmap-frontend (0.0.2) unstable; urgency=medium
+
+  * Can set river for whitewater point
+  * GPX file extension filter on upload
+  * Map type selector added to map
+  * Whitewater points publishing alert fixed
+  * Import whitewater point description from GPX
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Thu, 19 Apr 2018 16:17:33 +0300
+
 wwmap-frontend (0.0.1) unstable; urgency=medium
 
   * Initial release. 

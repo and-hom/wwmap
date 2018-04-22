@@ -5,7 +5,7 @@
 
     function init() {
         var OsmLayer = function () {
-            var layer = new ymaps.Layer(STANDARD_TILES);
+            var layer = new ymaps.Layer(STANDARD_TILES, { projection: ymaps.projection.sphericalMercator });
             //  Копирайты.
             layer.getCopyrights = function () {
                 return ymaps.vow.resolve('OpenStreetMap contributors, CC-BY-SA');
@@ -18,20 +18,21 @@
         ymaps.layer.storage.add('osm#standard', OsmLayer)
         ymaps.mapType.storage.add('osm#standard', new ymaps.MapType('OSM', ['osm#standard']));
 
+        positionAndZoom = getLastPositionAndZoom()
 
         myMap = new ymaps.Map("map", {
-            center: getLastPosition(),
-            zoom: getLastZoom(),
+            center: positionAndZoom.position,
+            zoom: positionAndZoom.zoom,
             controls: ["zoomControl", "fullscreenControl"],
-            type: getLastMapType()
+            type: positionAndZoom.type
         });
 
         LabelBalloonContentLayout = ymaps.templateLayoutFactory.createClass(
             '<h3 class="popover-title">'+
             '[if properties.link]<a target="_blank" href="$[properties.link]">$[properties.title]</a>[else]$[properties.title][endif]</h3>'+
                 '<div class="popover-content">' +
-                '<div>Категория сложности: [if properties.category=="0"]не определена[else]$[properties.category][endif]</div>' +
-                '<div>$[properties.short_desc]</div>' +
+                '<div>Категория сложности: [if properties.category=="0"]&mdash;[else]$[properties.category][endif]</div>' +
+                '<div>$[properties.short_description]</div>' +
                 '<a id="report_$[properties.link]" href="button">Сообщить о неточном местоположении<a/>' +
                 '</div>'
         );
@@ -47,12 +48,11 @@
         });
 
         myMap.events.add('boundschange', function (e) {
-            setLastPosition(myMap.getCenter())
-            setLastZoom(myMap.getZoom())
+            setLastPositionZoomType(myMap.getCenter(), myMap.getZoom(), myMap.getType())
         });
 
         myMap.events.add('typechange', function (e) {
-            setLastMapType(myMap.getType())
+            setLastPositionZoomType(myMap.getCenter(), myMap.getZoom(), myMap.getType())
         });
 
         var objectManager = new ymaps.LoadingObjectManager(apiBase + '/ymaps-tile-ww?bbox=%b', {

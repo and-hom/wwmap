@@ -17,3 +17,12 @@ migrate -database 'postgres://wwmap:<your secret password>@localhost:5432/wwmap'
 ```
 migrate -database 'postgres://wwmap:<your secret password>@localhost:5432/wwmap' -source file://. down 1
 ```
+
+### Simple migrate data to prod:
+
+```
+sudo -u postgres pg_dump --data-only --table=waterway wwmap > waterway.pg
+scp waterway.pg my-server:
+ssh my-server
+sudo -u postgres psql wwmap < waterway.pg
+```

@@ -3,7 +3,7 @@ const LAST_ZOOM_COOKIE_NAME = "last-map-zoom";
 const LAST_MAP_TYPE_COOKIE_NAME = "last-map-type";
 const apiBase = "http://localhost:7007";
 
-const STANDARD_TILES = 'http://tile.openstreetmap.org/%z/%x/%y.png';
+const STANDARD_TILES = 'http://67.209.114.168/maps/osm/%z/%x/%y.png';
 const THUNDERFOREST_OUTDOOR_TILES = 'http://a.tile.thunderforest.com/outdoors/%z/%x/%y.png';
 const THUNDERFOREST_LANDSCAPE_TILES = 'http://a.tile.thunderforest.com/landscape/%z/%x/%y.png';
 
@@ -33,6 +33,49 @@ function getLastZoom() {
 
 function setLastZoom(z) {
     $.cookie(LAST_ZOOM_COOKIE_NAME, $.toJSON(z), {path: '/'})
+}
+
+function setLastPositionZoomType(pos, z, type) {
+    setLastPosition(pos)
+    setLastZoom(z)
+    setLastMapType(type)
+    window.location.hash = pos[0] + ',' + pos[1] + ',' + z + ',' + type
+}
+
+function getLastPositionAndZoom() {
+    var position;
+    var zoom;
+    var type;
+    var hash = window.location.hash
+    if (hash) {
+        hash = hash.substr(1)
+        var params = hash.split(',')
+        if (params.length >= 2) {
+            position = [parseFloat(params[0]), parseFloat(params[1])]
+        }
+        if (params.length >= 3) {
+            zoom = parseInt(params[2])
+        }
+        if (params.length >= 4) {
+            type = params[3]
+        }
+    }
+
+    if (!position) {
+        position = getLastPosition()
+    }
+    if (!zoom) {
+        zoom = getLastZoom()
+    }
+    if (!type) {
+        type = getLastMapType();
+    }
+
+    return {
+        "position": position,
+        "zoom": zoom,
+        "type": type
+    }
 }
 
 function getLastMapType() {
