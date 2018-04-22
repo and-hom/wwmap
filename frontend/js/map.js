@@ -35,7 +35,7 @@
             center: positionAndZoom.position,
             zoom: positionAndZoom.zoom,
             controls: ["zoomControl", "fullscreenControl"],
-            type: getLastMapType()
+            type: positionAndZoom.type
         });
 
         LabelBalloonContentLayout = ymaps.templateLayoutFactory.createClass($('#bubble_template').html());
@@ -51,12 +51,12 @@
         });
 
         myMap.events.add('boundschange', function (e) {
-            setLastPositionAndZoom(myMap.getCenter(), myMap.getZoom())
+            setLastPositionZoomType(myMap.getCenter(), myMap.getZoom(), myMap.getType())
             loadRivers(e.get("newBounds"))
         });
 
         myMap.events.add('typechange', function (e) {
-            setLastMapType(myMap.getType())
+            setLastPositionZoomType(myMap.getCenter(), myMap.getZoom(), myMap.getType())
         });
 
         var objectManager = new ymaps.LoadingObjectManager(apiBase + '/ymaps-tile-ww?bbox=%b', {
