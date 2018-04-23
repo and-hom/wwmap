@@ -103,17 +103,7 @@ func GetVisibleRivers(w http.ResponseWriter, req *http.Request) {
 
 	for i:=0;i<len(rivers);i++ {
 		river:=&rivers[i]
-		dx := river.Bounds.X2 - river.Bounds.X1
-		dy := river.Bounds.Y2 - river.Bounds.Y1
-		marginX := dx * 0.05
-		marginY := dy * 0.05
-
-		river.Bounds = Bbox {
-			X1: river.Bounds.X1 - marginX,
-			Y1: river.Bounds.Y1 - marginY,
-			X2: river.Bounds.X2 + marginX,
-			Y2: river.Bounds.Y2 + marginY,
-		}
+		river.Bounds = river.Bounds.WithMargins(0.05)
 	}
 	w.Write([]byte(JsonStr(rivers, "[]")))
 }

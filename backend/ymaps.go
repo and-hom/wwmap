@@ -155,7 +155,7 @@ func mkCluster(Id ClusterId, points []WhiteWaterPointWithRiverTitle) Feature {
 		Id: int64(Id.Id) + 10 * Id.RiverId,
 		Type: CLUSTER,
 		Geometry:NewGeoPoint(bounds.Center()),
-		Bbox: bounds,
+		Bbox: bounds.WithMargins(0.05),
 		Number: len(points),
 		Properties:FeatureProperties{
 			IconContent: iconText,

@@ -43,6 +43,19 @@ func (this Bbox) String() string {
 	return buffer.String()
 }
 
+func (this *Bbox) WithMargins(ratio float64) Bbox {
+	dx := this.X2 - this.X1
+	dy := this.Y2 - this.Y1
+	marginX := dx * ratio
+	marginY := dy * ratio
+	return Bbox {
+		X1: this.X1 - marginX,
+		Y1: this.Y1 - marginY,
+		X2: this.X2 + marginX,
+		Y2: this.Y2 + marginY,
+	}
+}
+
 func NewBbox(data string) (Bbox, error) {
 	parts := strings.Split(data, ",")
 	if len(parts) != 4 {
