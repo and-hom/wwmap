@@ -97,6 +97,22 @@ func (h *PointHandler) EndDocument() {
 
 func (h *PointHandler) flush(wayId int64) {
 	points, _ := h.points_by_way[wayId]
+	nullPointCnt := 0
+	for i:=0;i<len(points);i++ {
+		if points[i].Lat == 0 && points[i].Lon==0 {
+			nullPointCnt++
+		}
+	}
+	pointsNew := make([]geo.Point, len(points) - nullPointCnt)
+	idx :=0
+	for i:=0;i<len(points);i++ {
+		if !(points[i].Lat == 0 && points[i].Lon==0) {
+			pointsNew[idx] = points[i]
+			idx++
+		}
+	}
+	fmt.Printf("%d points of %d removed\n", nullPointCnt, len(points))
+
 	waterWayTmp, _ := h.waterwayIdx[wayId]
 	h.flush_way(wayId, dao.WaterWay{
 		OsmId: waterWayTmp.Id,
@@ -104,7 +120,7 @@ func (h *PointHandler) flush(wayId int64) {
 		ParentId: waterWayTmp.ParentId,
 		Comment: waterWayTmp.Comment,
 		Type: waterWayTmp.Type,
-		Path: points,
+		Path: pointsNew,
 		Verified: false,
 		Popularity: 0,
 	})

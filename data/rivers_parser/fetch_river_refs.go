@@ -53,7 +53,7 @@ func main() {
 		waterwayReverseIdx : revIdx,
 		flush_way:func(wayId int64, ww dao.WaterWay) {
 			fmt.Printf("Flush: %d", ww.Id)
-			err := storage.AddWaterWays(ww)
+			err := storage.UpdateWaterWay(ww)
 			if err != nil {
 				log.Fatal(err)
 			}
