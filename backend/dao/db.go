@@ -437,7 +437,7 @@ func (this PostgresStorage) listRiverTitles(query string, queryParams ...interfa
 				return RiverTitle{}, err
 			}
 
-			var pgRect PgRect
+			var pgRect PgPolygon
 			if boundsStr.Valid {
 				err = json.Unmarshal([]byte(boundsStr.String), &pgRect)
 				if err != nil {
@@ -686,6 +686,6 @@ func (s PostgresStorage)performUpdates(query string, mapper func(entity interfac
 type PgPoint struct {
 	Coordinates Point `json:"coordinates"`
 }
-type PgRect struct {
+type PgPolygon struct {
 	Coordinates [][]Point `json:"coordinates"`
 }
