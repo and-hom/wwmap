@@ -12,27 +12,27 @@ type ClusterMaker struct {
 	MinDistance     float64 // if clusterization is started for this river it's a minimal distance from cluster center to this point
 }
 
-func groupByRiver(points []dao.WhiteWaterPoint) map[int64][]dao.WhiteWaterPoint {
-	byRiver := make(map[int64][]dao.WhiteWaterPoint)
+func groupByRiver(points []dao.WhiteWaterPointWithRiverTitle) map[int64][]dao.WhiteWaterPointWithRiverTitle {
+	byRiver := make(map[int64][]dao.WhiteWaterPointWithRiverTitle)
 	for i := 0; i < len(points); i++ {
-		waterWayId := points[i].WaterWayId
-		byRiver[waterWayId] = append(byRiver[waterWayId], points[i])
+		riverWayId := points[i].RiverId
+		byRiver[riverWayId] = append(byRiver[riverWayId], points[i])
 	}
 	return byRiver
 }
 
-func (this *ClusterMaker) clusterizePoints(points []dao.WhiteWaterPoint, width float64, height float64) map[ClusterId][]dao.WhiteWaterPoint {
+func (this *ClusterMaker) clusterizePoints(points []dao.WhiteWaterPointWithRiverTitle, width float64, height float64) map[ClusterId][]dao.WhiteWaterPointWithRiverTitle {
 	currentClustering := CurrentClustering{
 		MinDistance:math.Max(width, height) * this.MinDistance,
 		BarrierDistance:math.Max(width, height) * this.BarrierDistance,
 	}
-	result := make(map[ClusterId][]dao.WhiteWaterPoint)
+	result := make(map[ClusterId][]dao.WhiteWaterPointWithRiverTitle)
 
-	for waterWayId, riverPoints := range groupByRiver(points) {
-		riverClusters := currentClustering.clusterWaterWay(riverPoints, waterWayId > 0 )
+	for riverId, riverPoints := range groupByRiver(points) {
+		riverClusters := currentClustering.clusterForRiver(riverPoints, riverId > 0 )
 		for idx, cluster := range riverClusters {
 			clusterId := ClusterId{
-				WaterWayId:waterWayId,
+				RiverId:riverId,
 				Id: idx,
 				Title: "Cluster",
 			}
@@ -47,7 +47,7 @@ type CurrentClustering struct {
 	MinDistance     float64 // Real value of minimal distance to __perform__ clustering for every point of river
 }
 
-func (this *CurrentClustering) clusterWaterWay(points []dao.WhiteWaterPoint, shouldCluster bool) []Cluster {
+func (this *CurrentClustering) clusterForRiver(points []dao.WhiteWaterPointWithRiverTitle, shouldCluster bool) []Cluster {
 	riverClusters := []Cluster{}
 
 	var actualMinDist = math.MaxFloat64
@@ -72,21 +72,21 @@ func (this *CurrentClustering) clusterWaterWay(points []dao.WhiteWaterPoint, sho
 		}
 		riverClusters = append(riverClusters, Cluster{
 			Center:points[i].Point,
-			Points:[]dao.WhiteWaterPoint{points[i], },
+			Points:[]dao.WhiteWaterPointWithRiverTitle{points[i], },
 		})
 	}
 	return riverClusters
 }
 
 type ClusterId struct {
-	WaterWayId int64
-	Id         int
-	Title      string
+	RiverId int64
+	Id      int
+	Title   string
 }
 
 type Cluster struct {
 	Center geo.Point
-	Points []dao.WhiteWaterPoint
+	Points []dao.WhiteWaterPointWithRiverTitle
 }
 
 func (this *Cluster) RecalculateCenter() {

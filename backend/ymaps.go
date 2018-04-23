@@ -93,7 +93,7 @@ func pointsToYmaps(points []EventPoint) []Feature {
 	return result
 }
 
-func mkFeature(point WhiteWaterPoint, withDescription bool, waterwayTitles map[int64]string) Feature {
+func mkFeature(point WhiteWaterPointWithRiverTitle, withDescription bool) Feature {
 	var description = ""
 	if withDescription {
 		description = point.ShortDesc
@@ -111,7 +111,7 @@ func mkFeature(point WhiteWaterPoint, withDescription bool, waterwayTitles map[i
 			Category: point.Category,
 			Link: point.Link,
 			ShortDesc: description,
-			RiverName: waterwayTitles[point.WaterWayId],
+			RiverName: point.RiverTitle,
 		},
 		Options:FeatureOptions{
 			IconLayout: IMAGE,
@@ -124,7 +124,7 @@ func mkFeature(point WhiteWaterPoint, withDescription bool, waterwayTitles map[i
 	}
 }
 
-func ClusterGeom(points []WhiteWaterPoint) Bbox {
+func ClusterGeom(points []WhiteWaterPointWithRiverTitle) Bbox {
 	var minLat = float64(360)
 	var minLon = float64(360)
 	var maxLat = -float64(360)
@@ -147,12 +147,12 @@ func ClusterGeom(points []WhiteWaterPoint) Bbox {
 	}
 }
 
-func mkCluster(Id ClusterId, points []WhiteWaterPoint, waterwayTitles map[int64]string) Feature {
+func mkCluster(Id ClusterId, points []WhiteWaterPointWithRiverTitle) Feature {
 	bounds := ClusterGeom(points)
-	iconText, _ := waterwayTitles[Id.WaterWayId]
+	iconText := points[0].RiverTitle
 
 	return Feature{
-		Id: int64(Id.Id) + 10 * Id.WaterWayId,
+		Id: int64(Id.Id) + 10 * Id.RiverId,
 		Type: CLUSTER,
 		Geometry:NewGeoPoint(bounds.Center()),
 		Bbox: bounds,
@@ -167,15 +167,15 @@ func mkCluster(Id ClusterId, points []WhiteWaterPoint, waterwayTitles map[int64]
 	}
 }
 
-func whiteWaterPointsToYmaps(points []WhiteWaterPoint, width float64, height float64, waterwayTitles map[int64]string) []Feature {
+func whiteWaterPointsToYmaps(points []WhiteWaterPointWithRiverTitle, width float64, height float64) []Feature {
 	by_cluster := clusterMaker.clusterizePoints(points, width, height)
 
 	result := make([]Feature, 0)
 	for id, cluster_points := range by_cluster {
 		if len(cluster_points) == 1 {
-			result = append(result, mkFeature(cluster_points[0], true, waterwayTitles))
+			result = append(result, mkFeature(cluster_points[0], true))
 		} else {
-			result = append(result, mkCluster(id, cluster_points, waterwayTitles))
+			result = append(result, mkCluster(id, cluster_points))
 		}
 	}
 

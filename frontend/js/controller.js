@@ -33,10 +33,10 @@ wwmap.controller('Ctrl', function($scope, $filter, $http, $q) {
   }
 
   $scope.showRiver = function(point) {
-    if (!point.waterway_id || point.waterway_id==0) {
+    if (!point.river_id || point.river_id==0) {
       return null
     }
-    selected = $filter('filter')($scope.getRivers(point), {id: point.waterway_id})
+    selected = $filter('filter')($scope.getRivers(point), {id: point.river_id})
     if (selected.length == 0) {
         return null
     }
