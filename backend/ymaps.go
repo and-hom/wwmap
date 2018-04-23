@@ -5,7 +5,6 @@ import (
 	. "github.com/and-hom/wwmap/backend/geo"
 	"fmt"
 	"math"
-	"encoding/json"
 )
 
 func toYmapsPreset(epType EventPointType) string {
@@ -94,7 +93,6 @@ func pointsToYmaps(points []EventPoint) []Feature {
 	return result
 }
 
-
 func mkFeature(point WhiteWaterPoint, withDescription bool, waterwayTitles map[int64]string) Feature {
 	var description = ""
 	if withDescription {
@@ -126,13 +124,12 @@ func mkFeature(point WhiteWaterPoint, withDescription bool, waterwayTitles map[i
 	}
 }
 
-func ClusterGeom(points []WhiteWaterPoint) (Point, Bbox) {
-	var minLat = math.MaxFloat64
-	var minLon = math.MaxFloat64
-	var maxLat = - math.MaxFloat64
-	var maxLon = - math.MaxFloat64
-	var latSum = float64(0)
-	var lonSum = float64(0)
+func ClusterGeom(points []WhiteWaterPoint) Bbox {
+	var minLat = float64(360)
+	var minLon = float64(360)
+	var maxLat = -float64(360)
+	var maxLon = -float64(360)
+
 	for i := 0; i < len(points); i++ {
 		lat := points[i].Point.Lat
 		lon := points[i].Point.Lon
@@ -141,14 +138,8 @@ func ClusterGeom(points []WhiteWaterPoint) (Point, Bbox) {
 		minLon = math.Min(minLon, lon)
 		maxLat = math.Max(maxLat, lat)
 		maxLon = math.Max(maxLon, lon)
-
-		latSum += lat
-		lonSum += lon
 	}
-	return Point{
-		Lat: latSum / float64(len(points)),
-		Lon: lonSum / float64(len(points)),
-	}, Bbox{
+	return Bbox{
 		X1:minLon,
 		Y1: minLat,
 		X2:maxLon,
@@ -157,22 +148,15 @@ func ClusterGeom(points []WhiteWaterPoint) (Point, Bbox) {
 }
 
 func mkCluster(Id ClusterId, points []WhiteWaterPoint, waterwayTitles map[int64]string) Feature {
-	center, bounds := ClusterGeom(points)
-	features := make([]Feature, len(points))
-
-	for i := 0; i < len(points); i++ {
-		features[i] = mkFeature(points[i], false, waterwayTitles)
-	}
-
+	bounds := ClusterGeom(points)
 	iconText, _ := waterwayTitles[Id.WaterWayId]
 
-	return Feature {
+	return Feature{
 		Id: int64(Id.Id) + 10 * Id.WaterWayId,
 		Type: CLUSTER,
-		Geometry:NewGeoPoint(center),
+		Geometry:NewGeoPoint(bounds.Center()),
 		Bbox: bounds,
 		Number: len(points),
-		Features: features,
 		Properties:FeatureProperties{
 			IconContent: iconText,
 
@@ -192,12 +176,6 @@ func whiteWaterPointsToYmaps(points []WhiteWaterPoint, width float64, height flo
 			result = append(result, mkFeature(cluster_points[0], true, waterwayTitles))
 		} else {
 			result = append(result, mkCluster(id, cluster_points, waterwayTitles))
-		}
-	}
-	if len(result)>0 {
-		r,e := json.Marshal(result)
-		if e==nil {
-			fmt.Printf("%s\n", string(r))
 		}
 	}
 

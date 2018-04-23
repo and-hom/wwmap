@@ -57,6 +57,34 @@ func NewLineString(points []Point) Geometry {
 	}
 }
 
+type YRectangle struct {
+	Type        GeometryType `json:"type"`
+	Coordinates []Point `json:"coordinates"`
+}
+
+func NewYRectangle(points []Point) Geometry {
+	return LineString{
+		Coordinates:points,
+		Type:RECTANGLE,
+	}
+}
+
+func NewYRectangleFromBbox(bbox Bbox) Geometry {
+	points := make([]Point, 2)
+	points[0] = Point{
+		Lon: bbox.X1,
+		Lat: bbox.Y1,
+	}
+	points[1] = Point{
+		Lon: bbox.X2,
+		Lat: bbox.Y2,
+	}
+	return LineString{
+		Coordinates:points,
+		Type:RECTANGLE,
+	}
+}
+
 type geoPoint struct {
 	Type        GeometryType `json:"type"`
 	Coordinates Point `json:"coordinates"`

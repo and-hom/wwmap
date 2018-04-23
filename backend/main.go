@@ -815,7 +815,6 @@ func main() {
 	log.Infof("Starting wwmap")
 
 	configuration := config.Load("")
-	fmt.Printf("======%v\n", configuration)
 
 	storage = NewPostgresStorage(configuration.DbConnString)
 	clusterMaker = ClusterMaker{

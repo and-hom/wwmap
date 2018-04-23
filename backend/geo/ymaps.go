@@ -53,7 +53,7 @@ func NewBbox(data string) (Bbox, error) {
 }
 
 func (this Bbox) Center() Point {
-	return Point{Lat:(this.X1 + this.X2) / 2, Lon:(this.Y1 + this.Y2) / 2, }
+	return Point{Lat:(this.Y1 + this.Y2) / 2, Lon:(this.X1 + this.X2) / 2, }
 
 }
 
