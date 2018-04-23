@@ -42,12 +42,6 @@ type Storage interface {
 	NearestWaterWays(point Point, limit int) ([]WaterWayTitle, error)
 	WaterWayById(id int64) (WaterWayTitle, error)
 
-	// tmp
-	AddTmpWaterWay(wwts ...WaterWayTmp) error
-	AddTmpRef(pnts ...PointRef) error
-	GetUniquePointRefIds() ([]int64, error)
-	// end of tmp
-
 	AddWhiteWaterPoints(whiteWaterPoint ...WhiteWaterPoint) error
 	ListWhiteWaterPoints(bbox Bbox) []WhiteWaterPoint
 	ListWhiteWaterPointsByRiver(id int64) []WhiteWaterPoint
@@ -434,47 +428,6 @@ func (this PostgresStorage) listWaterWayTitles(condition string, queryParams ...
 		return []WaterWayTitle{}, err
 	}
 	return result.([]WaterWayTitle), nil
-}
-
-func (this PostgresStorage) AddTmpWaterWay(wwts ...WaterWayTmp) error {
-	vars := make([]interface{}, len(wwts))
-	for i, p := range wwts {
-		vars[i] = p
-	}
-	return this.performUpdates("INSERT INTO waterway_tmp(id, title, type, comment) VALUES ($1, $2, $3, $4)",
-		func(entity interface{}) ([]interface{}, error) {
-			waterway := entity.(WaterWayTmp)
-			return []interface{}{waterway.Id, waterway.Title, waterway.Type, waterway.Comment}, nil;
-		}, vars...)
-}
-
-func (this PostgresStorage) AddTmpRef(pnts ...PointRef) error {
-	vars := make([]interface{}, len(pnts))
-	for i, p := range pnts {
-		vars[i] = p
-	}
-	return this.performUpdates("INSERT INTO point_ref_tmp(id, parent_id, idx) VALUES ($1,$2,$3)",
-		func(entity interface{}) ([]interface{}, error) {
-			pnt := entity.(PointRef)
-			return []interface{}{pnt.Id, pnt.ParentId, pnt.Idx}, nil;
-		}, vars...)
-}
-
-func (this PostgresStorage) GetUniquePointRefIds() ([]int64, error) {
-	result, err := this.doFindList("SELECT distinct(id) FROM point_ref_tmp ",
-		func(rows *sql.Rows) (int64, error) {
-			id := int64(0)
-			err := rows.Scan(&(id))
-			if err != nil {
-				return 0, err
-			}
-			return id, nil
-		})
-	if err != nil {
-		log.Error("Can not load point ids list", err)
-		return []int64{}, err
-	}
-	return result.([]int64), nil
 }
 
 func (this PostgresStorage) AddWhiteWaterPoints(whiteWaterPoints ...WhiteWaterPoint) error {
