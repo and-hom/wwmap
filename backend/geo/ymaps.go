@@ -30,6 +30,19 @@ func (this Bbox) MarshalJSON() ([]byte, error) {
 	return buffer.Bytes(), nil
 }
 
+func (this Bbox) String() string {
+	buffer := bytes.NewBufferString("[[")
+	buffer.WriteString(fmt.Sprint(this.Y1))
+	buffer.WriteString(",")
+	buffer.WriteString(fmt.Sprint(this.X1))
+	buffer.WriteString("],[")
+	buffer.WriteString(fmt.Sprint(this.Y2))
+	buffer.WriteString(",")
+	buffer.WriteString(fmt.Sprint(this.X2))
+	buffer.WriteString("]]")
+	return buffer.String()
+}
+
 func NewBbox(data string) (Bbox, error) {
 	parts := strings.Split(data, ",")
 	if len(parts) != 4 {

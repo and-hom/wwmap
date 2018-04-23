@@ -51,18 +51,13 @@ func TileWhiteWaterHandler(w http.ResponseWriter, req *http.Request) {
 		onError(w, err, "Can not parse bbox", http.StatusBadRequest)
 		return
 	}
-	points := storage.ListWhiteWaterPoints(bbox)
-	waterwayTitles, err := storage.ListWaterWayTitles(bbox, 1024)
+	points, err := storage.ListWhiteWaterPoints(bbox)
 	if err != nil {
-		onError500(w, err, "Can not select waterways")
+		onError500(w, err, fmt.Sprintf("Can not read whitewater points for bbox %s", bbox.String()))
 		return
 	}
-	waterwayTitlesMap := make(map[int64]string)
-	for _, ww := range waterwayTitles {
-		waterwayTitlesMap[ww.Id] = ww.Title
-	}
 
-	featureCollection := MkFeatureCollection(whiteWaterPointsToYmaps(points, bbox.Width(), bbox.Height(), waterwayTitlesMap))
+	featureCollection := MkFeatureCollection(whiteWaterPointsToYmaps(points, bbox.Width(), bbox.Height()))
 	log.Infof("Found %d", len(featureCollection.Features))
 
 	w.Write(JsonpAnswer(callback, featureCollection, "{}"))
@@ -83,12 +78,12 @@ func GetNearestRivers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	point := Point{Lat:lat, Lon:lon}
-	waterways, err := storage.NearestWaterWays(point, 5)
+	rivers, err := storage.NearestRivers(point, 5)
 	if err != nil {
 		onError500(w, err, "Can not select rivers")
 		return
 	}
-	w.Write([]byte(JsonStr(waterways, "[]")))
+	w.Write([]byte(JsonStr(rivers, "[]")))
 }
 
 func GetVisibleRivers(w http.ResponseWriter, req *http.Request) {
@@ -100,12 +95,12 @@ func GetVisibleRivers(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	waterways, err := storage.ListWaterWayTitles(bbox, 30)
+	rivers, err := storage.ListRivers(bbox, 30)
 	if err != nil {
 		onError500(w, err, "Can not select rivers")
 		return
 	}
-	w.Write([]byte(JsonStr(waterways, "[]")))
+	w.Write([]byte(JsonStr(rivers, "[]")))
 }
 
 func DownloadGpx(w http.ResponseWriter, req *http.Request) {
@@ -118,13 +113,12 @@ func DownloadGpx(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	waterway, err := storage.WaterWayById(id)
+	whitewaterPoints, err := storage.ListWhiteWaterPointsByRiver(id)
 	if err != nil {
-		onError(w, err, fmt.Sprintf("Can not find river with id %d", id), http.StatusNotFound)
+		onError500(w, err, fmt.Sprintf("Can not read whitewater points for river %s", id))
 		return
 	}
 
-	whitewaterPoints := storage.ListWhiteWaterPointsByRiver(id)
 	waypoints := make([]gpx.Wpt, len(whitewaterPoints))
 	for i := 0; i < len(whitewaterPoints); i++ {
 		whitewaterPoint := whitewaterPoints[i]
@@ -135,10 +129,15 @@ func DownloadGpx(w http.ResponseWriter, req *http.Request) {
 			Cmt: whitewaterPoint.Comment,
 		}
 	}
+	if len(whitewaterPoints) == 0 {
+		onError(w, nil, fmt.Sprintf("No whitewater points found for river with id %d", id), http.StatusNotFound)
+		return
+	}
 	gpxData := gpx.Gpx{
 		Waypoints: waypoints,
+		Creator: "wwmap",
 	}
-	w.Header().Add("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s.gpx\"", waterway.Title))
+	w.Header().Add("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s.gpx\"", whitewaterPoints[0].RiverTitle))
 	w.Header().Add("Content-Type", "application/gpx+xml")
 
 	xmlBytes := gpxData.ToXML()

@@ -139,7 +139,7 @@ type ExtDataTrack struct {
 	FileIds []string `json:"fileIds"`
 }
 
-type WaterWayTitle struct {
+type RiverTitle struct {
 	Id    int64 `json:"id"`
 	OsmId int64 `json:"osm_id"`
 	Title string `json:"title"`
@@ -158,16 +158,21 @@ type WaterWay struct {
 }
 
 type WhiteWaterPoint struct {
-	Id         int64 `json:"id"`
-	OsmId      int64 `json:"osm_id,string"`
-	WaterWayId int64 `json:"waterway_id"`
-	Type       string `json:"type"`
-	Category   model.SportCategory `json:"category"`
-	Point      Point `json:"point"`
-	Title      string `json:"title"`
-	Link       string `json:"link"`
-	Comment    string `json:"comment"`
-	ShortDesc  string `json:"short_description"`
+	Id        int64 `json:"id"`
+	OsmId     int64 `json:"osm_id,string"`
+	RiverId   int64 `json:"river_id"`
+	Type      string `json:"type"`
+	Category  model.SportCategory `json:"category"`
+	Point     Point `json:"point"`
+	Title     string `json:"title"`
+	Link      string `json:"link"`
+	Comment   string `json:"comment"`
+	ShortDesc string `json:"short_description"`
+}
+
+type WhiteWaterPointWithRiverTitle struct {
+	WhiteWaterPoint
+	RiverTitle string
 }
 
 type WaterWayTmp struct {

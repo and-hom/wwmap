@@ -1,3 +1,4 @@
 #!/bin/sh
 
-migrate -database "postgres://wwmap:$WWMAP_POSTGRES_PASSWORD@localhost:5432/wwmap" -source file:///var/lib/wwmap/db/ $@
+export CONN_STR=`grep db-connection-string /etc/wwmap/config.yaml | cut -d '"' -f 2`
+migrate -database "$CONN_STR" -source file:///var/lib/wwmap/db/ $@
