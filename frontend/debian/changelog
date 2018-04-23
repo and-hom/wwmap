@@ -1,3 +1,9 @@
+wwmap-frontend (0.0.5) unstable; urgency=medium
+
+  * Server-side whitewater points clustering
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Mon, 23 Apr 2018 14:40:44 +0300
+
 wwmap-frontend (0.0.4) unstable; urgency=medium
 
   * Invalid whitewater choords reporting
