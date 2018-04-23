@@ -200,10 +200,7 @@ h2 {
 
 .riverMenu li a {
     vertical-align: top;
-    float: right;
     display: inline-block;
-    height: 16px;
-    width: 16px;
 }
 
 .riverMenu li {

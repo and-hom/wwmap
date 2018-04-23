@@ -7,8 +7,13 @@
         $.get(apiBase + "/visible-rivers?bbox=" + bounds.join(','), function (data) {
             $('#rivers').html('');
             var dataObj = {
-                "rivers" : $.parseJSON(data),
+                "rivers" : JSON.parse(data),
                 "apiUrl": apiBase + "/gpx"
+            }
+            for (i in dataObj.rivers) {
+                if(dataObj.rivers[i].bounds) {
+                    dataObj.rivers[i].bounds =  JSON.stringify(dataObj.rivers[i].bounds)
+                }
             }
             $('#riversMenuTemplate').tmpl(dataObj).appendTo('#rivers');
         });

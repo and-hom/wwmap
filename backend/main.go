@@ -95,7 +95,7 @@ func GetVisibleRivers(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	rivers, err := storage.ListRivers(bbox, 30)
+	rivers, err := storage.ListRiversWithBounds(bbox, 30)
 	if err != nil {
 		onError500(w, err, "Can not select rivers")
 		return

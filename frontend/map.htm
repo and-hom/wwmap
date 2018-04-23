@@ -25,7 +25,10 @@
 <ul id="rivers" class="riverMenu"></ul>
 <script type="text/x-jquery-tmpl" id="riversMenuTemplate">
     {{each rivers}}
-        <li>${title} <a href="${apiUrl}/${id}" alt="Скачать GPX с точками порогов">GPX</a></li>
+        <li>
+            <a href="" style="padding-left:10px;" onclick="show_map_at(${bounds}); return false;">${title}</a>
+            <a href="${apiUrl}/${id}" style="float:right;" alt="Скачать GPX с точками порогов">GPX</a>
+        </li>
     {{/each}}
 </script>
 
@@ -56,6 +59,12 @@
 <script type="text/javascript" src="./js/config.js"></script>
 <script type="text/javascript" src="./js/map.js"></script>
 <script type="text/javascript">
+  function show_map_at(bounds) {
+    myMap.setBounds(bounds, {
+            checkZoomRange: true,
+            duration: 200,
+     })
+  }
   function show_report_popup(id){
       $(".popuptext #object_id").val(id)
       $(".popuptext").addClass("show");

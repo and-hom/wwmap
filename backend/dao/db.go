@@ -39,6 +39,7 @@ type Storage interface {
 	FindEventPointsForRoute(routeId int64) []EventPoint
 
 	AddWaterWays(waterways ...WaterWay) error
+	UpdateWaterWay(waterway WaterWay) error
 	NearestRivers(point Point, limit int) ([]RiverTitle, error)
 	RiverById(id int64) (RiverTitle, error)
 
@@ -46,7 +47,7 @@ type Storage interface {
 	ListWhiteWaterPoints(bbox Bbox) ([]WhiteWaterPointWithRiverTitle, error)
 	ListWhiteWaterPointsByRiver(id int64) ([]WhiteWaterPointWithRiverTitle, error)
 
-	ListRivers(bbox Bbox, limit int) ([]RiverTitle, error)
+	ListRiversWithBounds(bbox Bbox, limit int) ([]RiverTitle, error)
 
 	AddReport(report Report) error
 }
@@ -382,6 +383,19 @@ func (this PostgresStorage) AddWaterWays(waterways ...WaterWay) error {
 		}, vars...)
 }
 
+func (this PostgresStorage) UpdateWaterWay(waterway WaterWay) error {
+	return this.performUpdates("UPDATE waterway SET path=ST_GeomFromGeoJSON($1) WHERE osm_id=$2",
+		func(entity interface{}) ([]interface{}, error) {
+			waterway := entity.(WaterWay)
+
+			pathBytes, err := json.Marshal(NewLineString(waterway.Path))
+			if err != nil {
+				return nil, err
+			}
+			return []interface{}{string(pathBytes), waterway.OsmId}, nil;
+		}, waterway)
+}
+
 func (this PostgresStorage) RiverById(id int64) (RiverTitle, error) {
 	found, err := this.listRiverTitles("SELECT id,title FROM river WHERE id=$1", id)
 	if err != nil {
@@ -398,14 +412,14 @@ func (this PostgresStorage) NearestRivers(point Point, limit int) ([]RiverTitle,
 	if err != nil {
 		return []RiverTitle{}, err
 	}
-	return this.listRiverTitles("SELECT id, title FROM (" +
+	return this.listRiverTitles("SELECT id, title,NULL FROM (" +
 		"SELECT river.id AS id, river.title AS title, ST_Distance(path,  ST_GeomFromGeoJSON($1)) as distance " +
 		"FROM river INNER JOIN waterway ON river.id=waterway.river_id" +
 		") sq GROUP BY id, title ORDER BY min(distance) ASC LIMIT $2", string(pointBytes), limit)
 }
 
-func (this PostgresStorage) ListRivers(bbox Bbox, limit int) ([]RiverTitle, error) {
-	return this.listRiverTitles("SELECT river.id, river.title FROM " +
+func (this PostgresStorage) ListRiversWithBounds(bbox Bbox, limit int) ([]RiverTitle, error) {
+	return this.listRiverTitles("SELECT river.id, river.title, ST_AsGeoJSON(ST_Extent(waterway.path)) FROM " +
 		"river INNER JOIN waterway ON river.id=waterway.river_id " +
 		"WHERE exists(SELECT 1 FROM white_water_rapid WHERE white_water_rapid.river_id=river.id) AND " +
 		"path && ST_MakeEnvelope($1,$2,$3,$4) " +
@@ -417,14 +431,31 @@ func (this PostgresStorage) listRiverTitles(query string, queryParams ...interfa
 		func(rows *sql.Rows) (RiverTitle, error) {
 			id := int64(-1)
 			title := ""
-			err := rows.Scan(&id, &title)
+			boundsStr := sql.NullString{}
+			err := rows.Scan(&id, &title, &boundsStr)
 			if err != nil {
 				return RiverTitle{}, err
 			}
 
+			var pgRect PgRect
+			if boundsStr.Valid {
+				err = json.Unmarshal([]byte(boundsStr.String), &pgRect)
+				if err != nil {
+					log.Errorf("Can not parse rect %s for white water object %d: %v", boundsStr.String, id, err)
+				}
+			}
+			bounds:= Bbox{
+				X1:pgRect.Coordinates[0][0].Lon,
+				Y1:pgRect.Coordinates[0][0].Lat,
+				X2:pgRect.Coordinates[0][2].Lon,
+				Y2:pgRect.Coordinates[0][2].Lat,
+			}
+
+
 			return RiverTitle{
 				Id:id,
 				Title:title,
+				Bounds: bounds,
 			}, nil
 		}, queryParams...)
 	if (err != nil ) {
@@ -654,4 +685,7 @@ func (s PostgresStorage)performUpdates(query string, mapper func(entity interfac
 
 type PgPoint struct {
 	Coordinates Point `json:"coordinates"`
+}
+type PgRect struct {
+	Coordinates [][]Point `json:"coordinates"`
 }
