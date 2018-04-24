@@ -7,7 +7,7 @@ import (
 	"bytes"
 	"math"
 	"github.com/Sirupsen/logrus"
-	"github.com/and-hom/wwmap/backend/model"
+	"github.com/and-hom/wwmap/lib/model"
 )
 
 type Bbox struct {

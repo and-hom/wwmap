@@ -10,7 +10,7 @@ import (
 	"log"
 	"github.com/and-hom/wwmap/data"
 	"strconv"
-	"github.com/and-hom/wwmap/backend/model"
+	"github.com/and-hom/wwmap/lib/model"
 )
 
 type NodeSearchHandler struct {

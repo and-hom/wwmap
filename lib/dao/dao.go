@@ -10,7 +10,6 @@ import (
 	"reflect"
 	. "github.com/and-hom/wwmap/lib/geo"
 	"fmt"
-	"github.com/and-hom/wwmap/backend/model"
 )
 
 type Storage interface {
@@ -40,16 +39,20 @@ type Storage interface {
 
 	AddWaterWays(waterways ...WaterWay) error
 	UpdateWaterWay(waterway WaterWay) error
+
+	AddReport(report Report) error
+}
+
+type RiverDao interface {
 	NearestRivers(point Point, limit int) ([]RiverTitle, error)
 	RiverById(id int64) (RiverTitle, error)
+	ListRiversWithBounds(bbox Bbox, limit int) ([]RiverTitle, error)
+}
 
+type WhiteWaterDao interface {
 	AddWhiteWaterPoints(whiteWaterPoint ...WhiteWaterPoint) error
 	ListWhiteWaterPoints(bbox Bbox) ([]WhiteWaterPointWithRiverTitle, error)
 	ListWhiteWaterPointsByRiver(id int64) ([]WhiteWaterPointWithRiverTitle, error)
-
-	ListRiversWithBounds(bbox Bbox, limit int) ([]RiverTitle, error)
-
-	AddReport(report Report) error
 }
 
 type PostgresStorage struct {
@@ -396,74 +399,6 @@ func (this PostgresStorage) UpdateWaterWay(waterway WaterWay) error {
 		}, waterway)
 }
 
-func (this PostgresStorage) RiverById(id int64) (RiverTitle, error) {
-	found, err := this.listRiverTitles("SELECT id,title FROM river WHERE id=$1", id)
-	if err != nil {
-		return RiverTitle{}, err
-	}
-	if len(found) == 0 {
-		return RiverTitle{}, fmt.Errorf("River with id %d not found", id)
-	}
-	return found[0], nil
-}
-
-func (this PostgresStorage) NearestRivers(point Point, limit int) ([]RiverTitle, error) {
-	pointBytes, err := json.Marshal(NewGeoPoint(point))
-	if err != nil {
-		return []RiverTitle{}, err
-	}
-	return this.listRiverTitles("SELECT id, title,NULL FROM (" +
-		"SELECT river.id AS id, river.title AS title, ST_Distance(path,  ST_GeomFromGeoJSON($1)) as distance " +
-		"FROM river INNER JOIN waterway ON river.id=waterway.river_id" +
-		") sq GROUP BY id, title ORDER BY min(distance) ASC LIMIT $2", string(pointBytes), limit)
-}
-
-func (this PostgresStorage) ListRiversWithBounds(bbox Bbox, limit int) ([]RiverTitle, error) {
-	return this.listRiverTitles("SELECT river.id, river.title, ST_AsGeoJSON(ST_Extent(waterway.path)) FROM " +
-		"river INNER JOIN waterway ON river.id=waterway.river_id " +
-		"WHERE exists(SELECT 1 FROM white_water_rapid WHERE white_water_rapid.river_id=river.id) AND " +
-		"path && ST_MakeEnvelope($1,$2,$3,$4) " +
-		"GROUP BY river.id, river.title ORDER BY popularity DESC LIMIT $5", bbox.X1, bbox.Y1, bbox.X2, bbox.Y2, limit)
-}
-
-func (this PostgresStorage) listRiverTitles(query string, queryParams ...interface{}) ([]RiverTitle, error) {
-	result, err := this.doFindList(query,
-		func(rows *sql.Rows) (RiverTitle, error) {
-			id := int64(-1)
-			title := ""
-			boundsStr := sql.NullString{}
-			err := rows.Scan(&id, &title, &boundsStr)
-			if err != nil {
-				return RiverTitle{}, err
-			}
-
-			var pgRect PgPolygon
-			if boundsStr.Valid {
-				err = json.Unmarshal([]byte(boundsStr.String), &pgRect)
-				if err != nil {
-					log.Errorf("Can not parse rect %s for white water object %d: %v", boundsStr.String, id, err)
-				}
-			}
-			bounds:= Bbox{
-				X1:pgRect.Coordinates[0][0].Lon,
-				Y1:pgRect.Coordinates[0][0].Lat,
-				X2:pgRect.Coordinates[0][2].Lon,
-				Y2:pgRect.Coordinates[0][2].Lat,
-			}
-
-
-			return RiverTitle{
-				Id:id,
-				Title:title,
-				Bounds: bounds,
-			}, nil
-		}, queryParams...)
-	if (err != nil ) {
-		return []RiverTitle{}, err
-	}
-	return result.([]RiverTitle), nil
-}
-
 func (this PostgresStorage) AddWhiteWaterPoints(whiteWaterPoints ...WhiteWaterPoint) error {
 	vars := make([]interface{}, len(whiteWaterPoints))
 	for i, p := range whiteWaterPoints {
@@ -502,72 +437,6 @@ func getOrElse(val sql.NullInt64, _default int64) int64 {
 	}
 }
 
-func (this PostgresStorage) ListWhiteWaterPoints(bbox Bbox) ([]WhiteWaterPointWithRiverTitle, error) {
-	return this.listWhiteWaterPoints("WHERE point && ST_MakeEnvelope($1,$2,$3,$4)", bbox.X1, bbox.Y1, bbox.X2, bbox.Y2)
-}
-func (this PostgresStorage) ListWhiteWaterPointsByRiver(id int64) ([]WhiteWaterPointWithRiverTitle, error) {
-	return this.listWhiteWaterPoints("WHERE river_id=$1", id)
-}
-
-func (this PostgresStorage) listWhiteWaterPoints(condition string, vars ...interface{}) ([]WhiteWaterPointWithRiverTitle, error) {
-	result, err := this.doFindList(
-		"SELECT white_water_rapid.id AS id, osm_id, river_id, river.title as river_title, type, white_water_rapid.title AS title, comment, ST_AsGeoJSON(point) as point, category, short_description, link " +
-			"FROM white_water_rapid LEFT OUTER JOIN river ON white_water_rapid.river_id=river.id " + condition,
-		func(rows *sql.Rows) (WhiteWaterPointWithRiverTitle, error) {
-			var err error
-			id := int64(-1)
-			osmId := sql.NullInt64{}
-			riverId := sql.NullInt64{}
-			_type := ""
-			title := ""
-			comment := ""
-			pointStr := ""
-			categoryStr := ""
-			shortDesc := sql.NullString{}
-			link := sql.NullString{}
-			riverTitle := sql.NullString{}
-			err = rows.Scan(&id, &osmId, &riverId, &riverTitle, &_type, &title, &comment, &pointStr, &categoryStr, &shortDesc, &link)
-			if err != nil {
-				log.Errorf("Can not read from db: %v", err)
-				return WhiteWaterPointWithRiverTitle{}, err
-			}
-
-			var pgPoint PgPoint
-			err = json.Unmarshal([]byte(pointStr), &pgPoint)
-			if err != nil {
-				log.Errorf("Can not parse point %s for white water object %d: %v", pointStr, id, err)
-				return WhiteWaterPointWithRiverTitle{}, err
-			}
-
-			var category model.SportCategory
-			err = json.Unmarshal([]byte(categoryStr), &category)
-			if err != nil {
-				log.Errorf("Can not parse category %s for white water object %d: %v", categoryStr, id, err)
-				return WhiteWaterPointWithRiverTitle{}, err
-			}
-
-			whiteWaterPoint := WhiteWaterPointWithRiverTitle{
-				WhiteWaterPoint{
-					Id:id,
-					OsmId:getOrElse(osmId, -1),
-					RiverId:getOrElse(riverId, -1),
-					Title: title,
-					Type: _type,
-					Point: pgPoint.Coordinates,
-					Comment: comment,
-					Category: category,
-					ShortDesc: shortDesc.String,
-					Link: link.String,
-				},
-				riverTitle.String,
-			}
-			return whiteWaterPoint, nil
-		}, vars...)
-	if (err != nil ) {
-		return []WhiteWaterPointWithRiverTitle{}, err
-	}
-	return result.([]WhiteWaterPointWithRiverTitle), nil
-}
 
 func (this PostgresStorage) AddReport(report Report) error {
 	_, err := this.insertReturningId("INSERT INTO report(object_id,comment) VALUES($1,$2) RETURNING id", report.ObjectId, report.Comment)

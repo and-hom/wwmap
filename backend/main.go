@@ -17,11 +17,13 @@ import (
 	. "github.com/and-hom/wwmap/lib/geo"
 	. "github.com/and-hom/wwmap/lib/geoparser"
 	"github.com/and-hom/wwmap/config"
-	"github.com/and-hom/wwmap/backend/model"
+	"github.com/and-hom/wwmap/lib/model"
 	gpx "github.com/ptrv/go-gpx"
 )
 
 var storage Storage
+var riverDao RiverDao
+var whiteWaterDao WhiteWaterDao
 var clusterMaker ClusterMaker
 
 func TileHandler(w http.ResponseWriter, req *http.Request) {
@@ -51,7 +53,7 @@ func TileWhiteWaterHandler(w http.ResponseWriter, req *http.Request) {
 		onError(w, err, "Can not parse bbox", http.StatusBadRequest)
 		return
 	}
-	points, err := storage.ListWhiteWaterPoints(bbox)
+	points, err := whiteWaterDao.ListWhiteWaterPoints(bbox)
 	if err != nil {
 		onError500(w, err, fmt.Sprintf("Can not read whitewater points for bbox %s", bbox.String()))
 		return
@@ -78,7 +80,7 @@ func GetNearestRivers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	point := Point{Lat:lat, Lon:lon}
-	rivers, err := storage.NearestRivers(point, 5)
+	rivers, err := riverDao.NearestRivers(point, 5)
 	if err != nil {
 		onError500(w, err, "Can not select rivers")
 		return
@@ -95,14 +97,14 @@ func GetVisibleRivers(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	rivers, err := storage.ListRiversWithBounds(bbox, 30)
+	rivers, err := riverDao.ListRiversWithBounds(bbox, 30)
 	if err != nil {
 		onError500(w, err, "Can not select rivers")
 		return
 	}
 
-	for i:=0;i<len(rivers);i++ {
-		river:=&rivers[i]
+	for i := 0; i < len(rivers); i++ {
+		river := &rivers[i]
 		river.Bounds = river.Bounds.WithMargins(0.05)
 	}
 	w.Write([]byte(JsonStr(rivers, "[]")))
@@ -118,7 +120,7 @@ func DownloadGpx(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	whitewaterPoints, err := storage.ListWhiteWaterPointsByRiver(id)
+	whitewaterPoints, err := whiteWaterDao.ListWhiteWaterPointsByRiver(id)
 	if err != nil {
 		onError500(w, err, fmt.Sprintf("Can not read whitewater points for river %s", id))
 		return
@@ -163,7 +165,7 @@ func AddWhiteWaterPoints(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = storage.AddWhiteWaterPoints(wwPoints...)
+	err = whiteWaterDao.AddWhiteWaterPoints(wwPoints...)
 	fmt.Printf("%v\n", wwPoints)
 
 	if err != nil {
@@ -821,6 +823,10 @@ func main() {
 	configuration := config.Load("")
 
 	storage = NewPostgresStorage(configuration.DbConnString)
+
+	riverDao = RiverStorage{storage.(PostgresStorage)}
+	whiteWaterDao = WhiteWaterStorage{storage.(PostgresStorage)}
+
 	clusterMaker = ClusterMaker{
 		BarrierDistance: configuration.ClusterizationParams.BarrierRatio,
 		MinDistance: configuration.ClusterizationParams.MinDistRatio,
