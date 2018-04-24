@@ -1,3 +1,9 @@
+wwmap-backend (0.0.6) unstable; urgency=medium
+
+  * Hotfix: "index out of bounds" fixed
+
+ -- Andrey Khomyakov <and.hom@gmail.com> <and_hom@and-hom>  Wed, 25 Apr 2018 00:22:21 +0300
+
 wwmap-backend (0.0.5) unstable; urgency=medium
 
   * River entity created. Many waterways can belong to river

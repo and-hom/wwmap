@@ -54,17 +54,18 @@ func (this RiverStorage) listRiverTitles(query string, queryParams ...interface{
 			}
 
 			var pgRect PgPolygon
+			var bounds geo.Bbox
 			if boundsStr.Valid {
 				err = json.Unmarshal([]byte(boundsStr.String), &pgRect)
 				if err != nil {
 					log.Errorf("Can not parse rect %s for white water object %d: %v", boundsStr.String, id, err)
 				}
-			}
-			bounds := geo.Bbox{
-				X1:pgRect.Coordinates[0][0].Lon,
-				Y1:pgRect.Coordinates[0][0].Lat,
-				X2:pgRect.Coordinates[0][2].Lon,
-				Y2:pgRect.Coordinates[0][2].Lat,
+				bounds = geo.Bbox{
+					X1:pgRect.Coordinates[0][0].Lon,
+					Y1:pgRect.Coordinates[0][0].Lat,
+					X2:pgRect.Coordinates[0][2].Lon,
+					Y2:pgRect.Coordinates[0][2].Lat,
+				}
 			}
 
 			return RiverTitle{
