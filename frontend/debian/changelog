@@ -1,3 +1,9 @@
+wwmap-frontend (0.0.6) unstable; urgency=medium
+
+  * Show river bounds on click in the river list
+
+ -- Andrey Khomyakov <and.hom@gmail.com> Tue, 24 Apr 2018 18:16:23 +0300
+
 wwmap-frontend (0.0.5) unstable; urgency=medium
 
   * Server-side whitewater points clustering

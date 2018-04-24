@@ -1,6 +1,14 @@
+wwmap-db (0.0.4) unstable; urgency=medium
+
+  * Get password from common wwmap config
+  * Db refactoring: river table created
+  * Reporting tool improvements: send emails to maintainers
+
+ -- Andrey Khomyakov <and.hom@gmail.com> Tue, 24 Apr 2018 18:05:43 +0300
+
 wwmap-db (0.0.3) unstable; urgency=medium
 
-  * unstable
+  * Reportoing tool table
 
  -- Andrey Khomyakov <and.hom@gmail.com>  Sun, 22 Apr 2018 19:30:03 +0300
 
