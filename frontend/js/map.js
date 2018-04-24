@@ -64,7 +64,7 @@
             setLastPositionZoomType(myMap.getCenter(), myMap.getZoom(), myMap.getType())
         });
 
-        var objectManager = new ymaps.RemoteObjectManager(apiBase + '/ymaps-tile-ww?bbox=%b', {
+        var objectManager = new ymaps.RemoteObjectManager(apiBase + '/ymaps-tile-ww?bbox=%b&zoom=%z', {
             clusterHasBalloon: false,
             geoObjectOpenBalloonOnClick: false,
             geoObjectBalloonContentLayout: LabelBalloonContentLayout,

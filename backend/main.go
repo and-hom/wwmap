@@ -49,18 +49,28 @@ func TileWhiteWaterHandler(w http.ResponseWriter, req *http.Request) {
 	corsHeaders(w, "GET, OPTIONS")
 
 	callback := req.FormValue("callback")
-	bbox, err := NewBbox(req.FormValue("bbox"))
+
+	bboxStr := req.FormValue("bbox")
+	bbox, err := NewBbox(bboxStr)
 	if err != nil {
-		onError(w, err, "Can not parse bbox", http.StatusBadRequest)
+		onError(w, err, fmt.Sprintf("Can not parse bbox: %v", bbox), http.StatusBadRequest)
 		return
 	}
+
+	zoomStr := req.FormValue("zoom")
+	zoom, err := strconv.ParseInt(zoomStr, 10, 32)
+	if err != nil {
+		onError(w, err, fmt.Sprintf("Can not parse zoom value: %s", zoomStr), http.StatusBadRequest)
+		return
+	}
+
 	points, err := whiteWaterDao.ListWhiteWaterPoints(bbox)
 	if err != nil {
 		onError500(w, err, fmt.Sprintf("Can not read whitewater points for bbox %s", bbox.String()))
 		return
 	}
 
-	featureCollection := MkFeatureCollection(whiteWaterPointsToYmaps(points, bbox.Width(), bbox.Height()))
+	featureCollection := MkFeatureCollection(whiteWaterPointsToYmaps(points, bbox.Width(), bbox.Height(), int(zoom)))
 	log.Infof("Found %d", len(featureCollection.Features))
 
 	w.Write(JsonpAnswer(callback, featureCollection, "{}"))
@@ -832,6 +842,7 @@ func main() {
 	clusterMaker = ClusterMaker{
 		BarrierDistance: configuration.ClusterizationParams.BarrierRatio,
 		MinDistance: configuration.ClusterizationParams.MinDistRatio,
+		SinglePointClusteringMaxZoom: configuration.ClusterizationParams.SinglePointClusteringMaxZoom,
 	}
 
 	r := mux.NewRouter()

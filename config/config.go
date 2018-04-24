@@ -15,6 +15,7 @@ import (
 type ClusterizationParams struct {
 	BarrierRatio float64 `yaml:"barrier_ratio"`
 	MinDistRatio float64 `yaml:"min_dist_ratio"`
+	SinglePointClusteringMaxZoom int `yaml:"single_point_cluster_max_zoom"`
 }
 
 type Notifications struct {

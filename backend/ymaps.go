@@ -167,12 +167,14 @@ func mkCluster(Id ClusterId, points []WhiteWaterPointWithRiverTitle) Feature {
 	}
 }
 
-func whiteWaterPointsToYmaps(points []WhiteWaterPointWithRiverTitle, width float64, height float64) []Feature {
-	by_cluster := clusterMaker.clusterizePoints(points, width, height)
+func whiteWaterPointsToYmaps(points []WhiteWaterPointWithRiverTitle, width float64, height float64, zoom int) []Feature {
+	by_cluster := clusterMaker.clusterizePoints(points, width, height, zoom)
 
 	result := make([]Feature, 0)
 	for id, cluster_points := range by_cluster {
-		if len(cluster_points) == 1 {
+		if len(cluster_points) == 1 &&
+			// Show fake cluster for zoom<=SinglePointClusteringMaxZoom on single ww point linked having river id
+			(zoom > clusterMaker.SinglePointClusteringMaxZoom || cluster_points[0].RiverId <= 0 || !id.Single) {
 			result = append(result, mkFeature(cluster_points[0], true))
 		} else {
 			result = append(result, mkCluster(id, cluster_points))

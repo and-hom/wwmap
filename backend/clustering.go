@@ -8,8 +8,9 @@ import (
 
 // CLusterization
 type ClusterMaker struct {
-	BarrierDistance float64 // When some points placed closer then min(width,heigth) * BarrierDistance clusterization will be applied on this river
-	MinDistance     float64 // if clusterization is started for this river it's a minimal distance from cluster center to this point
+	BarrierDistance              float64 // When some points placed closer then min(width,heigth) * BarrierDistance clusterization will be applied on this river
+	MinDistance                  float64 // if clusterization is started for this river it's a minimal distance from cluster center to this point
+	SinglePointClusteringMaxZoom int     // Maximal zoom to show single whitewater point as cluster
 }
 
 func groupByRiver(points []dao.WhiteWaterPointWithRiverTitle) map[int64][]dao.WhiteWaterPointWithRiverTitle {
@@ -21,7 +22,7 @@ func groupByRiver(points []dao.WhiteWaterPointWithRiverTitle) map[int64][]dao.Wh
 	return byRiver
 }
 
-func (this *ClusterMaker) clusterizePoints(points []dao.WhiteWaterPointWithRiverTitle, width float64, height float64) map[ClusterId][]dao.WhiteWaterPointWithRiverTitle {
+func (this *ClusterMaker) clusterizePoints(points []dao.WhiteWaterPointWithRiverTitle, width float64, height float64, zoom int) map[ClusterId][]dao.WhiteWaterPointWithRiverTitle {
 	currentClustering := CurrentClustering{
 		MinDistance:math.Max(width, height) * this.MinDistance,
 		BarrierDistance:math.Max(width, height) * this.BarrierDistance,
@@ -29,12 +30,13 @@ func (this *ClusterMaker) clusterizePoints(points []dao.WhiteWaterPointWithRiver
 	result := make(map[ClusterId][]dao.WhiteWaterPointWithRiverTitle)
 
 	for riverId, riverPoints := range groupByRiver(points) {
-		riverClusters := currentClustering.clusterForRiver(riverPoints, riverId > 0 )
+		riverClusters := currentClustering.clusterForRiver(riverPoints, riverId > 0)
 		for idx, cluster := range riverClusters {
 			clusterId := ClusterId{
 				RiverId:riverId,
 				Id: idx,
 				Title: "Cluster",
+				Single: len(riverClusters) == 1,
 			}
 			result[clusterId] = cluster.Points
 		}
@@ -82,6 +84,7 @@ type ClusterId struct {
 	RiverId int64
 	Id      int
 	Title   string
+	Single  bool // this is single cluster per river
 }
 
 type Cluster struct {
