@@ -55,7 +55,7 @@ type WhiteWaterDao interface {
 
 type ReportDao interface {
 	AddReport(report Report) error
-	ListUnread() ([]ReportWithName, error)
+	ListUnread(limit int) ([]ReportWithName, error)
 	MarkRead(reports []int64) error
 }
 

@@ -24,6 +24,7 @@ import (
 var storage Storage
 var riverDao RiverDao
 var whiteWaterDao WhiteWaterDao
+var reportDao ReportDao
 var clusterMaker ClusterMaker
 
 func TileHandler(w http.ResponseWriter, req *http.Request) {
@@ -771,7 +772,7 @@ func AddReport(w http.ResponseWriter, r *http.Request) {
 		onError(w, err, fmt.Sprintf("Can not parse object id: %s", objectIdStr), 400)
 		return
 	}
-	err = storage.AddReport(Report{
+	err = reportDao.AddReport(Report{
 		ObjectId: objectId,
 		Comment: comment,
 	})
@@ -826,6 +827,7 @@ func main() {
 
 	riverDao = RiverStorage{storage.(PostgresStorage)}
 	whiteWaterDao = WhiteWaterStorage{storage.(PostgresStorage)}
+	reportDao = ReportStorage{storage.(PostgresStorage)}
 
 	clusterMaker = ClusterMaker{
 		BarrierDistance: configuration.ClusterizationParams.BarrierRatio,
