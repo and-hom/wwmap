@@ -17,9 +17,15 @@ type ClusterizationParams struct {
 	MinDistRatio float64 `yaml:"min_dist_ratio"`
 }
 
+type Notifications struct {
+	EmailRecipients []string `yaml:"email_recipients"`
+	EmailSender     string `yaml:"email_sender"`
+}
+
 type Configuration struct {
-	DbConnString string `yaml:"db-connection-string"`
+	DbConnString         string `yaml:"db-connection-string"`
 	ClusterizationParams ClusterizationParams `yaml:"clusterization"`
+	Notifications        Notifications `yaml:"notifications"`
 }
 
 func loadConf(filename string) (Configuration, error) {

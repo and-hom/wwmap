@@ -140,9 +140,9 @@ type ExtDataTrack struct {
 }
 
 type RiverTitle struct {
-	Id    int64 `json:"id"`
-	OsmId int64 `json:"osm_id"`
-	Title string `json:"title"`
+	Id     int64 `json:"id"`
+	OsmId  int64 `json:"osm_id"`
+	Title  string `json:"title"`
 	Bounds Bbox `json:"bounds"`
 }
 
@@ -192,7 +192,8 @@ type PointRef struct {
 }
 
 type Report struct {
-	Id       int64 `json:"id"`
-	ObjectId int64 `json:"object_id"`
-	Comment  string `json:"comment"`
+	Id        int64 `json:"id"`
+	ObjectId  int64 `json:"object_id,omitempty"`
+	Comment   string `json:"comment"`
+	CreatedAt JSONTime `json:"created_at,omitempty"`
 }

@@ -1,0 +1,12 @@
+#!/usr/bin/make -f
+%:
+	dh $@
+
+build-notifier:
+	cd notifier; GOPATH="$(HOME)/.go" go build
+
+build: build-notifier
+
+override_dh_auto_install:
+	install -D -m 0755 notifier/notifier $$(pwd)/debian/wwmap-backend/usr/bin/wwmap-notifier
+	install -D -m 0644 etc/wwmap-backend.systemd $$(pwd)/debian/wwmap-backend/lib/systemd/system/wwmap-backend.service

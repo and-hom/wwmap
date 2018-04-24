@@ -1,4 +1,7 @@
 db-connection-string: "postgres://wwmap:$WWMAP_POSTGRES_PASSWORD@localhost:5432/wwmap?sslmode=require"
 clusterization:
   barrier_ratio: 0.002
-  min_dist_ratio: 0.1
+min_dist_ratio: 0.1
+  email_recipients:
+    - "and.hom@gmail.com"
+  email_sender: "and.hom@gmail.com"

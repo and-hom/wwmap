@@ -39,8 +39,6 @@ type Storage interface {
 
 	AddWaterWays(waterways ...WaterWay) error
 	UpdateWaterWay(waterway WaterWay) error
-
-	AddReport(report Report) error
 }
 
 type RiverDao interface {
@@ -53,6 +51,12 @@ type WhiteWaterDao interface {
 	AddWhiteWaterPoints(whiteWaterPoint ...WhiteWaterPoint) error
 	ListWhiteWaterPoints(bbox Bbox) ([]WhiteWaterPointWithRiverTitle, error)
 	ListWhiteWaterPointsByRiver(id int64) ([]WhiteWaterPointWithRiverTitle, error)
+}
+
+type ReportDao interface {
+	AddReport(report Report) error
+	ListUnread() ([]Report, error)
+	MarkRead(reports []Report) error
 }
 
 type PostgresStorage struct {
@@ -435,12 +439,6 @@ func getOrElse(val sql.NullInt64, _default int64) int64 {
 	} else {
 		return _default
 	}
-}
-
-
-func (this PostgresStorage) AddReport(report Report) error {
-	_, err := this.insertReturningId("INSERT INTO report(object_id,comment) VALUES($1,$2) RETURNING id", report.ObjectId, report.Comment)
-	return err;
 }
 
 func (s PostgresStorage)doFind(query string, callback func(rows *sql.Rows) error, args ...interface{}) (bool, error) {
