@@ -7,8 +7,8 @@ import (
 	"strings"
 	"fmt"
 	"strconv"
-	. "github.com/and-hom/wwmap/backend/dao"
-	. "github.com/and-hom/wwmap/backend/geo"
+	. "github.com/and-hom/wwmap/lib/dao"
+	. "github.com/and-hom/wwmap/lib/geo"
 	"time"
 	"github.com/Sirupsen/logrus"
 )

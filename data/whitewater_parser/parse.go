@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/kokardy/saxlike"
 	"os"
-	"github.com/and-hom/wwmap/backend/dao"
+	"github.com/and-hom/wwmap/lib/dao"
 	"log"
 	"github.com/and-hom/wwmap/config"
 )

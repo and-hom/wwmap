@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 	"math"
-	. "github.com/and-hom/wwmap/backend/geo"
+	. "github.com/and-hom/wwmap/lib/geo"
 	"github.com/and-hom/wwmap/backend/model"
 )
 

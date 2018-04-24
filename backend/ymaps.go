@@ -1,8 +1,8 @@
 package main
 
 import (
-	. "github.com/and-hom/wwmap/backend/dao"
-	. "github.com/and-hom/wwmap/backend/geo"
+	. "github.com/and-hom/wwmap/lib/dao"
+	. "github.com/and-hom/wwmap/lib/geo"
 	"fmt"
 	"math"
 )

@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"log"
 	"github.com/and-hom/wwmap/data"
-	"github.com/and-hom/wwmap/backend/dao"
+	"github.com/and-hom/wwmap/lib/dao"
 )
 
 var supported_types = map[string]bool{

@@ -4,8 +4,8 @@ import (
 	gpx "github.com/ptrv/go-gpx"
 	log "github.com/Sirupsen/logrus"
 	"io"
-	. "github.com/and-hom/wwmap/backend/dao"
-	. "github.com/and-hom/wwmap/backend/geo"
+	. "github.com/and-hom/wwmap/lib/dao"
+	. "github.com/and-hom/wwmap/lib/geo"
 )
 
 type GpxParser struct {

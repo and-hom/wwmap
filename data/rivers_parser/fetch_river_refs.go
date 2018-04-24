@@ -4,8 +4,8 @@ import (
 	"os"
 	"github.com/kokardy/saxlike"
 	"log"
-	"github.com/and-hom/wwmap/backend/dao"
-	//"github.com/and-hom/wwmap/backend/geo"
+	"github.com/and-hom/wwmap/lib/dao"
+	//"github.com/and-hom/wwmap/lib/geo"
 	"github.com/and-hom/wwmap/config"
 	"fmt"
 )
