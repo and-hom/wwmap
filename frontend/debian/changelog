@@ -1,3 +1,9 @@
+wwmap-frontend (0.0.7) unstable; urgency=medium
+
+  * Show single whitewater point as cluster for single point on the river when zoom is less then some value
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Wed, 25 Apr 2018 01:13:47 +0300
+
 wwmap-frontend (0.0.6) unstable; urgency=medium
 
   * Show river bounds on click in the river list

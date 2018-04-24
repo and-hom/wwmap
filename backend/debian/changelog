@@ -1,3 +1,9 @@
+wwmap-backend (0.0.7) unstable; urgency=medium
+
+  * Show single whitewater point as cluster for single point on the river when zoom is less then some value
+
+ -- Andrey Khomyakov <and.hom@gmail.com> <and_hom@and-hom>  Wed, 25 Apr 2018 01:11:15 +0300
+
 wwmap-backend (0.0.6) unstable; urgency=medium
 
   * Hotfix: "index out of bounds" fixed
