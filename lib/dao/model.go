@@ -197,3 +197,12 @@ type Report struct {
 	Comment   string `json:"comment"`
 	CreatedAt JSONTime `json:"created_at,omitempty"`
 }
+
+type ReportWithName struct {
+	Id         int64
+	ObjectId   int64
+	RiverTitle string
+	Title      string
+	Comment    string
+	CreatedAt  time.Time
+}

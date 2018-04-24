@@ -15,22 +15,22 @@ func (this ReportStorage) AddReport(report Report) error {
 	return err;
 }
 
-func (this ReportStorage) ListUnread(limit int) ([]Report, error) {
+func (this ReportStorage) ListUnread(limit int) ([]ReportWithName, error) {
 	reports, err := this.doFindList(
-		"SELECT id, object_id, comment, created_at FROM report WHERE NOT read ORDER BY created_at ASC LIMIT $1",
-		func(rows *sql.Rows) (Report, error) {
-			report := Report{}
-			objectId := sql.NullInt64{}
-			err := rows.Scan(&report.Id, &objectId, &report.Comment, &report.CreatedAt)
+		"SELECT report.id, COALESCE(white_water_rapid.id, -1) as title, COALESCE(white_water_rapid.title, '') as title, COALESCE(river.title, '') as river_title, report.comment, report.created_at " +
+			"FROM report LEFT OUTER JOIN white_water_rapid ON report.object_id=white_water_rapid.id " +
+			"LEFT OUTER JOIN river ON white_water_rapid.river_id=river.id " +
+			"WHERE NOT report.read " +
+			"ORDER BY created_at ASC LIMIT $1",
+		func(rows *sql.Rows) (ReportWithName, error) {
+			report := ReportWithName{}
+			err := rows.Scan(&report.Id, &report.ObjectId, &report.Title, &report.RiverTitle, &report.Comment, &report.CreatedAt)
 			if err != nil {
-				return Report{}, err
-			}
-			if objectId.Valid {
-				report.ObjectId = objectId.Int64
+				return ReportWithName{}, err
 			}
 			return report, nil
 		}, limit)
-	return reports.([]Report), err
+	return reports.([]ReportWithName), err
 }
 
 func (this ReportStorage) MarkRead(reports []int64) error {

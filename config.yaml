@@ -5,3 +5,4 @@ min_dist_ratio: 0.1
   email_recipients:
     - "and.hom@gmail.com"
   email_sender: "and.hom@gmail.com"
+  email_subject: "Есть новые сообщения о неточностях"

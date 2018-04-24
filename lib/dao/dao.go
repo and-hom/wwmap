@@ -55,8 +55,8 @@ type WhiteWaterDao interface {
 
 type ReportDao interface {
 	AddReport(report Report) error
-	ListUnread() ([]Report, error)
-	MarkRead(reports []Report) error
+	ListUnread() ([]ReportWithName, error)
+	MarkRead(reports []int64) error
 }
 
 type PostgresStorage struct {

@@ -20,6 +20,7 @@ type ClusterizationParams struct {
 type Notifications struct {
 	EmailRecipients []string `yaml:"email_recipients"`
 	EmailSender     string `yaml:"email_sender"`
+	EmailSubject    string `yaml:"email_subject"`
 }
 
 type Configuration struct {

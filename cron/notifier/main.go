@@ -5,8 +5,9 @@ import (
 	. "github.com/and-hom/wwmap/lib/dao"
 	"github.com/and-hom/wwmap/config"
 	"net/smtp"
-	"text/template"
+	"html/template"
 	"io"
+	"fmt"
 )
 
 const MAX_MESSAGES int = 1000
@@ -26,12 +27,17 @@ func main() {
 		return
 	}
 
-	tmpl, err := template.New("report-email").Parse("Hello")
+	templateData, err := emailTemplateBytes()
+	if err != nil {
+		log.Fatal("Can not load email template:\t", err)
+	}
+
+	tmpl, err := template.New("report-email").Parse(string(templateData))
 	if err != nil {
 		log.Fatal("Can not compile email template:\t", err)
 	}
 
-	err = sendMail(configuration.Notifications.EmailSender, configuration.Notifications.EmailRecipients, func(w io.Writer) error {
+	err = sendMail(configuration.Notifications.EmailSender, configuration.Notifications.EmailRecipients, configuration.Notifications.EmailSubject, func(w io.Writer) error {
 		return tmpl.Execute(w, reports)
 	})
 	if err != nil {
@@ -49,7 +55,7 @@ func main() {
 
 }
 
-func sendMail(from string, to []string, writeBody func(io.Writer) error) error {
+func sendMail(from string, to []string, subject string, writeBody func(io.Writer) error) error {
 	c, err := smtp.Dial("localhost:25")
 	if err != nil {
 		return err
@@ -67,5 +73,6 @@ func sendMail(from string, to []string, writeBody func(io.Writer) error) error {
 	}
 	defer wc.Close()
 
+	fmt.Fprintf(wc, "Content-Type: text/html; charset=UTF-8\r\nSubject: %s\r\n", subject)
 	return writeBody(wc)
 }

@@ -3,7 +3,8 @@
 	dh $@
 
 build-notifier:
-	cd notifier; GOPATH="$(HOME)/.go" go build
+	GOPATH="$(HOME)/.go" go install github.com/go-bindata/go-bindata
+	cd notifier; $(HOME)/.go/go-bindata email-template; GOPATH="$(HOME)/.go" go build
 
 build: build-notifier
 
