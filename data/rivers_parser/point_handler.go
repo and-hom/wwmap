@@ -121,8 +121,6 @@ func (h *PointHandler) flush(wayId int64) {
 		Comment: waterWayTmp.Comment,
 		Type: waterWayTmp.Type,
 		Path: pointsNew,
-		Verified: false,
-		Popularity: 0,
 	})
 
 	delete(h.points_by_way, wayId)

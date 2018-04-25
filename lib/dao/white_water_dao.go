@@ -1,11 +1,12 @@
 package dao
 
 import (
-log "github.com/Sirupsen/logrus"
-"database/sql"
-"encoding/json"
-"github.com/and-hom/wwmap/lib/geo"
+	log "github.com/Sirupsen/logrus"
+	"database/sql"
+	"encoding/json"
+	"github.com/and-hom/wwmap/lib/geo"
 	"github.com/and-hom/wwmap/lib/model"
+	"fmt"
 )
 
 type WhiteWaterStorage struct {
@@ -78,3 +79,22 @@ func (this WhiteWaterStorage) listWhiteWaterPoints(condition string, vars ...int
 	}
 	return result.([]WhiteWaterPointWithRiverTitle), nil
 }
+
+func (this WhiteWaterStorage) AddWhiteWaterPoints(whiteWaterPoints ...WhiteWaterPoint) error {
+	vars := make([]interface{}, len(whiteWaterPoints))
+	for i, p := range whiteWaterPoints {
+		vars[i] = p
+	}
+	return this.performUpdates("INSERT INTO white_water_rapid(osm_id, title,type,category,comment,point,short_description, link, river_id) " +
+		"VALUES ($1, $2, $3, $4, $5, ST_GeomFromGeoJSON($6), $7, $8, $9)",
+		func(entity interface{}) ([]interface{}, error) {
+			wwp := entity.(WhiteWaterPoint)
+			pathBytes, err := json.Marshal(geo.NewGeoPoint(wwp.Point))
+			if err != nil {
+				return nil, err
+			}
+			fmt.Printf("id = %d", wwp.Id)
+			return []interface{}{wwp.OsmId, wwp.Title, wwp.Type, wwp.Category.Serialize(), wwp.Comment, string(pathBytes), wwp.ShortDesc, wwp.Link, nullIf0(wwp.RiverId)}, nil
+		}, vars...)
+}
+

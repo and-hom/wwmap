@@ -147,15 +147,13 @@ type RiverTitle struct {
 }
 
 type WaterWay struct {
-	Id         int64 `json:"id"`
-	OsmId      int64 `json:"osm_id"`
-	Title      string `json:"title"`
-	Type       string `json:"type"`
-	Path       []Point `json:"path"`
-	ParentId   int64 `json:"parentId"`
-	Comment    string `json:"comment"`
-	Verified   bool `json:"verified"`
-	Popularity int16 `json:"popularity"`
+	Id      int64 `json:"id"`
+	OsmId   int64 `json:"osm_id"`
+	Title   string `json:"title"`
+	Type    string `json:"type"`
+	Path    []Point `json:"path"`
+	RiverId int64 `json:"river_id"`
+	Comment string `json:"comment"`
 }
 
 type WhiteWaterPoint struct {
