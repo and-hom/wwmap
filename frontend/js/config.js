@@ -39,7 +39,7 @@ function setLastPositionZoomType(pos, z, type) {
     setLastPosition(pos)
     setLastZoom(z)
     setLastMapType(type)
-    window.location.hash = pos[0] + ',' + pos[1] + ',' + z + ',' + type
+    window.location.hash = pos[0] + ',' + pos[1] + ',' + z + ',' + type.replace('#','-')
 }
 
 function getLastPositionAndZoom() {
@@ -57,7 +57,7 @@ function getLastPositionAndZoom() {
             zoom = parseInt(params[2])
         }
         if (params.length >= 4) {
-            type = params[3]
+            type = params[3].replace('-','#')
         }
     }
 
