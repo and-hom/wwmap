@@ -1,3 +1,11 @@
+wwmap-backend (0.0.8) unstable; urgency=medium
+
+  * Read http params from config #29
+  * Configuration and useradd moved to separate package wwmap-config #29
+  * Path to static http resources added to config and used in ymaps json generation
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Fri, 27 Apr 2018 00:10:06 +0300
+
 wwmap-backend (0.0.7) unstable; urgency=medium
 
   * Show single whitewater point as cluster for single point on the river when zoom is less then some value
