@@ -1,6 +1,4 @@
 #!/bin/sh
 
-id -u wwmap 2>/dev/null || adduser --system --home /var/lib/wwmap --group wwmap
-
 mkdir -p /var/lib/wwmap/backend
 chown wwmap:wwmap /var/lib/wwmap/backend

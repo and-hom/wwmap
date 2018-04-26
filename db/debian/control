@@ -7,5 +7,5 @@ Section: misc
 Package: wwmap-db
 Priority: extra
 Architecture: amd64
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, wwmap-config
 Description: Database migrations for whitewater map

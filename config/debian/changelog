@@ -1,0 +1,5 @@
+wwmap-config (0.0.1) unstable; urgency=medium
+
+  * Configuration package for wwmap
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Tue, 24 Apr 2018 14:15:15 +0300
