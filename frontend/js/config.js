@@ -1,9 +1,12 @@
 const LAST_POS_COOKIE_NAME = "last-map-pos";
 const LAST_ZOOM_COOKIE_NAME = "last-map-zoom";
 const LAST_MAP_TYPE_COOKIE_NAME = "last-map-type";
-const apiBase = "http://localhost:7007";
 
-const STANDARD_TILES = 'http://67.209.114.168/maps/osm/%z/%x/%y.png';
+// environment dependent section
+const apiBase = "http://localhost:7007";
+// end
+
+const STANDARD_TILES = 'http://wwmap.ru/maps/osm/%z/%x/%y.png';
 const THUNDERFOREST_OUTDOOR_TILES = 'http://a.tile.thunderforest.com/outdoors/%z/%x/%y.png';
 const THUNDERFOREST_LANDSCAPE_TILES = 'http://a.tile.thunderforest.com/landscape/%z/%x/%y.png';
 
