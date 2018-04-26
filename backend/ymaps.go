@@ -93,7 +93,7 @@ func pointsToYmaps(points []EventPoint) []Feature {
 	return result
 }
 
-func mkFeature(point WhiteWaterPointWithRiverTitle, withDescription bool) Feature {
+func mkFeature(point WhiteWaterPointWithRiverTitle, withDescription bool, resourcesBase string) Feature {
 	var description = ""
 	if withDescription {
 		description = point.ShortDesc
@@ -115,7 +115,7 @@ func mkFeature(point WhiteWaterPointWithRiverTitle, withDescription bool) Featur
 		},
 		Options:FeatureOptions{
 			IconLayout: IMAGE,
-			IconImageHref: fmt.Sprintf("img/cat%d.png", point.Category.Category),
+			IconImageHref: fmt.Sprintf(resourcesBase + "/img/cat%d.png", point.Category.Category),
 			IconImageSize: []int{32, 32},
 			IconImageOffset: []int{-16, -16},
 
@@ -167,7 +167,7 @@ func mkCluster(Id ClusterId, points []WhiteWaterPointWithRiverTitle) Feature {
 	}
 }
 
-func whiteWaterPointsToYmaps(clusterMaker ClusterMaker, points []WhiteWaterPointWithRiverTitle, width float64, height float64, zoom int) []Feature {
+func whiteWaterPointsToYmaps(clusterMaker ClusterMaker, points []WhiteWaterPointWithRiverTitle, width float64, height float64, zoom int, resourcesBase string) []Feature {
 	by_cluster := clusterMaker.clusterizePoints(points, width, height, zoom)
 
 	result := make([]Feature, 0)
@@ -175,7 +175,7 @@ func whiteWaterPointsToYmaps(clusterMaker ClusterMaker, points []WhiteWaterPoint
 		if len(cluster_points) == 1 &&
 		// Show fake cluster for zoom<=SinglePointClusteringMaxZoom on single ww point linked having river id
 			(zoom > clusterMaker.SinglePointClusteringMaxZoom || cluster_points[0].RiverId <= 0 || !id.Single) {
-			result = append(result, mkFeature(cluster_points[0], true))
+			result = append(result, mkFeature(cluster_points[0], true, resourcesBase))
 		} else {
 			result = append(result, mkCluster(id, cluster_points))
 		}

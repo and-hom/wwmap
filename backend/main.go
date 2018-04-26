@@ -54,7 +54,7 @@ func main() {
 	routeHandler := RouteHandler{handler}
 	trackHandler := TrackHandler{handler}
 	riverHandler := RiverHandler{handler}
-	whiteWaterHandler := WhiteWaterHandler{handler}
+	whiteWaterHandler := WhiteWaterHandler{handler, configuration.Content.ResourceBase}
 	pointHandler := PointHandler{handler}
 	reportHandler := ReportHandler{handler}
 	pictureHandler := PictureHandler{handler}

@@ -4,6 +4,10 @@
     var pointHighlighter = {val:null};
 
     function loadRivers(bounds) {
+        if ($('#riversMenuTemplate').length==0 || $("#rivers").length==0) {
+            // can not find template or container
+            return
+        }
         $.get(apiBase + "/visible-rivers?bbox=" + bounds.join(','), function (data) {
             $('#rivers').html('');
             var dataObj = {

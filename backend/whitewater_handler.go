@@ -12,6 +12,7 @@ import (
 
 type WhiteWaterHandler struct {
 	Handler
+	resourceBase string
 }
 
 func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req *http.Request) {
@@ -28,7 +29,7 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 		return
 	}
 
-	featureCollection := MkFeatureCollection(whiteWaterPointsToYmaps(this.clusterMaker, points, bbox.Width(), bbox.Height(), zoom))
+	featureCollection := MkFeatureCollection(whiteWaterPointsToYmaps(this.clusterMaker, points, bbox.Width(), bbox.Height(), zoom, this.resourceBase))
 	log.Infof("Found %d", len(featureCollection.Features))
 
 	w.Write(this.JsonpAnswer(callback, featureCollection, "{}"))
