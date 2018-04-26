@@ -4,7 +4,6 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
 	"net/http"
-	"fmt"
 	"os"
 	"github.com/gorilla/handlers"
 	. "github.com/and-hom/wwmap/lib/dao"
@@ -42,14 +41,14 @@ func main() {
 		SinglePointClusteringMaxZoom: configuration.ClusterizationParams.SinglePointClusteringMaxZoom,
 	}
 
-	app := App {
+	app := App{
 		storage:storage,
 		riverDao:riverDao,
 		whiteWaterDao:whiteWaterDao,
 		reportDao:reportDao,
 		clusterMaker:clusterMaker,
 	}
-	
+
 	handler := Handler{app}
 	gpxHandler := GpxHandler{handler}
 	routeHandler := RouteHandler{handler}
@@ -95,10 +94,9 @@ func main() {
 
 	r.HandleFunc("/report", reportHandler.AddReport).Methods("POST")
 
-	httpStr := fmt.Sprintf(":%d", 7007)
-	log.Infof("Starting http server on %s", httpStr)
+	log.Infof("Starting http server on %s", configuration.Api.BindTo)
 	http.Handle("/", r)
-	err := http.ListenAndServe(httpStr, handlers.LoggingHandler(os.Stdout, http.DefaultServeMux))
+	err := http.ListenAndServe(configuration.Api.BindTo, handlers.LoggingHandler(os.Stdout, http.DefaultServeMux))
 	if err != nil {
 		log.Fatalf("Can not start server: %v", err)
 	}

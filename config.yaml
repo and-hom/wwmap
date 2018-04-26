@@ -6,3 +6,5 @@ min_dist_ratio: 0.1
     - "and.hom@gmail.com"
   email_sender: "and.hom@gmail.com"
   email_subject: "Есть новые сообщения о неточностях"
+api:
+  bind_to: ":7007"

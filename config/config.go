@@ -13,8 +13,8 @@ import (
 )
 
 type ClusterizationParams struct {
-	BarrierRatio float64 `yaml:"barrier_ratio"`
-	MinDistRatio float64 `yaml:"min_dist_ratio"`
+	BarrierRatio                 float64 `yaml:"barrier_ratio"`
+	MinDistRatio                 float64 `yaml:"min_dist_ratio"`
 	SinglePointClusteringMaxZoom int `yaml:"single_point_cluster_max_zoom"`
 }
 
@@ -24,10 +24,15 @@ type Notifications struct {
 	EmailSubject    string `yaml:"email_subject"`
 }
 
+type Api struct {
+	BindTo string `yaml:"bind_to"`
+}
+
 type Configuration struct {
 	DbConnString         string `yaml:"db-connection-string"`
 	ClusterizationParams ClusterizationParams `yaml:"clusterization"`
 	Notifications        Notifications `yaml:"notifications"`
+	Api                  Api `yaml:"api"`
 }
 
 func loadConf(filename string) (Configuration, error) {
