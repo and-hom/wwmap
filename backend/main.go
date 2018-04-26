@@ -7,7 +7,7 @@ import (
 	"os"
 	"github.com/gorilla/handlers"
 	. "github.com/and-hom/wwmap/lib/dao"
-	"github.com/and-hom/wwmap/config"
+	"github.com/and-hom/wwmap/lib/config"
 )
 
 type App struct {

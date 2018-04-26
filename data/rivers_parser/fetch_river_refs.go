@@ -6,7 +6,7 @@ import (
 	"log"
 	"github.com/and-hom/wwmap/lib/dao"
 	//"github.com/and-hom/wwmap/lib/geo"
-	"github.com/and-hom/wwmap/config"
+	"github.com/and-hom/wwmap/lib/config"
 	"fmt"
 )
 

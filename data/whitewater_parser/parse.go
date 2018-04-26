@@ -5,7 +5,7 @@ import (
 	"os"
 	"github.com/and-hom/wwmap/lib/dao"
 	"log"
-	"github.com/and-hom/wwmap/config"
+	"github.com/and-hom/wwmap/lib/config"
 )
 
 func main() {

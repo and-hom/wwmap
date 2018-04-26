@@ -3,7 +3,7 @@ package main
 import (
 	log "github.com/Sirupsen/logrus"
 	. "github.com/and-hom/wwmap/lib/dao"
-	"github.com/and-hom/wwmap/config"
+	"github.com/and-hom/wwmap/lib/config"
 	"net/smtp"
 	"html/template"
 	"io"
