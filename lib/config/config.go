@@ -28,11 +28,16 @@ type Api struct {
 	BindTo string `yaml:"bind_to"`
 }
 
+type Content struct {
+	ResourceBase string `yaml:"resource_base"`
+}
+
 type Configuration struct {
 	DbConnString         string `yaml:"db-connection-string"`
 	ClusterizationParams ClusterizationParams `yaml:"clusterization"`
 	Notifications        Notifications `yaml:"notifications"`
 	Api                  Api `yaml:"api"`
+	Content              Content `yaml:"content"`
 }
 
 func loadConf(filename string) (Configuration, error) {
