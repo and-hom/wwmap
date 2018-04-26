@@ -17,7 +17,7 @@ function getLastPosition() {
     if (lastPos) {
         return $.parseJSON(lastPos)
     } else {
-        return [55.76, 37.64]
+        return [78, 46]
     }
 }
 
@@ -30,7 +30,7 @@ function getLastZoom() {
     if (lastZoom) {
         return $.parseJSON(lastZoom)
     } else {
-        return 7
+        return 3
     }
 }
 
