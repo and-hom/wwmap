@@ -10,14 +10,14 @@
 
 <div id="bubble_template" style="display:none">
     <h3 class="popover-title">
-        [if properties.link]<a target="_blank" href="$[properties.link]">$[properties.title]</a>[else]$[properties.title][endif]
+        {%if properties.link%}<a target="_blank" href="{{properties.link}}">{{properties.title}}</a>{%else%}{{properties.title}}{%endif%}
     </h3>
 
     <div class="popover-content">
-        [if properties.category!="0"]<div>Категория сложности: $[properties.category][endif]</div>
-        [if properties.river_name]<div>Река: $[properties.river_name]</div>[endif]
-        <div>$[properties.short_description]</div>
-        <a target="_top" href="" onclick="show_report_popup($[properties.id]); return false">Сообщить о неточном местоположении</a>
+        {%if properties.category!="0"%}<div>Категория сложности: {{properties.category}}</div>{%endif%}
+        {%if properties.river_name%}<div>Река: {{properties.river_name}}</div>{%endif%}
+        <div>{{properties.short_description}}</div>
+        <a target="_top" href="" onclick="show_report_popup({{properties.id}}); return false">Сообщить о неточном местоположении</a>
     </div>
 </div>
 
@@ -48,6 +48,8 @@
 </div>
 
 
+<div id="report_ok" style="diaplsy:none">Запрос отправлен. Я прочитаю его по мере наличия свободного времени.</div>
+<div id="report_fail" style="diaplsy:none">Что-то пошло не так...</div>
 
 <script type="text/javascript" src="./js/jquery-3.1.1.min.js"></script>
 <script type="text/javascript" src="./js/jquery.tmpl.js"></script>
@@ -76,11 +78,11 @@
     $(".popuptext input[type=submit]").click(function(){
         $.post(apiBase + "/report", $( ".popuptext form" ).serialize() )
         .done(function( data ) {
-            window.alert( "Запрос отправлен. Я прочитаю его по мере наличия свободного времени." );
+            window.alert($("#report_ok").html());
             $(".popuptext").removeClass("show")
             $('#comment').val('')
         })  .fail(function() {
-            window.alert( "Что-то пошло не так..." );
+            window.alert($("#report_fail").html());
         });
         return false;
     });

@@ -136,7 +136,7 @@ type FeatureProperties struct {
 	Link            string `json:"link,omitempty"`
 	Comment         string `json:"comment,omitempty"`
 	ShortDesc       string `json:"short_description,omitempty"`
-	Category        model.SportCategory `json:"category,omitempty"`
+	Category        *model.SportCategory `json:"category,omitempty"`
 	RiverName       string `json:"river_name,omitempty"`
 }
 

@@ -99,20 +99,24 @@ func mkFeature(point WhiteWaterPointWithRiverTitle, withDescription bool, resour
 		description = point.ShortDesc
 	}
 
+	properties := FeatureProperties{
+		HintContent: point.Title,
+		Id: point.Id,
+
+		Title: point.Title,
+		Link: point.Link,
+		ShortDesc: description,
+		RiverName: point.RiverTitle,
+	}
+	if point.Category.Category > 0 {
+		properties.Category = &point.Category
+	}
+
 	return Feature{
 		Id:point.Id,
 		Geometry:NewGeoPoint(point.Point),
 		Type: FEATURE,
-		Properties:FeatureProperties{
-			HintContent: point.Title,
-			Id: point.Id,
-
-			Title: point.Title,
-			Category: point.Category,
-			Link: point.Link,
-			ShortDesc: description,
-			RiverName: point.RiverTitle,
-		},
+		Properties:properties,
 		Options:FeatureOptions{
 			IconLayout: IMAGE,
 			IconImageHref: fmt.Sprintf(resourcesBase + "/img/cat%d.png", point.Category.Category),
