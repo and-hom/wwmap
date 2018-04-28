@@ -47,11 +47,10 @@ func loadConf(filename string) (Configuration, error) {
 		log.Warnf("Can not open %s: %v", filename, err)
 		return Configuration{}, err
 	}
-	log.Infof("Configuration file contents:\n%s", string(data))
 
 	t, err := template.New("config").Parse(string(data))
 	if err != nil {
-		log.Errorf("Template error for %s: %v", filename, err)
+		log.Errorf("Template error for %s: %v\nConfiguration file contents:\n%s", filename, err, string(data))
 		return Configuration{}, err
 	}
 
@@ -69,11 +68,10 @@ func loadConf(filename string) (Configuration, error) {
 		return Configuration{}, err
 	}
 
-	log.Infof("Configuration file contents with replaced placeholder:\n%s", templatizedConfig.String())
 	config := Configuration{}
 	uErr := yaml.Unmarshal(templatizedConfig.Bytes(), &config)
 	if uErr != nil {
-		log.Errorf("Can not unmarshal %s: %v", filename, uErr)
+		log.Errorf("Can not unmarshal %s: %v.\nConfiguration file contents are: %s", filename, uErr, templatizedConfig.String())
 		return Configuration{}, uErr
 	}
 	return config, nil
