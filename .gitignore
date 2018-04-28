@@ -8,6 +8,7 @@ backend/backend
 **/debian/.debhelper
 **/debian/debhelper*
 **/debian/wwmap-*
+!**/*cron.d
 
 *.deb
 *.ddeb
