@@ -27,7 +27,8 @@
     {{each rivers}}
         <li>
             <a href="" style="padding-left:10px;" onclick="show_map_at(${bounds}); return false;">${title}</a>
-            <a href="${apiUrl}/${id}" style="float:right;" alt="Скачать GPX с точками порогов">GPX</a>
+            <a href="${apiUrl}/${id}?tr=true" style="float:right;" alt="Скачать GPX с точками порогов">GPX<sub>en</sub></a>
+            <a href="${apiUrl}/${id}" style="float:right; padding-right:10px;" alt="Скачать GPX с точками порогов">GPX</a>
         </li>
     {{/each}}
 </script>
