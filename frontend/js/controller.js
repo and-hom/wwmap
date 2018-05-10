@@ -12,8 +12,17 @@ wwmap.controller('Ctrl', function($scope, $filter, $http, $q) {
     {value: '2', text: '2'},
     {value: '3', text: '3'},
     {value: '4', text: '4'},
+    {value: '4a', text: '4a'},
+    {value: '4b', text: '4b'},
+    {value: '4c', text: '4c'},
     {value: '5', text: '5'},
-    {value: '6', text: '6'}
+    {value: '5a', text: '5a'},
+    {value: '5b', text: '5b'},
+    {value: '5c', text: '5c'},
+    {value: '6', text: '6'},
+    {value: '6a', text: '6a'},
+    {value: '6b', text: '6b'},
+    {value: '6c', text: '6c'},
   ];
 
   $scope.rivers = {};

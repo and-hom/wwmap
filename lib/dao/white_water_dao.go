@@ -7,6 +7,7 @@ import (
 	"github.com/and-hom/wwmap/lib/geo"
 	"github.com/and-hom/wwmap/lib/model"
 	"fmt"
+	"strings"
 )
 
 type WhiteWaterStorage struct {
@@ -50,7 +51,10 @@ func (this WhiteWaterStorage) listWhiteWaterPoints(condition string, vars ...int
 				return WhiteWaterPointWithRiverTitle{}, err
 			}
 
-			var category model.SportCategory
+			category := model.SportCategory{}
+			if !(strings.HasPrefix(categoryStr,"\"") && strings.HasSuffix(categoryStr, "\"")) {
+				categoryStr = "\"" + categoryStr + "\""
+			}
 			err = json.Unmarshal([]byte(categoryStr), &category)
 			if err != nil {
 				log.Errorf("Can not parse category %s for white water object %d: %v", categoryStr, id, err)
@@ -94,7 +98,11 @@ func (this WhiteWaterStorage) AddWhiteWaterPoints(whiteWaterPoints ...WhiteWater
 				return nil, err
 			}
 			fmt.Printf("id = %d", wwp.Id)
-			return []interface{}{wwp.OsmId, wwp.Title, wwp.Type, wwp.Category.Serialize(), wwp.Comment, string(pathBytes), wwp.ShortDesc, wwp.Link, nullIf0(wwp.RiverId)}, nil
+			cat, err := wwp.Category.MarshalJSON()
+			if err != nil {
+				return nil, err
+			}
+			return []interface{}{wwp.OsmId, wwp.Title, wwp.Type, cat, wwp.Comment, string(pathBytes), wwp.ShortDesc, wwp.Link, nullIf0(wwp.RiverId)}, nil
 		}, vars...)
 }
 
