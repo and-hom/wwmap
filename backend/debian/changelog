@@ -1,3 +1,13 @@
+wwmap-backend (0.0.10) unstable; urgency=medium
+
+  * Correcly parse leter categories from db.
+  * Store category to db as json (with quotes)
+  * Do not print config file contents on success loading #29
+  * cron.d file fixed: endline added fix #25
+  * Download transliterated gpx
+
+ -- Andrey Khomyakov <and.hom@gmail.com> Thu, 10 May 2018 14:38:53 +0300
+
 wwmap-backend (0.0.9) unstable; urgency=medium
 
   * Ymaps json fix: add category only if exists
