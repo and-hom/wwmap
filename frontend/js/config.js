@@ -6,7 +6,7 @@ const LAST_MAP_TYPE_COOKIE_NAME = "last-map-type";
 const apiBase = "http://localhost:7007";
 // end
 
-const STANDARD_TILES = 'http://localhost:7008/osm/%z/%x/%y.png';
+const STANDARD_TILES = 'http://wwmap.ru:7008/osm/%z/%x/%y.png';
 const THUNDERFOREST_OUTDOOR_TILES = 'http://a.tile.thunderforest.com/outdoors/%z/%x/%y.png';
 const THUNDERFOREST_LANDSCAPE_TILES = 'http://a.tile.thunderforest.com/landscape/%z/%x/%y.png';
 
