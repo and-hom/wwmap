@@ -15,7 +15,10 @@ import (
 	"io/ioutil"
 	"time"
 	"sync"
+	"fmt"
 )
+
+var GMT_LOC, _ = time.LoadLocation("UTC")
 
 type Pos struct {
 	x string
@@ -178,13 +181,38 @@ func (this *Handler) tile(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	f, err := os.Open(path)
+	stat, err := os.Stat(path)
 	if err != nil {
-		OnError500(w, err, "Can not read tile file " + path)
+		OnError500(w, err, "Can not get stat for tile file " + path)
 		return
 	}
-	defer f.Close()
-	io.Copy(w, f)
+	modTime := stat.ModTime().In(GMT_LOC)
+	w.Header().Add("Last-Modified", modTime.Format(http.TimeFormat))
+	w.Header().Add("Expires", modTime.Add(365 * 24 * time.Hour).Format(http.TimeFormat))
+
+	ifModSinceStr := req.Header.Get("If-Modified-Since")
+	ifModSince, err := time.Parse(http.TimeFormat, ifModSinceStr)
+	if err != nil {
+		ifModSince = time.Now()
+	}
+
+	if stat.ModTime().Before(ifModSince) {
+		w.WriteHeader(http.StatusNotModified)
+		return
+	}
+
+	if req.Method == "GET" {
+		w.Header().Add("Content-Length", fmt.Sprintf("%d", stat.Size()))
+		f, err := os.Open(path)
+		if err != nil {
+			OnError500(w, err, "Can not read tile file " + path)
+			return
+		}
+		defer f.Close()
+		io.Copy(w, f)
+	} else {
+		w.Header().Add("Content-Length", "0")
+	}
 }
 
 func (this *Handler) cachePath(pos Pos) string {
@@ -226,7 +254,7 @@ func main() {
 	}
 
 	r := mux.NewRouter()
-	r.HandleFunc("/{type}/{z}/{x}/{y}.png", handler.tile)
+	r.HandleFunc("/{type}/{z}/{x}/{y}.png", handler.tile).Methods("GET", "HEAD")
 
 	log.Infof("Starting tiles server on %v+", configuration.BindTo)
 	http.Handle("/", r)
