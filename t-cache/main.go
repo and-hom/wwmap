@@ -13,6 +13,7 @@ import (
 	"github.com/pkg/errors"
 	"path/filepath"
 	"io/ioutil"
+	"time"
 )
 
 type Pos struct {
@@ -167,7 +168,9 @@ func main() {
 	handler := Handler{
 		baseDir:configuration.BaseDir,
 		urlMapping: urlMapping,
-		client: &http.Client{},
+		client: &http.Client{
+			Timeout: 4 * time.Second,
+		},
 		semaphore: make(chan string, 10),
 	}
 
