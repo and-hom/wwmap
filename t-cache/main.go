@@ -14,6 +14,8 @@ import (
 	"path/filepath"
 	"io/ioutil"
 	"time"
+	"sync"
+	"fmt"
 )
 
 type Pos struct {
@@ -39,6 +41,7 @@ type Handler struct {
 	urlMapping map[string]Mapping
 	client     *http.Client
 	semaphore  chan string
+	urlMutex   sync.Map
 }
 
 func (this *Handler) fetchUrlToTmpFile(w http.ResponseWriter, url string) (string, error) {
@@ -86,18 +89,31 @@ func (this *Handler) fetch(w http.ResponseWriter, pos Pos) {
 		<-this.semaphore
 	}()
 
+	mapping, found := this.urlMapping[pos.t]
+	url := mapping.mkUrl(pos.z, pos.x, pos.y)
+
+	foundUrlMutex,_ := this.urlMutex.LoadOrStore(path, &sync.Mutex{})
+	urlMutex := foundUrlMutex.(*sync.Mutex)
+	urlMutex.Lock()
+	defer func() {
+		this.urlMutex.Delete(path)
+		urlMutex.Unlock()
+	}()
+
 	_, err := os.Stat(path)
 	if err == nil {
-		log.Debug(path + " was concurrently downloaded by somebody else")
+		log.Info(path + " was concurrently downloaded by somebody else")
 		return
+	} else {
+		fmt.Println(err)
 	}
 
-	mapping, found := this.urlMapping[pos.t]
+	time.Sleep(time.Second)
+
 	if !found {
 		OnError(w, errors.New(pos.t), "Can not find mapping for type", http.StatusBadRequest)
 		return
 	}
-	url := mapping.mkUrl(pos.z, pos.x, pos.y)
 	tmpFile, err := this.fetchUrlToTmpFile(w, url)
 	if err != nil {
 		return
@@ -113,6 +129,8 @@ func (this *Handler) fetch(w http.ResponseWriter, pos Pos) {
 		return
 	}
 	defer os.Remove(tmpFile)
+
+	fmt.Println("Finish")
 }
 
 func (this *Handler) tile(w http.ResponseWriter, req *http.Request) {
