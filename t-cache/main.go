@@ -120,7 +120,7 @@ func (this *Handler) fetchUrlToTmpFile(w http.ResponseWriter, url string) (strin
 	return f.Name(), nil
 }
 
-func (this *Handler) fetch(w http.ResponseWriter, pos Pos) {
+func (this *Handler) fetch(w http.ResponseWriter, pos Pos) error {
 	path := this.cachePath(pos)
 
 	pathLock := PathLock{key:path, mutexByUrl:&this.mutexByUrl}
@@ -134,30 +134,32 @@ func (this *Handler) fetch(w http.ResponseWriter, pos Pos) {
 	_, err := os.Stat(path)
 	if err == nil {
 		log.Info(path + " was concurrently downloaded by somebody else")
-		return
+		return err
 	}
 
 	time.Sleep(time.Second)
 
 	if !found {
-		OnError(w, errors.New(pos.t), "Can not find mapping for type", http.StatusBadRequest)
-		return
+		err := errors.New(pos.t)
+		OnError(w, err, "Can not find mapping for type", http.StatusBadRequest)
+		return err
 	}
 	tmpFile, err := this.fetchUrlToTmpFile(w, url.Url)
 	if err != nil {
-		return
+		return err
 	}
 	err = os.MkdirAll(filepath.Dir(path), os.ModeDir | 0777)
 	if err != nil {
 		OnError500(w, err, "Can not create parent directory for file " + path)
-		return
+		return err
 	}
 	err = os.Rename(tmpFile, path)
 	if err != nil {
 		OnError500(w, err, "Can not create file " + path)
-		return
+		return err
 	}
 	defer os.Remove(tmpFile)
+	return nil
 }
 
 func (this *Handler) tile(w http.ResponseWriter, req *http.Request) {
@@ -175,7 +177,10 @@ func (this *Handler) tile(w http.ResponseWriter, req *http.Request) {
 	path := this.cachePath(pos)
 	_, err := os.Stat(path)
 	if os.IsNotExist(err) {
-		this.fetch(w, pos)
+		err := this.fetch(w, pos)
+		if err!=nil {
+			return
+		}
 	} else if err != nil {
 		OnError500(w, err, "Can not get stat for tile file " + path)
 		return
@@ -194,7 +199,7 @@ func (this *Handler) tile(w http.ResponseWriter, req *http.Request) {
 	ifModSinceStr := req.Header.Get("If-Modified-Since")
 	ifModSince, err := time.Parse(http.TimeFormat, ifModSinceStr)
 	if err != nil {
-		ifModSince = time.Now()
+		ifModSince = time.Unix(0, 0)
 	}
 
 	if stat.ModTime().Before(ifModSince) {
@@ -232,7 +237,7 @@ func typeCdnMapping(configuration config.TileCache) map[string]Mapping {
 		for i, urlPatternStr := range u {
 			p[i] = CdnUrlPattern{
 				template: fasttemplate.New(urlPatternStr, "[[", "]]"),
-				semaphore:make(chan int, 3),
+				semaphore:make(chan int, 5),
 			}
 		}
 
