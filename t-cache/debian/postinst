@@ -1,0 +1,4 @@
+#!/bin/sh
+
+mkdir -p /var/lib/wwmap/t-cache
+chown wwmap:wwmap /var/lib/wwmap/t-cache

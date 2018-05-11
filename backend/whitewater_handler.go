@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	. "github.com/and-hom/wwmap/lib/dao"
 	. "github.com/and-hom/wwmap/lib/geo"
+	. "github.com/and-hom/wwmap/lib/http"
 )
 
 type WhiteWaterHandler struct {
@@ -16,7 +17,7 @@ type WhiteWaterHandler struct {
 }
 
 func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req *http.Request) {
-	corsHeaders(w, "GET, OPTIONS")
+	CorsHeaders(w, "GET, OPTIONS")
 
 	callback, bbox, zoom, err := this.tileParamsZ(w, req)
 	if err != nil {
@@ -25,7 +26,7 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 
 	points, err := this.whiteWaterDao.ListWhiteWaterPoints(bbox)
 	if err != nil {
-		this.onError500(w, err, fmt.Sprintf("Can not read whitewater points for bbox %s", bbox.String()))
+		OnError500(w, err, fmt.Sprintf("Can not read whitewater points for bbox %s", bbox.String()))
 		return
 	}
 
@@ -36,16 +37,16 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 }
 
 func (this *WhiteWaterHandler) AddWhiteWaterPoints(w http.ResponseWriter, r *http.Request) {
-	corsHeaders(w, "POST, GET, OPTIONS, PUT, DELETE")
+	CorsHeaders(w, "POST, GET, OPTIONS, PUT, DELETE")
 	err := r.ParseForm()
 	if err != nil {
-		this.onError(w, err, "Can not parse form", http.StatusBadRequest)
+		OnError(w, err, "Can not parse form", http.StatusBadRequest)
 		return
 	}
 
 	wwPoints, err := this.parseWhiteWaterPointsForm(w, r)
 	if err != nil {
-		this.onError500(w, err, "Can not read request")
+		OnError500(w, err, "Can not read request")
 		return
 	}
 
@@ -53,7 +54,7 @@ func (this *WhiteWaterHandler) AddWhiteWaterPoints(w http.ResponseWriter, r *htt
 	fmt.Printf("%v\n", wwPoints)
 
 	if err != nil {
-		this.onError500(w, err, "Can not insert")
+		OnError500(w, err, "Can not insert")
 		return
 	}
 }

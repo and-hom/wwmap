@@ -18,12 +18,6 @@ type App struct {
 	clusterMaker  ClusterMaker
 }
 
-func corsHeaders(w http.ResponseWriter, methods string) {
-	w.Header().Add("Access-Control-Allow-Origin", "*")
-	w.Header().Add("Access-Control-Allow-Methods", methods)
-	w.Header().Add("Access-Control-Allow-Headers", "origin, x-csrftoken, content-type, accept")
-}
-
 func main() {
 	log.Infof("Starting wwmap")
 

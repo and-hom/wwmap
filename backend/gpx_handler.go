@@ -8,17 +8,18 @@ import (
 	"github.com/ptrv/go-gpx"
 	"regexp"
 	"strings"
+	. "github.com/and-hom/wwmap/lib/http"
 )
 
 type GpxHandler struct{ Handler };
 
 func (this *GpxHandler) DownloadGpx(w http.ResponseWriter, req *http.Request) {
-	corsHeaders(w, "GET")
+	CorsHeaders(w, "GET")
 	pathParams := mux.Vars(req)
 
 	id, err := strconv.ParseInt(pathParams["id"], 10, 64)
 	if err != nil {
-		this.onError(w, err, "Can not parse id", http.StatusBadRequest)
+		OnError(w, err, "Can not parse id", http.StatusBadRequest)
 		return
 	}
 
@@ -26,7 +27,7 @@ func (this *GpxHandler) DownloadGpx(w http.ResponseWriter, req *http.Request) {
 
 	whitewaterPoints, err := this.whiteWaterDao.ListWhiteWaterPointsByRiver(id)
 	if err != nil {
-		this.onError500(w, err, fmt.Sprintf("Can not read whitewater points for river %s", id))
+		OnError500(w, err, fmt.Sprintf("Can not read whitewater points for river %s", id))
 		return
 	}
 
@@ -45,7 +46,7 @@ func (this *GpxHandler) DownloadGpx(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 	if len(whitewaterPoints) == 0 {
-		this.onError(w, nil, fmt.Sprintf("No whitewater points found for river with id %d", id), http.StatusNotFound)
+		OnError(w, nil, fmt.Sprintf("No whitewater points found for river with id %d", id), http.StatusNotFound)
 		return
 	}
 	gpxData := gpx.Gpx{

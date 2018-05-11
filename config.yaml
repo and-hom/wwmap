@@ -12,5 +12,13 @@ notifications:
   email_subject: "Есть новые сообщения о неточностях"
 api:
   bind_to: ":7007"
+tile-cache:
+  bind_to: ":7008"
+  base_dir: "/var/lib/wwmap/t-cache"
+  types:
+    osm:
+      - "http://a.tile.openstreetmap.org/[[z]]/[[x]]/[[y]].png"
+      - "http://b.tile.openstreetmap.org/[[z]]/[[x]]/[[y]].png"
+      - "http://c.tile.openstreetmap.org/[[z]]/[[x]]/[[y]].png"
 content:
   resource_base: "http://wwmap.ru"

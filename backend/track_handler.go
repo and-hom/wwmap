@@ -10,6 +10,7 @@ import (
 	"strconv"
 	. "github.com/and-hom/wwmap/lib/dao"
 	. "github.com/and-hom/wwmap/lib/geo"
+	. "github.com/and-hom/wwmap/lib/http"
 )
 
 type TrackHandler struct {
@@ -21,7 +22,7 @@ func (this *TrackHandler) UploadTrack(w http.ResponseWriter, r *http.Request) {
 
 	err := r.ParseMultipartForm(32 << 20)
 	if err != nil {
-		this.onError500(w, err, "Can not parse form")
+		OnError500(w, err, "Can not parse form")
 		return
 	}
 
@@ -35,34 +36,34 @@ func (this *TrackHandler) UploadTrack(w http.ResponseWriter, r *http.Request) {
 	}
 	routeId, err := this.storage.AddRoute(route)
 	if err != nil {
-		this.onError500(w, err, "Can not create route")
+		OnError500(w, err, "Can not create route")
 		return
 	}
 
 	file, _, err := r.FormFile("geo_file")
 	if err != nil {
-		this.onError500(w, err, "Can not read form file")
+		OnError500(w, err, "Can not read form file")
 		return
 	}
 
 	parser, err := this.geoParser(file)
 	if err != nil {
-		this.onError500(w, err, "Can not parse geo data")
+		OnError500(w, err, "Can not parse geo data")
 		return
 	}
 	tracks, points, err := parser.GetTracksAndPoints()
 	if err != nil {
-		this.onError500(w, err, "Bad geo data symantics")
+		OnError500(w, err, "Bad geo data symantics")
 		return
 	}
 	err = this.storage.AddTracks(routeId, tracks...)
 	if err != nil {
-		this.onError500(w, err, "Can not insert tracks")
+		OnError500(w, err, "Can not insert tracks")
 		return
 	}
 	err = this.storage.AddEventPoints(routeId, points...)
 	if err != nil {
-		this.onError500(w, err, "Can not insert tracks")
+		OnError500(w, err, "Can not insert tracks")
 		return
 	}
 
@@ -84,32 +85,32 @@ func (this *TrackHandler) UploadTrack(w http.ResponseWriter, r *http.Request) {
 }
 
 func (this *TrackHandler) TrackPointsToClickHandler(w http.ResponseWriter, req *http.Request) {
-	corsHeaders(w, "GET, OPTIONS")
+	CorsHeaders(w, "GET, OPTIONS")
 
 	callback := req.FormValue("callback")
 	pathParams := mux.Vars(req)
 
 	x, err := strconv.Atoi(pathParams["x"])
 	if err != nil {
-		this.onError(w, err, "Can not parse x", http.StatusBadRequest)
+		OnError(w, err, "Can not parse x", http.StatusBadRequest)
 		return
 	}
 
 	y, err := strconv.Atoi(pathParams["y"])
 	if err != nil {
-		this.onError(w, err, "Can not parse y", http.StatusBadRequest)
+		OnError(w, err, "Can not parse y", http.StatusBadRequest)
 		return
 	}
 
 	z, err := strconv.ParseUint(pathParams["z"], 10, 32)
 	if err != nil {
-		this.onError(w, err, "Can not parse z", http.StatusBadRequest)
+		OnError(w, err, "Can not parse z", http.StatusBadRequest)
 		return
 	}
 
 	id, err := strconv.ParseInt(pathParams["id"], 10, 64)
 	if err != nil {
-		this.onError(w, err, "Can not parse id", http.StatusBadRequest)
+		OnError(w, err, "Can not parse id", http.StatusBadRequest)
 		return
 	}
 
@@ -118,7 +119,7 @@ func (this *TrackHandler) TrackPointsToClickHandler(w http.ResponseWriter, req *
 	if len(tracks) > 0 {
 		t = tracks[0]
 	} else {
-		this.onError(w, errors.New("Not found"), fmt.Sprintf("Can not find track id = %d", id), http.StatusNotFound)
+		OnError(w, errors.New("Not found"), fmt.Sprintf("Can not find track id = %d", id), http.StatusNotFound)
 		return
 	}
 	track := t
@@ -152,48 +153,48 @@ func (this *TrackHandler) TrackPointsToClickHandler(w http.ResponseWriter, req *
 }
 
 func (this *TrackHandler) EditTrack(w http.ResponseWriter, r *http.Request) {
-	corsHeaders(w, "POST, GET, OPTIONS, PUT, DELETE")
+	CorsHeaders(w, "POST, GET, OPTIONS, PUT, DELETE")
 	err := r.ParseForm()
 	if err != nil {
-		this.onError(w, err, "Can not parse form", http.StatusBadRequest)
+		OnError(w, err, "Can not parse form", http.StatusBadRequest)
 		return
 	}
 
 	pathParams := mux.Vars(r)
 	id, err := strconv.ParseInt(pathParams["id"], 10, 64)
 	if err != nil {
-		this.onError(w, err, "Can not parse id", http.StatusBadRequest)
+		OnError(w, err, "Can not parse id", http.StatusBadRequest)
 		return
 	}
 
 	track, err := this.parseTrackForm(w, r)
 	if err != nil {
-		this.onError(w, err, "Can not parse form", http.StatusBadRequest)
+		OnError(w, err, "Can not parse form", http.StatusBadRequest)
 		return
 	}
 	track.Id = id
 
 	err = this.storage.UpdateTrack(track)
 	if err != nil {
-		this.onError500(w, err, "Can not edit track	")
+		OnError500(w, err, "Can not edit track	")
 		return
 	}
 	this.writeTrackToResponse(id, w)
 }
 
 func (this *TrackHandler) DelTrack(w http.ResponseWriter, r *http.Request) {
-	corsHeaders(w, "POST, GET, OPTIONS, PUT, DELETE")
+	CorsHeaders(w, "POST, GET, OPTIONS, PUT, DELETE")
 
 	pathParams := mux.Vars(r)
 	id, err := strconv.ParseInt(pathParams["id"], 10, 64)
 	if err != nil {
-		this.onError(w, err, "Can not parse id", http.StatusBadRequest)
+		OnError(w, err, "Can not parse id", http.StatusBadRequest)
 		return
 	}
 
 	err = this.storage.DeleteTrack(id)
 	if err != nil {
-		this.onError500(w, err, "Can not remove track")
+		OnError500(w, err, "Can not remove track")
 		return
 	}
 }
@@ -202,15 +203,15 @@ func (this *TrackHandler) writeTrackToResponse(id int64, w http.ResponseWriter) 
 	track := Track{}
 	found, err := this.storage.FindTrack(id, &track)
 	if err != nil {
-		this.onError500(w, err, "Can not find")
+		OnError500(w, err, "Can not find")
 		return
 	}
 	if !found {
-		this.onError(w, fmt.Errorf("Track with id %d does not exist", id), "Not found", http.StatusNotFound)
+		OnError(w, fmt.Errorf("Track with id %d does not exist", id), "Not found", http.StatusNotFound)
 	}
 	bytes, err := json.Marshal(track)
 	if err != nil {
-		this.onError500(w, err, "Can not marshal")
+		OnError500(w, err, "Can not marshal")
 		return
 	}
 	w.Write(bytes)
@@ -220,7 +221,7 @@ func (this *TrackHandler) parseTrackForm(w http.ResponseWriter, r *http.Request)
 	title := r.FormValue("title")
 	tType, err := ParseTrackType(r.FormValue("type"))
 	if err != nil {
-		this.onError(w, err, "Can not parse form", http.StatusBadRequest)
+		OnError(w, err, "Can not parse form", http.StatusBadRequest)
 		return Track{}, err
 	}
 	track := Track{

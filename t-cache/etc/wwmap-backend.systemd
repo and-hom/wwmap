@@ -1,0 +1,23 @@
+[Unit]
+Description=Whitewater map tiles cache
+After=syslog.target
+After=network.target
+After=nginx.service
+After=postgresql.service
+Requires=postgresql.service
+
+[Service]
+Type=simple
+PIDFile=/var/run/wwmap-t-cache.pid
+WorkingDirectory=/var/lib/wwmap/t-cache
+EnvironmentFile=/var/lib/wwmap/env
+
+User=wwmap
+Group=wwmap
+
+Environment=RACK_ENV=production
+
+OOMScoreAdjust=-1000
+
+ExecStart=/usr/bin/wwmap-t-cache
+TimeoutSec=300

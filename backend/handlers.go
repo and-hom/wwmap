@@ -4,6 +4,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"net/http"
 	. "github.com/and-hom/wwmap/lib/geo"
+	. "github.com/and-hom/wwmap/lib/http"
 )
 
 type Handler struct {
@@ -11,7 +12,7 @@ type Handler struct {
 }
 
 func (this *Handler) TileHandler(w http.ResponseWriter, req *http.Request) {
-	corsHeaders(w, "GET, OPTIONS")
+	CorsHeaders(w, "GET, OPTIONS")
 
 	callback, bbox, err := this.tileParams(w, req)
 	if err != nil {

@@ -2,8 +2,8 @@ package config
 
 import (
 	"gopkg.in/yaml.v2"
+	"os/user"
 	log "github.com/Sirupsen/logrus"
-	"gitlab.com/axet/desktop/go"
 	"io/ioutil"
 	"text/template"
 	"bytes"
@@ -32,12 +32,19 @@ type Content struct {
 	ResourceBase string `yaml:"resource_base"`
 }
 
+type TileCache struct {
+	BindTo  string `yaml:"bind_to"`
+	BaseDir string `yaml:"base_dir"`
+	Types   map[string][]string `yaml:"types"`
+}
+
 type Configuration struct {
 	DbConnString         string `yaml:"db-connection-string"`
 	ClusterizationParams ClusterizationParams `yaml:"clusterization"`
 	Notifications        Notifications `yaml:"notifications"`
 	Api                  Api `yaml:"api"`
 	Content              Content `yaml:"content"`
+	TileCache            TileCache `yaml:"tile-cache"`
 }
 
 func loadConf(filename string) (Configuration, error) {
@@ -85,7 +92,11 @@ func Load(configLocationOverride string) Configuration {
 		}
 	}
 
-	p1 := fmt.Sprintf("%s/.wwmap/config.yaml", desktop.GetHomeFolder())
+	currentUser, err := user.Current()
+	if err != nil {
+		log.Fatal(err)
+	}
+	p1 := fmt.Sprintf("%s/.wwmap/config.yaml", currentUser.HomeDir)
 	log.Infof("Try to load config from %s", p1)
 	c1, err := loadConf(p1)
 	if err == nil {

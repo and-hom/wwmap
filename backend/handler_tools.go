@@ -10,6 +10,7 @@ import (
 	. "github.com/and-hom/wwmap/lib/geoparser"
 	"encoding/json"
 	"github.com/and-hom/wwmap/lib/geo"
+	. "github.com/and-hom/wwmap/lib/http"
 	"strconv"
 )
 
@@ -27,7 +28,7 @@ func (this *Handler) JsonStr(f interface{}, _default string) string {
 }
 
 func (this *Handler) CorsGetOptionsStub(w http.ResponseWriter, r *http.Request) {
-	corsHeaders(w, "POST, GET, OPTIONS, PUT, DELETE")
+	CorsHeaders(w, "POST, GET, OPTIONS, PUT, DELETE")
 	// for cors only
 }
 
@@ -35,7 +36,7 @@ func (this *Handler) bboxFormValue(w http.ResponseWriter, req *http.Request) (ge
 	bboxStr := req.FormValue("bbox")
 	bbox, err := geo.NewBbox(bboxStr)
 	if err != nil {
-		this.onError(w, err, fmt.Sprintf("Can not parse bbox: %v", bbox), http.StatusBadRequest)
+		OnError(w, err, fmt.Sprintf("Can not parse bbox: %v", bbox), http.StatusBadRequest)
 		return geo.Bbox{}, err
 	}
 	return bbox, nil
@@ -62,22 +63,13 @@ func (this *Handler) tileParamsZ(w http.ResponseWriter, req *http.Request) (stri
 	zoomStr := req.FormValue("zoom")
 	zoom, err := strconv.Atoi(zoomStr)
 	if err != nil {
-		this.onError(w, err, fmt.Sprintf("Can not parse zoom value: %s", zoomStr), http.StatusBadRequest)
+		OnError(w, err, fmt.Sprintf("Can not parse zoom value: %s", zoomStr), http.StatusBadRequest)
 		return "", geo.Bbox{}, 0, err
 	}
 
 	return callback, bbox, zoom, nil
 }
 
-func (this *Handler) onError(w http.ResponseWriter, err error, msg string, statusCode int) {
-	errStr := fmt.Sprintf("%s: %v", msg, err)
-	log.Errorf(errStr)
-	http.Error(w, errStr, statusCode)
-}
-
-func (this *Handler) onError500(w http.ResponseWriter, err error, msg string) {
-	this.onError(w, err, msg, http.StatusInternalServerError)
-}
 
 func (this *Handler) CloseAndRemove(f *os.File) {
 	f.Close()
