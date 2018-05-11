@@ -13,12 +13,14 @@ import (
 	"github.com/pkg/errors"
 	"path/filepath"
 	"io/ioutil"
+	"sync"
 )
 
 type Pos struct {
 	x string
 	y string
 	z string
+	t string
 }
 
 type Mapping struct {
@@ -36,9 +38,10 @@ type Handler struct {
 	baseDir    string
 	urlMapping map[string]Mapping
 	client     *http.Client
+	mutex      sync.Mutex
 }
 
-func (this *Handler) fetch(w http.ResponseWriter, url string) (string, error) {
+func (this *Handler) fetchUrlToTmpFile(w http.ResponseWriter, url string) (string, error) {
 	log.Info("Fetch ", url)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -75,40 +78,57 @@ func (this *Handler) fetch(w http.ResponseWriter, url string) (string, error) {
 	return f.Name(), nil
 }
 
+func (this *Handler) fetch(w http.ResponseWriter, pos Pos) {
+	path := this.cachePath(pos)
+
+	this.mutex.Lock()
+	defer this.mutex.Unlock()
+
+	_, err := os.Stat(path)
+	if err == nil {
+		log.Debug(path + " was concurrently downloaded by somebody else")
+		return
+	}
+
+	mapping, found := this.urlMapping[pos.t]
+	if !found {
+		OnError(w, errors.New(pos.t), "Can not find mapping for type", http.StatusBadRequest)
+		return
+	}
+	url := mapping.mkUrl(pos.z, pos.x, pos.y)
+	tmpFile, err := this.fetchUrlToTmpFile(w, url)
+	if err != nil {
+		return
+	}
+	err = os.MkdirAll(filepath.Dir(path), os.ModeDir | 0777)
+	if err != nil {
+		OnError500(w, err, "Can not create parent directory for file " + path)
+		return
+	}
+	err = os.Rename(tmpFile, path)
+	if err != nil {
+		OnError500(w, err, "Can not create file " + path)
+		return
+	}
+	defer os.Remove(tmpFile)
+}
+
 func (this *Handler) tile(w http.ResponseWriter, req *http.Request) {
 	CorsHeaders(w, "GET, HEAD")
 
 	pathParams := mux.Vars(req)
 
-	t := pathParams["type"]
-	x := pathParams["x"]
-	y := pathParams["y"]
-	z := pathParams["z"]
+	pos := Pos{
+		t : pathParams["type"],
+		x : pathParams["x"],
+		y : pathParams["y"],
+		z : pathParams["z"],
+	}
 
-	path := this.cachePath(t, z, x, y)
+	path := this.cachePath(pos)
 	_, err := os.Stat(path)
 	if os.IsNotExist(err) {
-		mapping, found := this.urlMapping[t]
-		if !found {
-			OnError(w, errors.New(t), "Can not find mapping for type", http.StatusBadRequest)
-			return
-		}
-		url := mapping.mkUrl(z, x, y)
-		tmpFile, err := this.fetch(w, url)
-		if err != nil {
-			return
-		}
-		err = os.MkdirAll(filepath.Dir(path), os.ModeDir | 0777)
-		if err != nil {
-			OnError500(w, err, "Can not create parent directory for file " + path)
-			return
-		}
-		err = os.Rename(tmpFile, path)
-		if err != nil {
-			OnError500(w, err, "Can not create file " + path)
-			return
-		}
-		defer os.Remove(tmpFile)
+		this.fetch(w, pos)
 	} else if err != nil {
 		OnError500(w, err, "Can not get stat for tile file " + path)
 		return
@@ -123,8 +143,8 @@ func (this *Handler) tile(w http.ResponseWriter, req *http.Request) {
 	io.Copy(w, f)
 }
 
-func (this *Handler) cachePath(t string, z string, x string, y string) string {
-	return this.baseDir + "/" + t + "/" + z + "/" + x + "/" + y + ".png"
+func (this *Handler) cachePath(pos Pos) string {
+	return this.baseDir + "/" + pos.t + "/" + pos.z + "/" + pos.x + "/" + pos.y + ".png"
 }
 
 func main() {
