@@ -258,8 +258,13 @@ func main() {
 	r.HandleFunc("/{type}/{z}/{x}/{y}.png", handler.tile).Methods("GET", "HEAD")
 
 	log.Infof("Starting tiles server on %v+", configuration.BindTo)
-	http.Handle("/", r)
-	err := http.ListenAndServe(configuration.BindTo, http.DefaultServeMux)
+
+	srv := &http.Server{
+		ReadTimeout: 5 * time.Second,
+		Addr:configuration.BindTo,
+		Handler: r,
+	}
+	err := srv.ListenAndServe()
 	if err != nil {
 		log.Fatalf("Can not start server: %v", err)
 	}
