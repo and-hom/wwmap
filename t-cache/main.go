@@ -13,7 +13,6 @@ import (
 	"github.com/pkg/errors"
 	"path/filepath"
 	"io/ioutil"
-	"sync"
 )
 
 type Pos struct {
@@ -38,7 +37,7 @@ type Handler struct {
 	baseDir    string
 	urlMapping map[string]Mapping
 	client     *http.Client
-	mutex      sync.Mutex
+	semaphore  chan string
 }
 
 func (this *Handler) fetchUrlToTmpFile(w http.ResponseWriter, url string) (string, error) {
@@ -81,8 +80,10 @@ func (this *Handler) fetchUrlToTmpFile(w http.ResponseWriter, url string) (strin
 func (this *Handler) fetch(w http.ResponseWriter, pos Pos) {
 	path := this.cachePath(pos)
 
-	this.mutex.Lock()
-	defer this.mutex.Unlock()
+	this.semaphore <- path
+	defer func() {
+		<-this.semaphore
+	}()
 
 	_, err := os.Stat(path)
 	if err == nil {
@@ -167,6 +168,7 @@ func main() {
 		baseDir:configuration.BaseDir,
 		urlMapping: urlMapping,
 		client: &http.Client{},
+		semaphore: make(chan string, 10),
 	}
 
 	r := mux.NewRouter()
