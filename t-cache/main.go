@@ -15,7 +15,6 @@ import (
 	"io/ioutil"
 	"time"
 	"sync"
-	"fmt"
 )
 
 type Pos struct {
@@ -25,23 +24,60 @@ type Pos struct {
 	t string
 }
 
-type Mapping struct {
-	pattern []*fasttemplate.Template
+type CdnUrlPattern struct {
+	template  *fasttemplate.Template
+	semaphore chan int
 }
 
-func (this *Mapping) mkUrl(z string, x string, y string) string {
-	l := len(this.pattern)
+func (this CdnUrlPattern) mkUrl(pos Pos) string {
+	return this.template.ExecuteString(map[string]interface{}{"x":pos.x, "y":pos.y, "z":pos.z, })
+}
+
+type Mapping struct {
+	cdn []CdnUrlPattern
+}
+
+func (this *Mapping) mkUrl(pos Pos) LockableUrlHolder {
+	l := len(this.cdn)
 	idx := rand.Intn(l)
-	pattern := this.pattern[idx]
-	return pattern.ExecuteString(map[string]interface{}{"x":x, "y":y, "z":z, })
+	cdn := this.cdn[idx]
+
+	cdn.semaphore <- 0
+	return LockableUrlHolder{
+		Url: cdn.mkUrl(pos),
+		Unlock: func() {
+			<-cdn.semaphore
+		},
+	}
+}
+
+type LockableUrlHolder struct {
+	Url    string
+	Unlock func()
+}
+
+type PathLock struct {
+	key        string
+	mutexByUrl *sync.Map
+	mutex      *sync.Mutex
+}
+
+func (this *PathLock) Lock() {
+	foundUrlMutex, _ := this.mutexByUrl.LoadOrStore(this.key, &sync.Mutex{})
+	this.mutex = foundUrlMutex.(*sync.Mutex)
+	this.mutex.Lock()
+}
+
+func (this *PathLock) Unlock() {
+	this.mutexByUrl.Delete(this.key)
+	this.mutex.Unlock()
 }
 
 type Handler struct {
 	baseDir    string
 	urlMapping map[string]Mapping
 	client     *http.Client
-	semaphore  chan string
-	urlMutex   sync.Map
+	mutexByUrl sync.Map
 }
 
 func (this *Handler) fetchUrlToTmpFile(w http.ResponseWriter, url string) (string, error) {
@@ -84,28 +120,18 @@ func (this *Handler) fetchUrlToTmpFile(w http.ResponseWriter, url string) (strin
 func (this *Handler) fetch(w http.ResponseWriter, pos Pos) {
 	path := this.cachePath(pos)
 
-	this.semaphore <- path
-	defer func() {
-		<-this.semaphore
-	}()
+	pathLock := PathLock{key:path, mutexByUrl:&this.mutexByUrl}
+	pathLock.Lock()
+	defer pathLock.Unlock()
 
 	mapping, found := this.urlMapping[pos.t]
-	url := mapping.mkUrl(pos.z, pos.x, pos.y)
-
-	foundUrlMutex,_ := this.urlMutex.LoadOrStore(path, &sync.Mutex{})
-	urlMutex := foundUrlMutex.(*sync.Mutex)
-	urlMutex.Lock()
-	defer func() {
-		this.urlMutex.Delete(path)
-		urlMutex.Unlock()
-	}()
+	url := mapping.mkUrl(pos)
+	defer url.Unlock()
 
 	_, err := os.Stat(path)
 	if err == nil {
 		log.Info(path + " was concurrently downloaded by somebody else")
 		return
-	} else {
-		fmt.Println(err)
 	}
 
 	time.Sleep(time.Second)
@@ -114,7 +140,7 @@ func (this *Handler) fetch(w http.ResponseWriter, pos Pos) {
 		OnError(w, errors.New(pos.t), "Can not find mapping for type", http.StatusBadRequest)
 		return
 	}
-	tmpFile, err := this.fetchUrlToTmpFile(w, url)
+	tmpFile, err := this.fetchUrlToTmpFile(w, url.Url)
 	if err != nil {
 		return
 	}
@@ -129,8 +155,6 @@ func (this *Handler) fetch(w http.ResponseWriter, pos Pos) {
 		return
 	}
 	defer os.Remove(tmpFile)
-
-	fmt.Println("Finish")
 }
 
 func (this *Handler) tile(w http.ResponseWriter, req *http.Request) {
@@ -167,29 +191,38 @@ func (this *Handler) cachePath(pos Pos) string {
 	return this.baseDir + "/" + pos.t + "/" + pos.z + "/" + pos.x + "/" + pos.y + ".png"
 }
 
-func main() {
-	log.Infof("Starting wwmap")
-
-	configuration := config.Load("").TileCache
-	urlMapping := make(map[string]Mapping)
+func typeCdnMapping(configuration config.TileCache) map[string]Mapping {
+	typeCdnMapping := make(map[string]Mapping)
 	for t, u := range configuration.Types {
 		if len(u) == 0 {
 			log.Warnf("No patterns for type %s", t)
 			continue
 		}
-		p := make([]*fasttemplate.Template, len(u))
+
+		p := make([]CdnUrlPattern, len(u))
 		for i, urlPatternStr := range u {
-			p[i] = fasttemplate.New(urlPatternStr, "[[", "]]")
+			p[i] = CdnUrlPattern{
+				template: fasttemplate.New(urlPatternStr, "[[", "]]"),
+				semaphore:make(chan int, 3),
+			}
 		}
-		urlMapping[t] = Mapping{pattern:p}
+
+		typeCdnMapping[t] = Mapping{cdn:p}
 	}
+	return typeCdnMapping
+}
+
+func main() {
+	log.Infof("Starting wwmap")
+
+	configuration := config.Load("").TileCache
+
 	handler := Handler{
 		baseDir:configuration.BaseDir,
-		urlMapping: urlMapping,
+		urlMapping: typeCdnMapping(configuration),
 		client: &http.Client{
 			Timeout: 4 * time.Second,
 		},
-		semaphore: make(chan string, 10),
 	}
 
 	r := mux.NewRouter()
