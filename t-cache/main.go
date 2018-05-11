@@ -12,6 +12,7 @@ import (
 	"github.com/valyala/fasttemplate"
 	"github.com/pkg/errors"
 	"path/filepath"
+	"io/ioutil"
 )
 
 type Pos struct {
@@ -37,46 +38,41 @@ type Handler struct {
 	client     *http.Client
 }
 
-func (this *Handler) fetch(w http.ResponseWriter, path string, url string) error {
+func (this *Handler) fetch(w http.ResponseWriter, url string) (string, error) {
 	log.Info("Fetch ", url)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		OnError500(w, err, "Can not create request for " + url)
-		return err
+		return "", err
 	}
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/601.7.7 (KHTML, like Gecko) Version/9.1.2 Safari/601.7.7")
 
 	resp, err := this.client.Do(req)
 	if err != nil {
-		OnError500(w, err, "Can not fetch tile file " + path)
-		return err
+		OnError500(w, err, "Can not fetch tile file " + url)
+		return "", err
 	}
 	if resp.StatusCode != http.StatusOK {
 		err := errors.Errorf("GET %s returned %d", url, resp.StatusCode)
-		OnError500(w, err, "Can not fetch tile file " + path)
-		return err
+		OnError500(w, err, "Can not fetch tile file " + url)
+		return "", err
 	}
 	defer resp.Body.Close()
 
-	err = os.MkdirAll(filepath.Dir(path), os.ModeDir | 0777)
+	f, err := ioutil.TempFile(os.TempDir(), "wwmap")
 	if err != nil {
-		OnError500(w, err, "Can not create parent directory for file " + path)
-		return err
-	}
-
-	f, err := os.Create(path)
-	if err != nil {
-		OnError500(w, err, "Can not create tile file " + path)
-		return err
+		OnError500(w, err, "Can not create tile file ")
+		return "", err
 	}
 	defer f.Close()
 
 	_, err = io.Copy(f, resp.Body)
 	if err != nil {
-		OnError500(w, err, "Can not write tile file " + path)
-		return err
+		OnError500(w, err, "Can not write tile file " + f.Name())
+		return "", err
 	}
-	return nil
+
+	return f.Name(), nil
 }
 
 func (this *Handler) tile(w http.ResponseWriter, req *http.Request) {
@@ -98,9 +94,21 @@ func (this *Handler) tile(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 		url := mapping.mkUrl(z, x, y)
-		if this.fetch(w, path, url) != nil {
+		tmpFile, err := this.fetch(w, url)
+		if err != nil {
 			return
 		}
+		err = os.MkdirAll(filepath.Dir(path), os.ModeDir | 0777)
+		if err != nil {
+			OnError500(w, err, "Can not create parent directory for file " + path)
+			return
+		}
+		err = os.Rename(tmpFile, path)
+		if err != nil {
+			OnError500(w, err, "Can not create file " + path)
+			return
+		}
+		defer os.Remove(tmpFile)
 	} else if err != nil {
 		OnError500(w, err, "Can not get stat for tile file " + path)
 		return
