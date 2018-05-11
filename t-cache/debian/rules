@@ -6,5 +6,5 @@ build:
 	GOPATH="$(HOME)/.go" go build
 
 override_dh_auto_install:
-	install -D -m 0755 backend $$(pwd)/debian/wwmap-t-cache/usr/bin/wwmap-t-cache
+	install -D -m 0755 t-cache $$(pwd)/debian/wwmap-t-cache/usr/bin/wwmap-t-cache
 	install -D -m 0644 etc/wwmap-t-cache.systemd $$(pwd)/debian/wwmap-t-cache/lib/systemd/system/wwmap-t-cache.service
