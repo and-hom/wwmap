@@ -188,7 +188,8 @@ func (this *Handler) tile(w http.ResponseWriter, req *http.Request) {
 	}
 	modTime := stat.ModTime().In(GMT_LOC)
 	w.Header().Add("Last-Modified", modTime.Format(http.TimeFormat))
-	w.Header().Add("Expires", modTime.Add(365 * 24 * time.Hour).Format(http.TimeFormat))
+	w.Header().Add("Expires", modTime.Add(24 * time.Hour).Format(http.TimeFormat))
+	w.Header().Add("Cache-Control", "public")
 
 	ifModSinceStr := req.Header.Get("If-Modified-Since")
 	ifModSince, err := time.Parse(http.TimeFormat, ifModSinceStr)
