@@ -23,20 +23,35 @@
         });
     }
 
-    function init() {
-        var OsmLayer = function () {
-            var layer = new ymaps.Layer(STANDARD_TILES, { projection: ymaps.projection.sphericalMercator });
+    function addLayer(key, name, copyright, tiles, lower_scale, upper_scale) {
+        if (typeof(lower_scale) == "undefined") {
+            lower_scale = 0
+        }
+        if (typeof(upper_scale) == "undefined") {
+            upper_scale = 18
+        }
+        var layer = function () {
+            var layer = new ymaps.Layer(tiles, {
+                projection: ymaps.projection.sphericalMercator,
+            });
             //  Копирайты.
             layer.getCopyrights = function () {
-                return ymaps.vow.resolve('OpenStreetMap contributors, CC-BY-SA');
+                return ymaps.vow.resolve(copyright);
             };
             layer.getZoomRange = function () {
-                return ymaps.vow.resolve([0, 18]);
+                return ymaps.vow.resolve([lower_scale, upper_scale]);
             };
             return layer;
         };
-        ymaps.layer.storage.add('osm#standard', OsmLayer)
-        ymaps.mapType.storage.add('osm#standard', new ymaps.MapType('OSM', ['osm#standard']));
+        ymaps.layer.storage.add(key, layer)
+        ymaps.mapType.storage.add(key, new ymaps.MapType(name, [key]));
+    }
+
+    function init() {
+        addLayer('osm#standard', 'OSM', 'OpenStreetMap contributors, CC-BY-SA', OSM_TILES)
+        addLayer('google#satellite', 'Google Satelite', 'Изображения © DigitalGlobe,CNES / Airbus, 2018,Картографические данные © Google, 2018', GOOGLE_SAT_TILES)
+        addLayer('ggc#standard', 'ГГЦ', 'ГосГисЦентр', GGC_TILES, 0, 15)
+//        addLayer('marshruty.ru#genshtab', 'Маршруты.ру', 'marshruty.ru', MARSHRUTY_RU_TILES, 8)
 
         positionAndZoom = getLastPositionAndZoom()
 
@@ -51,7 +66,7 @@
 
         myMap.controls.add(
             new ymaps.control.TypeSelector(
-                ['osm#standard', 'yandex#satellite']
+                ['osm#standard', 'ggc#standard', 'yandex#satellite', 'google#satellite', 'marshruty.ru#genshtab']
             )
         );
 

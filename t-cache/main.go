@@ -9,31 +9,46 @@ import (
 	. "github.com/and-hom/wwmap/lib/http"
 	"io"
 	"math/rand"
-	"github.com/valyala/fasttemplate"
+	"text/template"
 	"github.com/pkg/errors"
 	"path/filepath"
 	"io/ioutil"
 	"time"
 	"sync"
 	"fmt"
+	"bytes"
+	"strconv"
 )
 
 var GMT_LOC, _ = time.LoadLocation("UTC")
 
 type Pos struct {
-	x string
-	y string
-	z string
+	x int
+	y int
+	z int
 	t string
 }
 
+func (this Pos) String() string {
+	return fmt.Sprintf("%s/%d/%d/%d", this.t, this.z, this.x, this.y);
+}
+
 type CdnUrlPattern struct {
-	template  *fasttemplate.Template
+	template  *template.Template
 	semaphore chan int
 }
 
 func (this CdnUrlPattern) mkUrl(pos Pos) string {
-	return this.template.ExecuteString(map[string]interface{}{"x":pos.x, "y":pos.y, "z":pos.z, })
+	urlStrBuf := bytes.Buffer{}
+	err := this.template.Execute(&urlStrBuf, map[string]interface{}{
+		"x":pos.x,
+		"y":pos.y,
+		"z":pos.z,
+	})
+	if err != nil {
+		log.Error("Can not create url", pos, err)
+	}
+	return urlStrBuf.String()
 }
 
 type Mapping struct {
@@ -99,7 +114,7 @@ func (this *Handler) fetchUrlToTmpFile(w http.ResponseWriter, url string) (strin
 	}
 	if resp.StatusCode != http.StatusOK {
 		err := errors.Errorf("GET %s returned %d", url, resp.StatusCode)
-		OnError500(w, err, "Can not fetch tile file " + url)
+		OnError(w, err, "Can not fetch tile file " + url, resp.StatusCode)
 		return "", err
 	}
 	defer resp.Body.Close()
@@ -167,18 +182,30 @@ func (this *Handler) tile(w http.ResponseWriter, req *http.Request) {
 
 	pathParams := mux.Vars(req)
 
+	x, err := strconv.ParseInt(pathParams["x"], 10, 32)
+	if err != nil {
+		OnError(w, err, "x should be an integer", http.StatusBadRequest)
+	}
+	y, err := strconv.ParseInt(pathParams["y"], 10, 32)
+	if err != nil {
+		OnError(w, err, "y should be an integer", http.StatusBadRequest)
+	}
+	z, err := strconv.ParseInt(pathParams["z"], 10, 32)
+	if err != nil {
+		OnError(w, err, "z should be an integer", http.StatusBadRequest)
+	}
 	pos := Pos{
 		t : pathParams["type"],
-		x : pathParams["x"],
-		y : pathParams["y"],
-		z : pathParams["z"],
+		x : int(x),
+		y : int(y),
+		z : int(z),
 	}
 
 	path := this.cachePath(pos)
-	_, err := os.Stat(path)
+	_, err = os.Stat(path)
 	if os.IsNotExist(err) {
 		err := this.fetch(w, pos)
-		if err!=nil {
+		if err != nil {
 			return
 		}
 	} else if err != nil {
@@ -222,11 +249,19 @@ func (this *Handler) tile(w http.ResponseWriter, req *http.Request) {
 }
 
 func (this *Handler) cachePath(pos Pos) string {
-	return this.baseDir + "/" + pos.t + "/" + pos.z + "/" + pos.x + "/" + pos.y + ".png"
+	return fmt.Sprintf("%s/%s/%d/%d/%d.png", this.baseDir, pos.t, pos.z, pos.x, pos.y)
 }
 
 func typeCdnMapping(configuration config.TileCache) map[string]Mapping {
 	typeCdnMapping := make(map[string]Mapping)
+	funcMap := template.FuncMap{
+		"div": func(x int, y int) int {
+			return x / y
+		},
+		"sum": func(x int, y int) int {
+			return x + y
+		},
+	}
 	for t, u := range configuration.Types {
 		if len(u) == 0 {
 			log.Warnf("No patterns for type %s", t)
@@ -235,8 +270,12 @@ func typeCdnMapping(configuration config.TileCache) map[string]Mapping {
 
 		p := make([]CdnUrlPattern, len(u))
 		for i, urlPatternStr := range u {
+			tmpl, err := template.New(fmt.Sprintf("%s-%d", t, i)).Funcs(funcMap).Parse(urlPatternStr)
+			if err != nil {
+				log.Fatalf("Can not process template %s %v+", urlPatternStr, err)
+			}
 			p[i] = CdnUrlPattern{
-				template: fasttemplate.New(urlPatternStr, "[[", "]]"),
+				template: tmpl,
 				semaphore:make(chan int, 5),
 			}
 		}
