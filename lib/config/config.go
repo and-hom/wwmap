@@ -5,11 +5,7 @@ import (
 	"os/user"
 	log "github.com/Sirupsen/logrus"
 	"io/ioutil"
-	"text/template"
-	"bytes"
-	"os"
 	"fmt"
-	"strings"
 )
 
 type ClusterizationParams struct {
@@ -55,30 +51,10 @@ func loadConf(filename string) (Configuration, error) {
 		return Configuration{}, err
 	}
 
-	t, err := template.New("config").Parse(string(data))
-	if err != nil {
-		log.Errorf("Template error for %s: %v\nConfiguration file contents:\n%s", filename, err, string(data))
-		return Configuration{}, err
-	}
-
-	templatizedConfig := bytes.Buffer{}
-
-	env := make(map[string]string)
-	environ := os.Environ()
-	for _, s := range environ {
-		parts := strings.Split(s, "=")
-		env[parts[0]] = parts[1]
-	}
-	tErr := t.Execute(&templatizedConfig, env)
-	if tErr != nil {
-		log.Errorf("Template error for %s: %v", filename, err)
-		return Configuration{}, err
-	}
-
 	config := Configuration{}
-	uErr := yaml.Unmarshal(templatizedConfig.Bytes(), &config)
+	uErr := yaml.Unmarshal(data, &config)
 	if uErr != nil {
-		log.Errorf("Can not unmarshal %s: %v.\nConfiguration file contents are: %s", filename, uErr, templatizedConfig.String())
+		log.Errorf("Can not unmarshal %s: %v.\nConfiguration file contents are: %s", filename, uErr, string(data))
 		return Configuration{}, uErr
 	}
 	return config, nil
