@@ -21,7 +21,7 @@ tile-cache:
       - "http://b.tile.openstreetmap.org/{{.z}}/{{.x}}/{{.y}}.png"
       - "http://c.tile.openstreetmap.org/{{.z}}/{{.x}}/{{.y}}.png"
     ggc:
-      - "http://maps.melda.ru/pub/ggc/{{if lt .z 13}}2km.png{{else}}{{if lt .z 14}}1km.png{{else}}{{if lt .z 15}}500m.png{{else}}250m.png{{end}}{{end}}{{end}}/z{{sum .z 1}}/{{div .x 1024}}/x{{.x}}/{{div .y 1024}}/y{{.y}}.png"
+      - "http://maps.melda.ru/pub/ggc/{{if lt .z 12}}2km.png{{else}}{{if lt .z 13}}1km.png{{else}}250m.png{{end}}{{end}}/z{{sum .z 1}}/{{div .x 1024}}/x{{.x}}/{{div .y 1024}}/y{{.y}}.png"
     marshruty-ru:
       - "http://maps.marshruty.ru/ml.ashx?al=1&x={{.x}}&y={{.y}}&z={{.z}}"
 content:
