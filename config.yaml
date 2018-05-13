@@ -1,8 +1,8 @@
 db-connection-string: "postgres://wwmap:$WWMAP_POSTGRES_PASSWORD@localhost:5432/wwmap?sslmode=require"
 clusterization:
-    barrier_ratio: 0.002
-    min_dist_ratio: 0.1
-    single_point_cluster_max_zoom: 6
+  barrier_ratio: 0.002
+  min_dist_ratio: 0.1
+  single_point_cluster_max_zoom: 6
 
 
 notifications:
@@ -22,3 +22,7 @@ tile-cache:
       - "http://c.tile.openstreetmap.org/[[z]]/[[x]]/[[y]].png"
 content:
   resource_base: "http://wwmap.ru"
+
+backup:
+  email: "info@wwmap.ru"
+  password: ""

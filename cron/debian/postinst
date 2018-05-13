@@ -1,1 +1,4 @@
 #!/bin/sh
+
+mkdir -p /var/lib/wwmap/backup
+chown wwmap:wwmap /var/lib/wwmap/backup

@@ -10,3 +10,4 @@ build: build-notifier
 
 override_dh_auto_install:
 	install -D -m 0755 notifier/notifier $$(pwd)/debian/wwmap-cron/usr/bin/wwmap-notifier
+	install -D -m 0755 backup/backup.sh $$(pwd)/debian/wwmap-cron/usr/bin/wwmap-backup
