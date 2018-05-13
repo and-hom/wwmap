@@ -66,7 +66,7 @@
 
         myMap.controls.add(
             new ymaps.control.TypeSelector(
-                ['osm#standard', 'ggc#standard', 'yandex#satellite', 'google#satellite', 'marshruty.ru#genshtab']
+                ['osm#standard', 'ggc#standard', 'yandex#satellite', 'google#satellite']
             )
         );
 
