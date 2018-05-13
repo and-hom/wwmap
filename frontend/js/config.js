@@ -6,10 +6,11 @@ const LAST_MAP_TYPE_COOKIE_NAME = "last-map-type";
 const apiBase = "http://localhost:7007";
 // end
 
-const OSM_TILES = 'http://localhost:7008/osm/%z/%x/%y.png';
-const GGC_TILES = 'http://localhost:7008/ggc/%z/%x/%y.png';
+const OSM_TILES = 'http://wwmap.ru:7008/osm/%z/%x/%y.png';
+const GGC_TILES = 'http://wwmap.ru:7008/ggc/%z/%x/%y.png';
 const GOOGLE_SAT_TILES = 'http://khms' + Math.floor(Math.random()) % 4 + '.google.com/kh/v=794&src=app&x=%x&y=%y&z=%z&s=Gal';
-const MARSHRUTY_RU_TILES = 'http://localhost:7008/marshruty-ru/%z/%x/%y.png';
+const MARSHRUTY_RU_TILES = 'http://wwmap.ru:7008/marshruty-ru/%z/%x/%y.png';
+
 const THUNDERFOREST_OUTDOOR_TILES = 'http://a.tile.thunderforest.com/outdoors/%z/%x/%y.png';
 const THUNDERFOREST_LANDSCAPE_TILES = 'http://a.tile.thunderforest.com/landscape/%z/%x/%y.png';
 
