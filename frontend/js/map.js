@@ -50,7 +50,7 @@
     function init() {
         addLayer('osm#standard', 'OSM', 'OpenStreetMap contributors, CC-BY-SA', OSM_TILES)
         addLayer('google#satellite', 'Google Satelite', 'Изображения © DigitalGlobe,CNES / Airbus, 2018,Картографические данные © Google, 2018', GOOGLE_SAT_TILES)
-        addLayer('ggc#standard', 'ГГЦ', 'ГосГисЦентр', GGC_TILES, 0, 15)
+//        addLayer('ggc#standard', 'ГГЦ', 'ГосГисЦентр', GGC_TILES, 0, 15)
 //        addLayer('marshruty.ru#genshtab', 'Маршруты.ру', 'marshruty.ru', MARSHRUTY_RU_TILES, 8)
 
         positionAndZoom = getLastPositionAndZoom()
@@ -65,8 +65,12 @@
         LabelBalloonContentLayout = ymaps.templateLayoutFactory.createClass($('#bubble_template').html());
 
         myMap.controls.add(
-            new ymaps.control.TypeSelector(
-                ['osm#standard', 'ggc#standard', 'yandex#satellite', 'google#satellite']
+            new ymaps.control.TypeSelector([
+                'osm#standard',
+//                'ggc#standard',
+                'yandex#satellite',
+                'google#satellite'
+                ]
             )
         );
 
