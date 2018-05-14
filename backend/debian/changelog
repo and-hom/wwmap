@@ -1,3 +1,9 @@
+wwmap-backend (0.0.11) unstable; urgency=medium
+
+  * disable templates in config
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Mon, 14 May 2018 18:29:05 +0300
+
 wwmap-backend (0.0.10) unstable; urgency=medium
 
   * Correcly parse leter categories from db.

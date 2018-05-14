@@ -1,3 +1,11 @@
+wwmap-t-cache (0.0.2) unstable; urgency=medium
+
+  * Tile config changed. Use standard template engine with ariphmetical operations
+  * Locking for file download: 3 threads per cdn url. Do not download same picture with several threads
+  * Expires, Last-Modified and If-Last-Modified headers support. HEAD method
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Mon, 14 May 2018 18:30:46 +0300
+
 wwmap-t-cache (0.0.1) unstable; urgency=medium
 
   * Initial release.
