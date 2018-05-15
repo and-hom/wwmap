@@ -23,7 +23,11 @@
         });
     }
 
-    function addLayer(key, name, copyright, tiles, lower_scale, upper_scale) {
+    function addCachedLayer(key, name, copyright, mapId, lower_scale, upper_scale) {
+        return addLayer(key, name, copyright, CACHED_TILES_TEMPLATE.replace('###', mapId), lower_scale, upper_scale)
+    }
+
+    function addLayer(key, name, copyright, tilesUrlTemplate, lower_scale, upper_scale) {
         if (typeof(lower_scale) == "undefined") {
             lower_scale = 0
         }
@@ -31,7 +35,7 @@
             upper_scale = 18
         }
         var layer = function () {
-            var layer = new ymaps.Layer(tiles, {
+            var layer = new ymaps.Layer(tilesUrlTemplate, {
                 projection: ymaps.projection.sphericalMercator,
             });
             //  Копирайты.
@@ -48,9 +52,9 @@
     }
 
     function init() {
-        addLayer('osm#standard', 'OSM', 'OpenStreetMap contributors, CC-BY-SA', OSM_TILES)
+        addCachedLayer('osm#standard', 'OSM', 'OpenStreetMap contributors, CC-BY-SA', 'osm')
         addLayer('google#satellite', 'Спутник Google', 'Изображения © DigitalGlobe,CNES / Airbus, 2018,Картографические данные © Google, 2018', GOOGLE_SAT_TILES)
-        addLayer('ggc#standard', 'ГГц', '', GGC_TILES, 0, 15)
+        addCachedLayer('ggc#standard', 'ГГц', '', 'ggc', 0, 15)
 //        addLayer('marshruty.ru#genshtab', 'Маршруты.ру', 'marshruty.ru', MARSHRUTY_RU_TILES, 8)
 
         positionAndZoom = getLastPositionAndZoom()
@@ -69,7 +73,7 @@
                 'osm#standard',
                 'ggc#standard',
                 'yandex#satellite',
-                'google#satellite'
+                'google#satellite',
                 ]
             )
         );
