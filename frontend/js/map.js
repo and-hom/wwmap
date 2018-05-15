@@ -54,7 +54,7 @@
     function init() {
         addCachedLayer('osm#standard', 'OSM', 'OpenStreetMap contributors, CC-BY-SA', 'osm')
         addLayer('google#satellite', 'Спутник Google', 'Изображения © DigitalGlobe,CNES / Airbus, 2018,Картографические данные © Google, 2018', GOOGLE_SAT_TILES)
-        addCachedLayer('ggc#standard', 'ГГц', '', 'ggc', 0, 15)
+        addCachedLayer('ggc#standard', 'Топографическая карта', '', 'ggc', 0, 15)
 //        addLayer('marshruty.ru#genshtab', 'Маршруты.ру', 'marshruty.ru', MARSHRUTY_RU_TILES, 8)
 
         positionAndZoom = getLastPositionAndZoom()
