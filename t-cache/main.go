@@ -18,6 +18,9 @@ import (
 	"fmt"
 	"bytes"
 	"strconv"
+	"image"
+	"image/color"
+	"image/png"
 )
 
 var GMT_LOC, _ = time.LoadLocation("UTC")
@@ -92,10 +95,20 @@ func (this *PathLock) Unlock() {
 }
 
 type Handler struct {
-	baseDir    string
-	urlMapping map[string]Mapping
-	client     *http.Client
-	mutexByUrl sync.Map
+	baseDir     string
+	urlMapping  map[string]Mapping
+	client      *http.Client
+	mutexByUrl  sync.Map
+	defaultData []byte
+}
+
+func (this *Handler) generateDefaultImg() {
+	log.Info("Generate empty png for missing tiles")
+	img := image.NewRGBA(image.Rect(0, 0, 1, 1))
+	img.Set(0, 0, color.RGBA{0, 0, 0, 0})
+	buf := bytes.Buffer{}
+	png.Encode(&buf, img)
+	this.defaultData = buf.Bytes()
 }
 
 func (this *Handler) fetchUrlToTmpFile(w http.ResponseWriter, url string) (string, error) {
@@ -112,7 +125,7 @@ func (this *Handler) fetchUrlToTmpFile(w http.ResponseWriter, url string) (strin
 		OnError500(w, err, "Can not fetch tile file " + url)
 		return "", err
 	}
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNotFound {
 		err := errors.Errorf("GET %s returned %d", url, resp.StatusCode)
 		OnError(w, err, "Can not fetch tile file " + url, resp.StatusCode)
 		return "", err
@@ -126,10 +139,18 @@ func (this *Handler) fetchUrlToTmpFile(w http.ResponseWriter, url string) (strin
 	}
 	defer f.Close()
 
-	_, err = io.Copy(f, resp.Body)
-	if err != nil {
-		OnError500(w, err, "Can not write tile file " + f.Name())
-		return "", err
+	if resp.StatusCode == http.StatusOK {
+		_, err = io.Copy(f, resp.Body)
+		if err != nil {
+			OnError500(w, err, "Can not write tile file " + f.Name())
+			return "", err
+		}
+	} else {
+		if this.defaultData == nil {
+			this.generateDefaultImg()
+		}
+		log.Info("Use empty image for missing tile")
+		w.Write(this.defaultData)
 	}
 
 	return f.Name(), nil
