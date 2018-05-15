@@ -5,6 +5,7 @@ import (
 	. "github.com/and-hom/wwmap/lib/geo"
 	"fmt"
 	"math"
+	"github.com/and-hom/wwmap/lib/model"
 )
 
 func toYmapsPreset(epType EventPointType) string {
@@ -112,6 +113,10 @@ func mkFeature(point WhiteWaterPointWithRiverTitle, withDescription bool, resour
 		properties.Category = &point.Category
 	}
 
+	imageHref := fmt.Sprintf(resourcesBase + "/img/cat%d.png", point.Category.Category)
+	if point.Category.Category == model.IMPASSABLE {
+		imageHref = resourcesBase + "/img/impassable.png"
+	}
 	return Feature{
 		Id:point.Id,
 		Geometry:NewGeoPoint(point.Point),
@@ -119,7 +124,7 @@ func mkFeature(point WhiteWaterPointWithRiverTitle, withDescription bool, resour
 		Properties:properties,
 		Options:FeatureOptions{
 			IconLayout: IMAGE,
-			IconImageHref: fmt.Sprintf(resourcesBase + "/img/cat%d.png", point.Category.Category),
+			IconImageHref: imageHref,
 			IconImageSize: []int{32, 32},
 			IconImageOffset: []int{-16, -16},
 

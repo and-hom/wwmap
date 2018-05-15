@@ -23,6 +23,7 @@ wwmap.controller('Ctrl', function($scope, $filter, $http, $q) {
     {value: '6a', text: '6a'},
     {value: '6b', text: '6b'},
     {value: '6c', text: '6c'},
+    {value: '-1', text: 'Непроходимо'},
   ];
 
   $scope.rivers = {};

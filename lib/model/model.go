@@ -7,6 +7,9 @@ import (
 	"strconv"
 )
 
+const UNDEFINED_CATEGORY = 0;
+const IMPASSABLE = -1
+
 type SportCategory struct {
 	Category int
 	Sub      string
@@ -21,7 +24,7 @@ func (this SportCategory) String() string {
 }
 
 func (this SportCategory) Serialize() string {
-	if this.Category == 0 {
+	if this.Category == UNDEFINED_CATEGORY {
 		return "0"
 	}
 	return fmt.Sprintf("%d%s", this.Category, this.Sub)
@@ -34,7 +37,7 @@ func (this *SportCategory) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
-	re := regexp.MustCompile("^\"?(\\d+)([A-Za-z]+)?\"?$")
+	re := regexp.MustCompile("^\"?(-?\\d+)([A-Za-z]+)?\"?$")
 	var err error
 
 	match := re.FindStringSubmatch(dataStr)
