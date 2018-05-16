@@ -160,6 +160,31 @@ func mkCluster(Id ClusterId, points []WhiteWaterPointWithRiverTitle) Feature {
 	bounds := ClusterGeom(points)
 	iconText := points[0].RiverTitle
 
+	maxCategory := 0
+	for i := 0; i < len(points); i++ {
+		if points[i].Category.Category > maxCategory {
+			maxCategory = points[i].Category.Category
+		}
+	}
+	icon := "islands#greenStretchyIcon"
+	switch maxCategory {
+	case 6:
+		icon = "islands#redStretchyIcon"
+	case 5:
+		icon = "islands#redStretchyIcon"
+	case 4:
+		icon = "islands#orangeStretchyIcon"
+	case 3:
+		icon = "islands#yellowStretchyIcon"
+	case 2:
+		icon = "islands#greenStretchyIcon"
+	case 1:
+		icon = "islands#grayStretchyIcon"
+	case 0:
+		icon = "islands#lightBlueStretchyIcon"
+	default:
+		icon = "islands#lightBlueStretchyIcon"
+	}
 	return Feature{
 		Id: int64(Id.Id) + 10 * Id.RiverId,
 		Type: CLUSTER,
@@ -171,7 +196,7 @@ func mkCluster(Id ClusterId, points []WhiteWaterPointWithRiverTitle) Feature {
 
 			Title: Id.Title,
 		}, Options: FeatureOptions{
-			Preset: "islands#greenStretchyIcon",
+			Preset: icon,
 		},
 	}
 }
