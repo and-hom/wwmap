@@ -57,6 +57,7 @@ type WayIterHandler struct {
 	foundcnt          int
 
 	currentWay        dao.WaterWayTmp
+	fileName          string
 }
 
 func (h *WayIterHandler) StartDocument() {
@@ -79,7 +80,7 @@ func (h *WayIterHandler) StartElement(element xml.StartElement) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		h.currentWay = dao.WaterWayTmp{Id:wayId}
+		h.currentWay = dao.WaterWayTmp{Id:wayId, Comment: h.fileName}
 	}
 	if h.way && element.Name.Local == "tag" && data.Attr(element.Attr, "k") == "name" {
 		h.currentWay.Title = data.Attr(element.Attr, "v")

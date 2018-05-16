@@ -17,7 +17,9 @@ func load_waterways(fname string, storage  dao.Storage) (map[int64]dao.WaterWayT
 	}
 	defer inFile.Close()
 
-	wayIterHandler := &WayIterHandler{}
+	wayIterHandler := &WayIterHandler{
+		fileName: fname,
+	}
 	waysXmlParser := saxlike.NewParser(inFile, wayIterHandler)
 	waysXmlParser.Parse()
 
@@ -38,6 +40,7 @@ func load_point_refs(fname string, storage  dao.Storage, ids []int64) {
 func main() {
 	configuration := config.Load("")
 	storage := dao.NewPostgresStorage(configuration.DbConnString)
+	waterWayDao := dao.WaterWayStorage{storage.(dao.PostgresStorage)}
 	fname := os.Args[1]
 
 	idx, revIdx := load_waterways(fname, storage)
@@ -53,7 +56,7 @@ func main() {
 		waterwayReverseIdx : revIdx,
 		flush_way:func(wayId int64, ww dao.WaterWay) {
 			fmt.Printf("Flush: %d", ww.Id)
-			err := storage.UpdateWaterWay(ww)
+			err := waterWayDao.AddWaterWays(ww)
 			if err != nil {
 				log.Fatal(err)
 			}

@@ -117,7 +117,6 @@ func (h *PointHandler) flush(wayId int64) {
 	h.flush_way(wayId, dao.WaterWay{
 		OsmId: waterWayTmp.Id,
 		Title: waterWayTmp.Title,
-		ParentId: waterWayTmp.ParentId,
 		Comment: waterWayTmp.Comment,
 		Type: waterWayTmp.Type,
 		Path: pointsNew,
