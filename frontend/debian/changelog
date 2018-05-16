@@ -1,3 +1,12 @@
+wwmap-frontend (0.0.9) unstable; urgency=medium
+
+  * fix #42 color legend + some color changes
+  * fix #38 impassable points added
+  * ggc enabled
+  * nginx config updated
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Wed, 16 May 2018 14:34:54 +0300
+
 wwmap-frontend (0.0.8) unstable; urgency=medium
 
   * Google satellite added to map
