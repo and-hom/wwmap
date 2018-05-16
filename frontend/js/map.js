@@ -51,7 +51,38 @@
         ymaps.mapType.storage.add(key, new ymaps.MapType(name, [key]));
     }
 
+
+
     function init() {
+        Legend = function (options) {
+            Legend.superclass.constructor.call(this, options);
+            this._$content = null;
+            this._geocoderDeferred = null;
+        };
+
+        ymaps.util.augment(Legend, ymaps.collection.Item, {
+            onAddToMap: function (map) {
+                Legend.superclass.onAddToMap.call(this, map);
+                this._lastCenter = null;
+                this.getParent().getChildElement(this).then(this._onGetChildElement, this);
+            },
+
+            onRemoveFromMap: function (oldMap) {
+                this._lastCenter = null;
+                if (this._$content) {
+                    this._$content.remove();
+                    this._mapEventGroup.removeAll();
+                }
+                Legend.superclass.onRemoveFromMap.call(this, oldMap);
+            },
+
+            _onGetChildElement: function (parentDomContainer) {
+                // Создаем HTML-элемент с текстом.
+                this._$content = $('<div class="legend"><div class="cat0"></div><div class="cat1"></div><div class="cat2"></div>'
+                + '<div class="cat3"></div><div class="cat4"></div><div class="cat5"></div><div class="cat6"></div></div>').appendTo(parentDomContainer);
+            },
+        });
+
         addCachedLayer('osm#standard', 'OSM', 'OpenStreetMap contributors, CC-BY-SA', 'osm')
         addLayer('google#satellite', 'Спутник Google', 'Изображения © DigitalGlobe,CNES / Airbus, 2018,Картографические данные © Google, 2018', GOOGLE_SAT_TILES)
         addCachedLayer('ggc#standard', 'Топографическая карта', '', 'ggc', 0, 15)
@@ -77,6 +108,13 @@
                 ]
             )
         );
+
+        myMap.controls.add(new Legend(), {
+            float: 'none',
+            position: {
+                top: 10,
+                left: 10
+            }});
 
         myMap.events.add('click', function (e) {
             myMap.balloon.close()

@@ -208,3 +208,62 @@ h2 {
     padding-left: 0px;
     padding-bottom:10px;
 }
+
+.legend {
+;}
+
+.legend div {
+    display: inline;
+    padding: 3px;
+    color: #252525;
+    font-size: 80%;
+}
+
+.legend .cat0:before {
+    content: 'Неизв. кс';
+}
+.legend .cat0 {
+    background: #bbbbbb88;
+}
+
+.legend .cat1:before {
+    content: '1кс';
+}
+.legend .cat1 {
+    background: #00fff988
+}
+
+.legend .cat2:before {
+    content: '2кс';
+}
+.legend .cat2 {
+    background: #3cff0088;
+}
+
+.legend .cat3:before {
+    content: '3кс';
+}
+.legend .cat3 {
+    background: #fcff1788;
+}
+
+.legend .cat4:before {
+    content: '4кс';
+}
+.legend .cat4 {
+    background: #ffb10088;
+}
+
+.legend .cat5:before {
+    content: '5кс';
+}
+.legend .cat5 {
+    background: #ff000088;
+}
+
+.legend .cat6:before {
+    content: '6кс';
+}
+.legend .cat6 {
+    background: #cc000088;
+}
