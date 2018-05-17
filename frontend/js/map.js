@@ -78,8 +78,12 @@
 
             _onGetChildElement: function (parentDomContainer) {
                 // Создаем HTML-элемент с текстом.
-                this._$content = $('<div class="legend"><div class="cat0"></div><div class="cat1"></div><div class="cat2"></div>'
-                + '<div class="cat3"></div><div class="cat4"></div><div class="cat5"></div><div class="cat6"></div></div>').appendTo(parentDomContainer);
+                var content = '<div class="legend">'
+                for(i=0;i<=6;i++) {
+                    content += '<div class="cat' + i + '"></div>'
+                }
+                content += '</div>'
+                this._$content = $(content).appendTo(parentDomContainer);
             },
         });
 
