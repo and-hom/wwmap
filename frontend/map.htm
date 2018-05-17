@@ -7,17 +7,13 @@
 </head>
 <body>
 
-<div id="legend" style="display:none">
-    aaaa
-</div>
-
 <div id="bubble_template" style="display:none">
     <h3 class="popover-title">
         {%if properties.link%}<a target="_blank" href="{{properties.link}}">{{properties.title}}</a>{%else%}{{properties.title}}{%endif%}
     </h3>
 
     <div class="popover-content">
-        {%if properties.category!="0"%}<div>Категория сложности: {{properties.category}}</div>{%endif%}
+        {%if properties.category%}<div>Категория сложности: {{properties.category}}</div>{%endif%}
         {%if properties.river_name%}<div>Река: {{properties.river_name}}</div>{%endif%}
         <div>{{properties.short_description}}</div>
         <a target="_top" href="" onclick="show_report_popup({{properties.id}}); return false">Сообщить о неточном местоположении</a>
