@@ -24,10 +24,9 @@ func (this RiverStorage) NearestRivers(point geo.Point, limit int) ([]RiverTitle
 }
 
 func (this RiverStorage) ListRiversWithBounds(bbox geo.Bbox, limit int) ([]RiverTitle, error) {
-	return this.listRiverTitles("SELECT river.id, river.title, ST_AsGeoJSON(ST_Extent(waterway.path)) FROM " +
-		"river INNER JOIN waterway ON river.id=waterway.river_id " +
-		"WHERE exists(SELECT 1 FROM white_water_rapid WHERE white_water_rapid.river_id=river.id) AND " +
-		"path && ST_MakeEnvelope($1,$2,$3,$4) " +
+	return this.listRiverTitles("SELECT river.id, river.title, ST_AsGeoJSON(ST_Extent(white_water_rapid.point)) FROM " +
+		"river INNER JOIN white_water_rapid ON river.id=white_water_rapid.river_id " +
+		"WHERE exists(SELECT 1 FROM white_water_rapid WHERE white_water_rapid.river_id=river.id and point && ST_MakeEnvelope($1,$2,$3,$4)) " +
 		"GROUP BY river.id, river.title ORDER BY popularity DESC LIMIT $5", bbox.X1, bbox.Y1, bbox.X2, bbox.Y2, limit)
 }
 
@@ -58,8 +57,31 @@ func (this RiverStorage) listRiverTitles(query string, queryParams ...interface{
 			if boundsStr.Valid {
 				err = json.Unmarshal([]byte(boundsStr.String), &pgRect)
 				if err != nil {
-					log.Errorf("Can not parse rect %s for white water object %d: %v", boundsStr.String, id, err)
+					var pgPoint PgPoint
+					err = json.Unmarshal([]byte(boundsStr.String), &pgPoint)
+					if err != nil {
+						log.Warnf("Can not parse rect or point %s for white water object %d: %v", boundsStr.String, id, err)
+					}
+					pgRect.Coordinates = [][]geo.Point{[]geo.Point{
+						{
+							Lat: pgPoint.Coordinates.Lat - 0.0001,
+							Lon: pgPoint.Coordinates.Lon - 0.0001,
+						},
+						{
+							Lat: pgPoint.Coordinates.Lat + 0.0001,
+							Lon: pgPoint.Coordinates.Lon - 0.0001,
+						},
+						{
+							Lat: pgPoint.Coordinates.Lat + 0.0001,
+							Lon: pgPoint.Coordinates.Lon + 0.0001,
+						},
+						{
+							Lat: pgPoint.Coordinates.Lat - 0.0001,
+							Lon: pgPoint.Coordinates.Lon + 0.0001,
+						},
+					},}
 				}
+
 				bounds = geo.Bbox{
 					X1:pgRect.Coordinates[0][0].Lon,
 					Y1:pgRect.Coordinates[0][0].Lat,
