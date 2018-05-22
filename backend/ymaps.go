@@ -6,7 +6,11 @@ import (
 	"fmt"
 	"math"
 	"github.com/and-hom/wwmap/lib/model"
+	"math/rand"
 )
+
+const MAX_CLUSTERS int64 = 8192
+const MAX_CLUSTER_ID int64 = int64(math.MaxInt32)
 
 func toYmapsPreset(epType EventPointType) string {
 	switch epType {
@@ -186,7 +190,7 @@ func mkCluster(Id ClusterId, points []WhiteWaterPointWithRiverTitle) Feature {
 		icon = "islands#lightBlueStretchyIcon"
 	}
 	return Feature{
-		Id: int64(Id.Id) + 10 * Id.RiverId,
+		Id: MAX_CLUSTER_ID - rand.Int63n(MAX_CLUSTERS),
 		Type: CLUSTER,
 		Geometry:NewGeoPoint(bounds.Center()),
 		Bbox: bounds.WithMargins(0.05),
