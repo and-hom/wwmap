@@ -1,3 +1,10 @@
+wwmap-backend (0.0.13) unstable; urgency=medium
+
+  * fix #47 Random cluster numeration
+  * fix #44 focus on whitewater on click in river list. Also fixed bug with focus on visible only parts
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Tue, 22 May 2018 18:23:03 +0300
+
 wwmap-backend (0.0.12) unstable; urgency=medium
 
   * fix #41 colored cluster bubbles inspite of whitewater category
