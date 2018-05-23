@@ -11,6 +11,7 @@ import (
 
 const MAX_CLUSTERS int64 = 8192
 const MAX_CLUSTER_ID int64 = int64(math.MaxInt32)
+const CLUSTER_CATEGORY_DEFINITING_POINTS_COUNT int = 3
 
 func toYmapsPreset(epType EventPointType) string {
 	switch epType {
@@ -160,35 +161,53 @@ func ClusterGeom(points []WhiteWaterPointWithRiverTitle) Bbox {
 	}
 }
 
+func calculateClusterCategory(points []WhiteWaterPointWithRiverTitle) int {
+	cntByCat := make(map[int]int)
+	categorizedPointsCount := 0
+	for i := 0; i < len(points); i++ {
+		currentCat := points[i].Category.Category
+		cntByCat[currentCat] += 1
+		if currentCat > 0 {
+			categorizedPointsCount += 1
+		}
+	}
+
+	wwCnt := 0
+	riverCategory := 0
+	definitingPointsCount := min(CLUSTER_CATEGORY_DEFINITING_POINTS_COUNT, categorizedPointsCount)
+	for i := 6; i > 0 && wwCnt < definitingPointsCount; i-- {
+		wwCnt += cntByCat[i]
+		riverCategory = i
+	}
+	return riverCategory
+}
+
+func categoryClusterIcon(category int) string {
+	switch category {
+	case 6:
+		return "islands#redStretchyIcon"
+	case 5:
+		return "islands#redStretchyIcon"
+	case 4:
+		return "islands#orangeStretchyIcon"
+	case 3:
+		return "islands#yellowStretchyIcon"
+	case 2:
+		return "islands#greenStretchyIcon"
+	case 1:
+		return "islands#grayStretchyIcon"
+	case 0:
+		return "islands#lightBlueStretchyIcon"
+	default:
+		return "islands#lightBlueStretchyIcon"
+	}
+}
+
 func mkCluster(Id ClusterId, points []WhiteWaterPointWithRiverTitle) Feature {
 	bounds := ClusterGeom(points)
 	iconText := points[0].RiverTitle
 
-	maxCategory := 0
-	for i := 0; i < len(points); i++ {
-		if points[i].Category.Category > maxCategory {
-			maxCategory = points[i].Category.Category
-		}
-	}
-	icon := "islands#greenStretchyIcon"
-	switch maxCategory {
-	case 6:
-		icon = "islands#redStretchyIcon"
-	case 5:
-		icon = "islands#redStretchyIcon"
-	case 4:
-		icon = "islands#orangeStretchyIcon"
-	case 3:
-		icon = "islands#yellowStretchyIcon"
-	case 2:
-		icon = "islands#greenStretchyIcon"
-	case 1:
-		icon = "islands#grayStretchyIcon"
-	case 0:
-		icon = "islands#lightBlueStretchyIcon"
-	default:
-		icon = "islands#lightBlueStretchyIcon"
-	}
+
 	return Feature{
 		Id: MAX_CLUSTER_ID - rand.Int63n(MAX_CLUSTERS),
 		Type: CLUSTER,
@@ -200,7 +219,7 @@ func mkCluster(Id ClusterId, points []WhiteWaterPointWithRiverTitle) Feature {
 
 			Title: Id.Title,
 		}, Options: FeatureOptions{
-			Preset: icon,
+			Preset: categoryClusterIcon(calculateClusterCategory(points)),
 		},
 	}
 }
@@ -228,5 +247,12 @@ func RoutesToYmaps(route []Route) FeatureCollection {
 		features = append(features, routeToYmaps(route[i])...)
 	}
 	return MkFeatureCollection(features)
+}
+
+func min(x,y int) int {
+	if x < y {
+		return x
+	}
+	return y
 }
 
