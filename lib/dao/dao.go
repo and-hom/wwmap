@@ -9,6 +9,7 @@ import (
 	"errors"
 	"reflect"
 	. "github.com/and-hom/wwmap/lib/geo"
+	"github.com/and-hom/wwmap/lib/model"
 )
 
 type Storage interface {
@@ -35,7 +36,6 @@ type Storage interface {
 	FindEventPoint(id int64, eventPoint *EventPoint) (bool, error)
 	ListPoints(bbox Bbox) []EventPoint
 	FindEventPointsForRoute(routeId int64) []EventPoint
-
 }
 
 type RiverDao interface {
@@ -60,6 +60,11 @@ type WaterWayDao interface {
 	AddWaterWays(waterways ...WaterWay) error
 	UpdateWaterWay(waterway WaterWay) error
 	ForEachWaterWay(func(WaterWay) error) error
+}
+
+type VoyageReportDao interface {
+	UpsertVoyageReports(report ...model.VoyageReport) error
+	GetLastId() (interface{}, error)
 }
 
 type PostgresStorage struct {

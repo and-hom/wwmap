@@ -30,3 +30,7 @@ content:
 backup:
   email: "info@wwmap.ru"
   password: ""
+
+sync:
+  login: "wwmap"
+  password: ""
