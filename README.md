@@ -38,3 +38,6 @@ CREATE EXTENSION postgis;
 LC_ALL='ru_RU.UTF-8' pip install pyyaml
 ```
 9. Install ``wwmap-cron``
+
+## Integration with any site
+See INTEGRATION_ru.md
