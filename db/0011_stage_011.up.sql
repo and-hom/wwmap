@@ -1,5 +1,6 @@
 CREATE TABLE voyage_report(
   id                BIGINT PRIMARY KEY                DEFAULT nextval('id_gen'),
+  title             CHARACTER VARYING(1024) NOT NULL UNIQUE,
   remote_id         CHARACTER VARYING(32) NOT NULL UNIQUE,
   source            CHARACTER VARYING(16) NOT NULL,
   url               CHARACTER VARYING(512) NOT NULL,

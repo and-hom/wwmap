@@ -131,6 +131,7 @@ func (this *HuskytmReportProvider) ReportsSince(key string) ([]model.VoyageRepor
 
 		ids = append(ids, model.VoyageReport{
 			RemoteId:fmt.Sprintf("%d", post.ID),
+			Title: post.Title.Rendered,
 			Url:post.Link,
 			DatePublished: datePublished,
 			DateModified: dateModified,

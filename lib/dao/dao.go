@@ -65,9 +65,10 @@ type WaterWayDao interface {
 }
 
 type VoyageReportDao interface {
-	UpsertVoyageReports(report ...model.VoyageReport) error
+	UpsertVoyageReports(report ...model.VoyageReport) ([]model.VoyageReport, error)
 	GetLastId() (interface{}, error)
 	AssociateWithRiver(voyageReportId, riverId int64) error
+	List(riverId int64) ([]model.VoyageReport, error)
 }
 
 type PostgresStorage struct {

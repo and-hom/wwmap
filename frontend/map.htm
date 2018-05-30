@@ -23,13 +23,24 @@
 <div id="map" style="witdh:800px; height: 600px; margin: 10px;"></div>
 <ul id="rivers" class="riverMenu"></ul>
 <script type="text/x-jquery-tmpl" id="riversMenuTemplate">
+    <table>
     {{each rivers}}
-        <li>
-            <a href="" style="padding-left:10px;" onclick="show_map_at(${bounds}); return false;">${title}</a>
-            <a href="${apiUrl}/${id}?tr=true" style="float:right;" alt="Скачать GPX с точками порогов">GPX<sub>en</sub></a>
-            <a href="${apiUrl}/${id}" style="float:right; padding-right:10px;" alt="Скачать GPX с точками порогов">GPX</a>
-        </li>
+        <tr>
+            <td><a href="" style="padding-left:10px;" onclick="show_map_at(${bounds}); return false;">${title}</a></td>
+            <td>
+                <a href="${apiUrl}/${id}" style="padding-right:10px;" alt="Скачать GPX с точками порогов">GPX</a>
+                <a href="${apiUrl}/${id}?tr=true" alt="Скачать GPX с точками порогов">GPX<sub>en</sub></a>
+            </td>
+            <td>
+                <ul style="float:right;" class="reports">
+                {{each reports}}
+                    <li><a target="_blank" href="${url}"><img src="${source_logo_url}"/>${title}</a></li>
+                {{/each}}&nbsp;
+                </ul>
+            </td>
+        </tr>
     {{/each}}
+    </table>
 </script>
 
 <div class="popup_area">

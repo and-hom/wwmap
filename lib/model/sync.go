@@ -3,7 +3,8 @@ package model
 import "time"
 
 type VoyageReport struct {
-	Id       int64
+	Id            int64
+	Title         string
 	RemoteId      string
 	Source        string
 	Url           string
