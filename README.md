@@ -11,6 +11,10 @@
 * **lib** - not a package - common go sources
 * **t-cache** - app for caching of slow tiles
 
+## Packaging
+
+Run ``debuild -us -uc`` in directory containing ``debian`` folder
+
 ## Installation
 1. Install postgres and postgis
 2. Create database user ``wwmap`` and db ``wwmap`` owned by created user. Enable postgis extension on db ``wwmap``:
@@ -34,7 +38,3 @@ CREATE EXTENSION postgis;
 LC_ALL='ru_RU.UTF-8' pip install pyyaml
 ```
 9. Install ``wwmap-cron``
-
-## Packaging
-
-Run ``debuild -us -uc`` in directory containing ``debian`` folder
