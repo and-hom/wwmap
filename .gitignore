@@ -17,4 +17,5 @@ backend/backend
 *.buildinfo
 *.dsc
 *.changes
+*.upload
 
