@@ -8,6 +8,7 @@ import (
 )
 
 const UNDEFINED_CATEGORY = 0;
+
 const IMPASSABLE = -1
 
 type SportCategory struct {
@@ -32,7 +33,7 @@ func (this SportCategory) Serialize() string {
 
 func (this *SportCategory) UnmarshalJSON(data []byte) error {
 	dataStr := string(data)
-	if len(strings.TrimSpace(dataStr)) == 0 || dataStr=="\"\"" {
+	if len(strings.TrimSpace(dataStr)) == 0 || dataStr == "\"\"" {
 		// no category specified
 		return nil
 	}

@@ -9,7 +9,6 @@ import (
 	"errors"
 	"reflect"
 	. "github.com/and-hom/wwmap/lib/geo"
-	"github.com/and-hom/wwmap/lib/model"
 	"fmt"
 )
 
@@ -65,10 +64,14 @@ type WaterWayDao interface {
 }
 
 type VoyageReportDao interface {
-	UpsertVoyageReports(report ...model.VoyageReport) ([]model.VoyageReport, error)
+	UpsertVoyageReports(report ...VoyageReport) ([]VoyageReport, error)
 	GetLastId() (interface{}, error)
 	AssociateWithRiver(voyageReportId, riverId int64) error
-	List(riverId int64) ([]model.VoyageReport, error)
+	List(riverId int64) ([]VoyageReport, error)
+}
+
+type ImgDao interface {
+	Upsert(report ...Img) ([]Img, error)
 }
 
 type PostgresStorage struct {

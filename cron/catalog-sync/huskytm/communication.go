@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"time"
 	log "github.com/Sirupsen/logrus"
-	"github.com/and-hom/wwmap/lib/model"
 	"github.com/pkg/errors"
 	"strconv"
+	"github.com/and-hom/wwmap/lib/dao"
 )
 
 const SOURCE string = "huskytm"
@@ -44,7 +44,7 @@ func GetReportProvider(login, password string) (ReportProvider, error) {
 		tagsById[tag.Id] = tag.Name
 	}
 
-	return &HuskytmReportProvider{client:client, tags:tagsById}, nil
+	return &HuskytmReportProvider{client:client, tags:tagsById, images:make(map[int][]dao.Img)}, nil
 }
 
 func paginate(get func(interface{}) ([]interface{}, *http.Response, []byte, error), params map[string]interface{}) ([]interface{}, error) {
@@ -78,13 +78,14 @@ func paginate(get func(interface{}) ([]interface{}, *http.Response, []byte, erro
 type HuskytmReportProvider struct {
 	client *wp.Client
 	tags   map[int]string
+	images map[int][]dao.Img
 }
 
 func (this *HuskytmReportProvider) Close() error {
 	return nil
 }
 
-func (this *HuskytmReportProvider) ReportsSince(key string) ([]model.VoyageReport, string, error) {
+func (this *HuskytmReportProvider) ReportsSince(key string) ([]dao.VoyageReport, string, error) {
 	startTs, err := time.Parse(TIME_FORMAT, key)
 	if err != nil {
 		log.Warnf("Can not parse start key %s as time: use time(0) as start", key)
@@ -99,16 +100,16 @@ func (this *HuskytmReportProvider) ReportsSince(key string) ([]model.VoyageRepor
 	posts, _, responseBytes, err := this.client.Posts().List(params)
 	if err != nil {
 		log.Error(string(responseBytes))
-		return []model.VoyageReport{}, key, err
+		return []dao.VoyageReport{}, key, err
 	}
 
-	ids := []model.VoyageReport{}
+	ids := []dao.VoyageReport{}
 	latest := time.Unix(0, 0)
 	for i := 0; i < len(posts); i++ {
 		post := &posts[i]
 		dateModified, err := time.Parse(TIME_FORMAT, post.Modified)
 		if err != nil {
-			return []model.VoyageReport{}, key, err
+			return []dao.VoyageReport{}, key, err
 		}
 		if ! dateModified.After(startTs) {
 			continue
@@ -129,7 +130,7 @@ func (this *HuskytmReportProvider) ReportsSince(key string) ([]model.VoyageRepor
 
 		datePublished, err := time.Parse(TIME_FORMAT, post.Date)
 
-		ids = append(ids, model.VoyageReport{
+		ids = append(ids, dao.VoyageReport{
 			RemoteId:fmt.Sprintf("%d", post.ID),
 			Title: post.Title.Rendered,
 			Url:post.Link,
@@ -142,29 +143,69 @@ func (this *HuskytmReportProvider) ReportsSince(key string) ([]model.VoyageRepor
 	return ids, latest.Format(TIME_FORMAT), nil
 }
 
-func (this *HuskytmReportProvider) Images(reportId int) ([]model.Img, error) {
+func (this *HuskytmReportProvider) cacheImages() error {
 	params := emptyMap()
 	params["media_type"] = "image"
-	media, _, responseBytes, err := this.client.Media().List(params)
+	media, err := paginate(func(p interface{}) ([]interface{}, *http.Response, []byte, error) {
+		m, r, b, e := this.client.Media().List(params)
+		res := make([]interface{}, len(m))
+		for i := 0; i < len(m); i++ {
+			res[i] = m[i]
+		}
+		return res, r, b, e
+	}, params)
 	if err != nil {
-		log.Error(string(responseBytes))
-		return []model.Img{}, err
+		return err
 	}
 
-	imgs := make([]model.Img, len(media))
 	for i := 0; i < len(media); i++ {
-		tm, err := time.Parse(TIME_FORMAT, media[i].Modified)
+		m := media[i].(wp.Media)
+
+		if m.Post <= 0 {
+			continue
+		}
+
+		tm, err := time.Parse(TIME_FORMAT, m.Date)
 		if err != nil {
-			return []model.Img{}, err
+			return err
 		}
-		imgs[i] = model.Img{
+		fmt.Println("Title: ", m.Title.Rendered)
+		fmt.Println("Description: ", m.Description.Rendered)
+		fmt.Println("Caption: ", m.Caption.Rendered)
+		fmt.Println("AltText: ", m.AltText)
+
+		this.images[m.Post] = append(this.images[m.Post], dao.Img{
 			Source:SOURCE,
-			Url: media[i].MediaDetails.Sizes.Large.SourceURL,
-			PreviewUrl: media[i].MediaDetails.Sizes.Thumbnail.SourceURL,
-			DateTaken: tm,
-		}
+			RemoteId: fmt.Sprintf("%d", m.ID),
+			Url: m.MediaDetails.Sizes.Large.SourceURL,
+			PreviewUrl: m.MediaDetails.Sizes.Thumbnail.SourceURL,
+			DatePublished: tm,
+			LabelsForSearch: []string{
+				m.Title.Rendered,
+				m.Description.Rendered,
+				m.Caption.Rendered,
+				m.AltText,
+			},
+		})
 	}
-	return imgs, nil
+	//fmt.Printf("Cached images are: %v+\n", this.images)
+	return nil
+}
+
+func (this *HuskytmReportProvider) Images(reportId string) ([]dao.Img, error) {
+	if len(this.images) == 0 {
+		this.cacheImages()
+	}
+	reportIdInt, err := strconv.ParseInt(reportId, 10, 32)
+	if err != nil {
+		log.Error("Report id should be integer: ", reportId)
+		return []dao.Img{}, err
+	}
+	imgs, found := this.images[int(reportIdInt)]
+	if found {
+		return imgs, nil
+	}
+	return []dao.Img{}, nil
 }
 
 func emptyMap() map[string]interface{} {

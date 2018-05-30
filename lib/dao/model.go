@@ -204,3 +204,32 @@ type ReportWithName struct {
 	Comment    string
 	CreatedAt  time.Time
 }
+
+
+type VoyageReport struct {
+	Id            int64
+	Title         string
+	Source        string
+	RemoteId      string
+	Url           string
+	DatePublished time.Time
+	DateModified  time.Time
+	Tags          []string
+	Rivers        []RiverTitle
+}
+
+type Img struct {
+	Id              int64
+	WwId            int64
+	Source          string
+	RemoteId        string
+	Url             string
+	PreviewUrl      string
+	DatePublished   time.Time
+	LabelsForSearch []string
+}
+
+type WWPassport struct {
+	WwId int64
+	Url  string
+}

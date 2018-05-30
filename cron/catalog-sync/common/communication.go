@@ -3,21 +3,20 @@ package common
 import (
 	"github.com/and-hom/wwmap/lib/dao"
 	"io"
-	"github.com/and-hom/wwmap/lib/model"
 )
 
 type ReportProvider interface {
 	io.Closer
-	ReportsSince(key string) ([]model.VoyageReport, string, error);
-	Images(reportId int) ([]model.Img, error);
+	ReportsSince(key string) ([]dao.VoyageReport, string, error);
+	Images(reportId string) ([]dao.Img, error);
 }
 
 type CatalogConnector interface {
 	io.Closer
 	PassportIdsSince(key string) []string
 	GetPassport(key string) dao.WhiteWaterPoint
-	GetImages(key string) []model.Img
+	GetImages(key string) []dao.Img
 
 	Exists(key string) bool
-	Create(passport model.WWPassport, imgs []model.Img)
+	Create(passport dao.WWPassport, imgs []dao.Img)
 }
