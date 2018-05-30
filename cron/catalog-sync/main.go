@@ -13,6 +13,7 @@ func main() {
 	configuration := config.Load("")
 	pgStorage := dao.NewPostgresStorage(configuration.DbConnString)
 	voyageReportDao := dao.VoyageReportStorage{pgStorage.(dao.PostgresStorage)}
+	riverDao := dao.RiverStorage{pgStorage.(dao.PostgresStorage)}
 
 	lastId, err := voyageReportDao.GetLastId()
 	if err != nil {
@@ -31,11 +32,11 @@ func main() {
 	if err != nil {
 		log.Fatal("Can not get posts: ", err.Error())
 	}
-	if len(reports)==0 {
+	if len(reports) == 0 {
 		next = lastReportIdStr
 	}
 
-	err = voyageReportDao.UpsertVoyageReports(reports...)
+	reports, err = voyageReportDao.UpsertVoyageReports(reports...)
 	if err != nil {
 		log.Fatalf("Can not store reports: %v\n%s", reports, err.Error())
 	}
@@ -43,7 +44,19 @@ func main() {
 	log.Infof("%d reports are successfully stored. Next id is %s\n", len(reports), next)
 
 	log.Info("Now try to connect reports with known rivers")
-	for _, report := range reports {
 
+	for _, report := range reports {
+		log.Infof("Tags are: %v", report.Tags)
+		rivers, err := riverDao.FindTitles(report.Tags)
+		if err != nil {
+			log.Fatal("Can not find rivers for tags", report.Tags, err)
+		}
+		log.Info(rivers)
+		for _, river := range rivers {
+			err := voyageReportDao.AssociateWithRiver(report.Id, river.Id)
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
 	}
 }

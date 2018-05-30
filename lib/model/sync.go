@@ -3,12 +3,13 @@ package model
 import "time"
 
 type VoyageReport struct {
-	RiverId       int64
+	Id       int64
 	RemoteId      string
 	Source        string
 	Url           string
 	DatePublished time.Time
-	DateModified time.Time
+	DateModified  time.Time
+	Tags          []string
 }
 
 type Img struct {

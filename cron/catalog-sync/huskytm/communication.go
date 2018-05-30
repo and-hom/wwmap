@@ -8,12 +8,15 @@ import (
 	"time"
 	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/lib/model"
+	"github.com/pkg/errors"
+	"strconv"
 )
 
 const SOURCE string = "huskytm"
 const API_BASE string = "https://huskytm.ru/wp-json/wp/v2"
 const TIME_FORMAT string = "2006-01-02T15:04:05"
 const REPORT_CATEGORY string = "8"
+const TOTAL_PAGES_HEADER = "X-WP-TotalPages"
 
 func GetReportProvider(login, password string) (ReportProvider, error) {
 	client := wp.NewClient(&wp.Options{
@@ -21,16 +24,60 @@ func GetReportProvider(login, password string) (ReportProvider, error) {
 		Username:   login,
 		Password:   password,
 	})
-	_, resp, _, _ := client.Users().Me(emptyMap())
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("Connection failed: %v+", resp)
+
+	tags, err := paginate(func(p interface{}) ([]interface{}, *http.Response, []byte, error) {
+		t, r, b, e := client.Tags().List(p)
+		res := make([]interface{}, len(t))
+		for i := 0; i < len(t); i++ {
+			res[i] = t[i]
+		}
+		return res, r, b, e
+
+	}, emptyMap())
+
+	if err != nil {
+		return nil, fmt.Errorf("Connection failed: %s", err.Error())
+	}
+	tagsById := make(map[int]string)
+	for _, t := range tags {
+		tag := t.(wp.Tag)
+		tagsById[tag.Id] = tag.Name
 	}
 
-	return &HuskytmReportProvider{client:client}, nil
+	return &HuskytmReportProvider{client:client, tags:tagsById}, nil
+}
+
+func paginate(get func(interface{}) ([]interface{}, *http.Response, []byte, error), params map[string]interface{}) ([]interface{}, error) {
+	result := []interface{}{}
+	for page := 1; page < 100000; page++ {
+		params["page"] = fmt.Sprintf("%d", page)
+
+		res, resp, b, err := get(params)
+		if resp.StatusCode != http.StatusOK {
+			log.Errorf("Can not paginate: %s", string(b))
+			return nil, errors.New("Can not paginate")
+		}
+		if err != nil {
+			log.Errorf("Can not paginate: %s", string(b))
+			return nil, err
+		}
+		result = append(result, res...)
+
+		totalPagesStr := resp.Header.Get(TOTAL_PAGES_HEADER)
+		totalPages, err := strconv.ParseInt(totalPagesStr, 10, 32)
+		if err != nil {
+			log.Errorf("Can not parse header \"%s\" = %s", TOTAL_PAGES_HEADER, totalPagesStr)
+		}
+		if page >= int(totalPages) {
+			break
+		}
+	}
+	return result, nil
 }
 
 type HuskytmReportProvider struct {
 	client *wp.Client
+	tags   map[int]string
 }
 
 func (this *HuskytmReportProvider) Close() error {
@@ -70,6 +117,16 @@ func (this *HuskytmReportProvider) ReportsSince(key string) ([]model.VoyageRepor
 			latest = dateModified
 		}
 
+		tags := []string{}
+		for _, tagId := range post.Tags {
+			tag, found := this.tags[tagId]
+			if found {
+				tags = append(tags, tag)
+			} else {
+				log.Fatalf("Unknown tag with id %d in %v+", tagId, this.tags)
+			}
+		}
+
 		datePublished, err := time.Parse(TIME_FORMAT, post.Date)
 
 		ids = append(ids, model.VoyageReport{
@@ -78,6 +135,7 @@ func (this *HuskytmReportProvider) ReportsSince(key string) ([]model.VoyageRepor
 			DatePublished: datePublished,
 			DateModified: dateModified,
 			Source:SOURCE,
+			Tags: tags,
 		})
 	}
 	return ids, latest.Format(TIME_FORMAT), nil
@@ -95,7 +153,7 @@ func (this *HuskytmReportProvider) Images(reportId int) ([]model.Img, error) {
 	imgs := make([]model.Img, len(media))
 	for i := 0; i < len(media); i++ {
 		tm, err := time.Parse(TIME_FORMAT, media[i].Modified)
-		if err!=nil {
+		if err != nil {
 			return []model.Img{}, err
 		}
 		imgs[i] = model.Img{

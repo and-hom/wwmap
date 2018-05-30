@@ -11,7 +11,10 @@ type ReportStorage struct {
 }
 
 func (this ReportStorage) AddReport(report Report) error {
-	_, err := this.insertReturningId("INSERT INTO report(object_id,comment) VALUES($1,$2) RETURNING id", report.ObjectId, report.Comment)
+	_, err := this.updateReturningId("INSERT INTO report(object_id,comment) VALUES($1,$2) RETURNING id",
+		func(entity interface{}) ([]interface{}, error) {
+			return entity.([]interface{}), nil
+		}, []interface{}{report.ObjectId, report.Comment})
 	return err;
 }
 
