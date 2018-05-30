@@ -17,7 +17,7 @@ func (this VoyageReportStorage) UpsertVoyageReports(reports ...model.VoyageRepor
 	}
 	ids, err := this.updateReturningId("INSERT INTO voyage_report(title, remote_id,source,url,date_published,date_modified) " +
 		"VALUES ($1, $2, $3, $4, $5, $6) " +
-		"ON CONFLICT (remote_id) DO UPDATE SET title=$1, url=$4, date_modified=$6 " +
+		"ON CONFLICT (source, remote_id) DO UPDATE SET title=$1, url=$4, date_modified=$6 " +
 		"RETURNING id",
 		func(entity interface{}) ([]interface{}, error) {
 			_report := entity.(model.VoyageReport)
