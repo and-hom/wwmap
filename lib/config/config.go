@@ -17,7 +17,8 @@ type ClusterizationParams struct {
 type Notifications struct {
 	EmailRecipients []string `yaml:"email_recipients"`
 	EmailSender     string `yaml:"email_sender"`
-	EmailSubject    string `yaml:"email_subject"`
+	ReportingEmailSubject    string `yaml:"reporting_email_subject"`
+	ImportExportEmailSubject    string `yaml:"import_export_email_subject"`
 }
 
 type Api struct {

@@ -7,7 +7,7 @@ build-notifier:
 	cd notifier; $(HOME)/.go/bin/go-bindata email-template; GOPATH="$(HOME)/.go" go build
 
 build-catalog-sync:
-	cd catalog-sync; GOPATH="$(HOME)/.go" go build
+	cd catalog-sync; $(HOME)/.go/bin/go-bindata email-template; GOPATH="$(HOME)/.go" go build
 
 build: build-notifier build-catalog-sync
 

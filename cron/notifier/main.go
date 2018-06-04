@@ -4,10 +4,9 @@ import (
 	log "github.com/Sirupsen/logrus"
 	. "github.com/and-hom/wwmap/lib/dao"
 	"github.com/and-hom/wwmap/lib/config"
-	"net/smtp"
 	"html/template"
 	"io"
-	"fmt"
+	"github.com/and-hom/wwmap/lib/mail"
 )
 
 const MAX_MESSAGES int = 1000
@@ -37,7 +36,7 @@ func main() {
 		log.Fatal("Can not compile email template:\t", err)
 	}
 
-	err = sendMail(configuration.Notifications.EmailSender, configuration.Notifications.EmailRecipients, configuration.Notifications.EmailSubject, func(w io.Writer) error {
+	err = mail.SendMail(configuration.Notifications.EmailSender, configuration.Notifications.EmailRecipients, configuration.Notifications.ReportingEmailSubject, func(w io.Writer) error {
 		return tmpl.Execute(w, reports)
 	})
 	if err != nil {
@@ -53,26 +52,4 @@ func main() {
 		log.Fatal("Can not mark reports as read:\t", err)
 	}
 
-}
-
-func sendMail(from string, to []string, subject string, writeBody func(io.Writer) error) error {
-	c, err := smtp.Dial("localhost:25")
-	if err != nil {
-		return err
-	}
-	defer c.Close()
-
-	c.Mail(from)
-	for _, rcpt := range (to) {
-		c.Rcpt(rcpt)
-	}
-
-	wc, err := c.Data()
-	if err != nil {
-		return err
-	}
-	defer wc.Close()
-
-	fmt.Fprintf(wc, "Content-Type: text/html; charset=UTF-8\r\nSubject: %s\r\n", subject)
-	return writeBody(wc)
 }

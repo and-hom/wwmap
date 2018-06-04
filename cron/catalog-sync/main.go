@@ -8,6 +8,9 @@ import (
 	"time"
 	"strings"
 	"github.com/and-hom/wwmap/cron/catalog-sync/common"
+	"io"
+	"html/template"
+	"github.com/and-hom/wwmap/lib/mail"
 )
 
 type App struct {
@@ -17,6 +20,8 @@ type App struct {
 	ImgDao          dao.ImgDao
 	WwPassportDao   dao.WwPassportDao
 	Configuration   config.WordpressSync
+	Notifications   config.Notifications
+	stat            *ImportExportReport
 }
 
 func CreateApp() App {
@@ -29,6 +34,8 @@ func CreateApp() App {
 		ImgDao:dao.ImgStorage{pgStorage.(dao.PostgresStorage)},
 		WwPassportDao:dao.WWPassportStorage{pgStorage.(dao.PostgresStorage)},
 		Configuration:configuration.Sync,
+		Notifications:configuration.Notifications,
+		stat: &ImportExportReport{},
 	}
 }
 
@@ -42,14 +49,14 @@ func main() {
 func (this App) DoSyncCatalog() {
 	lastId, err := this.WwPassportDao.GetLastId(huskytm.SOURCE)
 	if err != nil {
-		log.Fatalf("Can not connect get last ww passport entry id: ", err.Error())
+		this.Fatalf(err, "Can not connect get last ww passport entry id")
 	}
 	lastWwPassportIdStr := lastId.(time.Time).Format(huskytm.TIME_FORMAT)
 	log.Infof("Get and store ww passport entries since %s", lastWwPassportIdStr)
 
 	catalogConnector, err := huskytm.GetCatalogConnector(this.Configuration.Login, this.Configuration.Password)
 	if err != nil {
-		log.Fatalf("Can not connect to catalog: ", err.Error())
+		this.Fatalf(err, "Can not connect to catalog")
 	}
 	defer catalogConnector.Close()
 
@@ -57,7 +64,6 @@ func (this App) DoSyncCatalog() {
 	if err != nil {
 		log.Fatal("Can not get posts: ", err.Error())
 	}
-
 
 	log.Info("")
 	for _, wwPassport := range wwPassportEntries {
@@ -75,7 +81,7 @@ func (this App) DoSyncCatalog() {
 			case 1:
 				wwPassport.WwId = wwpts[0].Id
 				err = this.WwPassportDao.Upsert(wwPassport)
-				if err!= nil {
+				if err != nil {
 					log.Fatal("Can not upsert ww passport", wwPassport, err)
 				}
 				this.findAndStoreImages(wwPassport, catalogConnector)
@@ -100,31 +106,31 @@ func (this App) findAndStoreImages(wwPassport dao.WWPassport, catalogConnector c
 	log.Infof("Find images for ww passport %s-%s", wwPassport.Source, wwPassport.RemoteId)
 	imgs, err := catalogConnector.GetImages(wwPassport.RemoteId)
 	if err != nil {
-		log.Fatalf("Can not load images for ww passport %s-%s %d: %s", wwPassport.Source, wwPassport.RemoteId, wwPassport.WwId, err.Error())
+		this.Fatalf(err, "Can not load images for ww passport %s-%s %d", wwPassport.Source, wwPassport.RemoteId, wwPassport.WwId)
 	}
 	_, err = this.ImgDao.Upsert(imgs...)
 	if err != nil {
-		log.Fatalf("Can not upsert images for report %d: %s", wwPassport.WwId, err.Error())
+		this.Fatalf(err, "Can not upsert images for report %d", wwPassport.WwId)
 	}
 }
 
 func (this App) DoSyncReports() {
 	lastId, err := this.VoyageReportDao.GetLastId(huskytm.SOURCE)
 	if err != nil {
-		log.Fatalf("Can not connect get last report id: ", err.Error())
+		this.Fatalf(err, "Can not connect get last report id")
 	}
 	lastReportIdStr := lastId.(time.Time).Format(huskytm.TIME_FORMAT)
 	log.Infof("Get and store reports since %s", lastReportIdStr)
 
 	reportProvider, err := huskytm.GetReportProvider(this.Configuration.Login, this.Configuration.Password)
 	if err != nil {
-		log.Fatalf("Can not connect to source: ", err.Error())
+		this.Fatalf(err, "Can not connect to source")
 	}
 	defer reportProvider.Close()
 
 	reports, next, err := reportProvider.ReportsSince(lastReportIdStr)
 	if err != nil {
-		log.Fatal("Can not get posts: ", err.Error())
+		log.Fatal(err, "Can not get posts")
 	}
 	if len(reports) == 0 {
 		next = lastReportIdStr
@@ -132,7 +138,7 @@ func (this App) DoSyncReports() {
 
 	reports, err = this.VoyageReportDao.UpsertVoyageReports(reports...)
 	if err != nil {
-		log.Fatalf("Can not store reports: %v\n%s", reports, err.Error())
+		this.Fatalf(err, "Can not store reports: %v", reports)
 	}
 
 	log.Infof("%d reports are successfully stored. Next id is %s\n", len(reports), next)
@@ -164,7 +170,7 @@ func (this App) findMatchAndStoreImages(report dao.VoyageReport, reportProvider 
 	log.Infof("Find images for report %d", report.Id)
 	imgs, err := reportProvider.Images(report.RemoteId)
 	if err != nil {
-		log.Fatalf("Can not load images for report %d: %s", report.Id, err.Error())
+		this.Fatalf(err, "Can not load images for report %d", report.Id)
 	}
 
 	log.Infof("Bind images to ww spots for report %d", report.Id)
@@ -183,7 +189,7 @@ func (this App) findMatchAndStoreImages(report dao.VoyageReport, reportProvider 
 	log.Infof("Store images for report %d", report.Id)
 	_, err = this.ImgDao.Upsert(matchedImgs...)
 	if err != nil {
-		log.Fatalf("Can not upsert images for report %d: %s", report.Id, err.Error())
+		this.Fatalf(err, "Can not upsert images for report %d", report.Id,)
 	}
 }
 
@@ -198,7 +204,7 @@ func (this App) matchImgsToWhiteWaterPoints(report dao.VoyageReport, imgs []dao.
 		for _, river := range report.Rivers {
 			wwpts, err := this.WhiteWaterDao.ListWhiteWaterPointsByRiver(river.Id)
 			if err != nil {
-				log.Fatalf("Can not list white water spots for river %d: %s", river.Id, err.Error())
+				this.Fatalf(err, "Can not list white water spots for river %d", river.Id)
 			}
 			for _, wwpt := range wwpts {
 				for _, label := range img.LabelsForSearch {
@@ -218,4 +224,25 @@ func (this App) matchImgsToWhiteWaterPoints(report dao.VoyageReport, imgs []dao.
 		}
 	}
 	return candidates
+}
+
+func (this App) Fatalf(err error, pattern string, args ...interface{}) {
+	this.Report(err)
+	log.Fatalf(pattern + ": " + err.Error(), args)
+}
+
+func (this App) Report(err error) {
+	templateData, err := emailTemplateBytes()
+	if err != nil {
+		log.Fatal("Can not load email template:\t", err)
+	}
+
+	tmpl, err := template.New("report-email").Parse(string(templateData))
+	if err != nil {
+		log.Fatal("Can not compile email template:\t", err)
+	}
+
+	err = mail.SendMail(this.Notifications.EmailSender, this.Notifications.EmailRecipients, this.Notifications.ImportExportEmailSubject, func(w io.Writer) error {
+		return tmpl.Execute(w, *this.stat)
+	})
 }
