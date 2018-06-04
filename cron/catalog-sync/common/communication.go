@@ -13,10 +13,9 @@ type ReportProvider interface {
 
 type CatalogConnector interface {
 	io.Closer
-	PassportIdsSince(key string) []string
-	GetPassport(key string) dao.WhiteWaterPoint
-	GetImages(key string) []dao.Img
+	PassportEntriesSince(key string) ([]dao.WWPassport, error)
+	GetImages(key string) ([]dao.Img, error)
 
-	Exists(key string) bool
-	Create(passport dao.WWPassport, imgs []dao.Img)
+	Exists(key string) (bool, error)
+	Create(passport dao.WWPassport, imgs []dao.Img) error
 }

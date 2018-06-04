@@ -48,7 +48,8 @@ type RiverDao interface {
 type WhiteWaterDao interface {
 	AddWhiteWaterPoints(whiteWaterPoint ...WhiteWaterPoint) error
 	ListWhiteWaterPoints(bbox Bbox) ([]WhiteWaterPointWithRiverTitle, error)
-	ListWhiteWaterPointsByRiver(id int64) ([]WhiteWaterPointWithRiverTitle, error)
+	ListWhiteWaterPointsByRiver(riverId int64) ([]WhiteWaterPointWithRiverTitle, error)
+	ListWhiteWaterPointsByRiverAndTitle(riverId int64, title string) ([]WhiteWaterPointWithRiverTitle, error)
 }
 
 type ReportDao interface {
@@ -65,13 +66,18 @@ type WaterWayDao interface {
 
 type VoyageReportDao interface {
 	UpsertVoyageReports(report ...VoyageReport) ([]VoyageReport, error)
-	GetLastId() (interface{}, error)
+	GetLastId(source string) (interface{}, error)
 	AssociateWithRiver(voyageReportId, riverId int64) error
 	List(riverId int64) ([]VoyageReport, error)
 }
 
 type ImgDao interface {
 	Upsert(report ...Img) ([]Img, error)
+}
+
+type WwPassportDao interface {
+	Upsert(wwPassport ...WWPassport) error
+	GetLastId(source string) (interface{}, error)
 }
 
 type PostgresStorage struct {

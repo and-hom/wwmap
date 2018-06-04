@@ -35,12 +35,12 @@ func (this VoyageReportStorage) UpsertVoyageReports(reports ...VoyageReport) ([]
 	return result, nil
 }
 
-func (this VoyageReportStorage) GetLastId() (interface{}, error) {
+func (this VoyageReportStorage) GetLastId(source string) (interface{}, error) {
 	lastDate := time.Unix(0, 0)
-	_, err := this.doFind("SELECT max(date_modified) FROM voyage_report", func(rows *sql.Rows) error {
+	_, err := this.doFind("SELECT max(date_modified) FROM voyage_report WHERE source=$1", func(rows *sql.Rows) error {
 		rows.Scan(&lastDate)
 		return nil
-	})
+	}, source)
 	if err != nil {
 		return nil, err
 	}

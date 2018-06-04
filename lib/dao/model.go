@@ -205,7 +205,6 @@ type ReportWithName struct {
 	CreatedAt  time.Time
 }
 
-
 type VoyageReport struct {
 	Id            int64
 	Title         string
@@ -230,6 +229,12 @@ type Img struct {
 }
 
 type WWPassport struct {
-	WwId int64
-	Url  string
+	Source        string
+	RemoteId      string
+	WwId          int64
+	Url           string
+	DatePublished time.Time
+	DateModified  time.Time
+	River         string
+	Title         string
 }
