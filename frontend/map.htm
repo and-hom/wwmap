@@ -17,6 +17,8 @@
         {%if properties.river_name%}<div>Река: {{properties.river_name}}</div>{%endif%}
         <div>{{properties.short_description}}</div>
         <a target="_top" href="" onclick="show_report_popup({{properties.id}}); return false">Сообщить о неточном местоположении</a>
+        <br/>
+        {% for img in properties.images %} <img src="{{img.preview_url}}"/> {% endfor %}
     </div>
 </div>
 

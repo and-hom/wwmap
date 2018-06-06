@@ -48,7 +48,7 @@ func (this *Bbox) WithMargins(ratio float64) Bbox {
 	dy := this.Y2 - this.Y1
 	marginX := dx * ratio
 	marginY := dy * ratio
-	return Bbox {
+	return Bbox{
 		X1: this.X1 - marginX,
 		Y1: this.Y1 - marginY,
 		X2: this.X2 + marginX,
@@ -138,6 +138,14 @@ type FeatureProperties struct {
 	ShortDesc       string `json:"short_description,omitempty"`
 	Category        *model.SportCategory `json:"category,omitempty"`
 	RiverName       string `json:"river_name,omitempty"`
+	Images          []Preview `json:"images,omitempty"`
+}
+
+type Preview struct {
+	Source     string `json:"source,omitempty"`
+	RemoteId   string `json:"remote_id,omitempty"`
+	Url        string `json:"url,omitempty"`
+	PreviewUrl string `json:"preview_url,omitempty"`
 }
 
 type IconLayout string

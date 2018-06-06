@@ -9,9 +9,13 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"strconv"
 	"github.com/and-hom/wwmap/lib/dao"
+	"regexp"
+	"html"
 )
 
 const REPORT_CATEGORY string = "8"
+const IMG_RE_1 string = "\\<img.*?title=\"(.*?)\".*?src=\"(.*?)\".*?\\>"
+const IMG_RE_2 string = "\\<img.*?src=\"(.*?)\".*?title=\"(.*?)\".*?\\>"
 
 func GetReportProvider(login, password string) (ReportProvider, error) {
 	client := wp.NewClient(&wp.Options{
@@ -39,13 +43,46 @@ func GetReportProvider(login, password string) (ReportProvider, error) {
 		tagsById[tag.Id] = tag.Name
 	}
 
-	return &HuskytmReportProvider{client:client, tags:tagsById, images:make(map[int][]dao.Img)}, nil
+	s1 := ImgSearcher{expr:regexp.MustCompile(IMG_RE_1), titleIndex:1, urlIndex:2}
+	s2 := ImgSearcher{expr:regexp.MustCompile(IMG_RE_2), titleIndex:2, urlIndex:1}
+	return &HuskytmReportProvider{
+		client:client,
+		tags:tagsById,
+		images:make([]dao.Img, 0),
+		imgExprs:[]ImgSearcher{s1, s2},
+		cachedImgSearchResults:make(map[int][]ImgSearchResult),
+	}, nil
+}
+
+type ImgSearchResult struct {
+	title string
+	url   string
+}
+type ImgSearcher struct {
+	expr       *regexp.Regexp
+	urlIndex   int
+	titleIndex int
+}
+
+func (this *ImgSearcher) find(str string) []ImgSearchResult {
+	found := this.expr.FindAllStringSubmatch(str, -1)
+	result := make([]ImgSearchResult, len(found))
+	fmt.Println("Found ", len(found))
+	for i := 0; i < len(found); i++ {
+		result[i] = ImgSearchResult{
+			url:found[i][this.urlIndex],
+			title:html.UnescapeString(found[i][this.titleIndex]),
+		}
+	}
+	return result
 }
 
 type HuskytmReportProvider struct {
-	client *wp.Client
-	tags   map[int]string
-	images map[int][]dao.Img
+	client                 *wp.Client
+	tags                   map[int]string
+	images                 []dao.Img
+	cachedImgSearchResults map[int][]ImgSearchResult
+	imgExprs               []ImgSearcher
 }
 
 func (this *HuskytmReportProvider) Close() error {
@@ -95,6 +132,13 @@ func (this *HuskytmReportProvider) ReportsSince(key string) ([]dao.VoyageReport,
 			}
 		}
 
+		pageBody := post.Content.Rendered
+		foundImgs := []ImgSearchResult{}
+		for _, s := range this.imgExprs {
+			foundImgs = append(foundImgs, s.find(pageBody)...)
+		}
+		this.cachedImgSearchResults[post.ID] = foundImgs
+
 		datePublished, err := time.Parse(TIME_FORMAT, post.Date)
 
 		ids = append(ids, dao.VoyageReport{
@@ -124,38 +168,33 @@ func (this *HuskytmReportProvider) cacheImages() error {
 	if err != nil {
 		return err
 	}
+	this.images = make([]dao.Img, len(media))
 
 	for i := 0; i < len(media); i++ {
 		m := media[i].(wp.Media)
-
-		if m.Post <= 0 {
-			continue
-		}
 
 		tm, err := time.Parse(TIME_FORMAT, m.Date)
 		if err != nil {
 			return err
 		}
-		fmt.Println("Title: ", m.Title.Rendered)
-		fmt.Println("Description: ", m.Description.Rendered)
-		fmt.Println("Caption: ", m.Caption.Rendered)
-		fmt.Println("AltText: ", m.AltText)
 
-		this.images[m.Post] = append(this.images[m.Post], dao.Img{
+		this.images[i] = dao.Img{
 			Source:SOURCE,
 			RemoteId: fmt.Sprintf("%d", m.ID),
+			RawUrl:m.SourceURL,
 			Url: m.MediaDetails.Sizes.Large.SourceURL,
 			PreviewUrl: m.MediaDetails.Sizes.Thumbnail.SourceURL,
 			DatePublished: tm,
 			LabelsForSearch: []string{
 				m.Title.Rendered,
-				m.Description.Rendered,
-				m.Caption.Rendered,
-				m.AltText,
+				//m.Description.Rendered,
+				//m.Caption.Rendered,
+				//m.AltText,
 			},
-		})
+		}
 	}
-	//fmt.Printf("Cached images are: %v+\n", this.images)
+	//b,_ := json.Marshal(this.images)
+	//fmt.Printf("Cached images are: \n%s\n", string(b))
 	return nil
 }
 
@@ -168,9 +207,17 @@ func (this *HuskytmReportProvider) Images(reportId string) ([]dao.Img, error) {
 		log.Error("Report id should be integer: ", reportId)
 		return []dao.Img{}, err
 	}
-	imgs, found := this.images[int(reportIdInt)]
-	if found {
-		return imgs, nil
+
+	imgsFound := []dao.Img{}
+	for _, imgSearchResult := range this.cachedImgSearchResults[int(reportIdInt)] {
+		for i := 0; i < len(this.images); i++ {
+			img := this.images[i]
+			if imgSearchResult.url == img.RawUrl {
+				img.LabelsForSearch = append([]string{imgSearchResult.title}, img.LabelsForSearch...)
+				imgsFound = append(imgsFound, img)
+			}
+		}
 	}
-	return []dao.Img{}, nil
+
+	return imgsFound, nil
 }

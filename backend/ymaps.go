@@ -105,6 +105,15 @@ func mkFeature(point WhiteWaterPointWithRiverTitle, withDescription bool, resour
 		description = point.ShortDesc
 	}
 
+	imgs := make([]Preview, len(point.Images))
+	for i, img := range point.Images {
+		imgs[i] = Preview{
+			PreviewUrl:img.PreviewUrl,
+			Url:img.Url,
+			Source:img.Source,
+			RemoteId:img.RemoteId,
+		}
+	}
 	properties := FeatureProperties{
 		HintContent: point.Title,
 		Id: point.Id,
@@ -113,13 +122,14 @@ func mkFeature(point WhiteWaterPointWithRiverTitle, withDescription bool, resour
 		Link: point.Link,
 		ShortDesc: description,
 		RiverName: point.RiverTitle,
+		Images: imgs,
 	}
 	if point.Category.Category > 0 {
 		properties.Category = &point.Category
 	}
 
 	imageHref := fmt.Sprintf(resourcesBase + "/img/cat%d.png", point.Category.Category)
-	if point.Category.Category == model.IMPASSABLE {
+	if point.Category.Category == model.IMPASSABLE{
 		imageHref = resourcesBase + "/img/impassable.png"
 	}
 	return Feature{
@@ -207,7 +217,6 @@ func mkCluster(Id ClusterId, points []WhiteWaterPointWithRiverTitle) Feature {
 	bounds := ClusterGeom(points)
 	iconText := points[0].RiverTitle
 
-
 	return Feature{
 		Id: MAX_CLUSTER_ID - rand.Int63n(MAX_CLUSTERS),
 		Type: CLUSTER,
@@ -249,7 +258,7 @@ func RoutesToYmaps(route []Route) FeatureCollection {
 	return MkFeatureCollection(features)
 }
 
-func min(x,y int) int {
+func min(x, y int) int {
 	if x < y {
 		return x
 	}

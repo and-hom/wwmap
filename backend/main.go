@@ -16,6 +16,7 @@ type App struct {
 	whiteWaterDao   WhiteWaterDao
 	reportDao       ReportDao
 	voyageReportDao VoyageReportDao
+	imgDao          ImgDao
 	clusterMaker    ClusterMaker
 }
 
@@ -28,6 +29,7 @@ func main() {
 
 	riverDao := RiverStorage{storage.(PostgresStorage)}
 	voyageReportDao := VoyageReportStorage{storage.(PostgresStorage)}
+	imgDao := ImgStorage{storage.(PostgresStorage)}
 	whiteWaterDao := WhiteWaterStorage{storage.(PostgresStorage)}
 	reportDao := ReportStorage{storage.(PostgresStorage)}
 
@@ -44,6 +46,7 @@ func main() {
 		reportDao:reportDao,
 		voyageReportDao: voyageReportDao,
 		clusterMaker:clusterMaker,
+		imgDao:imgDao,
 	}
 
 	handler := Handler{app}

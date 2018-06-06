@@ -11,6 +11,7 @@ import (
 	"io"
 	"html/template"
 	"github.com/and-hom/wwmap/lib/mail"
+	"fmt"
 )
 
 type App struct {
@@ -145,7 +146,7 @@ func (this App) DoSyncReports() {
 
 	log.Info("Try to connect reports with known rivers")
 
-	for _, report := range reports {
+	for i, report := range reports {
 		log.Infof("Tags are: %v", report.Tags)
 		rivers, err := this.RiverDao.FindTitles(report.Tags)
 		if err != nil {
@@ -158,7 +159,7 @@ func (this App) DoSyncReports() {
 				log.Fatal(err)
 			}
 		}
-		report.Rivers = rivers
+		reports[i].Rivers = rivers
 	}
 
 	for _, report := range reports {
@@ -167,11 +168,12 @@ func (this App) DoSyncReports() {
 }
 
 func (this App) findMatchAndStoreImages(report dao.VoyageReport, reportProvider common.ReportProvider) {
-	log.Infof("Find images for report %d", report.Id)
+	log.Infof("Find images for report %d: %s %s", report.Id, report.RemoteId, report.Title)
 	imgs, err := reportProvider.Images(report.RemoteId)
 	if err != nil {
 		this.Fatalf(err, "Can not load images for report %d", report.Id)
 	}
+	fmt.Printf("%d images found\n", len(imgs))
 
 	log.Infof("Bind images to ww spots for report %d", report.Id)
 	matchedImgs := []dao.Img{}
@@ -186,10 +188,10 @@ func (this App) findMatchAndStoreImages(report dao.VoyageReport, reportProvider 
 		}
 	}
 
-	log.Infof("Store images for report %d", report.Id)
+	log.Infof("Store %d images for report %d", len(matchedImgs), report.Id)
 	_, err = this.ImgDao.Upsert(matchedImgs...)
 	if err != nil {
-		this.Fatalf(err, "Can not upsert images for report %d", report.Id,)
+		this.Fatalf(err, "Can not upsert images for report %d", report.Id, )
 	}
 }
 
@@ -208,22 +210,27 @@ func (this App) matchImgsToWhiteWaterPoints(report dao.VoyageReport, imgs []dao.
 			}
 			for _, wwpt := range wwpts {
 				for _, label := range img.LabelsForSearch {
-					if strings.Contains(strings.ToLower(label), strings.ToLower(wwpt.Title)) {
+					if strings.Contains(forCompare(label), forCompare(wwpt.Title)) {
+						fmt.Println("Found: ", label)
 						rec, found := candidates[img.RemoteId]
 						if !found {
 							rec = ImgWwPoints{
 								Img:img,
 								Wwpts:[]dao.WhiteWaterPointWithRiverTitle{},
 							}
-							candidates[img.RemoteId] = rec
 						}
 						rec.Wwpts = append(rec.Wwpts, wwpt)
+						candidates[img.RemoteId] = rec
 					}
 				}
 			}
 		}
 	}
 	return candidates
+}
+
+func forCompare(s string) string {
+	return strings.Replace(strings.ToLower(s), "ё", "e", -1)
 }
 
 func (this App) Fatalf(err error, pattern string, args ...interface{}) {

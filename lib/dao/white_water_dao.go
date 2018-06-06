@@ -78,6 +78,7 @@ func (this WhiteWaterStorage) listWhiteWaterPoints(condition string, vars ...int
 					Link: link.String,
 				},
 				riverTitle.String,
+				[]Img{},
 			}
 			return whiteWaterPoint, nil
 		}, vars...)

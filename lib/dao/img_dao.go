@@ -1,5 +1,7 @@
 package dao
 
+import "database/sql"
+
 type ImgStorage struct {
 	PostgresStorage
 }
@@ -28,4 +30,19 @@ func (this ImgStorage) Upsert(imgs ...Img) ([]Img, error) {
 		result[i].Id = ids[i]
 	}
 	return result, nil
+}
+func (this ImgStorage) List(wwId int64, limit int) ([]Img, error) {
+	result, err := this.doFindList("SELECT id,white_water_rapid_id,source,remote_id,url,preview_url,date_published " +
+		"FROM image WHERE white_water_rapid_id=$1 LIMIT $2", func(rows *sql.Rows) (Img, error) {
+		img := Img{}
+		err := rows.Scan(&img.Id, &img.WwId, &img.Source, &img.RemoteId, &img.Url, &img.PreviewUrl, &img.DatePublished)
+		if err != nil {
+			return img, err
+		}
+		return img, nil
+	}, wwId, limit)
+	if err != nil {
+		return []Img{}, err
+	}
+	return result.([]Img), nil
 }

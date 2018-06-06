@@ -73,6 +73,7 @@ type VoyageReportDao interface {
 
 type ImgDao interface {
 	Upsert(report ...Img) ([]Img, error)
+	List(wwId int64, limit int) ([]Img, error)
 }
 
 type WwPassportDao interface {

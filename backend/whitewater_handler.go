@@ -11,6 +11,8 @@ import (
 	. "github.com/and-hom/wwmap/lib/http"
 )
 
+const PREVIEWS_COUNT int = 2
+
 type WhiteWaterHandler struct {
 	Handler
 	resourceBase string
@@ -28,6 +30,14 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not read whitewater points for bbox %s", bbox.String()))
 		return
+	}
+	for i := 0; i < len(points); i++ {
+		imgs, err := this.imgDao.List(points[i].Id, PREVIEWS_COUNT)
+		if err != nil {
+			log.Warnf("Can not read whitewater point images for point", points[i].Id)
+			continue
+		}
+		points[i].Images = imgs
 	}
 
 	featureCollection := MkFeatureCollection(whiteWaterPointsToYmaps(this.clusterMaker, points, bbox.Width(), bbox.Height(), zoom, this.resourceBase))

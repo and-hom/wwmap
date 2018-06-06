@@ -172,6 +172,7 @@ type WhiteWaterPoint struct {
 type WhiteWaterPointWithRiverTitle struct {
 	WhiteWaterPoint
 	RiverTitle string
+	Images     []Img
 }
 
 type WaterWayTmp struct {
@@ -222,6 +223,7 @@ type Img struct {
 	WwId            int64
 	Source          string
 	RemoteId        string
+	RawUrl          string
 	Url             string
 	PreviewUrl      string
 	DatePublished   time.Time
