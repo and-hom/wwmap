@@ -44,7 +44,7 @@ func main() {
 	log.Infof("Starting wwmap")
 	app := CreateApp()
 	app.DoSyncReports()
-	app.DoSyncCatalog()
+	//app.DoSyncCatalog()
 }
 
 func (this App) DoSyncCatalog() {
