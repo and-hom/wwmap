@@ -11,7 +11,7 @@ import (
 	. "github.com/and-hom/wwmap/lib/http"
 )
 
-const PREVIEWS_COUNT int = 2
+const PREVIEWS_COUNT int = 20
 
 type WhiteWaterHandler struct {
 	Handler

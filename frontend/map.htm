@@ -13,12 +13,17 @@
     </h3>
 
     <div class="popover-content">
-        {%if properties.category%}<div>Категория сложности: {{properties.category}}</div>{%endif%}
-        {%if properties.river_name%}<div>Река: {{properties.river_name}}</div>{%endif%}
+        {%if properties.category%}<div><strong>Категория сложности:</strong>&nbsp{{properties.category}}</div>{%endif%}
+        {%if properties.river_name%}<div><strong>Река:</strong>&nbsp{{properties.river_name}}</div>{%endif%}
         <div>{{properties.short_description}}</div>
+        {%if properties.images %}&nbsp<br/>
+            <div class="gallery-div" style="height:auto; width: 100%; overflow-x: scroll; overflow-y: hidden;white-space: nowrap;">
+            {% for img in properties.images %} <img style="display: inline; width:150px;" src="{{img.preview_url}}"/> {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+    <div class="popover-footer">
         <a target="_top" href="" onclick="show_report_popup({{properties.id}}); return false">Сообщить о неточном местоположении</a>
-        <br/>
-        {% for img in properties.images %} <img src="{{img.preview_url}}"/> {% endfor %}
     </div>
 </div>
 
