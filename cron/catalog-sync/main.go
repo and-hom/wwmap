@@ -230,7 +230,7 @@ func (this App) matchImgsToWhiteWaterPoints(report dao.VoyageReport, imgs []dao.
 }
 
 func forCompare(s string) string {
-	return strings.Replace(strings.ToLower(s), "ё", "e", -1)
+	return strings.Replace(strings.Replace(strings.ToLower(s), "ё", "e", -1), "-", " ", -1)
 }
 
 func (this App) Fatalf(err error, pattern string, args ...interface{}) {
