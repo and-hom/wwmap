@@ -9,7 +9,9 @@ notifications:
   email_recipients:
     - "and.hom@gmail.com"
   email_sender: "and.hom@gmail.com"
-  email_subject: "Есть новые сообщения о неточностях"
+  reporting_email_subject: "Есть новые сообщения о неточностях"
+  import_export_email_subject: "Отчёт об импорте-экспорте каталога"
+
 api:
   bind_to: ":7007"
 tile-cache:
@@ -29,4 +31,8 @@ content:
 
 backup:
   email: "info@wwmap.ru"
+  password: ""
+
+sync:
+  login: "wwmap"
   password: ""

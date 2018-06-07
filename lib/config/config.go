@@ -17,7 +17,8 @@ type ClusterizationParams struct {
 type Notifications struct {
 	EmailRecipients []string `yaml:"email_recipients"`
 	EmailSender     string `yaml:"email_sender"`
-	EmailSubject    string `yaml:"email_subject"`
+	ReportingEmailSubject    string `yaml:"reporting_email_subject"`
+	ImportExportEmailSubject    string `yaml:"import_export_email_subject"`
 }
 
 type Api struct {
@@ -34,6 +35,11 @@ type TileCache struct {
 	Types   map[string][]string `yaml:"types"`
 }
 
+type WordpressSync struct {
+	Login string `yaml:"login"`
+	Password string `yaml:"password"`
+}
+
 type Configuration struct {
 	DbConnString         string `yaml:"db-connection-string"`
 	ClusterizationParams ClusterizationParams `yaml:"clusterization"`
@@ -41,6 +47,7 @@ type Configuration struct {
 	Api                  Api `yaml:"api"`
 	Content              Content `yaml:"content"`
 	TileCache            TileCache `yaml:"tile-cache"`
+	Sync                 WordpressSync `yaml:"sync"`
 }
 
 func loadConf(filename string) (Configuration, error) {

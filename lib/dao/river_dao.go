@@ -6,10 +6,15 @@ import (
 	"encoding/json"
 	"github.com/and-hom/wwmap/lib/geo"
 	"fmt"
+	"github.com/lib/pq"
 )
 
 type RiverStorage struct {
 	PostgresStorage
+}
+
+func (this RiverStorage) FindTitles(titles []string) ([]RiverTitle, error) {
+	return this.listRiverTitles("SELECT id, title,NULL FROM river WHERE title ilike ANY($1)", pq.Array(titles))
 }
 
 func (this RiverStorage) NearestRivers(point geo.Point, limit int) ([]RiverTitle, error) {
@@ -79,7 +84,7 @@ func (this RiverStorage) listRiverTitles(query string, queryParams ...interface{
 							Lat: pgPoint.Coordinates.Lat - 0.0001,
 							Lon: pgPoint.Coordinates.Lon + 0.0001,
 						},
-					},}
+					}, }
 				}
 
 				bounds = geo.Bbox{

@@ -11,11 +11,13 @@ import (
 )
 
 type App struct {
-	storage       Storage
-	riverDao      RiverDao
-	whiteWaterDao WhiteWaterDao
-	reportDao     ReportDao
-	clusterMaker  ClusterMaker
+	storage         Storage
+	riverDao        RiverDao
+	whiteWaterDao   WhiteWaterDao
+	reportDao       ReportDao
+	voyageReportDao VoyageReportDao
+	imgDao          ImgDao
+	clusterMaker    ClusterMaker
 }
 
 func main() {
@@ -26,6 +28,8 @@ func main() {
 	storage := NewPostgresStorage(configuration.DbConnString)
 
 	riverDao := RiverStorage{storage.(PostgresStorage)}
+	voyageReportDao := VoyageReportStorage{storage.(PostgresStorage)}
+	imgDao := ImgStorage{storage.(PostgresStorage)}
 	whiteWaterDao := WhiteWaterStorage{storage.(PostgresStorage)}
 	reportDao := ReportStorage{storage.(PostgresStorage)}
 
@@ -40,14 +44,16 @@ func main() {
 		riverDao:riverDao,
 		whiteWaterDao:whiteWaterDao,
 		reportDao:reportDao,
+		voyageReportDao: voyageReportDao,
 		clusterMaker:clusterMaker,
+		imgDao:imgDao,
 	}
 
 	handler := Handler{app}
 	gpxHandler := GpxHandler{handler}
 	routeHandler := RouteHandler{handler}
 	trackHandler := TrackHandler{handler}
-	riverHandler := RiverHandler{handler}
+	riverHandler := RiverHandler{handler, configuration.Content.ResourceBase}
 	whiteWaterHandler := WhiteWaterHandler{handler, configuration.Content.ResourceBase}
 	pointHandler := PointHandler{handler}
 	reportHandler := ReportHandler{handler}

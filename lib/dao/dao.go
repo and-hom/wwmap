@@ -9,6 +9,7 @@ import (
 	"errors"
 	"reflect"
 	. "github.com/and-hom/wwmap/lib/geo"
+	"fmt"
 )
 
 type Storage interface {
@@ -35,19 +36,20 @@ type Storage interface {
 	FindEventPoint(id int64, eventPoint *EventPoint) (bool, error)
 	ListPoints(bbox Bbox) []EventPoint
 	FindEventPointsForRoute(routeId int64) []EventPoint
-
 }
 
 type RiverDao interface {
 	NearestRivers(point Point, limit int) ([]RiverTitle, error)
 	RiverById(id int64) (RiverTitle, error)
 	ListRiversWithBounds(bbox Bbox, limit int) ([]RiverTitle, error)
+	FindTitles(titles []string) ([]RiverTitle, error)
 }
 
 type WhiteWaterDao interface {
 	AddWhiteWaterPoints(whiteWaterPoint ...WhiteWaterPoint) error
 	ListWhiteWaterPoints(bbox Bbox) ([]WhiteWaterPointWithRiverTitle, error)
-	ListWhiteWaterPointsByRiver(id int64) ([]WhiteWaterPointWithRiverTitle, error)
+	ListWhiteWaterPointsByRiver(riverId int64) ([]WhiteWaterPointWithRiverTitle, error)
+	ListWhiteWaterPointsByRiverAndTitle(riverId int64, title string) ([]WhiteWaterPointWithRiverTitle, error)
 }
 
 type ReportDao interface {
@@ -60,6 +62,23 @@ type WaterWayDao interface {
 	AddWaterWays(waterways ...WaterWay) error
 	UpdateWaterWay(waterway WaterWay) error
 	ForEachWaterWay(func(WaterWay) error) error
+}
+
+type VoyageReportDao interface {
+	UpsertVoyageReports(report ...VoyageReport) ([]VoyageReport, error)
+	GetLastId(source string) (interface{}, error)
+	AssociateWithRiver(voyageReportId, riverId int64) error
+	List(riverId int64) ([]VoyageReport, error)
+}
+
+type ImgDao interface {
+	Upsert(report ...Img) ([]Img, error)
+	List(wwId int64, limit int) ([]Img, error)
+}
+
+type WwPassportDao interface {
+	Upsert(wwPassport ...WWPassport) error
+	GetLastId(source string) (interface{}, error)
 }
 
 type PostgresStorage struct {
@@ -436,7 +455,8 @@ func (s PostgresStorage)doFindList(query string, callback interface{}, args ...i
 	return result.Interface(), nil
 }
 
-func (s PostgresStorage)insertReturningId(query string, args ...interface{}) (int64, error) {
+// Deprecated: use updateReturningId
+func (s PostgresStorage) insertReturningId(query string, args ...interface{}) (int64, error) {
 	tx, err := s.db.Begin()
 	if err != nil {
 		return -1, err
@@ -472,7 +492,49 @@ func (s PostgresStorage)insertReturningId(query string, args ...interface{}) (in
 		return -1, errors.New("Not inserted")
 	}
 	return lastId, nil
+}
 
+func (s PostgresStorage) updateReturningId(query string, mapper func(entity interface{}) ([]interface{}, error), values ...interface{}) ([]int64, error) {
+	tx, err := s.db.Begin()
+	if err != nil {
+		return []int64{}, err
+	}
+
+	stmt, err := tx.Prepare(query)
+	if err != nil {
+		return []int64{}, err
+	}
+
+	result := make([]int64, len(values))
+	for idx, value := range values {
+		args, err := mapper(value)
+		if err != nil {
+			return []int64{}, err
+		}
+		rows, err := stmt.Query(args...)
+		if err != nil {
+			return []int64{}, err
+		}
+		if rows.Next() {
+			rows.Scan(&result[idx])
+		} else {
+			return []int64{}, fmt.Errorf("Value is not inserted: %v+", value)
+		}
+		err = rows.Close()
+		if err != nil {
+			return []int64{}, err
+		}
+	}
+
+	err = stmt.Close()
+	if err != nil {
+		return []int64{}, err
+	}
+	err = tx.Commit()
+	if err != nil {
+		return []int64{}, err
+	}
+	return result, nil
 }
 
 func (s PostgresStorage)performUpdates(query string, mapper func(entity interface{}) ([]interface{}, error), values ...interface{}) error {

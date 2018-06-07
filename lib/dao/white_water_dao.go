@@ -20,6 +20,9 @@ func (this WhiteWaterStorage) ListWhiteWaterPoints(bbox geo.Bbox) ([]WhiteWaterP
 func (this WhiteWaterStorage) ListWhiteWaterPointsByRiver(id int64) ([]WhiteWaterPointWithRiverTitle, error) {
 	return this.listWhiteWaterPoints("WHERE river_id=$1", id)
 }
+func (this WhiteWaterStorage) ListWhiteWaterPointsByRiverAndTitle(riverId int64, title string) ([]WhiteWaterPointWithRiverTitle, error) {
+	return this.listWhiteWaterPoints("WHERE river_id=$1 AND title=$2", riverId, title)
+}
 
 func (this WhiteWaterStorage) listWhiteWaterPoints(condition string, vars ...interface{}) ([]WhiteWaterPointWithRiverTitle, error) {
 	result, err := this.doFindList(
@@ -75,6 +78,7 @@ func (this WhiteWaterStorage) listWhiteWaterPoints(condition string, vars ...int
 					Link: link.String,
 				},
 				riverTitle.String,
+				[]Img{},
 			}
 			return whiteWaterPoint, nil
 		}, vars...)

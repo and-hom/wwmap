@@ -1,0 +1,12 @@
+{{len .}} новых сообщений о неточностях
+
+<table style="width:800px; padding-left:30px;" border="0">
+<tr>
+    <th align="left">Найдено отчётов</th>
+    <th align="left">{{.ReportsFound}}</th>
+</tr>
+<tr>
+    <th align="left">Успешно импортировано отчётов</th>
+    <th align="left">{{.ReportsImported}}</th>
+</tr>
+</table>

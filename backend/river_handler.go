@@ -6,10 +6,13 @@ import (
 	"strconv"
 	. "github.com/and-hom/wwmap/lib/geo"
 	. "github.com/and-hom/wwmap/lib/http"
+	"github.com/and-hom/wwmap/lib/dao"
+	"strings"
 )
 
 type RiverHandler struct {
 	Handler
+	resourceBase string
 }
 
 func (this *RiverHandler) GetNearestRivers(w http.ResponseWriter, r *http.Request) {
@@ -35,6 +38,18 @@ func (this *RiverHandler) GetNearestRivers(w http.ResponseWriter, r *http.Reques
 	w.Write([]byte(this.JsonStr(rivers, "[]")))
 }
 
+type VoyageReportDto struct {
+	Id            int64 `json:"id"`
+	Title         string `json:"title"`
+	Url           string `json:"url"`
+	SourceLogoUrl string `json:"source_logo_url"`
+}
+
+type RiverWithReports struct {
+	dao.RiverTitle
+	Reports []VoyageReportDto `json:"reports"`
+}
+
 func (this *RiverHandler) GetVisibleRivers(w http.ResponseWriter, req *http.Request) {
 	CorsHeaders(w, "GET")
 
@@ -49,9 +64,28 @@ func (this *RiverHandler) GetVisibleRivers(w http.ResponseWriter, req *http.Requ
 		return
 	}
 
+	riversWithReports := make([]RiverWithReports, len(rivers))
 	for i := 0; i < len(rivers); i++ {
 		river := &rivers[i]
 		river.Bounds = river.Bounds.WithMargins(0.05)
+
+		reports, err := this.voyageReportDao.List(river.Id)
+		if err != nil {
+			OnError500(w, err, fmt.Sprintf("Can not select reports for river %d", river.Id))
+			return
+		}
+		reportDtos := make([]VoyageReportDto, len(reports))
+		for j, report := range reports {
+			reportDtos[j] = VoyageReportDto{
+				Id:report.Id,
+				Url:report.Url,
+				Title:report.Title,
+				SourceLogoUrl:this.resourceBase + "img/report_sources/" + strings.ToLower(report.Source) + ".png",
+			}
+		}
+
+		riversWithReports[i] = RiverWithReports{*river, reportDtos}
+
 	}
-	w.Write([]byte(this.JsonStr(rivers, "[]")))
+	w.Write([]byte(this.JsonStr(riversWithReports, "[]")))
 }
