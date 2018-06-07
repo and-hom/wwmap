@@ -80,7 +80,7 @@ func (this *RiverHandler) GetVisibleRivers(w http.ResponseWriter, req *http.Requ
 				Id:report.Id,
 				Url:report.Url,
 				Title:report.Title,
-				SourceLogoUrl:this.resourceBase + "img/report_sources/" + strings.ToLower(report.Source) + ".png",
+				SourceLogoUrl:this.resourceBase + "/img/report_sources/" + strings.ToLower(report.Source) + ".png",
 			}
 		}
 
