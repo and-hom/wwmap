@@ -1,3 +1,9 @@
+wwmap-db (0.0.5) UNRELEASED; urgency=medium
+
+  * #49 Synchronize images and reports with huskytm.ru
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Thu, 07 Jun 2018 13:43:33 +0300
+
 wwmap-db (0.0.4) unstable; urgency=medium
 
   * Get password from common wwmap config
