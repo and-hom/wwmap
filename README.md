@@ -4,6 +4,7 @@
 * **config** - package installs common configuration file of project
 * **cron** - crontab file and utilities called periodically:
     * **notifier** - sends reports to email
+    * **catalog-sync** - synchronize database with remote reports and catalogs
     * **backup** - performs backups to yandex disk
 * **data** - utilities for OSM xml parsing
 * **db** - database migrations package
