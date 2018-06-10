@@ -27,6 +27,7 @@ func GetCatalogConnector(login, password string) (common.CatalogConnector, error
 	return &HuskytmCatalogConnector{
 		client:client,
 		me:u.ID,
+		pageIdsCache:make(map[string]int),
 	}, nil
 }
 
@@ -49,8 +50,9 @@ type ReadMetaWrapper struct {
 }
 
 type HuskytmCatalogConnector struct {
-	client *wp.Client
-	me     int
+	client       *wp.Client
+	me           int
+	pageIdsCache map[string]int
 }
 
 func (this *HuskytmCatalogConnector) Close() error {
@@ -139,6 +141,15 @@ func (this *HuskytmCatalogConnector) CreatePage(title string, parent int) (int, 
 }
 
 func (this *HuskytmCatalogConnector) GetId(title string, parent int) (int, error) {
+	cacheId := fmt.Sprintf("%d-%s", parent, title)
+	idFromCache, isInCache := this.pageIdsCache[cacheId]
+	if isInCache {
+		log.Infof("Get id for %s from cache: %d", title, idFromCache)
+		return idFromCache, nil
+	} else {
+		log.Infof("Do real request: get id for %s child of %d", title, parent)
+	}
+
 	params := emptyMap()
 	if parent > 0 {
 		params["parent"] = parent
@@ -158,7 +169,9 @@ func (this *HuskytmCatalogConnector) GetId(title string, parent int) (int, error
 	for _, p := range found {
 		//log.Debugf("Search by name for %s: %s", title, p.(wp.Page).Title.Rendered)
 		if p.(wp.Page).Title.Rendered == title {
-			return p.(wp.Page).ID, nil
+			id := p.(wp.Page).ID
+			this.pageIdsCache[cacheId] = id
+			return id, nil
 		}
 	}
 	return 0, PageNotFoundError{fmt.Sprintf("Can not find page with name \"%s\" as child of %d", title, parent)}
