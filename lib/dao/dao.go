@@ -47,9 +47,10 @@ type RiverDao interface {
 
 type WhiteWaterDao interface {
 	AddWhiteWaterPoints(whiteWaterPoint ...WhiteWaterPoint) error
-	ListWhiteWaterPoints(bbox Bbox) ([]WhiteWaterPointWithRiverTitle, error)
-	ListWhiteWaterPointsByRiver(riverId int64) ([]WhiteWaterPointWithRiverTitle, error)
-	ListWhiteWaterPointsByRiverAndTitle(riverId int64, title string) ([]WhiteWaterPointWithRiverTitle, error)
+	ListWithPath() ([]WhiteWaterPointWithPath, error)
+	ListByBbox(bbox Bbox) ([]WhiteWaterPointWithRiverTitle, error)
+	ListByRiver(riverId int64) ([]WhiteWaterPointWithRiverTitle, error)
+	ListByRiverAndTitle(riverId int64, title string) ([]WhiteWaterPointWithRiverTitle, error)
 }
 
 type ReportDao interface {

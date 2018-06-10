@@ -10,6 +10,7 @@ import (
 
 const SOURCE string = "huskytm"
 const API_BASE string = "https://huskytm.ru/wp-json/wp/v2"
+const CUSTOM_FIELDS_API_BASE string = "https://huskytm.ru/wp-json/acf/v3"
 const TIME_FORMAT string = "2006-01-02T15:04:05"
 const TOTAL_PAGES_HEADER = "X-WP-TotalPages"
 

@@ -175,6 +175,11 @@ type WhiteWaterPointWithRiverTitle struct {
 	Images     []Img
 }
 
+type WhiteWaterPointWithPath struct {
+	WhiteWaterPoint
+	Path []string
+}
+
 type WaterWayTmp struct {
 	Id            int64 `json:"id"`
 	Title         string `json:"title"`

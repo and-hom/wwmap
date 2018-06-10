@@ -26,7 +26,7 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 		return
 	}
 
-	points, err := this.whiteWaterDao.ListWhiteWaterPoints(bbox)
+	points, err := this.whiteWaterDao.ListByBbox(bbox)
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not read whitewater points for bbox %s", bbox.String()))
 		return

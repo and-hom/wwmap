@@ -25,7 +25,7 @@ func (this *GpxHandler) DownloadGpx(w http.ResponseWriter, req *http.Request) {
 
 	transliterate := req.FormValue("tr")!=""
 
-	whitewaterPoints, err := this.whiteWaterDao.ListWhiteWaterPointsByRiver(id)
+	whitewaterPoints, err := this.whiteWaterDao.ListByRiver(id)
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not read whitewater points for river %s", id))
 		return

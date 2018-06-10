@@ -16,6 +16,8 @@ type CatalogConnector interface {
 	PassportEntriesSince(key string) ([]dao.WWPassport, error)
 	GetImages(key string) ([]dao.Img, error)
 
-	Exists(key string) (bool, error)
-	Create(passport dao.WWPassport, imgs []dao.Img) error
+	Exists(key []string) (bool, error)
+	CreatePage(title string, parent int) (int, error)
+	GetId(title string, parent int) (int, error)
+	Create(passport dao.WhiteWaterPoint, imgId int, parent int, imgs []dao.Img) error
 }
