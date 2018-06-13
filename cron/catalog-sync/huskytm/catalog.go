@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"net/http"
 	log "github.com/Sirupsen/logrus"
+	"strconv"
+	"strings"
 )
 
 const ROOT_PAGE = 1739
@@ -31,13 +33,21 @@ func GetCatalogConnector(login, password string) (common.CatalogConnector, error
 	}, nil
 }
 
+type Position struct {
+	Address string `json:"address,omitempty"`
+	Lat     float64 `json:"lat,omitempty"`
+	Lng     float64 `json:"lng,omitempty"`
+}
+
 type Meta struct {
 	ShortDesc           string `json:"short_desc,omitempty"`
 	LowWaterCategory    string `json:"l_w_category,omitempty"`
 	MediumWaterCategory string `json:"m_w_category,omitempty"`
 	HighWaterCategory   string `json:"h_w_category,omitempty"`
-	Latitude            float64 `json:"latitude,omitempty"`
-	Longitude           float64 `json:"longitude,omitempty"`
+	//Latitude            float64 `json:"latitude,omitempty"`
+	//Longitude           float64 `json:"longitude,omitempty"`
+	PhotoIds            string `json:"photo_ids,omitempty"`
+	Position            Position`json:"position,omitempty"`
 }
 
 type StoreMetaWrapper struct {
@@ -89,7 +99,7 @@ func (this *HuskytmCatalogConnector) Exists(key []string) (bool, error) {
 	return true, nil
 }
 
-func (this *HuskytmCatalogConnector) Create(wwPoint dao.WhiteWaterPoint, imgId int, parent int, imgs []dao.Img) error {
+func (this *HuskytmCatalogConnector) Create(wwPoint dao.WhiteWaterPoint, parent int, imgs []dao.Img) error {
 	page := wp.Page{
 		Title:wp.Title{Raw:wwPoint.Title},
 		Author:this.me,
@@ -97,8 +107,13 @@ func (this *HuskytmCatalogConnector) Create(wwPoint dao.WhiteWaterPoint, imgId i
 		Template:"page-templates/page_ww_passport.php",
 		Status:"publish",
 	}
-	if imgId > 0 {
-		page.FeaturedMedia = imgId
+	if len(imgs) > 0 {
+		imgId, err := strconv.ParseInt(imgs[0].RemoteId, 10, 32)
+		if err != nil {
+			log.Errorf("Can not parse img remote id %s", imgs[0].RemoteId)
+			return err
+		}
+		page.FeaturedMedia = int(imgId)
 	}
 	fmt.Println("page is ", page)
 	created, r, b, err := this.client.Pages().Create(&page)
@@ -109,12 +124,21 @@ func (this *HuskytmCatalogConnector) Create(wwPoint dao.WhiteWaterPoint, imgId i
 	metaFields := StoreMetaWrapper{
 		Fields:Meta{
 			ShortDesc:wwPoint.ShortDesc,
-			Latitude:wwPoint.Point.Lat,
-			Longitude:wwPoint.Point.Lon,
+			Position: Position{
+				Address:"",
+				Lat:wwPoint.Point.Lat,
+				Lng:wwPoint.Point.Lon,
+			},
 			MediumWaterCategory:wwPoint.Category.String(),
+			PhotoIds:"",
 		},
 	}
-	fmt.Printf("%s/pages/%d\n", CUSTOM_FIELDS_API_BASE, created.ID)
+
+	ids := make([]string, len(imgs))
+	for i := 0; i < len(imgs); i++ {
+		ids[i] = imgs[i].RemoteId
+	}
+	metaFields.Fields.PhotoIds = strings.Join(ids, ",")
 	resp, body, err := this.client.CustomPostJson(fmt.Sprintf("%s/pages/%d", CUSTOM_FIELDS_API_BASE, created.ID), metaFields)
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("Can not store meta fields. Code: %d Body: %s", resp.StatusCode, string(body))

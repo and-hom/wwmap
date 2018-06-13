@@ -7,6 +7,8 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
+const MAX_ATTACHED_IMGS = 300
+
 func (this App) DoWriteCatalog() {
 	log.Info("Create missing ww passports")
 	catalogConnector := this.getCachedCatalogConnector()
@@ -30,8 +32,8 @@ func (this App) DoWriteCatalog() {
 				this.Fatalf(err, "Can not get images for ww point %d", point.Id)
 			}
 			imgId := -1
-			if len(imgs)>0 {
-				imgId64, err := strconv.ParseInt(imgs[0].RemoteId,10, 32)
+			if len(imgs) > 0 {
+				imgId64, err := strconv.ParseInt(imgs[0].RemoteId, 10, 32)
 				if err != nil {
 					this.Fatalf(err, "Can not parse img remote id", imgs[0].RemoteId)
 				}
@@ -50,7 +52,11 @@ func (this App) createCatalogEntry(p *dao.WhiteWaterPointWithPath, imgId int) {
 		this.Fatalf(err, "Can not create directories")
 	}
 	catalogConnector := this.getCachedCatalogConnector()
-	err = catalogConnector.Create(p.WhiteWaterPoint, imgId, parent_id, []dao.Img{})
+	imgs, err := this.ImgDao.List(p.Id, MAX_ATTACHED_IMGS)
+	if err != nil {
+		this.Fatalf(err, "Can not get attached images for %d", p.Id)
+	}
+	err = catalogConnector.Create(p.WhiteWaterPoint, parent_id, imgs)
 	if err != nil {
 		this.Fatalf(err, "Can not create passport")
 	}
