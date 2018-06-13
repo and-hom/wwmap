@@ -198,21 +198,24 @@ h2 {
     margin-right: 11px;
 }
 
-.riverMenu li a {
-    vertical-align: top;
-    display: inline-block;
-}
 
-.riverMenu li {
-    list-style-type: none;
-    padding-left: 0px;
-    padding-bottom:10px;
+.riverMenu td {
+    vertical-align: top;
 }
 
 .riverMenu .reports {
     display: inline;
     font-size: 60%;
     width: 250px;
+}
+
+.reports a {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+  vertical-align: top;
+  display: inline-block;
 }
 
 .legend {

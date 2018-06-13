@@ -11,36 +11,47 @@ import (
 	"fmt"
 	"html/template"
 	"github.com/and-hom/wwmap/lib/mail"
+	"github.com/and-hom/wwmap/cron/catalog-sync/tlib"
 )
 
 func (this App) DoSyncReports() {
-	lastId, err := this.VoyageReportDao.GetLastId(huskytm.SOURCE)
-	if err != nil {
-		this.Fatalf(err, "Can not connect get last report id")
-	}
-	lastReportIdStr := lastId.(time.Time).Format(huskytm.TIME_FORMAT)
-	log.Infof("Get and store reports since %s", lastReportIdStr)
+	//huskytmReportProvider, err := huskytm.GetReportProvider(this.Configuration.Login, this.Configuration.Password)
+	//if err != nil {
+	//	this.Fatalf(err, "Can not connect to source")
+	//}
+	//defer huskytmReportProvider.Close()
+	//this.doSyncReports(huskytm.SOURCE, &huskytmReportProvider)
 
-	reportProvider, err := huskytm.GetReportProvider(this.Configuration.Login, this.Configuration.Password)
+	tlibReportProvider, err := tlib.GetReportProvider()
 	if err != nil {
 		this.Fatalf(err, "Can not connect to source")
 	}
-	defer reportProvider.Close()
+	defer tlibReportProvider.Close()
+	this.doSyncReports(tlib.SOURCE, &tlibReportProvider)
+}
 
-	reports, next, err := reportProvider.ReportsSince(lastReportIdStr)
+func (this App) doSyncReports(source string, reportProvider *common.ReportProvider) {
+	lastId, err := this.VoyageReportDao.GetLastId(source)
+	if err != nil {
+		this.Fatalf(err, "Can not connect get last report id")
+	}
+	log.Infof("Get and store reports from %s since %s", source,  lastId.(time.Time).Format(huskytm.TIME_FORMAT))
+
+
+	reports, next, err := (*reportProvider).ReportsSince(lastId.(time.Time))
 	if err != nil {
 		log.Fatal(err, "Can not get posts")
 	}
 	if len(reports) == 0 {
-		next = lastReportIdStr
+		next = lastId.(time.Time)
 	}
 
 	reports, err = this.VoyageReportDao.UpsertVoyageReports(reports...)
 	if err != nil {
-		this.Fatalf(err, "Can not store reports: %v", reports)
+		this.Fatalf(err, "Can not store reports from %s: %v", source, reports)
 	}
 
-	log.Infof("%d reports are successfully stored. Next id is %s\n", len(reports), next)
+	log.Infof("%d reports from %s are successfully stored. Next id is %s\n", len(reports), source, next)
 
 	log.Info("Try to connect reports with known rivers")
 
@@ -65,9 +76,9 @@ func (this App) DoSyncReports() {
 	}
 }
 
-func (this App) findMatchAndStoreImages(report dao.VoyageReport, reportProvider common.ReportProvider) {
+func (this App) findMatchAndStoreImages(report dao.VoyageReport, reportProvider *common.ReportProvider) {
 	log.Infof("Find images for report %d: %s %s", report.Id, report.RemoteId, report.Title)
-	imgs, err := reportProvider.Images(report.RemoteId)
+	imgs, err := (*reportProvider).Images(report.RemoteId)
 	if err != nil {
 		this.Fatalf(err, "Can not load images for report %d", report.Id)
 	}

@@ -3,11 +3,12 @@ package common
 import (
 	"github.com/and-hom/wwmap/lib/dao"
 	"io"
+	"time"
 )
 
 type ReportProvider interface {
 	io.Closer
-	ReportsSince(key string) ([]dao.VoyageReport, string, error);
+	ReportsSince(t time.Time) ([]dao.VoyageReport, time.Time, error);
 	Images(reportId string) ([]dao.Img, error);
 }
 

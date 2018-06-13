@@ -28,7 +28,7 @@
 </div>
 
 <div id="map" style="witdh:800px; height: 600px; margin: 10px;"></div>
-<ul id="rivers" class="riverMenu"></ul>
+<div id="rivers" class="riverMenu"></div>
 <script type="text/x-jquery-tmpl" id="riversMenuTemplate">
     <table>
     {{each rivers}}
@@ -41,7 +41,7 @@
             <td>
                 <ul style="float:right;" class="reports">
                 {{each reports}}
-                    <li><a target="_blank" href="${url}"><img src="${source_logo_url}"/>${title}</a></li>
+                    <li><a target="_blank" href="${url}" title="${title}"><img src="${source_logo_url}"/>${title}</a></li>
                 {{/each}}&nbsp;
                 </ul>
             </td>

@@ -219,6 +219,7 @@ type VoyageReport struct {
 	Url           string
 	DatePublished time.Time
 	DateModified  time.Time
+	DateOfTrip    time.Time
 	Tags          []string
 	Rivers        []RiverTitle
 }

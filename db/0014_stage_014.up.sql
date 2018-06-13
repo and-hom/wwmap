@@ -1,0 +1,2 @@
+ALTER TABLE voyage_report ALTER COLUMN title TYPE CHARACTER VARYING(4096);
+ALTER TABLE voyage_report ADD COLUMN date_of_trip DATE;

@@ -89,13 +89,7 @@ func (this *HuskytmReportProvider) Close() error {
 	return nil
 }
 
-func (this *HuskytmReportProvider) ReportsSince(key string) ([]dao.VoyageReport, string, error) {
-	startTs, err := time.Parse(TIME_FORMAT, key)
-	if err != nil {
-		log.Warnf("Can not parse start key %s as time: use time(0) as start", key)
-		startTs = time.Unix(0, 0)
-	}
-
+func (this *HuskytmReportProvider) ReportsSince(key time.Time) ([]dao.VoyageReport, time.Time, error) {
 	params := emptyMap()
 	params["context"] = "view"
 	params["orderby"] = "modified"
@@ -115,7 +109,7 @@ func (this *HuskytmReportProvider) ReportsSince(key string) ([]dao.VoyageReport,
 		if err != nil {
 			return []dao.VoyageReport{}, key, err
 		}
-		if ! dateModified.After(startTs) {
+		if ! dateModified.After(key) {
 			continue
 		}
 		if latest.Before(dateModified) {
@@ -151,7 +145,7 @@ func (this *HuskytmReportProvider) ReportsSince(key string) ([]dao.VoyageReport,
 			Tags: tags,
 		})
 	}
-	return ids, latest.Format(TIME_FORMAT), nil
+	return ids, latest, nil
 }
 
 func (this *HuskytmReportProvider) cacheImages() error {
