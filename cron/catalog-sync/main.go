@@ -40,9 +40,9 @@ func main() {
 	log.SetLevel(log.DebugLevel)
 	log.Infof("Starting wwmap")
 	app := CreateApp()
-	//app.DoSyncReports()
+	app.DoSyncReports()
 	//app.DoReadCatalog()
-	app.DoWriteCatalog()
+	//app.DoWriteCatalog()
 }
 
 func (this App) getCachedCatalogConnector() common.CatalogConnector {
