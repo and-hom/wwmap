@@ -1,2 +1,4 @@
 *.osm
+*.pbf
+*.bz2
 *.xml

@@ -60,7 +60,7 @@
                             </td>
                             <td>
                                 <span editable-textarea="point.short_description" e-name="short_description" e-rows="5" e-cols="40"
-                                      e-form="tableform" onbeforesave="checkLength($data, 512)">{{ point.short_description || 'Не задано' }}</span>
+                                      e-form="tableform" onbeforesave="checkLength($data, 4096)">{{ point.short_description || 'Не задано' }}</span>
                             </td>
                             <td>
                                 <span editable-text="point.link" e-name="link" e-form="tableform">{{ point.link || 'Не задана' }}</span>
