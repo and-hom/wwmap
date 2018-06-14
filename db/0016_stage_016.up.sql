@@ -1,0 +1,1 @@
+ALTER TABLE river ADD COLUMN aliases JSONB DEFAULT '[]';

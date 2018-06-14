@@ -63,7 +63,7 @@ func (this VoyageReportStorage) AssociateWithRiver(voyageReportId, riverId int64
 func (this VoyageReportStorage) List(riverId int64, limitByGroup int) ([]VoyageReport, error) {
 	dateOfTrip:= pq.NullTime{}
 	result, err := this.doFindList("SELECT * FROM (" +
-		"SELECT  ROW_NUMBER() OVER (PARTITION BY source ORDER BY date_of_trip DESC, date_published DESC) AS r_num, " +
+		"SELECT ROW_NUMBER() OVER (PARTITION BY source ORDER BY date_of_trip DESC, date_published DESC) AS r_num, " +
 		"id,title,remote_id,source,url,date_published,date_modified,date_of_trip, tags " +
 		"FROM voyage_report INNER JOIN voyage_report_river ON voyage_report.id = voyage_report_river.voyage_report_id " +
 		"WHERE voyage_report_river.river_id = $1) sq WHERE r_num<=$2 ORDER BY source, date_of_trip DESC, date_published DESC", func(rows *sql.Rows) (VoyageReport, error) {
