@@ -14,7 +14,7 @@ import (
 	"github.com/and-hom/wwmap/cron/catalog-sync/tlib"
 )
 
-func (this App) DoSyncReports() {
+func (this *App) DoSyncReports() {
 	//huskytmReportProvider, err := huskytm.GetReportProvider(this.Configuration.Login, this.Configuration.Password)
 	//if err != nil {
 	//	this.Fatalf(err, "Can not connect to source")
@@ -30,7 +30,7 @@ func (this App) DoSyncReports() {
 	this.doSyncReports(tlib.SOURCE, &tlibReportProvider)
 }
 
-func (this App) doSyncReports(source string, reportProvider *common.ReportProvider) {
+func (this *App) doSyncReports(source string, reportProvider *common.ReportProvider) {
 	lastId, err := this.VoyageReportDao.GetLastId(source)
 	if err != nil {
 		this.Fatalf(err, "Can not connect get last report id")
@@ -76,7 +76,7 @@ func (this App) doSyncReports(source string, reportProvider *common.ReportProvid
 	}
 }
 
-func (this App) findMatchAndStoreImages(report dao.VoyageReport, reportProvider *common.ReportProvider) {
+func (this *App) findMatchAndStoreImages(report dao.VoyageReport, reportProvider *common.ReportProvider) {
 	log.Infof("Find images for report %d: %s %s", report.Id, report.RemoteId, report.Title)
 	imgs, err := (*reportProvider).Images(report.RemoteId)
 	if err != nil {
@@ -109,7 +109,7 @@ type ImgWwPoints struct {
 	Wwpts []dao.WhiteWaterPointWithRiverTitle
 }
 
-func (this App) matchImgsToWhiteWaterPoints(report dao.VoyageReport, imgs []dao.Img) map[string]ImgWwPoints {
+func (this *App) matchImgsToWhiteWaterPoints(report dao.VoyageReport, imgs []dao.Img) map[string]ImgWwPoints {
 	candidates := make(map[string]ImgWwPoints)
 	for _, img := range imgs {
 		for _, river := range report.Rivers {
@@ -142,12 +142,12 @@ func forCompare(s string) string {
 	return strings.Replace(strings.Replace(strings.ToLower(s), "ё", "e", -1), "-", " ", -1)
 }
 
-func (this App) Fatalf(err error, pattern string, args ...interface{}) {
+func (this *App) Fatalf(err error, pattern string, args ...interface{}) {
 	this.Report(err)
 	log.Fatalf(pattern + ": " + err.Error(), args)
 }
 
-func (this App) Report(err error) {
+func (this *App) Report(err error) {
 	templateData, err := emailTemplateBytes()
 	if err != nil {
 		log.Fatal("Can not load email template:\t", err)

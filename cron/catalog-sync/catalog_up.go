@@ -9,7 +9,7 @@ import (
 
 const MAX_ATTACHED_IMGS = 300
 
-func (this App) DoWriteCatalog() {
+func (this *App) DoWriteCatalog() {
 	log.Info("Create missing ww passports")
 	catalogConnector := this.getCachedCatalogConnector()
 
@@ -46,7 +46,7 @@ func (this App) DoWriteCatalog() {
 	}
 }
 
-func (this App) createCatalogEntry(p *dao.WhiteWaterPointWithPath, imgId int) {
+func (this *App) createCatalogEntry(p *dao.WhiteWaterPointWithPath, imgId int) {
 	parent_id, err := this.mkdirRecursiveQuietly(parent(p.Path))
 	if err != nil {
 		this.Fatalf(err, "Can not create directories")

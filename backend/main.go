@@ -27,11 +27,11 @@ func main() {
 
 	storage := NewPostgresStorage(configuration.DbConnString)
 
-	riverDao := RiverStorage{storage.(PostgresStorage)}
-	voyageReportDao := VoyageReportStorage{storage.(PostgresStorage)}
-	imgDao := ImgStorage{storage.(PostgresStorage)}
-	whiteWaterDao := WhiteWaterStorage{storage.(PostgresStorage)}
-	reportDao := ReportStorage{storage.(PostgresStorage)}
+	riverDao := RiverStorage{storage}
+	voyageReportDao := VoyageReportStorage{storage}
+	imgDao := ImgStorage{storage}
+	whiteWaterDao := WhiteWaterStorage{storage}
+	reportDao := ReportStorage{storage}
 
 	clusterMaker := ClusterMaker{
 		BarrierDistance: configuration.ClusterizationParams.BarrierRatio,
@@ -40,7 +40,7 @@ func main() {
 	}
 
 	app := App{
-		storage:storage,
+		storage:&storage,
 		riverDao:riverDao,
 		whiteWaterDao:whiteWaterDao,
 		reportDao:reportDao,

@@ -25,11 +25,11 @@ func CreateApp() App {
 	configuration := config.Load("")
 	pgStorage := dao.NewPostgresStorage(configuration.DbConnString)
 	return App{
-		VoyageReportDao:dao.VoyageReportStorage{pgStorage.(dao.PostgresStorage)},
-		RiverDao:dao.RiverStorage{pgStorage.(dao.PostgresStorage)},
-		WhiteWaterDao:dao.WhiteWaterStorage{pgStorage.(dao.PostgresStorage)},
-		ImgDao:dao.ImgStorage{pgStorage.(dao.PostgresStorage)},
-		WwPassportDao:dao.WWPassportStorage{pgStorage.(dao.PostgresStorage)},
+		VoyageReportDao:dao.VoyageReportStorage{pgStorage},
+		RiverDao:dao.RiverStorage{pgStorage},
+		WhiteWaterDao:dao.WhiteWaterStorage{pgStorage},
+		ImgDao:dao.ImgStorage{pgStorage},
+		WwPassportDao:dao.WWPassportStorage{pgStorage},
 		Configuration:configuration.Sync,
 		Notifications:configuration.Notifications,
 		stat: &ImportExportReport{},

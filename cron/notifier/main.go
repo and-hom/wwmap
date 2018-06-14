@@ -15,7 +15,7 @@ func main() {
 	log.Infof("Starting wwmap")
 	configuration := config.Load("")
 	storage := NewPostgresStorage(configuration.DbConnString)
-	reportStorage := ReportStorage{storage.(PostgresStorage)}
+	reportStorage := ReportStorage{storage}
 
 	reports, err := reportStorage.ListUnread(MAX_MESSAGES)
 	if err != nil {

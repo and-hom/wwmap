@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func (this App) DoReadCatalog() {
+func (this *App) DoReadCatalog() {
 	lastId, err := this.WwPassportDao.GetLastId(huskytm.SOURCE)
 	if err != nil {
 		this.Fatalf(err, "Can not connect get last ww passport entry id")
@@ -60,7 +60,7 @@ func (this App) DoReadCatalog() {
 	}
 }
 
-func (this App) findAndStoreImages(wwPassport dao.WWPassport, catalogConnector common.CatalogConnector) {
+func (this *App) findAndStoreImages(wwPassport dao.WWPassport, catalogConnector common.CatalogConnector) {
 	log.Infof("Find images for ww passport %s-%s", wwPassport.Source, wwPassport.RemoteId)
 	imgs, err := catalogConnector.GetImages(wwPassport.RemoteId)
 	if err != nil {
