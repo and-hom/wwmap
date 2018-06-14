@@ -8,12 +8,15 @@ import (
 	. "github.com/and-hom/wwmap/lib/http"
 	"github.com/and-hom/wwmap/lib/dao"
 	"strings"
+	"time"
 )
 
 type RiverHandler struct {
 	Handler
 	resourceBase string
 }
+
+const MAX_REPORTS_PER_SOURCE = 5
 
 func (this *RiverHandler) GetNearestRivers(w http.ResponseWriter, r *http.Request) {
 	CorsHeaders(w, "GET")
@@ -41,6 +44,7 @@ func (this *RiverHandler) GetNearestRivers(w http.ResponseWriter, r *http.Reques
 type VoyageReportDto struct {
 	Id            int64 `json:"id"`
 	Title         string `json:"title"`
+	Year          int `json:"year"`
 	Url           string `json:"url"`
 	SourceLogoUrl string `json:"source_logo_url"`
 }
@@ -69,17 +73,22 @@ func (this *RiverHandler) GetVisibleRivers(w http.ResponseWriter, req *http.Requ
 		river := &rivers[i]
 		river.Bounds = river.Bounds.WithMargins(0.05)
 
-		reports, err := this.voyageReportDao.List(river.Id)
+		reports, err := this.voyageReportDao.List(river.Id, MAX_REPORTS_PER_SOURCE)
 		if err != nil {
 			OnError500(w, err, fmt.Sprintf("Can not select reports for river %d", river.Id))
 			return
 		}
 		reportDtos := make([]VoyageReportDto, len(reports))
 		for j, report := range reports {
+			date := report.DateOfTrip
+			if date == time.Unix(0,0) {
+				date  = report.DatePublished
+			}
 			reportDtos[j] = VoyageReportDto{
 				Id:report.Id,
 				Url:report.Url,
 				Title:report.Title,
+				Year:date.Year(),
 				SourceLogoUrl:this.resourceBase + "/img/report_sources/" + strings.ToLower(report.Source) + ".png",
 			}
 		}

@@ -55,19 +55,22 @@ func (this VoyageReportStorage) AssociateWithRiver(voyageReportId, riverId int64
 		}, []interface{}{voyageReportId, riverId})
 }
 
-func (this VoyageReportStorage) List(riverId int64) ([]VoyageReport, error) {
+func (this VoyageReportStorage) List(riverId int64, limitByGroup int) ([]VoyageReport, error) {
 	dateOfTrip:= pq.NullTime{}
-	result, err := this.doFindList("SELECT id,title,remote_id,source,url,date_published,date_modified,date_of_trip " +
+	result, err := this.doFindList("SELECT * FROM (" +
+		"SELECT  ROW_NUMBER() OVER (PARTITION BY source ORDER BY date_of_trip DESC, date_published DESC) AS r_num, " +
+		"id,title,remote_id,source,url,date_published,date_modified,date_of_trip " +
 		"FROM voyage_report INNER JOIN voyage_report_river ON voyage_report.id = voyage_report_river.voyage_report_id " +
-		"WHERE voyage_report_river.river_id = $1", func(rows *sql.Rows) (VoyageReport, error) {
+		"WHERE voyage_report_river.river_id = $1) sq WHERE r_num<=$2 ORDER BY source, date_of_trip DESC, date_published DESC", func(rows *sql.Rows) (VoyageReport, error) {
 		report := VoyageReport{}
-		err := rows.Scan(&report.Id, &report.Title, &report.RemoteId, &report.Source, &report.Url, &report.DatePublished, &report.DateModified, &dateOfTrip)
+		var rNum int
+		err := rows.Scan(&rNum, &report.Id, &report.Title, &report.RemoteId, &report.Source, &report.Url, &report.DatePublished, &report.DateModified, &dateOfTrip)
 		if dateOfTrip.Valid {
 			report.DateOfTrip = dateOfTrip.Time
 		}
 		return report, err
 
-	}, riverId)
+	}, riverId, limitByGroup)
 
 	if err != nil {
 		return []VoyageReport{}, err

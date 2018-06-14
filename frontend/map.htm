@@ -33,16 +33,16 @@
     <table>
     {{each rivers}}
         <tr>
-            <td><a href="" style="padding-left:10px;" onclick="show_map_at(${bounds}); return false;">${title}</a></td>
-            <td>
+            <td class="title-col"><a href="" style="padding-left:10px;" onclick="show_map_at(${bounds}); return false;">${title}</a></td>
+            <td class="gpx-col">
                 <a href="${apiUrl}/${id}" style="padding-right:10px;" alt="Скачать GPX с точками порогов">GPX</a>
                 <a href="${apiUrl}/${id}?tr=true" alt="Скачать GPX с точками порогов">GPX<sub>en</sub></a>
             </td>
-            <td>
-                <ul style="float:right;" class="reports">
+            <td class="report-col">
+                <ul class="reports">
                 {{each reports}}
-                    <li><a target="_blank" href="${url}" title="${title}"><img src="${source_logo_url}"/>${title}</a></li>
-                {{/each}}&nbsp;
+                    <li><a target="_blank" href="${url}" title="${title}"><img src="${source_logo_url}"/>${year} ${title}</a></li>
+                {{/each}}
                 </ul>
             </td>
         </tr>

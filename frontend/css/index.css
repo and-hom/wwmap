@@ -190,7 +190,24 @@ h2 {
 .riverMenu {
     list-style-type: none;
     padding-left: 0px;
-    width: 600px;
+    width: 100%;
+}
+.riverMenu table {
+    width: 100%;
+}
+.riverMenu td {
+    align: left
+}
+.riverMenu .title-col {
+    width: 250px;
+}
+
+.riverMenu .gpx-col {
+    width: 100px;
+
+}
+.riverMenu .report-col {
+
 }
 
 .riverMenu .title {
@@ -203,19 +220,27 @@ h2 {
     vertical-align: top;
 }
 
-.riverMenu .reports {
-    display: inline;
-    font-size: 60%;
-    width: 250px;
-}
 
 .reports a {
+  font-size: 60%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 200px;
   vertical-align: top;
   display: inline-block;
+}
+
+.reports {
+    column-count: 3;
+    margin-top:0px;
+    padding-left: 20px;
+    width: 620px;
+}
+
+.reports li {
+    list-style-type: none;
+    max-width: 200px;
 }
 
 .legend {

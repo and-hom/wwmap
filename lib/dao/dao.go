@@ -69,7 +69,7 @@ type VoyageReportDao interface {
 	UpsertVoyageReports(report ...VoyageReport) ([]VoyageReport, error)
 	GetLastId(source string) (interface{}, error)
 	AssociateWithRiver(voyageReportId, riverId int64) error
-	List(riverId int64) ([]VoyageReport, error)
+	List(riverId int64, limitByGroup int) ([]VoyageReport, error)
 }
 
 type ImgDao interface {
