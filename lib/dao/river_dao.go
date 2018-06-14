@@ -14,7 +14,8 @@ type RiverStorage struct {
 }
 
 func (this RiverStorage) FindTitles(titles []string) ([]RiverTitle, error) {
-	return this.listRiverTitles("SELECT id, title,NULL FROM river WHERE title ilike ANY($1)", pq.Array(titles))
+	return this.listRiverTitles("SELECT id,title,NULL FROM (" +
+		"SELECT id, title, jsonb_array_elements_text(aliases) AS alias FROM river) sq WHERE title ilike ANY($1) OR alias ilike ANY($1)", pq.Array(titles))
 }
 
 func (this RiverStorage) NearestRivers(point geo.Point, limit int) ([]RiverTitle, error) {
