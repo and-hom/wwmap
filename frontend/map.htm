@@ -41,7 +41,7 @@
             <td class="report-col">
                 <ul class="reports">
                 {{each reports}}
-                    <li><a target="_blank" href="${url}" title="${title}"><img src="${source_logo_url}"/>${year} ${title}</a></li>
+                    <li><a target="_blank" href="${url}" title="${title}"><img src="${source_logo_url}"/>{{if year>1}}${year}{{/if}}&nbsp;${title}</a></li>
                 {{/each}}
                 </ul>
             </td>

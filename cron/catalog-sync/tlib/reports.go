@@ -12,6 +12,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"regexp"
 	"github.com/goodsign/monday"
+	"github.com/and-hom/wwmap/lib/util"
 )
 
 const SOURCE string = "tlib"
@@ -25,7 +26,7 @@ const YEAR_MONTH_RE = "год:[\\s\n]*?(\\d{4})[\\s\n]*?(;[\\s\n]*?месяц:[\
 const RIVER_RE = "([рp]\\.\\s?|река\\s+)(.*?)\\s?[=$\\(]"
 const PUBLISHED_DATE_RE = "Загружено:\\s*(\\d{1,2}\\.\\d{1,2}\\.\\d{4} \\d{1,2}:\\d{1,2}:\\d{1,2})"
 
-var zero = time.Unix(0, 0)
+var zero = util.ZeroDateUTC()
 
 var urlIdRe = regexp.MustCompile(URL_ID_RE)
 var titleRe = regexp.MustCompile(TITILE_RE)
@@ -175,7 +176,7 @@ func (this TlibReportsProvider) queryData(pageNum int, viewState ViewState, date
 		datePublished, err := this.getDatePublished(reportUrl)
 		if err != nil {
 			log.Errorf("Can not find date published for %s %s", reportUrl, err.Error())
-			datePublished = time.Unix(0, 0)
+			datePublished = zero
 		}
 
 		descritionText := row.Find("td:nth-of-type(2)").Text()
@@ -193,7 +194,7 @@ func (this TlibReportsProvider) queryData(pageNum int, viewState ViewState, date
 		dateOfTrip, err := parseDateOfTrip(descritionText)
 		if err != nil {
 			log.Error("Can not parse date of trip ", err)
-			dateOfTrip = time.Unix(0, 0)
+			dateOfTrip = zero
 		}
 
 		report := dao.VoyageReport{

@@ -8,7 +8,6 @@ import (
 	. "github.com/and-hom/wwmap/lib/http"
 	"github.com/and-hom/wwmap/lib/dao"
 	"strings"
-	"time"
 )
 
 type RiverHandler struct {
@@ -80,15 +79,11 @@ func (this *RiverHandler) GetVisibleRivers(w http.ResponseWriter, req *http.Requ
 		}
 		reportDtos := make([]VoyageReportDto, len(reports))
 		for j, report := range reports {
-			date := report.DateOfTrip
-			if date == time.Unix(0,0) {
-				date  = report.DatePublished
-			}
 			reportDtos[j] = VoyageReportDto{
 				Id:report.Id,
 				Url:report.Url,
 				Title:report.Title,
-				Year:date.Year(),
+				Year:report.DateOfTrip.Year(),
 				SourceLogoUrl:this.resourceBase + "/img/report_sources/" + strings.ToLower(report.Source) + ".png",
 			}
 		}
