@@ -6,7 +6,7 @@ const LAST_MAP_TYPE_COOKIE_NAME = "last-map-type";
 const apiBase = "http://localhost:7007";
 // end
 
-const CACHED_TILES_TEMPLATE = 'http://wwmap.ru:7008/###/%z/%x/%y.png';
+const CACHED_TILES_TEMPLATE = 'http://wwmap.ru/maps/###/%z/%x/%y.png';
 
 const GOOGLE_SAT_TILES = 'http://khms' + Math.floor(Math.random()) % 4 + '.google.com/kh/v=794&src=app&x=%x&y=%y&z=%z&s=Gal';
 const THUNDERFOREST_OUTDOOR_TILES = 'http://a.tile.thunderforest.com/outdoors/%z/%x/%y.png';
