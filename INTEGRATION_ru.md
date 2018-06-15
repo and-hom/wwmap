@@ -27,16 +27,26 @@ _Например, в wordpress есть специальный плагин, ч
 4. **Опционально:** если мы хотим видеть список отображаемых в данный момент на карте рек со ссылками для скачивания gpx, нужно добавить элемент,
 в котором будет размещён список, (в нашем случае _ul_) и шаблон списка
 ```
-<ul id="rivers" class="riverMenu"></ul>
-
+<div id="rivers" class="riverMenu"></div>
 <script type="text/x-jquery-tmpl" id="riversMenuTemplate">
+    <table>
     {{each rivers}}
-        <li>
-            <a href="" style="padding-left:10px;" onclick="show_map_at(${bounds}); return false;">${title}</a>
-            <a href="${apiUrl}/${id}?tr=true" style="float:right;" alt="Скачать GPX с точками порогов">GPX<sub>en</sub></a>
-            <a href="${apiUrl}/${id}" style="float:right; padding-right:10px;" alt="Скачать GPX с точками порогов">GPX</a>
-        </li>
+        <tr>
+            <td class="title-col"><a href="" style="padding-left:10px;" onclick="show_map_at(${bounds}); return false;">${title}</a></td>
+            <td class="gpx-col">
+                <a href="${apiUrl}/${id}" style="padding-right:10px;" alt="Скачать GPX с точками порогов">GPX</a>
+                <a href="${apiUrl}/${id}?tr=true" alt="Скачать GPX с точками порогов">GPX<sub>en</sub></a>
+            </td>
+            <td class="report-col">
+                <ul class="reports">
+                {{each reports}}
+                    <li><a target="_blank" href="${url}" title="${title}"><img src="${source_logo_url}"/>{{if year>1}}${year}{{/if}}&nbsp;${title}</a></li>
+                {{/each}}
+                </ul>
+            </td>
+        </tr>
     {{/each}}
+    </table>
 </script>
 ```
 5. Добавить диалог для сообщения о неточностях местоположения (если убрать такую ссылку из шаблона bubble п.3, то можно и не добавлять)
