@@ -3,6 +3,7 @@
 	dh $@
 
 build:
+	cd ../lib/dao/queries; $(HOME)/.go/bin/go-bindata -pkg queries .
 	GOPATH="$(HOME)/.go" go build
 
 override_dh_auto_install:

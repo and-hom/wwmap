@@ -12,7 +12,7 @@ func main() {
 	log.Infof("Starting wwmap")
 	configuration := config.Load("")
 	storage := NewPostgresStorage(configuration.DbConnString)
-	waterWayStorage := WaterWayStorage{storage.(PostgresStorage)}
+	waterWayStorage := NewWaterWayPostgresDao(storage)
 
 	err := waterWayStorage.ForEachWaterWay(func(ww WaterWay) (WaterWay, error) {
 		nullPointCnt := 0

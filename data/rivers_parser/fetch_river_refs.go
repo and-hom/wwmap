@@ -10,7 +10,7 @@ import (
 	"fmt"
 )
 
-func load_waterways(fname string, storage  dao.Storage) (map[int64]dao.WaterWayTmp, map[int64][]int64) {
+func load_waterways(fname string) (map[int64]dao.WaterWayTmp, map[int64][]int64) {
 	inFile, err := os.Open(fname)
 	if err != nil {
 		log.Fatal(err)
@@ -40,10 +40,10 @@ func load_point_refs(fname string, storage  dao.Storage, ids []int64) {
 func main() {
 	configuration := config.Load("")
 	storage := dao.NewPostgresStorage(configuration.DbConnString)
-	waterWayDao := dao.WaterWayStorage{storage.(dao.PostgresStorage)}
+	waterWayDao := dao.NewWaterWayPostgresDao(storage)
 	fname := os.Args[1]
 
-	idx, revIdx := load_waterways(fname, storage)
+	idx, revIdx := load_waterways(fname)
 
 	r, err := os.Open(fname)
 	if err != nil {

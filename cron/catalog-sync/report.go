@@ -15,12 +15,12 @@ import (
 )
 
 func (this *App) DoSyncReports() {
-	//huskytmReportProvider, err := huskytm.GetReportProvider(this.Configuration.Login, this.Configuration.Password)
-	//if err != nil {
-	//	this.Fatalf(err, "Can not connect to source")
-	//}
-	//defer huskytmReportProvider.Close()
-	//this.doSyncReports(huskytm.SOURCE, &huskytmReportProvider)
+	huskytmReportProvider, err := huskytm.GetReportProvider(this.Configuration.Login, this.Configuration.Password)
+	if err != nil {
+		this.Fatalf(err, "Can not connect to source")
+	}
+	defer huskytmReportProvider.Close()
+	this.doSyncReports(huskytm.SOURCE, &huskytmReportProvider)
 
 	tlibReportProvider, err := tlib.GetReportProvider()
 	if err != nil {

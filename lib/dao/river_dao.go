@@ -7,39 +7,45 @@ import (
 	"github.com/and-hom/wwmap/lib/geo"
 	"fmt"
 	"github.com/lib/pq"
+	"github.com/and-hom/wwmap/lib/dao/queries"
 )
 
-type RiverStorage struct {
+func NewRiverPostgresDao(postgresStorage PostgresStorage) RiverDao {
+	return riverStorage{
+		PostgresStorage: postgresStorage,
+		findByTagsQuery: queries.SqlQuery("river", "find-by-tags"),
+		nearestQuery: queries.SqlQuery("river", "nearest"),
+		insideBoundsQuery: queries.SqlQuery("river", "inside-bounds"),
+	}
+}
+
+type riverStorage struct {
 	PostgresStorage
+	findByTagsQuery   string
+	nearestQuery      string
+	insideBoundsQuery string
+	byIdQuery         string
 }
 
-func (this RiverStorage) FindTitles(titles []string) ([]RiverTitle, error) {
-	return this.listRiverTitles("SELECT id,title,NULL FROM (" +
-		"SELECT id, title, jsonb_array_elements_text(aliases) AS alias FROM river) sq WHERE title ilike ANY($1) OR alias ilike ANY($1)", pq.Array(titles))
+func (this riverStorage) FindTitles(titles []string) ([]RiverTitle, error) {
+	return this.listRiverTitles(this.findByTagsQuery, pq.Array(titles))
 }
 
-func (this RiverStorage) NearestRivers(point geo.Point, limit int) ([]RiverTitle, error) {
+func (this riverStorage) NearestRivers(point geo.Point, limit int) ([]RiverTitle, error) {
 	pointBytes, err := json.Marshal(geo.NewGeoPoint(point))
 	if err != nil {
 		return []RiverTitle{}, err
 	}
 	fmt.Println(string(pointBytes))
-	return this.listRiverTitles("SELECT id, title, NULL, aliases FROM (" +
-		"SELECT ROW_NUMBER() OVER (PARTITION BY id ORDER BY distance ASC) AS r_num, id, title, distance, aliases FROM (" +
-		"SELECT river.id AS id, river.title AS title, river.aliases AS aliases," +
-		"ST_Distance(path,  ST_GeomFromGeoJSON($1)) AS distance FROM river INNER JOIN waterway ON river.id=waterway.river_id) ssq" +
-		")sq WHERE r_num<=1 ORDER BY distance ASC LIMIT $2;", string(pointBytes), limit)
+	return this.listRiverTitles(this.nearestQuery, string(pointBytes), limit)
 }
 
-func (this RiverStorage) ListRiversWithBounds(bbox geo.Bbox, limit int) ([]RiverTitle, error) {
-	return this.listRiverTitles("SELECT river.id, river.title, ST_AsGeoJSON(ST_Extent(white_water_rapid.point)), river.aliases FROM " +
-		"river INNER JOIN white_water_rapid ON river.id=white_water_rapid.river_id " +
-		"WHERE exists(SELECT 1 FROM white_water_rapid WHERE white_water_rapid.river_id=river.id and point && ST_MakeEnvelope($1,$2,$3,$4)) " +
-		"GROUP BY river.id, river.title ORDER BY popularity DESC LIMIT $5", bbox.X1, bbox.Y1, bbox.X2, bbox.Y2, limit)
+func (this riverStorage) ListRiversWithBounds(bbox geo.Bbox, limit int) ([]RiverTitle, error) {
+	return this.listRiverTitles(this.insideBoundsQuery, bbox.X1, bbox.Y1, bbox.X2, bbox.Y2, limit)
 }
 
-func (this RiverStorage) RiverById(id int64) (RiverTitle, error) {
-	found, err := this.listRiverTitles("SELECT id,title,NULL,river.aliases AS aliases FROM river WHERE id=$1", id)
+func (this riverStorage) RiverById(id int64) (RiverTitle, error) {
+	found, err := this.listRiverTitles(this.byIdQuery, id)
 	if err != nil {
 		return RiverTitle{}, err
 	}
@@ -49,7 +55,7 @@ func (this RiverStorage) RiverById(id int64) (RiverTitle, error) {
 	return found[0], nil
 }
 
-func (this RiverStorage) listRiverTitles(query string, queryParams ...interface{}) ([]RiverTitle, error) {
+func (this riverStorage) listRiverTitles(query string, queryParams ...interface{}) ([]RiverTitle, error) {
 	fmt.Println(query)
 	result, err := this.doFindList(query,
 		func(rows *sql.Rows) (RiverTitle, error) {

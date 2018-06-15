@@ -34,7 +34,7 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 	for i := 0; i < len(points); i++ {
 		imgs, err := this.imgDao.List(points[i].Id, PREVIEWS_COUNT)
 		if err != nil {
-			log.Warnf("Can not read whitewater point images for point", points[i].Id)
+			log.Warnf("Can not read whitewater point images for point %d: %s", points[i].Id, err.Error())
 			continue
 		}
 		points[i].Images = imgs

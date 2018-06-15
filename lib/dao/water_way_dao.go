@@ -5,18 +5,31 @@ import (
 	"github.com/and-hom/wwmap/lib/geo"
 	"database/sql"
 	log "github.com/Sirupsen/logrus"
+	"github.com/and-hom/wwmap/lib/dao/queries"
 )
 
-type WaterWayStorage struct {
-	PostgresStorage
+func NewWaterWayPostgresDao(postgresStorage PostgresStorage) WaterWayDao {
+	return waterWayStorage{
+		PostgresStorage:postgresStorage,
+		insertQuery: queries.SqlQuery("water-way", "insert"),
+		updateQuery: queries.SqlQuery("water-way", "update"),
+		listQuery: queries.SqlQuery("water-way", "list"),
+	}
 }
 
-func (this WaterWayStorage) AddWaterWays(waterways ...WaterWay) error {
+type waterWayStorage struct {
+	PostgresStorage
+	insertQuery string
+	updateQuery string
+	listQuery   string
+}
+
+func (this waterWayStorage) AddWaterWays(waterways ...WaterWay) error {
 	vars := make([]interface{}, len(waterways))
 	for i, p := range waterways {
 		vars[i] = p
 	}
-	return this.performUpdates("INSERT INTO waterway(osm_id, title, type, comment, path) VALUES ($1, $2, $3, $4, ST_GeomFromGeoJSON($5))",
+	return this.performUpdates("",
 		func(entity interface{}) ([]interface{}, error) {
 			waterway := entity.(WaterWay)
 
@@ -28,8 +41,8 @@ func (this WaterWayStorage) AddWaterWays(waterways ...WaterWay) error {
 		}, vars...)
 }
 
-func (this WaterWayStorage) UpdateWaterWay(waterway WaterWay) error {
-	return this.performUpdates("UPDATE waterway SET path=ST_GeomFromGeoJSON($1) WHERE osm_id=$2",
+func (this waterWayStorage) UpdateWaterWay(waterway WaterWay) error {
+	return this.performUpdates("",
 		func(entity interface{}) ([]interface{}, error) {
 			waterway := entity.(WaterWay)
 
@@ -41,8 +54,8 @@ func (this WaterWayStorage) UpdateWaterWay(waterway WaterWay) error {
 		}, waterway)
 }
 
-func (this WaterWayStorage) ForEachWaterWay(transformer func(WaterWay) (WaterWay, error), tmpTable string) error {
-	rows, err := this.db.Query("SELECT id, osm_id, river_Id, title, type, comment, ST_AsGeoJSON(path) FROM waterway")
+func (this waterWayStorage) ForEachWaterWay(transformer func(WaterWay) (WaterWay, error), tmpTable string) error {
+	rows, err := this.db.Query("")
 	if err != nil {
 		return err
 	}

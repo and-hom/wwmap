@@ -3,19 +3,28 @@ package dao
 import (
 	"time"
 	"database/sql"
+	"github.com/and-hom/wwmap/lib/dao/queries"
 )
 
-type WWPassportStorage struct {
-	PostgresStorage
+func NewWWPassportPostgresDao(postgresStorage PostgresStorage) WwPassportDao {
+	return wwPassportStorage{
+		PostgresStorage: postgresStorage,
+		getLastIdQuery: queries.SqlQuery("ww-passport", "get-last-id"),
+	}
 }
 
-func (this WWPassportStorage) Upsert(wwPassport... WWPassport) error {
+type wwPassportStorage struct {
+	PostgresStorage
+	getLastIdQuery string
+}
+
+func (this wwPassportStorage) Upsert(wwPassport... WWPassport) error {
 	return nil
 }
 
-func (this WWPassportStorage) GetLastId(source string) (interface{}, error) {
+func (this wwPassportStorage) GetLastId(source string) (interface{}, error) {
 	lastDate := time.Unix(0, 0)
-	_, err := this.doFind("SELECT max(date_modified) FROM ww_passport WHERE source=$1", func(rows *sql.Rows) error {
+	_, err := this.doFind(this.getLastIdQuery, func(rows *sql.Rows) error {
 		rows.Scan(&lastDate)
 		return nil
 	}, source)

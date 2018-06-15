@@ -4,27 +4,35 @@ import (
 	"database/sql"
 	"github.com/lib/pq"
 	"fmt"
+	"github.com/and-hom/wwmap/lib/dao/queries"
 )
 
-type ReportStorage struct {
-	PostgresStorage
+func NewReportPostgresDao(postgresStorage PostgresStorage) ReportDao {
+	return reportStorage{
+		PostgresStorage : postgresStorage,
+		insertQuery : queries.SqlQuery("report", "insert"),
+		listUnreadQuery : queries.SqlQuery("report", "list-unread"),
+		markReadQuery : queries.SqlQuery("report", "mark-read"),
+	}
 }
 
-func (this ReportStorage) AddReport(report Report) error {
-	_, err := this.updateReturningId("INSERT INTO report(object_id,comment) VALUES($1,$2) RETURNING id",
+type reportStorage struct {
+	PostgresStorage
+	insertQuery     string
+	listUnreadQuery string
+	markReadQuery   string
+}
+
+func (this reportStorage) AddReport(report Report) error {
+	_, err := this.updateReturningId(this.insertQuery,
 		func(entity interface{}) ([]interface{}, error) {
 			return entity.([]interface{}), nil
 		}, []interface{}{report.ObjectId, report.Comment})
 	return err;
 }
 
-func (this ReportStorage) ListUnread(limit int) ([]ReportWithName, error) {
-	reports, err := this.doFindList(
-		"SELECT report.id, COALESCE(white_water_rapid.id, -1) as title, COALESCE(white_water_rapid.title, '') as title, COALESCE(river.title, '') as river_title, report.comment, report.created_at " +
-			"FROM report LEFT OUTER JOIN white_water_rapid ON report.object_id=white_water_rapid.id " +
-			"LEFT OUTER JOIN river ON white_water_rapid.river_id=river.id " +
-			"WHERE NOT report.read " +
-			"ORDER BY created_at ASC LIMIT $1",
+func (this reportStorage) ListUnread(limit int) ([]ReportWithName, error) {
+	reports, err := this.doFindList(this.listUnreadQuery,
 		func(rows *sql.Rows) (ReportWithName, error) {
 			report := ReportWithName{}
 			err := rows.Scan(&report.Id, &report.ObjectId, &report.Title, &report.RiverTitle, &report.Comment, &report.CreatedAt)
@@ -36,10 +44,9 @@ func (this ReportStorage) ListUnread(limit int) ([]ReportWithName, error) {
 	return reports.([]ReportWithName), err
 }
 
-func (this ReportStorage) MarkRead(reports []int64) error {
+func (this reportStorage) MarkRead(reports []int64) error {
 	fmt.Println(reports)
-	return this.performUpdates(
-		"UPDATE report SET read=TRUE WHERE id = ANY($1)",
+	return this.performUpdates(this.markReadQuery,
 		func(ids interface{}) ([]interface{}, error) {
 			return []interface{}{ids}, nil;
 		}, pq.Array(reports))

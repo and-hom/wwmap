@@ -2,6 +2,9 @@
 %:
 	dh $@
 
+pre-build:
+	cd ../lib/dao/queries; $(HOME)/.go/bin/go-bindata -pkg queries .
+
 build-notifier:
 	GOPATH="$(HOME)/.go" go install github.com/go-bindata/go-bindata
 	cd notifier; $(HOME)/.go/bin/go-bindata email-template; GOPATH="$(HOME)/.go" go build
@@ -9,7 +12,7 @@ build-notifier:
 build-catalog-sync:
 	cd catalog-sync; $(HOME)/.go/bin/go-bindata email-template; GOPATH="$(HOME)/.go" go build
 
-build: build-notifier build-catalog-sync
+build: pre-build build-notifier build-catalog-sync
 
 override_dh_auto_install:
 	install -D -m 0755 notifier/notifier $$(pwd)/debian/wwmap-cron/usr/bin/wwmap-notifier

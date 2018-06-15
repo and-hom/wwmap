@@ -62,7 +62,7 @@ type ReportDao interface {
 type WaterWayDao interface {
 	AddWaterWays(waterways ...WaterWay) error
 	UpdateWaterWay(waterway WaterWay) error
-	ForEachWaterWay(func(WaterWay) error) error
+	ForEachWaterWay(transformer func(WaterWay) (WaterWay, error), tmpTable string) error
 }
 
 type VoyageReportDao interface {
@@ -91,6 +91,7 @@ func NewPostgresStorage(connStr string) PostgresStorage {
 	if err != nil {
 		log.Fatalf("Can not connect to postgres: %v", err)
 	}
+
 	return PostgresStorage{
 		db:db,
 	}

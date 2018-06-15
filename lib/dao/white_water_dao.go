@@ -8,49 +8,47 @@ import (
 	"github.com/and-hom/wwmap/lib/model"
 	"fmt"
 	"strings"
+	"github.com/and-hom/wwmap/lib/dao/queries"
 )
 
-const MAIN_FIELDS_SELECT string = "SELECT " +
-	"white_water_rapid.id AS id, " +
-	"osm_id, " +
-	"type, " +
-	"white_water_rapid.title AS title, " +
-	"comment, " +
-	"ST_AsGeoJSON(point) as point, " +
-	"category, " +
-	"short_description, " +
-	"link, " +
-	"river_id, ";
-
-const RIVER_ADDITIONAL_FIELDS =
-	"river.title as river_title ";
-
-const PATH_ADDITIONAL_FIELDS =
-	"river.title as river_title, CASE WHEN region.fake THEN NULL ELSE region.title END AS region_title, country.title as country_title";
-
-type WhiteWaterStorage struct {
-	PostgresStorage
+func NewWhiteWaterPostgresDao(postgresStorage PostgresStorage) WhiteWaterDao {
+	return whiteWaterStorage{
+		PostgresStorage:postgresStorage,
+		listByBoxQuery: queries.SqlQuery("white-water", "by-box"),
+		listByRiverQuery: queries.SqlQuery("white-water", "by-river"),
+		listByRiverAndTitleQuery: queries.SqlQuery("white-water", "by-river-and-title"),
+		listWithPathQuery: queries.SqlQuery("white-water", "with-path"),
+		insertQuery: queries.SqlQuery("white-water", "insert"),
+	}
 }
 
-func (this WhiteWaterStorage) ListWithPath() ([]WhiteWaterPointWithPath, error) {
+type whiteWaterStorage struct {
+	PostgresStorage
+	listByBoxQuery           string
+	listByRiverQuery         string
+	listByRiverAndTitleQuery string
+	listWithPathQuery        string
+	insertQuery              string
+}
+
+func (this whiteWaterStorage) ListWithPath() ([]WhiteWaterPointWithPath, error) {
 	return this.listWithPath("");
 }
 
-func (this WhiteWaterStorage) ListByBbox(bbox geo.Bbox) ([]WhiteWaterPointWithRiverTitle, error) {
-	return this.list("WHERE point && ST_MakeEnvelope($1,$2,$3,$4)", bbox.X1, bbox.Y1, bbox.X2, bbox.Y2)
+func (this whiteWaterStorage) ListByBbox(bbox geo.Bbox) ([]WhiteWaterPointWithRiverTitle, error) {
+	return this.list(this.listByBoxQuery, bbox.X1, bbox.Y1, bbox.X2, bbox.Y2)
 }
 
-func (this WhiteWaterStorage) ListByRiver(id int64) ([]WhiteWaterPointWithRiverTitle, error) {
-	return this.list("WHERE river_id=$1", id)
+func (this whiteWaterStorage) ListByRiver(id int64) ([]WhiteWaterPointWithRiverTitle, error) {
+	return this.list(this.listByRiverQuery, id)
 }
 
-func (this WhiteWaterStorage) ListByRiverAndTitle(riverId int64, title string) ([]WhiteWaterPointWithRiverTitle, error) {
-	return this.list("WHERE river_id=$1 AND title=$2", riverId, title)
+func (this whiteWaterStorage) ListByRiverAndTitle(riverId int64, title string) ([]WhiteWaterPointWithRiverTitle, error) {
+	return this.list(this.listByRiverAndTitleQuery, riverId, title)
 }
 
-func (this WhiteWaterStorage) list(condition string, vars ...interface{}) ([]WhiteWaterPointWithRiverTitle, error) {
-	result, err := this.doFindList(
-		MAIN_FIELDS_SELECT + RIVER_ADDITIONAL_FIELDS + "FROM white_water_rapid  LEFT OUTER JOIN river ON white_water_rapid.river_id=river.id " + condition,
+func (this whiteWaterStorage) list(query string, vars ...interface{}) ([]WhiteWaterPointWithRiverTitle, error) {
+	result, err := this.doFindList(query,
 		func(rows *sql.Rows) (WhiteWaterPointWithRiverTitle, error) {
 
 			riverTitle := sql.NullString{}
@@ -73,14 +71,8 @@ func (this WhiteWaterStorage) list(condition string, vars ...interface{}) ([]Whi
 	return result.([]WhiteWaterPointWithRiverTitle), nil
 }
 
-func (this WhiteWaterStorage) listWithPath(condition string, vars ...interface{}) ([]WhiteWaterPointWithPath, error) {
-	result, err := this.doFindList(
-		MAIN_FIELDS_SELECT + PATH_ADDITIONAL_FIELDS +
-			" FROM white_water_rapid " +
-			"INNER JOIN river ON white_water_rapid.river_id=river.id " +
-			"INNER JOIN region ON river.region_id=region.id " +
-			"INNER JOIN country ON region.country_id=country.id " +
-			condition,
+func (this whiteWaterStorage) listWithPath(query string, vars ...interface{}) ([]WhiteWaterPointWithPath, error) {
+	result, err := this.doFindList(query,
 		func(rows *sql.Rows) (WhiteWaterPointWithPath, error) {
 
 			riverTitle := ""
@@ -162,13 +154,12 @@ func scanWwPoint(rows *sql.Rows, additionalVars ...interface{}) (WhiteWaterPoint
 	}, nil
 }
 
-func (this WhiteWaterStorage) AddWhiteWaterPoints(whiteWaterPoints ...WhiteWaterPoint) error {
+func (this whiteWaterStorage) AddWhiteWaterPoints(whiteWaterPoints ...WhiteWaterPoint) error {
 	vars := make([]interface{}, len(whiteWaterPoints))
 	for i, p := range whiteWaterPoints {
 		vars[i] = p
 	}
-	return this.performUpdates("INSERT INTO white_water_rapid(osm_id, title,type,category,comment,point,short_description, link, river_id) " +
-		"VALUES ($1, $2, $3, $4, $5, ST_GeomFromGeoJSON($6), $7, $8, $9)",
+	return this.performUpdates(this.insertQuery,
 		func(entity interface{}) ([]interface{}, error) {
 			wwp := entity.(WhiteWaterPoint)
 			pathBytes, err := json.Marshal(geo.NewGeoPoint(wwp.Point))
