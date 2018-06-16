@@ -12,13 +12,15 @@ type ClusterizationParams struct {
 	BarrierRatio                 float64 `yaml:"barrier_ratio"`
 	MinDistRatio                 float64 `yaml:"min_dist_ratio"`
 	SinglePointClusteringMaxZoom int `yaml:"single_point_cluster_max_zoom"`
+	MaxClustersPerRiver          int `yaml:"max_clusters_per_river"`
+	MinCLusteredPointsRatio      float64 `yaml:"min_clustered_points_ratio"`
 }
 
 type Notifications struct {
-	EmailRecipients []string `yaml:"email_recipients"`
-	EmailSender     string `yaml:"email_sender"`
+	EmailRecipients          []string `yaml:"email_recipients"`
+	EmailSender              string `yaml:"email_sender"`
 	ReportingEmailSubject    string `yaml:"reporting_email_subject"`
-	ImportExportEmailSubject    string `yaml:"import_export_email_subject"`
+	ImportExportEmailSubject string `yaml:"import_export_email_subject"`
 }
 
 type Api struct {
@@ -36,7 +38,7 @@ type TileCache struct {
 }
 
 type WordpressSync struct {
-	Login string `yaml:"login"`
+	Login    string `yaml:"login"`
 	Password string `yaml:"password"`
 }
 

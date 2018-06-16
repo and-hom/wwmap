@@ -1,8 +1,10 @@
 db-connection-string: "postgres://wwmap:WWMAP_POSTGRES_PASSWORD@localhost:5432/wwmap?sslmode=require"
 clusterization:
-  barrier_ratio: 0.002
-  min_dist_ratio: 0.1
-  single_point_cluster_max_zoom: 6
+  barrier_ratio: 2
+  min_dist_ratio: 50
+  single_point_cluster_max_zoom: 8
+  min_clustered_points_ratio: 0.5
+  max_clusters_per_river: 1
 
 
 notifications:

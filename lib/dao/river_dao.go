@@ -56,7 +56,6 @@ func (this riverStorage) RiverById(id int64) (RiverTitle, error) {
 }
 
 func (this riverStorage) listRiverTitles(query string, queryParams ...interface{}) ([]RiverTitle, error) {
-	fmt.Println(query)
 	result, err := this.doFindList(query,
 		func(rows *sql.Rows) (RiverTitle, error) {
 			riverTitle := RiverTitle{}

@@ -4,10 +4,10 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
 	"net/http"
-	"os"
-	"github.com/gorilla/handlers"
 	. "github.com/and-hom/wwmap/lib/dao"
 	"github.com/and-hom/wwmap/lib/config"
+	"github.com/gorilla/handlers"
+	"os"
 )
 
 type App struct {
@@ -17,7 +17,6 @@ type App struct {
 	reportDao       ReportDao
 	voyageReportDao VoyageReportDao
 	imgDao          ImgDao
-	clusterMaker    ClusterMaker
 }
 
 func main() {
@@ -33,11 +32,14 @@ func main() {
 	whiteWaterDao := NewWhiteWaterPostgresDao(storage)
 	reportDao := NewReportPostgresDao(storage)
 
-	clusterMaker := ClusterMaker{
-		BarrierDistance: configuration.ClusterizationParams.BarrierRatio,
-		MinDistance: configuration.ClusterizationParams.MinDistRatio,
-		SinglePointClusteringMaxZoom: configuration.ClusterizationParams.SinglePointClusteringMaxZoom,
-	}
+	//clusterMaker := ClusterMaker{
+	//	BarrierDistance: ,
+	//	MinDistance: configuration.ClusterizationParams.MinDistRatio,
+	//	SinglePointClusteringMaxZoom: configuration.ClusterizationParams.SinglePointClusteringMaxZoom,
+	//}
+
+	clusterMaker := NewClusterMaker(whiteWaterDao, imgDao,
+		configuration.ClusterizationParams)
 
 	app := App{
 		storage:&storage,
@@ -45,7 +47,6 @@ func main() {
 		whiteWaterDao:whiteWaterDao,
 		reportDao:reportDao,
 		voyageReportDao: voyageReportDao,
-		clusterMaker:clusterMaker,
 		imgDao:imgDao,
 	}
 
@@ -54,7 +55,7 @@ func main() {
 	routeHandler := RouteHandler{handler}
 	trackHandler := TrackHandler{handler}
 	riverHandler := RiverHandler{handler, configuration.Content.ResourceBase}
-	whiteWaterHandler := WhiteWaterHandler{handler, configuration.Content.ResourceBase}
+	whiteWaterHandler := WhiteWaterHandler{Handler:handler, resourceBase:configuration.Content.ResourceBase, clusterMaker: clusterMaker}
 	pointHandler := PointHandler{handler}
 	reportHandler := ReportHandler{handler}
 	pictureHandler := PictureHandler{handler}

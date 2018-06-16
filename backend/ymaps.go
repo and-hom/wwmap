@@ -129,7 +129,7 @@ func mkFeature(point WhiteWaterPointWithRiverTitle, withDescription bool, resour
 	}
 
 	imageHref := fmt.Sprintf(resourcesBase + "/img/cat%d.png", point.Category.Category)
-	if point.Category.Category == model.IMPASSABLE{
+	if point.Category.Category == model.IMPASSABLE {
 		imageHref = resourcesBase + "/img/impassable.png"
 	}
 	return Feature{
@@ -233,21 +233,25 @@ func mkCluster(Id ClusterId, points []WhiteWaterPointWithRiverTitle) Feature {
 	}
 }
 
-func whiteWaterPointsToYmaps(clusterMaker ClusterMaker, points []WhiteWaterPointWithRiverTitle, width float64, height float64, zoom int, resourcesBase string) []Feature {
-	by_cluster := clusterMaker.clusterizePoints(points, width, height, zoom)
-
+func whiteWaterPointsToYmaps(clusterMaker ClusterMaker, rivers []RiverTitle, bbox Bbox, zoom int, resourcesBase string) ([]Feature, error) {
 	result := make([]Feature, 0)
-	for id, cluster_points := range by_cluster {
-		if len(cluster_points) == 1 &&
-		// Show fake cluster for zoom<=SinglePointClusteringMaxZoom on single ww point linked having river id
-			(zoom > clusterMaker.SinglePointClusteringMaxZoom || cluster_points[0].RiverId <= 0 || !id.Single) {
-			result = append(result, mkFeature(cluster_points[0], true, resourcesBase))
-		} else {
-			result = append(result, mkCluster(id, cluster_points))
+	for _,river := range rivers {
+		riverClusters, err := clusterMaker.Get(river.Id, zoom, bbox)
+		if err != nil {
+			return []Feature{}, nil
+		}
+
+		for id, obj := range riverClusters {
+			switch obj.(type) {
+			case WhiteWaterPointWithRiverTitle:
+				result = append(result, mkFeature(obj.(WhiteWaterPointWithRiverTitle), true, resourcesBase))
+			case Cluster:
+				result = append(result, mkCluster(id, obj.(Cluster).Points))
+			}
 		}
 	}
 
-	return result
+	return result, nil
 }
 
 func RoutesToYmaps(route []Route) FeatureCollection {

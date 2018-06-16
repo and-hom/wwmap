@@ -1,7 +1,6 @@
 package main
 
 import (
-	log "github.com/Sirupsen/logrus"
 	"net/http"
 	"encoding/json"
 	"fmt"
@@ -9,13 +8,15 @@ import (
 	. "github.com/and-hom/wwmap/lib/dao"
 	. "github.com/and-hom/wwmap/lib/geo"
 	. "github.com/and-hom/wwmap/lib/http"
+	"math"
 )
 
 const PREVIEWS_COUNT int = 20
 
 type WhiteWaterHandler struct {
 	Handler
-	resourceBase string
+	resourceBase  string
+	clusterMaker ClusterMaker
 }
 
 func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req *http.Request) {
@@ -26,22 +27,18 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 		return
 	}
 
-	points, err := this.whiteWaterDao.ListByBbox(bbox)
+	rivers, err := this.riverDao.ListRiversWithBounds(bbox, math.MaxInt32)
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not read whitewater points for bbox %s", bbox.String()))
 		return
 	}
-	for i := 0; i < len(points); i++ {
-		imgs, err := this.imgDao.List(points[i].Id, PREVIEWS_COUNT)
-		if err != nil {
-			log.Warnf("Can not read whitewater point images for point %d: %s", points[i].Id, err.Error())
-			continue
-		}
-		points[i].Images = imgs
-	}
 
-	featureCollection := MkFeatureCollection(whiteWaterPointsToYmaps(this.clusterMaker, points, bbox.Width(), bbox.Height(), zoom, this.resourceBase))
-	log.Infof("Found %d", len(featureCollection.Features))
+	features, err := whiteWaterPointsToYmaps(this.clusterMaker, rivers, bbox, zoom, this.resourceBase)
+	if err != nil {
+		OnError500(w, err, fmt.Sprintf("Can not cluster: %s", bbox.String()))
+		return
+	}
+	featureCollection := MkFeatureCollection(features)
 
 	w.Write(this.JsonpAnswer(callback, featureCollection, "{}"))
 }
