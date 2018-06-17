@@ -1,3 +1,12 @@
+wwmap-backend (0.0.16) unstable; urgency=medium
+
+  * #7 Clustering improved, refactored and uses cache
+  * #49 Report display fixed in table. Show 5 latest reports by source
+  * #49 Display report year in reports table.Sort by year desc
+  * #60 Sql queries moved to separate files
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sun, 17 Jun 2018 22:26:52 +0300
+
 wwmap-backend (0.0.15) unstable; urgency=medium
 
   * #49 Synchronize images and reports with huskytm.ru
