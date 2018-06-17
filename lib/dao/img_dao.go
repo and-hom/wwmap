@@ -26,8 +26,8 @@ func (this imgStorage) Upsert(imgs ...Img) ([]Img, error) {
 	}
 	ids, err := this.updateReturningId(this.upsertQuery,
 		func(entity interface{}) ([]interface{}, error) {
-			_report := entity.(Img)
-			return []interface{}{_report.WwId, _report.Source, _report.RemoteId, _report.Url, _report.PreviewUrl, _report.DatePublished}, nil
+			_img := entity.(Img)
+			return []interface{}{_img.ReportId, _img.WwId, _img.Source, _img.RemoteId, _img.Url, _img.PreviewUrl, _img.DatePublished}, nil
 		}, imgs_i...)
 
 	if err != nil {
@@ -45,7 +45,7 @@ func (this imgStorage) Upsert(imgs ...Img) ([]Img, error) {
 func (this imgStorage) List(wwId int64, limit int) ([]Img, error) {
 	result, err := this.doFindList(this.listQuery, func(rows *sql.Rows) (Img, error) {
 		img := Img{}
-		err := rows.Scan(&img.Id, &img.WwId, &img.Source, &img.RemoteId, &img.Url, &img.PreviewUrl, &img.DatePublished)
+		err := rows.Scan(&img.Id, &img.ReportId, &img.WwId, &img.Source, &img.RemoteId, &img.Url, &img.PreviewUrl, &img.DatePublished)
 		if err != nil {
 			return img, err
 		}

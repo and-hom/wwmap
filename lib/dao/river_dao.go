@@ -60,7 +60,7 @@ func (this riverStorage) listRiverTitles(query string, queryParams ...interface{
 		func(rows *sql.Rows) (RiverTitle, error) {
 			riverTitle := RiverTitle{}
 			boundsStr := sql.NullString{}
-			aliases := ""
+			aliases := sql.NullString{}
 			err := rows.Scan(&riverTitle.Id, &riverTitle.Title, &boundsStr, &aliases)
 			if err != nil {
 				return RiverTitle{}, err
@@ -103,7 +103,9 @@ func (this riverStorage) listRiverTitles(query string, queryParams ...interface{
 				}
 			}
 
-			err = json.Unmarshal([]byte(aliases), &riverTitle.Aliases)
+			if aliases.Valid {
+				err = json.Unmarshal([]byte(aliases.String), &riverTitle.Aliases)
+			}
 			return riverTitle, err
 		}, queryParams...)
 	if (err != nil ) {

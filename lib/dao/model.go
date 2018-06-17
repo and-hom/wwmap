@@ -228,6 +228,7 @@ type VoyageReport struct {
 type Img struct {
 	Id              int64
 	WwId            int64
+	ReportId        int64
 	Source          string
 	RemoteId        string
 	RawUrl          string

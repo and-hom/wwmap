@@ -82,11 +82,11 @@ func (this *App) findMatchAndStoreImages(report dao.VoyageReport, reportProvider
 	if err != nil {
 		this.Fatalf(err, "Can not load images for report %d", report.Id)
 	}
-	fmt.Printf("%d images found\n", len(imgs))
-
+	log.Infof("%d images found for %s %d", len(imgs), report.Source, report.Id)
 	log.Infof("Bind images to ww spots for report %d", report.Id)
 	matchedImgs := []dao.Img{}
 	candidates := this.matchImgsToWhiteWaterPoints(report, imgs)
+	log.Infof("%d images matched for %s %d", len(candidates), report.Source, report.Id)
 
 	for _, imgToWwpts := range candidates {
 		if len(imgToWwpts.Wwpts) == 1 {
@@ -122,6 +122,7 @@ func (this *App) matchImgsToWhiteWaterPoints(report dao.VoyageReport, imgs []dao
 					if strings.Contains(forCompare(label), forCompare(wwpt.Title)) {
 						fmt.Println("Found: ", label)
 						rec, found := candidates[img.RemoteId]
+						img.ReportId = report.Id
 						if !found {
 							rec = ImgWwPoints{
 								Img:img,
