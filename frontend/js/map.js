@@ -89,7 +89,7 @@
 
         var helpButton = new ymaps.control.Button({
             data: {
-                image: 'img/help.png'
+                image: 'http://wwmap.ru/img/help.png'
             },
             options: {
                 selectOnClick: false
