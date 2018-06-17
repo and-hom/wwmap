@@ -11,11 +11,15 @@ import (
 	"github.com/and-hom/wwmap/lib/dao"
 	"regexp"
 	"html"
+	"github.com/and-hom/wwmap/lib/util"
 )
 
 const REPORT_CATEGORY string = "8"
 const IMG_RE_1 string = "\\<img.*?title=\"(.*?)\".*?src=\"(.*?)\".*?\\>"
 const IMG_RE_2 string = "\\<img.*?src=\"(.*?)\".*?title=\"(.*?)\".*?\\>"
+const YEAR_RE string = "(?:\\D|:^)(2\\d{3})(?:\\D|$)"
+
+var yearRe = regexp.MustCompile(YEAR_RE)
 
 func GetReportProvider(login, password string) (ReportProvider, error) {
 	client := wp.NewClient(&wp.Options{
@@ -135,17 +139,39 @@ func (this *HuskytmReportProvider) ReportsSince(key time.Time) ([]dao.VoyageRepo
 
 		datePublished, err := time.Parse(TIME_FORMAT, post.Date)
 
+		title := post.Title.Rendered
+
 		ids = append(ids, dao.VoyageReport{
 			RemoteId:fmt.Sprintf("%d", post.ID),
-			Title: post.Title.Rendered,
+			Title: title,
 			Url:post.Link,
 			DatePublished: datePublished,
 			DateModified: dateModified,
+			DateOfTrip:getYear(title),
 			Source:SOURCE,
 			Tags: tags,
 		})
 	}
 	return ids, latest, nil
+}
+
+func getYear(title string) time.Time {
+	yearFound := yearRe.FindAllStringSubmatch(title, -1)
+	year := int64(0)
+	for i := 0; i < len(yearFound); i++ {
+		y, err := strconv.ParseInt(yearFound[i][1], 10, 32)
+		if err != nil {
+			log.Errorf("Can not parse year: %s", yearFound[1])
+			continue
+		}
+		if y > year {
+			year = y
+		}
+	}
+	if year > 0 {
+		return time.Date(int(year), time.January, 2, 0, 0, 0, 0, time.UTC)
+	}
+	return util.ZeroDateUTC()
 }
 
 func (this *HuskytmReportProvider) cacheImages() error {
