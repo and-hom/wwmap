@@ -23,7 +23,7 @@
         {% endif %}
     </div>
     <div class="popover-footer">
-        <a target="_top" href="" onclick="show_report_popup({{properties.id}}); return false">Сообщить о неточном местоположении</a>
+        <a target="_top" href="" onclick="show_report_popup({{properties.id}}); return false">Сообщить о неточности</a>
     </div>
 </div>
 
@@ -41,7 +41,7 @@
             <td class="report-col">
                 <ul class="reports">
                 {{each reports}}
-                    <li><a target="_blank" href="${url}" title="${title}"><img src="${source_logo_url}"/>{{if year>1}}${year}{{/if}}&nbsp;${title}</a></li>
+                    <li><a target="_blank" href="${url}" title="${title}"><img src="${source_logo_url}"/>&nbsp;{{if year>1}}<strong>${year}&nbsp;</strong>{{/if}}${title}</a></li>
                 {{/each}}
                 </ul>
             </td>
