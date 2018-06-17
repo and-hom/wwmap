@@ -1,6 +1,7 @@
 --@find-by-tags
-SELECT id,title,NULL FROM (
-		SELECT id, title, jsonb_array_elements_text(aliases) AS alias FROM river) sq WHERE title ilike ANY($1) OR alias ilike ANY($1)
+SELECT id,title,NULL, NULL FROM (
+		SELECT id, title, CASE aliases WHEN '[]' THEN NULL ELSE jsonb_array_elements_text(aliases) END AS alias FROM river) sq
+WHERE title ilike ANY($1) OR alias ilike ANY($1)
 --@nearest
 SELECT id, title, NULL, aliases FROM (
 SELECT ROW_NUMBER() OVER (PARTITION BY id ORDER BY distance ASC) AS r_num, id, title, distance, aliases FROM (
