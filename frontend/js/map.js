@@ -87,6 +87,20 @@
             },
         });
 
+        var helpButton = new ymaps.control.Button({
+            data: {
+                image: 'img/help.png'
+            },
+            options: {
+                selectOnClick: false
+            }
+        });
+        helpButton.events.add('click', function (e) {
+           show_info_popup()
+        });
+
+
+
         addCachedLayer('osm#standard', 'OSM', 'OpenStreetMap contributors, CC-BY-SA', 'osm')
         addLayer('google#satellite', 'Спутник Google', 'Изображения © DigitalGlobe,CNES / Airbus, 2018,Картографические данные © Google, 2018', GOOGLE_SAT_TILES)
         addCachedLayer('ggc#standard', 'Топографическая карта', '', 'ggc', 0, 15)
@@ -119,6 +133,15 @@
                 top: 10,
                 left: 10
             }});
+
+        if ($('#info_popup').length>0) {
+            myMap.controls.add(helpButton, {
+                float: 'none',
+                position: {
+                    top: 5,
+                    left: 240
+                }});
+        }
 
         myMap.events.add('click', function (e) {
             myMap.balloon.close()
