@@ -222,7 +222,6 @@ type VoyageReport struct {
 	DateModified  time.Time
 	DateOfTrip    time.Time
 	Tags          []string
-	Rivers        []RiverTitle
 }
 
 type Img struct {

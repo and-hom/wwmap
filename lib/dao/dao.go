@@ -70,6 +70,7 @@ type VoyageReportDao interface {
 	GetLastId(source string) (interface{}, error)
 	AssociateWithRiver(voyageReportId, riverId int64) error
 	List(riverId int64, limitByGroup int) ([]VoyageReport, error)
+	ForEach(func (report *VoyageReport) error) error
 }
 
 type ImgDao interface {
@@ -457,6 +458,26 @@ func (this *PostgresStorage)doFindList(query string, callback interface{}, args 
 	return result.Interface(), nil
 }
 
+func (this *PostgresStorage)forEach(query string, callback interface{}, args ...interface{}) error {
+	fmt.Println("aaa")
+	fmt.Println(args)
+	rows, err := this.db.Query(query, args...)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	funcValue := reflect.ValueOf(callback)
+
+	for rows.Next() {
+		val := funcValue.Call([]reflect.Value{reflect.ValueOf(rows)})
+		if val[0].Interface() != nil {
+			return val[0].Interface().(error)
+		}
+	}
+	return nil
+}
+
 // Deprecated: use updateReturningId
 func (this *PostgresStorage) insertReturningId(query string, args ...interface{}) (int64, error) {
 	tx, err := this.db.Begin()
@@ -520,7 +541,7 @@ func (this *PostgresStorage) updateReturningId(query string, mapper func(entity 
 		if rows.Next() {
 			rows.Scan(&result[idx])
 		} else {
-			return []int64{}, fmt.Errorf("Value is not inserted: %v+", value)
+			return []int64{}, fmt.Errorf("Value is not inserted: %v+\n %s", value, query)
 		}
 		err = rows.Close()
 		if err != nil {

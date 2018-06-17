@@ -14,6 +14,7 @@ func NewVoyageReportPostgresDao(postgresStorage PostgresStorage) VoyageReportDao
 		getLastIdQuery: queries.SqlQuery("voyage-report", "get-last-id"),
 		listQuery: queries.SqlQuery("voyage-report", "list"),
 		upsertRiverLinkQuery: queries.SqlQuery("voyage-report", "upsert-river-link"),
+		listAllQuery: queries.SqlQuery("voyage-report", "list-all"),
 	}
 }
 
@@ -22,6 +23,7 @@ type voyageReportStorage struct {
 	upsertQuery          string
 	getLastIdQuery       string
 	listQuery            string
+	listAllQuery         string
 	upsertRiverLinkQuery string
 }
 
@@ -64,6 +66,17 @@ func (this voyageReportStorage) GetLastId(source string) (interface{}, error) {
 	return lastDate, nil
 }
 
+func (this voyageReportStorage) ForEach(callback func(report *VoyageReport) error) error {
+	return this.forEach(this.listAllQuery,
+		func(rows *sql.Rows) error {
+			report, err := readReportFromRows(rows)
+			if err != nil {
+				return err
+			}
+			return callback(&report)
+		})
+}
+
 func (this voyageReportStorage) AssociateWithRiver(voyageReportId, riverId int64) error {
 	return this.performUpdates(this.upsertRiverLinkQuery,
 		func(entity interface{}) ([]interface{}, error) {
@@ -72,25 +85,25 @@ func (this voyageReportStorage) AssociateWithRiver(voyageReportId, riverId int64
 }
 
 func (this voyageReportStorage) List(riverId int64, limitByGroup int) ([]VoyageReport, error) {
-	dateOfTrip := pq.NullTime{}
-	result, err := this.doFindList(this.listQuery, func(rows *sql.Rows) (VoyageReport, error) {
-		report := VoyageReport{}
-		var rNum int
-		var tags string
-		err := rows.Scan(&rNum, &report.Id, &report.Title, &report.RemoteId, &report.Source, &report.Url, &report.DatePublished, &report.DateModified, &dateOfTrip, &tags)
-		if dateOfTrip.Valid {
-			report.DateOfTrip = dateOfTrip.Time
-		}
-		err = json.Unmarshal([]byte(tags), &report.Tags)
-		if err != nil {
-			return report, err
-		}
-		return report, err
-
-	}, riverId, limitByGroup)
+	result, err := this.doFindList(this.listQuery, readReportFromRows, riverId, limitByGroup)
 
 	if err != nil {
 		return []VoyageReport{}, err
 	}
 	return result.([]VoyageReport), nil
+}
+
+func readReportFromRows(rows *sql.Rows) (VoyageReport, error) {
+	report := VoyageReport{}
+	dateOfTrip := pq.NullTime{}
+	var tags string
+	err := rows.Scan(&report.Id, &report.Title, &report.RemoteId, &report.Source, &report.Url, &report.DatePublished, &report.DateModified, &dateOfTrip, &tags)
+	if dateOfTrip.Valid {
+		report.DateOfTrip = dateOfTrip.Time
+	}
+	err = json.Unmarshal([]byte(tags), &report.Tags)
+	if err != nil {
+		return report, err
+	}
+	return report, err
 }

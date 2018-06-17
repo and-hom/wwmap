@@ -35,8 +35,7 @@ func (this *App) doSyncReports(source string, reportProvider *common.ReportProvi
 	if err != nil {
 		this.Fatalf(err, "Can not connect get last report id")
 	}
-	log.Infof("Get and store reports from %s since %s", source,  lastId.(time.Time).Format(huskytm.TIME_FORMAT))
-
+	log.Infof("Get and store reports from %s since %s", source, lastId.(time.Time).Format(huskytm.TIME_FORMAT))
 
 	reports, next, err := (*reportProvider).ReportsSince(lastId.(time.Time))
 	if err != nil {
@@ -53,30 +52,54 @@ func (this *App) doSyncReports(source string, reportProvider *common.ReportProvi
 
 	log.Infof("%d reports from %s are successfully stored. Next id is %s\n", len(reports), source, next)
 
-	log.Info("Try to connect reports with known rivers")
+	reportsToRivers := make(map[int64][]dao.RiverTitle)
+	for i:=0;i<len(reports);i++ {
+		reportsToRivers[reports[i].Id] = make([]dao.RiverTitle, 0)
+	}
 
-	for i, report := range reports {
-		log.Infof("Tags are: %v", report.Tags)
-		rivers, err := this.RiverDao.FindTitles(report.Tags)
-		if err != nil {
-			log.Fatal("Can not find rivers for tags", report.Tags, err)
-		}
-		log.Info(rivers)
-		for _, river := range rivers {
-			err := this.VoyageReportDao.AssociateWithRiver(report.Id, river.Id)
-			if err != nil {
-				log.Fatal(err)
-			}
-		}
-		reports[i].Rivers = rivers
+	log.Info("Try to connect reports with known rivers")
+	err = this.associateReportsWithRivers(&reportsToRivers)
+	if err != nil {
+		log.Fatal("Can not associate rivers with reports: ", err)
 	}
 
 	for _, report := range reports {
-		this.findMatchAndStoreImages(report, reportProvider)
+		rivers, found := reportsToRivers[report.Id]
+		if !found {
+			rivers = []dao.RiverTitle{}
+		}
+		this.findMatchAndStoreImages(report, rivers, reportProvider)
 	}
 }
 
-func (this *App) findMatchAndStoreImages(report dao.VoyageReport, reportProvider *common.ReportProvider) {
+func (this *App) associateReportsWithRivers(resultHandlerMap *map[int64][]dao.RiverTitle) error {
+	fmt.Println("fvv")
+	return this.VoyageReportDao.ForEach(func (report *dao.VoyageReport) error {
+		return this.associateReportWithRiver(report, resultHandlerMap)
+	})
+}
+
+func (this *App) associateReportWithRiver(report *dao.VoyageReport, resultHandlerMap *map[int64][]dao.RiverTitle) error {
+	log.Infof("Tags are: %v", report.Tags)
+	rivers, err := this.RiverDao.FindTitles(report.Tags)
+	if err != nil {
+		return err
+	}
+	log.Info(rivers)
+	for _, river := range rivers {
+		err := this.VoyageReportDao.AssociateWithRiver(report.Id, river.Id)
+		if err != nil {
+			return err
+		}
+		riversForReport, found := (*resultHandlerMap)[report.Id]
+		if found {
+			(*resultHandlerMap)[report.Id] = append(riversForReport, river)
+		}
+	}
+	return nil
+}
+
+func (this *App) findMatchAndStoreImages(report dao.VoyageReport, rivers []dao.RiverTitle, reportProvider *common.ReportProvider) {
 	log.Infof("Find images for report %d: %s %s", report.Id, report.RemoteId, report.Title)
 	imgs, err := (*reportProvider).Images(report.RemoteId)
 	if err != nil {
@@ -85,7 +108,7 @@ func (this *App) findMatchAndStoreImages(report dao.VoyageReport, reportProvider
 	log.Infof("%d images found for %s %d", len(imgs), report.Source, report.Id)
 	log.Infof("Bind images to ww spots for report %d", report.Id)
 	matchedImgs := []dao.Img{}
-	candidates := this.matchImgsToWhiteWaterPoints(report, imgs)
+	candidates := this.matchImgsToWhiteWaterPoints(report, imgs, rivers)
 	log.Infof("%d images matched for %s %d", len(candidates), report.Source, report.Id)
 
 	for _, imgToWwpts := range candidates {
@@ -109,10 +132,10 @@ type ImgWwPoints struct {
 	Wwpts []dao.WhiteWaterPointWithRiverTitle
 }
 
-func (this *App) matchImgsToWhiteWaterPoints(report dao.VoyageReport, imgs []dao.Img) map[string]ImgWwPoints {
+func (this *App) matchImgsToWhiteWaterPoints(report dao.VoyageReport, imgs []dao.Img, rivers []dao.RiverTitle) map[string]ImgWwPoints {
 	candidates := make(map[string]ImgWwPoints)
 	for _, img := range imgs {
-		for _, river := range report.Rivers {
+		for _, river := range rivers {
 			wwpts, err := this.WhiteWaterDao.ListByRiver(river.Id)
 			if err != nil {
 				this.Fatalf(err, "Can not list white water spots for river %d", river.Id)
