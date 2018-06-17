@@ -70,7 +70,46 @@ _Например, в wordpress есть специальный плагин, ч
 <div id="report_ok" style="display:none">Запрос отправлен. Я прочитаю его по мере наличия свободного времени.</div>
 <div id="report_fail" style="display:none">Что-то пошло не так...</div>
 ```
-6. Подключить кучу скриптов (Вполне вероятно, что среди них могут быть и неиспользуемые.
+
+6. Добавить туториал
+```
+<div class="popup_area">
+    <div class="popuptext" style="width:1000px;" id="info_popup">
+        <h3>Что это такое?</h3>
+        <p>Это карта порогов для водного туризма с описаниями, категориями, ссылками на отчёты и выгрузкой GPX-файлов в навигатор. </p>
+        <h3>Как добавить новые препятствия на карту?</h3>
+        <p>Сейчас это делается не самым простым способом:
+        </p>
+            <ol>
+                <li>В любом удобном редакторе геоданных нужно добавить точки в те места, где находятся пороги. Кроме того
+                    можно отметить совершенно непроходимые опасные участки, например, многолетние завалы. Точка порога должна
+                    находиться там, где непосредственно начинается препятствие, либо на месте заходной шиверы, если её сила
+                    существенна. В качестве редактора геоданных можно использовать, например, <a target="_blank" href="http://sasgis.org">SAS Planet</a>.</li>
+                <li>У каждой точки должно быть краткое описание: не более 1000 символов. В начале описания нужно упомянуть категорию препятствия
+                и по возможности ссылку на отчёт в интернете. При добавлении я внесу их в отдельные поля, удалив из описания.</li>
+                <li>Затем из редактора нужно выгрузить полученные точки в формате
+                    <a target="_blank" href="https://ru.wikipedia.org/wiki/GPX">GPX</a> так, чтобы в каждом файле были препятствия одной реки.
+                    В случае крайней необходимости можно выгрузить их и в формате KML, но это будет не так удобно.</li>
+                <li>Полученные файлы отправить по электронной почте на <a class="email-link" href=""></a>. Иногда я бываю в походе, поэтому
+                не обещаю обрабатывать их быстро. Иногда это может происходить в течении месяца. Возможно у меня будут уточнения и вопросы,
+                так как я проверяю добавляемые точки.</li>
+            </ol>
+        <h3>Как ещё помочь развитию карты?</h3>
+        <ol>
+            <li>Рассказать про открытые библиотеки отчётов по водному туризму и способы автомтизированного анализа их отчётов</li>
+            <li>Разместить карту у себя на сайте. Как это сделать, описано <a target="_blank" href="https://github.com/and-hom/wwmap/blob/master/INTEGRATION_ru.md">тут</a></li>
+            <li>Помочь в разработке</li>
+        </ol>
+        <h3>Как связаться с разработчиком?</h3>
+        <p>По всем свящанным с картой вопросам нужно писать по электронной почте <a class="email-link" href=""></a>
+        Также можно ознакомиться с проектом на <a target="_blank" href="https://github.com/and-hom/wwmap">github</a>, узнать о текущи задачах,
+            предложить улучшения и предложить пулл-реквест.</p>
+        <input type="button" name="ok" value="Понятно" width="600px; align: center;"/>
+    </div>
+</div>
+```
+
+7. Подключить кучу скриптов (Вполне вероятно, что среди них могут быть и неиспользуемые.
 Если вы найдёте такой, сообщите, и я его уберу):
 ```
 <script type="text/javascript" src="https://wwmap.ru/js/jquery-3.1.1.min.js"></script>
@@ -85,7 +124,7 @@ _Например, в wordpress есть специальный плагин, ч
 ```
 
 
-7. Добавить несколько javascript-ф-ций
+8. Добавить несколько javascript-ф-ций
 ```
 <script type="text/javascript">
   function show_map_at(bounds) {
@@ -94,25 +133,39 @@ _Например, в wordpress есть специальный плагин, ч
             duration: 200,
      })
   }
+
   function show_report_popup(id){
-      $(".popuptext #object_id").val(id)
-      $(".popuptext").addClass("show");
+      $("#report_popup #object_id").val(id)
+      $("#report_popup").addClass("show");
   }
+
+  function show_info_popup(){
+      $("#info_popup").addClass("show");
+  }
+
   $(document).ready(function() {
-    $(".popuptext input[name=cancel]").click(function(){
-        $(".popuptext").removeClass("show")
+    $("#info_popup input[name=ok]").click(function(){
+        $("#info_popup").removeClass("show")
     });
-    $(".popuptext input[type=submit]").click(function(){
-        $.post(apiBase + "/report", $( ".popuptext form" ).serialize() )
+    $("#report_popup input[name=cancel]").click(function(){
+        $("#report_popup").removeClass("show")
+    });
+    $("#report_popup input[type=submit]").click(function(){
+        $.post(apiBase + "/report", $( "#report_popup form" ).serialize() )
         .done(function( data ) {
             window.alert($("#report_ok").html());
-            $(".popuptext").removeClass("show")
+            $("#report_popup").removeClass("show")
             $('#comment').val('')
         })  .fail(function() {
             window.alert($("#report_fail").html());
         });
         return false;
     });
+
+    user='info'
+    domain='wwmap.ru'
+    $('.email-link').attr('href','mailto:'+user+'@'+domain)
+    $('.email-link').text(user+'@'+domain)
   });
 </script>
 ```
