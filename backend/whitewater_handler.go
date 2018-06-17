@@ -58,7 +58,6 @@ func (this *WhiteWaterHandler) AddWhiteWaterPoints(w http.ResponseWriter, r *htt
 	}
 
 	err = this.whiteWaterDao.AddWhiteWaterPoints(wwPoints...)
-	fmt.Printf("%v\n", wwPoints)
 
 	if err != nil {
 		OnError500(w, err, "Can not insert")

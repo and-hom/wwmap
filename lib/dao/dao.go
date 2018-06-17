@@ -70,7 +70,7 @@ type VoyageReportDao interface {
 	GetLastId(source string) (interface{}, error)
 	AssociateWithRiver(voyageReportId, riverId int64) error
 	List(riverId int64, limitByGroup int) ([]VoyageReport, error)
-	ForEach(func (report *VoyageReport) error) error
+	ForEach(func(report *VoyageReport) error) error
 }
 
 type ImgDao interface {
@@ -459,8 +459,6 @@ func (this *PostgresStorage)doFindList(query string, callback interface{}, args 
 }
 
 func (this *PostgresStorage)forEach(query string, callback interface{}, args ...interface{}) error {
-	fmt.Println("aaa")
-	fmt.Println(args)
 	rows, err := this.db.Query(query, args...)
 	if err != nil {
 		return err

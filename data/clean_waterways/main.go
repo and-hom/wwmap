@@ -33,7 +33,7 @@ func main() {
 				idx++
 			}
 		}
-		fmt.Printf("%d points of %d removed\n", nullPointCnt, len(ww.Path))
+		log.Infof("%d points of %d removed\n", nullPointCnt, len(ww.Path))
 
 		return WaterWay{
 			Id:ww.Id,

@@ -71,7 +71,7 @@ type ImgSearcher struct {
 func (this *ImgSearcher) find(str string) []ImgSearchResult {
 	found := this.expr.FindAllStringSubmatch(str, -1)
 	result := make([]ImgSearchResult, len(found))
-	fmt.Println("Found ", len(found))
+	log.Info("Found ", len(found))
 	for i := 0; i < len(found); i++ {
 		result[i] = ImgSearchResult{
 			url:found[i][this.urlIndex],

@@ -36,7 +36,6 @@ func (this riverStorage) NearestRivers(point geo.Point, limit int) ([]RiverTitle
 	if err != nil {
 		return []RiverTitle{}, err
 	}
-	fmt.Println(string(pointBytes))
 	return this.listRiverTitles(this.nearestQuery, string(pointBytes), limit)
 }
 

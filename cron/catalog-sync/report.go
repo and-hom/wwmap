@@ -8,7 +8,6 @@ import (
 	"github.com/and-hom/wwmap/cron/catalog-sync/huskytm"
 	"time"
 	"github.com/and-hom/wwmap/cron/catalog-sync/common"
-	"fmt"
 	"html/template"
 	"github.com/and-hom/wwmap/lib/mail"
 	"github.com/and-hom/wwmap/cron/catalog-sync/tlib"
@@ -53,7 +52,7 @@ func (this *App) doSyncReports(source string, reportProvider *common.ReportProvi
 	log.Infof("%d reports from %s are successfully stored. Next id is %s\n", len(reports), source, next)
 
 	reportsToRivers := make(map[int64][]dao.RiverTitle)
-	for i:=0;i<len(reports);i++ {
+	for i := 0; i < len(reports); i++ {
 		reportsToRivers[reports[i].Id] = make([]dao.RiverTitle, 0)
 	}
 
@@ -73,8 +72,7 @@ func (this *App) doSyncReports(source string, reportProvider *common.ReportProvi
 }
 
 func (this *App) associateReportsWithRivers(resultHandlerMap *map[int64][]dao.RiverTitle) error {
-	fmt.Println("fvv")
-	return this.VoyageReportDao.ForEach(func (report *dao.VoyageReport) error {
+	return this.VoyageReportDao.ForEach(func(report *dao.VoyageReport) error {
 		return this.associateReportWithRiver(report, resultHandlerMap)
 	})
 }
@@ -143,7 +141,7 @@ func (this *App) matchImgsToWhiteWaterPoints(report dao.VoyageReport, imgs []dao
 			for _, wwpt := range wwpts {
 				for _, label := range img.LabelsForSearch {
 					if strings.Contains(forCompare(label), forCompare(wwpt.Title)) {
-						fmt.Println("Found: ", label)
+						log.Info("Found: ", label)
 						rec, found := candidates[img.RemoteId]
 						img.ReportId = report.Id
 						if !found {

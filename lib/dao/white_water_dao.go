@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"github.com/and-hom/wwmap/lib/geo"
 	"github.com/and-hom/wwmap/lib/model"
-	"fmt"
 	"strings"
 	"github.com/and-hom/wwmap/lib/dao/queries"
 )
@@ -166,7 +165,6 @@ func (this whiteWaterStorage) AddWhiteWaterPoints(whiteWaterPoints ...WhiteWater
 			if err != nil {
 				return nil, err
 			}
-			fmt.Printf("id = %d", wwp.Id)
 			cat, err := wwp.Category.MarshalJSON()
 			if err != nil {
 				return nil, err

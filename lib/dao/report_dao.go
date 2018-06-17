@@ -3,7 +3,6 @@ package dao
 import (
 	"database/sql"
 	"github.com/lib/pq"
-	"fmt"
 	"github.com/and-hom/wwmap/lib/dao/queries"
 )
 
@@ -45,7 +44,6 @@ func (this reportStorage) ListUnread(limit int) ([]ReportWithName, error) {
 }
 
 func (this reportStorage) MarkRead(reports []int64) error {
-	fmt.Println(reports)
 	return this.performUpdates(this.markReadQuery,
 		func(ids interface{}) ([]interface{}, error) {
 			return []interface{}{ids}, nil;
