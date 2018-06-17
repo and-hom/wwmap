@@ -57,7 +57,7 @@ func (this *App) doSyncReports(source string, reportProvider *common.ReportProvi
 	}
 
 	log.Info("Try to connect reports with known rivers")
-	err = this.associateReportsWithRivers(&reportsToRivers)
+	err = this.associateReportsWithRivers(source, &reportsToRivers)
 	if err != nil {
 		log.Fatal("Can not associate rivers with reports: ", err)
 	}
@@ -71,8 +71,8 @@ func (this *App) doSyncReports(source string, reportProvider *common.ReportProvi
 	}
 }
 
-func (this *App) associateReportsWithRivers(resultHandlerMap *map[int64][]dao.RiverTitle) error {
-	return this.VoyageReportDao.ForEach(func(report *dao.VoyageReport) error {
+func (this *App) associateReportsWithRivers(source string, resultHandlerMap *map[int64][]dao.RiverTitle) error {
+	return this.VoyageReportDao.ForEach(source, func(report *dao.VoyageReport) error {
 		return this.associateReportWithRiver(report, resultHandlerMap)
 	})
 }

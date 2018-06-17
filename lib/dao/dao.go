@@ -70,7 +70,7 @@ type VoyageReportDao interface {
 	GetLastId(source string) (interface{}, error)
 	AssociateWithRiver(voyageReportId, riverId int64) error
 	List(riverId int64, limitByGroup int) ([]VoyageReport, error)
-	ForEach(func(report *VoyageReport) error) error
+	ForEach(source string, func(report *VoyageReport) error) error
 }
 
 type ImgDao interface {

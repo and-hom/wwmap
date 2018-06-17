@@ -66,7 +66,7 @@ func (this voyageReportStorage) GetLastId(source string) (interface{}, error) {
 	return lastDate, nil
 }
 
-func (this voyageReportStorage) ForEach(callback func(report *VoyageReport) error) error {
+func (this voyageReportStorage) ForEach(source string, callback func(report *VoyageReport) error) error {
 	return this.forEach(this.listAllQuery,
 		func(rows *sql.Rows) error {
 			report, err := readReportFromRows(rows)
@@ -74,7 +74,7 @@ func (this voyageReportStorage) ForEach(callback func(report *VoyageReport) erro
 				return err
 			}
 			return callback(&report)
-		})
+		}, source)
 }
 
 func (this voyageReportStorage) AssociateWithRiver(voyageReportId, riverId int64) error {
