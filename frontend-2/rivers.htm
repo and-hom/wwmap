@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Реки</title>
+    <link rel="stylesheet" href="css/editor.css">
+</head>
+<body>
+
+
+<div id="left-menu">
+    <ol>
+        <country v-bind:key="country.id" v-bind:country="country" v-for="country in countries"/>
+    </ol>
+</div>
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script type="text/javascript" src="js/edit.js"></script>
+<script type="text/javascript">
+
+</script>
+
+<!--Country component-->
+<div id="country-template" style="display:none">
+    <li class="menu-item">{{ country.title }}<a
+            href="#">Добавить регион</a><a
+            href="#">Добавить реку</a><a
+            v-on:click='expand()' href="#">Развернуть</a>
+        <ul>
+            <region v-bind:key="region.id" v-bind:region="region" v-for="region in regions"/>
+            <region v-bind:key="river.id" v-bind:region="river" v-for="river in rivers"/>
+        </ul>
+    </li>
+</div>
+
+<script type="text/javascript">
+
+    Vue.component('country', {
+        props: ['country'],
+        template: document.getElementById('country-template').innerHTML,
+        data: function() {
+            return {
+                regions: [],
+                rivers: [],
+                expand:function (countryId) {
+                    this.regions =  [
+                        {"id": 1, "title": "Алтай"},
+                        {"id": 2, "title": "Кольский"},
+                        {"id": 3, "title": "Сев. Кавказ"},
+                    ]
+                }
+            }
+        }
+    });
+</script>
+<!--End of cuntry component-->
+
+<!--Region component-->
+<div id="region-template" style="display:none">
+    <li class="menu-item">{{ region.title }}<a href="#">Добавить реку</a><a href="#" v-on:click='expand()'>Развернуть</a>
+        <ul>
+            <river v-bind:key="river.id" v-bind:river="river" v-for="river in rivers"/>
+        </ul>
+    </li>
+</div>
+
+<script type="text/javascript">
+    Vue.component('region', {
+        props: ['region'],
+        template: document.getElementById('region-template').innerHTML,
+        data: function () {
+            return {
+                rivers: [],
+                expand:function (countryId) {
+                    this.rivers =  [
+                        {"id": 1, "title": "Умба"},
+                        {"id": 2, "title": "Чулышман"},
+                    ]
+                }
+            }
+        },
+    });
+</script>
+<!--End of region component-->
+
+<!--River component-->
+<div id="river-template" style="display:none">
+    <li class="menu-item">{{ river.title }}<a href="#">Добавить реку</a><a href="#" v-on:click='expand()'>Развернуть</a>
+        <ul>
+            <li v-for="spot in spots">{{spot.title}}</li>
+        </ul>
+    </li>
+</div>
+
+<script type="text/javascript">
+    Vue.component('river', {
+        props: ['river'],
+        template: document.getElementById('river-template').innerHTML,
+        data: function () {
+            return {
+                spots: [],
+                expand:function (countryId) {
+                    this.spots =  [
+                        {"id": 1, "title": "Падун"},
+                        {"id": 2, "title": "Каскад"},
+                    ]
+                }
+            }
+        },
+    });
+</script>
+<!--End of river component-->
+
+<script type="text/javascript">
+    var app = new Vue({
+        el: '#left-menu',
+        data: {
+          countries: [
+            { "id" : 1, "title": "Россия"},
+            { "id" : 2, "title": "Абхазия"},
+          ]
+        }
+    })
+</script>
+
+</body>
+</html>
