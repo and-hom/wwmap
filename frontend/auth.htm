@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test auth</title>
+</head>
+<body>
+
+<div id="auth">
+    <a href="https://oauth.yandex.ru/authorize?response_type=token&client_id=f50947e6ab4944e1b1c14f2a21f76271">Авторизация</a>
+</div>
+
+</body>
+</html>
+
+
+
+<script type="application/javascript">
+    function parseParams(paramsStr) {
+        paramsArr = paramsStr.split('&')
+        params = {}
+        for (var i=0; i < paramsArr.length; i++) {
+            keyValue = paramsArr[i].split('=')
+            if( keyValue.length < 2 ) {
+                continue
+            }
+            key = keyValue[0]
+            value = keyValue[1]
+            params[key] = value
+        }
+        return params;
+    }
+
+    var hash = window.location.hash
+    if (hash) {
+        hash = hash.substr(1)
+        params = parseParams(hash)
+        if (params['access_token']) {
+            window.localStorage['token'] = params['access_token']
+        }
+    }
+
+    token = window.localStorage['token']
+    if(token) {
+        document.getElementById('auth').innerHTML = 'Привет!'
+
+        var xhr = new XMLHttpRequest();
+        xhr.responseType = "json";
+        xhr.open('GET', "http://localhost:7007/user-info?token=" + token, true);
+        xhr.send();
+        xhr.onload = function(e) {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                document.getElementById('auth').innerHTML = 'Привет, ' + xhr.response.first_name + ' ' + xhr.response.last_name + '!';
+            }
+        }
+    }
+</script>

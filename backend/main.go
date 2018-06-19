@@ -8,6 +8,8 @@ import (
 	"github.com/and-hom/wwmap/lib/config"
 	"github.com/gorilla/handlers"
 	"os"
+	"github.com/and-hom/wwmap/backend/passport"
+	"time"
 )
 
 type App struct {
@@ -17,6 +19,8 @@ type App struct {
 	reportDao       ReportDao
 	voyageReportDao VoyageReportDao
 	imgDao          ImgDao
+	userDao         UserDao
+	yandexPassport  passport.YandexPassport
 }
 
 func main() {
@@ -31,12 +35,9 @@ func main() {
 	imgDao := NewImgPostgresDao(storage)
 	whiteWaterDao := NewWhiteWaterPostgresDao(storage)
 	reportDao := NewReportPostgresDao(storage)
+	userDao := NewUserPostgresDao(storage)
 
-	//clusterMaker := ClusterMaker{
-	//	BarrierDistance: ,
-	//	MinDistance: configuration.ClusterizationParams.MinDistRatio,
-	//	SinglePointClusteringMaxZoom: configuration.ClusterizationParams.SinglePointClusteringMaxZoom,
-	//}
+	yandexPassport := passport.New(15 * time.Minute)
 
 	clusterMaker := NewClusterMaker(whiteWaterDao, imgDao,
 		configuration.ClusterizationParams)
@@ -48,6 +49,8 @@ func main() {
 		reportDao:reportDao,
 		voyageReportDao: voyageReportDao,
 		imgDao:imgDao,
+		userDao: userDao,
+		yandexPassport: yandexPassport,
 	}
 
 	handler := Handler{app}
@@ -59,6 +62,7 @@ func main() {
 	pointHandler := PointHandler{handler}
 	reportHandler := ReportHandler{handler}
 	pictureHandler := PictureHandler{handler}
+	userInfoHandler := UserInfoHandler{handler}
 
 	r := mux.NewRouter()
 	r.HandleFunc("/ymaps-tile", handler.TileHandler)
@@ -94,6 +98,10 @@ func main() {
 	r.HandleFunc("/gpx/{id}", gpxHandler.DownloadGpx).Methods("GET")
 
 	r.HandleFunc("/report", reportHandler.AddReport).Methods("POST")
+
+	r.HandleFunc("/user-info", userInfoHandler.CorsGetOptionsStub).Methods("OPTIONS")
+	r.HandleFunc("/user-info", userInfoHandler.GetUserInfo).Methods("GET")
+	r.HandleFunc("/auth-test", userInfoHandler.TestAuth).Methods("GET")
 
 	log.Infof("Starting http server on %s", configuration.Api.BindTo)
 	http.Handle("/", r)

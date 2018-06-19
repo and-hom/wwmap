@@ -247,3 +247,15 @@ type WWPassport struct {
 	River         string
 	Title         string
 }
+
+type Role string
+
+const ADMIN Role = "ADMIN"
+const USER Role = "USER"
+const ANONYMOUS Role = "ANON"
+
+type User struct {
+	Id       int64
+	YandexId int64
+	Role     Role
+}

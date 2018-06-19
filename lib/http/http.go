@@ -21,3 +21,7 @@ func OnError(w http.ResponseWriter, err error, msg string, statusCode int) {
 func OnError500(w http.ResponseWriter, err error, msg string) {
 	OnError(w, err, msg, http.StatusInternalServerError)
 }
+
+func GetOauthToken(r *http.Request) string {
+	return r.FormValue("token")
+}

@@ -12,6 +12,7 @@ import (
 	"github.com/and-hom/wwmap/lib/geo"
 	. "github.com/and-hom/wwmap/lib/http"
 	"strconv"
+	"github.com/and-hom/wwmap/lib/dao"
 )
 
 func (this *Handler) JsonpAnswer(callback string, object interface{}, _default string) []byte {
@@ -70,7 +71,6 @@ func (this *Handler) tileParamsZ(w http.ResponseWriter, req *http.Request) (stri
 	return callback, bbox, zoom, nil
 }
 
-
 func (this *Handler) CloseAndRemove(f *os.File) {
 	f.Close()
 	os.Remove(f.Name())
@@ -89,4 +89,37 @@ func (this *Handler) geoParser(r io.ReadSeeker) (GeoParser, error) {
 	}
 	log.Warn(err)
 	return nil, errors.New("Can not find valid parser for this format!")
+}
+
+func (this *Handler) CreateMissingUser(r *http.Request) error {
+	token := GetOauthToken(r)
+	info, err := this.yandexPassport.ResolveUserInfo(token)
+	if err != nil {
+		return err
+	}
+
+	return this.userDao.CreateIfNotExists(dao.User{
+		YandexId:info.Id,
+		Role:dao.USER,
+
+	})
+}
+
+func (this *Handler) CheckRoleAllowed(r *http.Request, allowedRoles ...dao.Role) (bool, error) {
+	token := GetOauthToken(r)
+	info, err := this.yandexPassport.ResolveUserInfo(token)
+	if err != nil {
+		return false, err
+	}
+
+	role, err := this.userDao.GetRole(info.Id)
+	if err != nil {
+		return false, err
+	}
+	for i := 0; i < len(allowedRoles); i++ {
+		if allowedRoles[i] == role {
+			return true, nil
+		}
+	}
+	return false, nil
 }
