@@ -1,0 +1,22 @@
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <script type="text/javascript" src="js/auth.js"></script>
+</head>
+<body>
+    Если вы видите это сообщение, включите javascript
+    <script type="text/javascript">
+        var hash = window.location.hash
+        if (hash) {
+            hash = hash.substr(1)
+            params = parseParams(hash)
+            if (params['state']) {
+                storeTokenFromRequest()
+                window.location.href = decodeURIComponent(params['state'])
+            } else {
+                document.write('Пропущен параметр state')
+            }
+        }
+    </script>
+</body>
+</html>

@@ -8,33 +8,38 @@
     <script type="text/javascript" src="js/bootstrap.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <script type="text/javascript" src="js/edit.js"></script>
+    <script type="text/javascript" src="js/auth.js"></script>
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <ul class="navbar-nav mr-auto">
-        <li class="nav-item active">
-            <a class="nav-link" href="#">Редактор</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="#">Что-то ещё</a>
-        </li>
-    </ul>
-</nav>
+<div id="wwmap">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item active">
+                <a class="nav-link" href="#">Редактор</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">Что-то ещё</a>
+            </li>
+        </ul>
+        <auth/>
+    </nav>
 
-<div class="container-fluid" id="wwmap">
-    <div class="row">
-        <div class="col-3" id="left-menu">
-            <ul>
-                <country v-bind:key="country.id" v-bind:country="country" v-for="country in countries"/>
-            </ul>
-        </div>
-        <div id="editor-pane" class="col-9" style="bgcolor:red">
-            <div>
-                <river-editor v-bind:visible="riverditorstate.visible" v-bind:river="riverditorstate.river" v-bind:reports="riverditorstate.reports"/>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-3" id="left-menu">
+                <ul>
+                    <country v-bind:key="country.id" v-bind:country="country" v-for="country in countries"/>
+                </ul>
             </div>
-            <div>
-                <spot-editor v-bind:visible="spoteditorstate.visible" v-bind:spot="spoteditorstate.spot"/>
+            <div id="editor-pane" class="col-9" style="bgcolor:red">
+                <div>
+                    <river-editor v-bind:visible="riverditorstate.visible" v-bind:river="riverditorstate.river"
+                                  v-bind:reports="riverditorstate.reports"/>
+                </div>
+                <div>
+                    <spot-editor v-bind:visible="spoteditorstate.visible" v-bind:spot="spoteditorstate.spot"/>
+                </div>
             </div>
         </div>
     </div>
@@ -87,12 +92,14 @@
         }
     });
 
+
 </script>
 <!--End of country component-->
 
 <!--Region component-->
 <div id="region-template" style="display:none">
-    <li class="menu-item region-menu-item"><a href="#" v-on:click='changeExpandState()'  class="title-link btn btn-outline-secondary">{{ region.title }}</a>
+    <li class="menu-item region-menu-item"><a href="#" v-on:click='changeExpandState()'
+                                              class="title-link btn btn-outline-secondary">{{ region.title }}</a>
         <ul>
             <river v-bind:key="river.id" v-bind:river="river" v-for="river in rivers"/>
         </ul>
@@ -126,14 +133,18 @@
         },
     });
 
+
 </script>
 <!--End of region component-->
 
 <!--River component-->
 <div id="river-template" style="display:none">
-    <li class="menu-item river-menu-item"><a href="#" v-on:click='changeExpandState();selectRiver(river.id);' class="title-link btn btn-outline-info">{{ river.title }}</a>
+    <li class="menu-item river-menu-item"><a href="#" v-on:click='changeExpandState();selectRiver(river.id);'
+                                             class="title-link btn btn-outline-info">{{ river.title }}</a>
         <ul>
-            <li class="menu-item spot-menu-item" v-on:click.stop="selectSpot(spot.id)" v-for="spot in spots"><a href="#" class="title-link btn btn-outline-primary">{{spot.title}}</a></li>
+            <li class="menu-item spot-menu-item" v-on:click.stop="selectSpot(spot.id)" v-for="spot in spots"><a href="#"
+                                                                                                                class="title-link btn btn-outline-primary">{{spot.title}}</a>
+            </li>
         </ul>
     </li>
 </div>
@@ -177,6 +188,7 @@
         },
     });
 
+
 </script>
 
 
@@ -195,7 +207,7 @@
             <tr>
                 <td class="cell-title">Уровень воды</td>
                 <td class="cell-title">Тех. описание</td>
-                <td  class="cell-title"rowspan="4">Карта</td>
+                <td class="cell-title" rowspan="4">Карта</td>
             </tr>
             <tr>
                 <td class="cell-title">Низкая вода</td>
@@ -210,7 +222,7 @@
                 <td>{{ spot.high_water_desc }}</td>
             </tr>
             <tr>
-                <td  class="cell-title"colspan="2">Подход/выход</td>
+                <td class="cell-title" colspan="2">Подход/выход</td>
                 <td rowspan="4">
                     Координаты:<br/>Широта:&nbsp;{{ spot.point.lat }}
                     <br/>Долгота:&nbsp;{{ spot.point.lon }}
@@ -224,7 +236,7 @@
                 <td colspan="2">{{ spot.point.approach }}</td>
             </tr>
             <tr>
-                <td  class="cell-title" colspan="2">Страховка</td>
+                <td class="cell-title" colspan="2">Страховка</td>
             </tr>
             <tr>
                 <td colspan="2">{{ spot.point.safety }}</td>
@@ -240,6 +252,7 @@
         props: ['spot', "visible"],
         template: document.getElementById('spotEditor-template').innerHTML,
     });
+
 
 </script>
 <!--End of spot editor component-->
@@ -266,8 +279,31 @@
         template: document.getElementById('river-editor-template').innerHTML,
     });
 
+
 </script>
 <!--End of river editor component-->
+
+<!--Auth component-->
+<div id="auth-template" style="display:none">
+    <div class="auth" v-if="userInfo">
+        <div>Привет, {{userInfo.first_name}}&nbsp;{{userInfo.last_name}}!</div>
+        <a href="javascript:clearToken(); location.reload();">Выход</a>
+    </div>
+    <div class="auth" v-else>
+        <div>Здравствуйте! Для редактирования надо</div><a href="javascript:forceRedirect();">авторизоваться через Яндекс</a>
+    </div>
+</div>
+<script type="text/javascript">
+    Vue.component('auth', {
+        template: document.getElementById('auth-template').innerHTML,
+        data: function() {
+            return {
+                userInfo: getAuthorizedUserInfoOrNull()
+            }
+        }
+    });
+</script>
+<!--End of auth component-->
 
 <script type="text/javascript">
     var app = new Vue({
@@ -285,6 +321,7 @@
           }
         }
     })
+
 
 </script>
 

@@ -23,18 +23,11 @@ ul {
 .menu-item ul:last-child {
 }
 
-/*.country-menu-item {
-    background-color: #aaaaaa
+
+.auth {
+    font-size: 89%;
+    float: right;
 }
-.region-menu-item {
-    background-color: #bbbbbb
-}
-.river-menu-item {
-    background-color: #cccccc
-}
-.spot-menu-item {
-    background-color: #dddddd
-}*/
 
 .spot-desc {
     width: 100%;
