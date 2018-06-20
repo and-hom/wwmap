@@ -20,6 +20,8 @@ type App struct {
 	voyageReportDao VoyageReportDao
 	imgDao          ImgDao
 	userDao         UserDao
+	countryDao      CountryDao
+	regionDao       RegionDao
 	yandexPassport  passport.YandexPassport
 }
 
@@ -36,6 +38,8 @@ func main() {
 	whiteWaterDao := NewWhiteWaterPostgresDao(storage)
 	reportDao := NewReportPostgresDao(storage)
 	userDao := NewUserPostgresDao(storage)
+	countryDao := NewCountryPostgresDao(storage)
+	regionDao := NewRegionPostgresDao(storage)
 
 	yandexPassport := passport.New(15 * time.Minute)
 
@@ -50,6 +54,8 @@ func main() {
 		voyageReportDao: voyageReportDao,
 		imgDao:imgDao,
 		userDao: userDao,
+		countryDao: countryDao,
+		regionDao: regionDao,
 		yandexPassport: yandexPassport,
 	}
 
@@ -63,6 +69,7 @@ func main() {
 	reportHandler := ReportHandler{handler}
 	pictureHandler := PictureHandler{handler}
 	userInfoHandler := UserInfoHandler{handler}
+	geoHierarchyHandler := GeoHierarchyHandler{handler}
 
 	r := mux.NewRouter()
 	r.HandleFunc("/ymaps-tile", handler.TileHandler)
@@ -102,6 +109,20 @@ func main() {
 	r.HandleFunc("/user-info", userInfoHandler.CorsGetOptionsStub).Methods("OPTIONS")
 	r.HandleFunc("/user-info", userInfoHandler.GetUserInfo).Methods("GET")
 	r.HandleFunc("/auth-test", userInfoHandler.TestAuth).Methods("GET")
+
+	// Web editor support
+	r.HandleFunc("/country", geoHierarchyHandler.CorsGetOptionsStub).Methods("OPTIONS")
+	r.HandleFunc("/country", geoHierarchyHandler.ListCountries).Methods("GET")
+	r.HandleFunc("/country/{countryId}/region", geoHierarchyHandler.CorsGetOptionsStub).Methods("OPTIONS")
+	r.HandleFunc("/country/{countryId}/region", geoHierarchyHandler.ListRegions).Methods("GET")
+	r.HandleFunc("/country/{countryId}/region/{regionId}/river", geoHierarchyHandler.CorsGetOptionsStub).Methods("OPTIONS")
+	r.HandleFunc("/country/{countryId}/region/{regionId}/river", geoHierarchyHandler.ListRegionRivers).Methods("GET")
+	r.HandleFunc("/country/{countryId}/river", geoHierarchyHandler.CorsGetOptionsStub).Methods("OPTIONS")
+	r.HandleFunc("/country/{countryId}/river", geoHierarchyHandler.ListCountryRivers).Methods("GET")
+	r.HandleFunc("/river/{riverId}/reports", geoHierarchyHandler.CorsGetOptionsStub).Methods("OPTIONS")
+	r.HandleFunc("/river/{riverId}/reports", geoHierarchyHandler.ListRiverReports).Methods("GET")
+	r.HandleFunc("/river/{riverId}/spots", geoHierarchyHandler.CorsGetOptionsStub).Methods("OPTIONS")
+	r.HandleFunc("/river/{riverId}/spots", geoHierarchyHandler.ListSpots).Methods("GET")
 
 	log.Infof("Starting http server on %s", configuration.Api.BindTo)
 	http.Handle("/", r)

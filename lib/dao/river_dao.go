@@ -16,15 +16,20 @@ func NewRiverPostgresDao(postgresStorage PostgresStorage) RiverDao {
 		findByTagsQuery: queries.SqlQuery("river", "find-by-tags"),
 		nearestQuery: queries.SqlQuery("river", "nearest"),
 		insideBoundsQuery: queries.SqlQuery("river", "inside-bounds"),
+		byIdQuery:queries.SqlQuery("river", "by-id"),
+		listByCountryQuery:queries.SqlQuery("river", "by-country"),
+		listByRegionQuery:queries.SqlQuery("river", "by-region"),
 	}
 }
 
 type riverStorage struct {
 	PostgresStorage
-	findByTagsQuery   string
-	nearestQuery      string
-	insideBoundsQuery string
-	byIdQuery         string
+	findByTagsQuery    string
+	nearestQuery       string
+	insideBoundsQuery  string
+	byIdQuery          string
+	listByCountryQuery string
+	listByRegionQuery  string
 }
 
 func (this riverStorage) FindTitles(titles []string) ([]RiverTitle, error) {
@@ -52,6 +57,14 @@ func (this riverStorage) RiverById(id int64) (RiverTitle, error) {
 		return RiverTitle{}, fmt.Errorf("River with id %d not found", id)
 	}
 	return found[0], nil
+}
+
+func (this riverStorage) ListByCountry(countryId int64) ([]RiverTitle, error) {
+	return this.listRiverTitles(this.listByCountryQuery, countryId)
+}
+
+func (this riverStorage) ListByRegion(regionId int64) ([]RiverTitle, error) {
+	return this.listRiverTitles(this.listByRegionQuery, regionId)
 }
 
 func (this riverStorage) listRiverTitles(query string, queryParams ...interface{}) ([]RiverTitle, error) {

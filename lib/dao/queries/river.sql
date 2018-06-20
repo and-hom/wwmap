@@ -13,5 +13,14 @@ SELECT river.id, river.title, ST_AsGeoJSON(ST_Extent(white_water_rapid.point)), 
 river INNER JOIN white_water_rapid ON river.id=white_water_rapid.river_id
 WHERE exists(SELECT 1 FROM white_water_rapid WHERE white_water_rapid.river_id=river.id and point && ST_MakeEnvelope($1,$2,$3,$4))
 GROUP BY river.id, river.title ORDER BY popularity DESC LIMIT $5
+
 --@by-id
 SELECT id,title,NULL,river.aliases AS aliases FROM river WHERE id=$1
+
+--@by-region
+SELECT river.id, river.title, NULL, river.aliases
+    FROM river INNER JOIN region ON river.region_id=region.id WHERE region.id=$1
+
+--@by-country
+SELECT river.id as id, river.title as title, NULL, river.aliases as aliases
+    FROM river INNER JOIN region ON river.region_id=region.id WHERE region.fake AND region.country_id=$1

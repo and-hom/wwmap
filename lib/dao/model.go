@@ -144,7 +144,7 @@ type RiverTitle struct {
 	OsmId   int64 `json:"osm_id"`
 	Title   string `json:"title"`
 	Bounds  Bbox `json:"bounds"`
-	Aliases []string `json:"-"`
+	Aliases []string `json:"aliases"`
 }
 
 type WaterWay struct {
@@ -213,15 +213,15 @@ type ReportWithName struct {
 }
 
 type VoyageReport struct {
-	Id            int64
-	Title         string
-	Source        string
-	RemoteId      string
-	Url           string
-	DatePublished time.Time
-	DateModified  time.Time
-	DateOfTrip    time.Time
-	Tags          []string
+	Id            int64 `json:"id,omitempty"`
+	Title         string `json:"title"`
+	Source        string `json:"source"`
+	RemoteId      string `json:"remote_id"`
+	Url           string `json:"url"`
+	DatePublished time.Time `json:"id,omitempty"`
+	DateModified  time.Time `json:"id,omitempty"`
+	DateOfTrip    time.Time `json:"id,omitempty"`
+	Tags          []string `json:"-"`
 }
 
 type Img struct {
@@ -258,4 +258,15 @@ type User struct {
 	Id       int64
 	YandexId int64
 	Role     Role
+}
+
+type Country struct {
+	Id    int64 `json:"id,omitempty"`
+	Title string `json:"title"`
+}
+
+type Region struct {
+	Id        int64 `json:"id,omitempty"`
+	CountryId int64 `json:"country_id,omitempty"`
+	Title     string `json:"title"`
 }

@@ -43,6 +43,8 @@ type RiverDao interface {
 	RiverById(id int64) (RiverTitle, error)
 	ListRiversWithBounds(bbox Bbox, limit int) ([]RiverTitle, error)
 	FindTitles(titles []string) ([]RiverTitle, error)
+	ListByCountry(countryId int64) ([]RiverTitle, error)
+	ListByRegion(regionId int64) ([]RiverTitle, error)
 }
 
 type WhiteWaterDao interface {
@@ -86,6 +88,14 @@ type WwPassportDao interface {
 type UserDao interface {
 	CreateIfNotExists(User) error
 	GetRole(yandexId int64) (Role, error)
+}
+
+type CountryDao interface {
+	List() ([]Country, error)
+}
+
+type RegionDao interface {
+	List(countryId int64) ([]Region, error)
 }
 
 type PostgresStorage struct {
@@ -452,15 +462,18 @@ func (this *PostgresStorage)doFindList(query string, callback interface{}, args 
 	returnType := funcValue.Type().Out(0)
 	var result = reflect.MakeSlice(reflect.SliceOf(returnType), 0, 0)
 
+	var lastErr error = nil
 	for rows.Next() {
 		val := funcValue.Call([]reflect.Value{reflect.ValueOf(rows)})
 		if val[1].Interface() == nil {
 			result = reflect.Append(result, val[0])
 		} else {
 			log.Error(val[1])
+			lastErr = (val[1]).Interface().(error)
+			break
 		}
 	}
-	return result.Interface(), nil
+	return result.Interface(), lastErr
 }
 
 func (this *PostgresStorage)forEach(query string, callback interface{}, args ...interface{}) error {

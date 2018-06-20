@@ -20,8 +20,9 @@ type userStorage struct {
 }
 
 func (this userStorage) CreateIfNotExists(user User) error {
-	_, err := this.insertReturningId(this.createQuery, user.YandexId, user.Role, "{}")
-	return err
+	return this.performUpdates(this.createQuery, func(entity interface{}) ([]interface{}, error) {
+		return entity.([]interface{}), nil
+	}, []interface{}{user.YandexId, user.Role, "{}"})
 }
 
 func (this userStorage) GetRole(yandexId int64) (Role, error) {

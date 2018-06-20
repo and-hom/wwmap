@@ -45,7 +45,18 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 
 func (this *WhiteWaterHandler) AddWhiteWaterPoints(w http.ResponseWriter, r *http.Request) {
 	CorsHeaders(w, "POST, GET, OPTIONS, PUT, DELETE")
-	err := r.ParseForm()
+	found, err := this.CheckRoleAllowed(r, ADMIN)
+	if err != nil {
+		onPassportErr(err, w, "Can not do request to Yandex Passport")
+		return
+	}
+	if !found {
+		OnError(w, nil, "User not found", http.StatusUnauthorized)
+		return 
+	}
+
+
+	err = r.ParseForm()
 	if err != nil {
 		OnError(w, err, "Can not parse form", http.StatusBadRequest)
 		return
