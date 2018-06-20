@@ -4,28 +4,51 @@
     <meta charset="utf-8"/>
     <title>Реки</title>
     <link rel="stylesheet" href="css/editor.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <script type="text/javascript" src="js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script type="text/javascript" src="js/edit.js"></script>
 </head>
 <body>
 
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <ul class="navbar-nav mr-auto">
+        <li class="nav-item active">
+            <a class="nav-link" href="#">Редактор</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#">Что-то ещё</a>
+        </li>
+    </ul>
+</nav>
 
-<div id="left-menu">
-    <ol>
-        <country v-bind:key="country.id" v-bind:country="country" v-for="country in countries"/>
-    </ol>
+<div class="container-fluid" id="wwmap">
+    <div class="row">
+        <div class="col-3" id="left-menu">
+            <ul>
+                <country v-bind:key="country.id" v-bind:country="country" v-for="country in countries"/>
+            </ul>
+        </div>
+        <div id="editor-pane" class="col-9" style="bgcolor:red">
+            <div>
+                <river-editor v-bind:visible="riverditorstate.visible" v-bind:river="riverditorstate.river" v-bind:reports="riverditorstate.reports"/>
+            </div>
+            <div>
+                <spot-editor v-bind:visible="spoteditorstate.visible" v-bind:spot="spoteditorstate.spot"/>
+            </div>
+        </div>
+    </div>
 </div>
 
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-<script type="text/javascript" src="js/edit.js"></script>
+
 <script type="text/javascript">
 
 </script>
 
 <!--Country component-->
 <div id="country-template" style="display:none">
-    <li class="menu-item">{{ country.title }}<a
-            href="#">Добавить регион</a><a
-            href="#">Добавить реку</a><a
-            v-on:click='expand()' href="#">Развернуть</a>
+    <li class="menu-item country-menu-item"><a
+            href="#" v-on:click='changeExpandState()' class="title-link btn btn-outline-success">{{ country.title }}</a>
         <ul>
             <region v-bind:key="region.id" v-bind:region="region" v-for="region in regions"/>
             <region v-bind:key="river.id" v-bind:region="river" v-for="river in rivers"/>
@@ -42,22 +65,34 @@
             return {
                 regions: [],
                 rivers: [],
-                expand:function (countryId) {
+                expand:function () {
                     this.regions =  [
                         {"id": 1, "title": "Алтай"},
                         {"id": 2, "title": "Кольский"},
                         {"id": 3, "title": "Сев. Кавказ"},
                     ]
+                },
+                collapse:function () {
+                    this.regions=[]
+                    this.rivers=[]
+                },
+                changeExpandState:function(){
+                    if (this.rivers.length==0 && this.regions.length==0) {
+                        this.expand();
+                    } else {
+                        this.collapse();
+                    }
                 }
             }
         }
     });
+
 </script>
-<!--End of cuntry component-->
+<!--End of country component-->
 
 <!--Region component-->
 <div id="region-template" style="display:none">
-    <li class="menu-item">{{ region.title }}<a href="#">Добавить реку</a><a href="#" v-on:click='expand()'>Развернуть</a>
+    <li class="menu-item region-menu-item"><a href="#" v-on:click='changeExpandState()'  class="title-link btn btn-outline-secondary">{{ region.title }}</a>
         <ul>
             <river v-bind:key="river.id" v-bind:river="river" v-for="river in rivers"/>
         </ul>
@@ -76,22 +111,34 @@
                         {"id": 1, "title": "Умба"},
                         {"id": 2, "title": "Чулышман"},
                     ]
+                },
+                collapse:function () {
+                    this.rivers=[]
+                },
+                changeExpandState:function(){
+                    if (this.rivers.length==0) {
+                        this.expand();
+                    } else {
+                        this.collapse();
+                    }
                 }
             }
         },
     });
+
 </script>
 <!--End of region component-->
 
 <!--River component-->
 <div id="river-template" style="display:none">
-    <li class="menu-item">{{ river.title }}<a href="#">Добавить реку</a><a href="#" v-on:click='expand()'>Развернуть</a>
+    <li class="menu-item river-menu-item"><a href="#" v-on:click='changeExpandState();selectRiver(river.id);' class="title-link btn btn-outline-info">{{ river.title }}</a>
         <ul>
-            <li v-for="spot in spots">{{spot.title}}</li>
+            <li class="menu-item spot-menu-item" v-on:click.stop="selectSpot(spot.id)" v-for="spot in spots"><a href="#" class="title-link btn btn-outline-primary">{{spot.title}}</a></li>
         </ul>
     </li>
 </div>
 
+<!--End of river component-->
 <script type="text/javascript">
     Vue.component('river', {
         props: ['river'],
@@ -99,28 +146,146 @@
         data: function () {
             return {
                 spots: [],
-                expand:function (countryId) {
+                expand:function() {
                     this.spots =  [
                         {"id": 1, "title": "Падун"},
                         {"id": 2, "title": "Каскад"},
                     ]
-                }
+                },
+                collapse:function () {
+                    this.spots=[]
+                },
+                changeExpandState:function(){
+                    if (this.spots.length==0) {
+                        this.expand();
+                    } else {
+                        this.collapse();
+                    }
+                },
+                selectSpot:function(spotId) {
+                    app.spoteditorstate.visible=true;
+                    app.spoteditorstate.spot={title:'xxx',point:{lat:0,lon:0},};
+                    app.riverditorstate.visible=false;
+                },
+                selectRiver:function(spotId) {
+                    app.spoteditorstate.visible = false
+                    app.riverditorstate.river = {'title':'Большой зеленчук', aliases:['Б.Зеленчук']}
+                    app.riverditorstate.reports=[]
+                    app.riverditorstate.visible = true
+                },
             }
         },
     });
+
 </script>
-<!--End of river component-->
+
+
+<!--Spot editor component-->
+<div id="spotEditor-template" style="display:none">
+    <div v-if="visible">
+        <h1>{{ spot.title }}</h1>
+        <table class="spot-desc">
+            <tr>
+                <td colspan="2">{{ spot.short_desc }}</td>
+                <td rowspan="2"><img :scr="spot.thumbnail"/></td>
+            </tr>
+            <tr>
+                <td class="cell-title" colspan="2">Ориентиры: {{ spot.orient }}</td>
+            </tr>
+            <tr>
+                <td class="cell-title">Уровень воды</td>
+                <td class="cell-title">Тех. описание</td>
+                <td  class="cell-title"rowspan="4">Карта</td>
+            </tr>
+            <tr>
+                <td class="cell-title">Низкая вода</td>
+                <td>{{ spot.low_water_desc }}</td>
+            </tr>
+            <tr>
+                <td class="cell-title">Средняя вода</td>
+                <td>{{ spot.medium_water_desc }}</td>
+            </tr>
+            <tr>
+                <td class="cell-title">Высокая вода</td>
+                <td>{{ spot.high_water_desc }}</td>
+            </tr>
+            <tr>
+                <td  class="cell-title"colspan="2">Подход/выход</td>
+                <td rowspan="4">
+                    Координаты:<br/>Широта:&nbsp;{{ spot.point.lat }}
+                    <br/>Долгота:&nbsp;{{ spot.point.lon }}
+                    <br/>
+                    <br/>
+                    К.с.:&nbsp;{{ spot.point.low_water_category }}/{{ spot.point.medium_water_category
+                    }}/{{ spot.point.high_water_category }}
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">{{ spot.point.approach }}</td>
+            </tr>
+            <tr>
+                <td  class="cell-title" colspan="2">Страховка</td>
+            </tr>
+            <tr>
+                <td colspan="2">{{ spot.point.safety }}</td>
+            </tr>
+        </table>
+        <h2>Фото галерея</h2>
+        <h2>Видео</h2>
+    </div>
+</div>
+
+<script type="text/javascript">
+    Vue.component('spot-editor', {
+        props: ['spot', "visible"],
+        template: document.getElementById('spotEditor-template').innerHTML,
+    });
+
+</script>
+<!--End of spot editor component-->
+
+
+<!--river editor component-->
+<div id="river-editor-template" style="display:none">
+    <div v-if="visible">
+        <h1>{{ river.title }}</h1>
+        Алиасы:
+        <ul>
+            <li v-for="alias in river.aliases">{{alias}}</li>
+        </ul>
+        Отчёты:
+        <ul>
+            <li v-for="repor in reports"><a :href="report.url">{{report.title}}</a></li>
+        </ul>
+    </div>
+</div>
+
+<script type="text/javascript">
+    Vue.component('river-editor', {
+        props: ['river', 'reports', 'visible'],
+        template: document.getElementById('river-editor-template').innerHTML,
+    });
+
+</script>
+<!--End of river editor component-->
 
 <script type="text/javascript">
     var app = new Vue({
-        el: '#left-menu',
+        el: '#wwmap',
         data: {
           countries: [
             { "id" : 1, "title": "Россия"},
             { "id" : 2, "title": "Абхазия"},
-          ]
+          ],
+          "spoteditorstate": {
+            "visible": false
+          },
+          "riverditorstate": {
+            "visible": false
+          }
         }
     })
+
 </script>
 
 </body>

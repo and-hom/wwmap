@@ -1,7 +1,46 @@
 .menu-item {
-    width: 300px;
+    width: 100%;
 }
+
+ul {
+    list-style-type: none;
+}
+
 .menu-item a {
     float: right;
     padding-left: 10px;
+}
+
+.menu-item .title-link {
+    float: none;
+    width: 100%;
+    margin-bottom: 5px;
+}
+
+.menu-item ul:last-child {
+    padding-left:10px;
+}
+.menu-item ul:last-child {
+}
+
+/*.country-menu-item {
+    background-color: #aaaaaa
+}
+.region-menu-item {
+    background-color: #bbbbbb
+}
+.river-menu-item {
+    background-color: #cccccc
+}
+.spot-menu-item {
+    background-color: #dddddd
+}*/
+
+.spot-desc {
+    width: 100%;
+}
+
+.spot-desc .cell-title {
+    font-weight: bold;
+    background-color: #fafafa
 }
