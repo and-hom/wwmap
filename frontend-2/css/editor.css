@@ -17,9 +17,10 @@ ul {
     margin-bottom: 5px;
 }
 
-.menu-item ul:last-child {
+.menu-item ul {
     padding-left:10px;
 }
+
 .menu-item ul:last-child {
 }
 

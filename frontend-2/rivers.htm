@@ -5,9 +5,9 @@
     <title>Реки</title>
     <link rel="stylesheet" href="css/editor.css">
     <link rel="stylesheet" href="css/bootstrap.min.css">
+    <script type="text/javascript" src="js/edit.js"></script>
     <script type="text/javascript" src="js/bootstrap.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-    <script type="text/javascript" src="js/edit.js"></script>
     <script type="text/javascript" src="js/auth.js"></script>
 </head>
 <body>
@@ -56,8 +56,8 @@
             href="#" v-on:click='changeExpandState()' class="title-link btn btn-outline-success">{{ country.title }}</a>
         <ul>
             <region v-bind:key="region.id" v-bind:region="region" v-for="region in regions"/>
-            <region v-bind:key="river.id" v-bind:region="river" v-for="river in rivers"/>
         </ul>
+        <ul><li><ul><river v-bind:key="river.id" v-bind:river="river" v-for="river in rivers"/></ul></li></ul>
     </li>
 </div>
 
@@ -71,11 +71,8 @@
                 regions: [],
                 rivers: [],
                 expand:function () {
-                    this.regions =  [
-                        {"id": 1, "title": "Алтай"},
-                        {"id": 2, "title": "Кольский"},
-                        {"id": 3, "title": "Сев. Кавказ"},
-                    ]
+                    this.regions = getRegions(this.country.id)
+                    this.rivers = getRiversByCountry(this.country.id)
                 },
                 collapse:function () {
                     this.regions=[]
@@ -113,11 +110,8 @@
         data: function () {
             return {
                 rivers: [],
-                expand:function (countryId) {
-                    this.rivers =  [
-                        {"id": 1, "title": "Умба"},
-                        {"id": 2, "title": "Чулышман"},
-                    ]
+                expand:function () {
+                    this.rivers = getRiversByRegion(-1, this.region.id)
                 },
                 collapse:function () {
                     this.rivers=[]
@@ -158,10 +152,7 @@
             return {
                 spots: [],
                 expand:function() {
-                    this.spots =  [
-                        {"id": 1, "title": "Падун"},
-                        {"id": 2, "title": "Каскад"},
-                    ]
+                    this.spots = getSpots(this.river.id)
                 },
                 collapse:function () {
                     this.spots=[]
@@ -174,14 +165,18 @@
                     }
                 },
                 selectSpot:function(spotId) {
+                    app.spoteditorstate.visible = false
+                    app.riverditorstate.visible=false;
+
                     app.spoteditorstate.visible=true;
                     app.spoteditorstate.spot={title:'xxx',point:{lat:0,lon:0},};
-                    app.riverditorstate.visible=false;
                 },
                 selectRiver:function(spotId) {
                     app.spoteditorstate.visible = false
-                    app.riverditorstate.river = {'title':'Большой зеленчук', aliases:['Б.Зеленчук']}
-                    app.riverditorstate.reports=[]
+                    app.riverditorstate.visible=false;
+
+                    app.riverditorstate.river = this.river
+                    app.riverditorstate.reports=getReports(this.river.id)
                     app.riverditorstate.visible = true
                 },
             }
@@ -268,7 +263,7 @@
         </ul>
         Отчёты:
         <ul>
-            <li v-for="repor in reports"><a :href="report.url">{{report.title}}</a></li>
+            <li v-for="report in reports"><a target="_blank" :href="report.url">{{report.title}}</a></li>
         </ul>
     </div>
 </div>
@@ -309,10 +304,7 @@
     var app = new Vue({
         el: '#wwmap',
         data: {
-          countries: [
-            { "id" : 1, "title": "Россия"},
-            { "id" : 2, "title": "Абхазия"},
-          ],
+          countries: getCountries(),
           "spoteditorstate": {
             "visible": false
           },
