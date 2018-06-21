@@ -17,3 +17,17 @@ override_dh_auto_install:
 
 	sed -i 's#apiBase = ".*"#apiBase = "https://wwmap.ru/api"#g' \
 	    $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/js/config.js
+
+	# install editor
+	install -d $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend-2/img/report_sources
+	install -d $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend-2/js
+	install -d $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend-2/css
+
+	install -D -m 0644 ../frontend-2/*.htm $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend-2/
+	install -D -m 0644 ../frontend-2/css/* $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend-2/css/
+	install -D -m 0644 ../frontend-2/js/* $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend-2/js/
+
+	install -D -m 0644 nginx.conf $$(pwd)/debian/wwmap-frontend/etc/nginx/sites-available/wwmap-frontend
+
+	sed -i 's#apiBase = ".*"#apiBase = "https://wwmap.ru/api"#g' \
+	    $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend-2/js/editor.js
