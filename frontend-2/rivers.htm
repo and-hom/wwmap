@@ -133,10 +133,10 @@
 
 <!--River component-->
 <div id="river-template" style="display:none">
-    <li class="menu-item river-menu-item"><a href="#" v-on:click='changeExpandState();selectRiver(river.id);'
+    <li class="menu-item river-menu-item"><a href="#" v-on:click='changeExpandState();selectRiver();'
                                              class="title-link btn btn-outline-info">{{ river.title }}</a>
         <ul>
-            <li class="menu-item spot-menu-item" v-on:click.stop="selectSpot(spot.id)" v-for="spot in spots"><a href="#"
+            <li class="menu-item spot-menu-item" v-on:click.stop="selectSpot(spot)" v-for="spot in spots"><a href="#"
                                                                                                                 class="title-link btn btn-outline-primary">{{spot.title}}</a>
             </li>
         </ul>
@@ -164,14 +164,14 @@
                         this.collapse();
                     }
                 },
-                selectSpot:function(spotId) {
+                selectSpot:function(spot) {
                     app.spoteditorstate.visible = false
                     app.riverditorstate.visible=false;
 
                     app.spoteditorstate.visible=true;
-                    app.spoteditorstate.spot={title:'xxx',point:{lat:0,lon:0},};
+                    app.spoteditorstate.spot=spot
                 },
-                selectRiver:function(spotId) {
+                selectRiver:function() {
                     app.spoteditorstate.visible = false
                     app.riverditorstate.visible=false;
 
@@ -193,7 +193,7 @@
         <h1>{{ spot.title }}</h1>
         <table class="spot-desc">
             <tr>
-                <td colspan="2">{{ spot.short_desc }}</td>
+                <td colspan="2">{{ spot.short_description }}</td>
                 <td rowspan="2"><img :scr="spot.thumbnail"/></td>
             </tr>
             <tr>
@@ -219,12 +219,14 @@
             <tr>
                 <td class="cell-title" colspan="2">Подход/выход</td>
                 <td rowspan="4">
-                    Координаты:<br/>Широта:&nbsp;{{ spot.point.lat }}
-                    <br/>Долгота:&nbsp;{{ spot.point.lon }}
+                    Координаты:<br/>Широта:&nbsp;{{ spot.point[1] }}
+                    <br/>Долгота:&nbsp;{{ spot.point[0] }}
                     <br/>
                     <br/>
-                    К.с.:&nbsp;{{ spot.point.low_water_category }}/{{ spot.point.medium_water_category
-                    }}/{{ spot.point.high_water_category }}
+                    К.с. нв/св/вв:&nbsp;{{ spot.low_water_category }}/{{ spot.medium_water_category
+                    }}/{{ spot.high_water_category }}
+                    <div v-if="spot.category!='0' && spot.category!='-1'">К.с. по классификатору: {{ spot.category }}</div>
+
                 </td>
             </tr>
             <tr>
@@ -237,6 +239,7 @@
                 <td colspan="2">{{ spot.point.safety }}</td>
             </tr>
         </table>
+        <h2>Схемы</h2>
         <h2>Фото галерея</h2>
         <h2>Видео</h2>
     </div>
