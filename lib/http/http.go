@@ -12,6 +12,10 @@ func CorsHeaders(w http.ResponseWriter, methods string) {
 	w.Header().Add("Access-Control-Allow-Headers", "origin, x-csrftoken, content-type, accept")
 }
 
+func JsonResponse(w http.ResponseWriter) {
+	w.Header().Add("Content-Type", "application/json")
+}
+
 func OnError(w http.ResponseWriter, err error, msg string, statusCode int) {
 	errStr := fmt.Sprintf("%s: %v", msg, err)
 	log.Errorf(errStr)

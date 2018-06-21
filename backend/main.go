@@ -121,6 +121,7 @@ func main() {
 	r.HandleFunc("/country/{countryId}/river", geoHierarchyHandler.ListCountryRivers).Methods("GET")
 	r.HandleFunc("/river/{riverId}", geoHierarchyHandler.CorsGetOptionsStub).Methods("OPTIONS")
 	r.HandleFunc("/river/{riverId}", geoHierarchyHandler.GetRiver).Methods("GET")
+	r.HandleFunc("/river/{riverId}", geoHierarchyHandler.SaveRiver).Methods("POST", "PUT")
 	r.HandleFunc("/river/{riverId}/reports", geoHierarchyHandler.CorsGetOptionsStub).Methods("OPTIONS")
 	r.HandleFunc("/river/{riverId}/reports", geoHierarchyHandler.ListRiverReports).Methods("GET")
 	r.HandleFunc("/river/{riverId}/spots", geoHierarchyHandler.CorsGetOptionsStub).Methods("OPTIONS")

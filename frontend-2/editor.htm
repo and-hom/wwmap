@@ -260,9 +260,6 @@
         props: ['spot', "visible"],
         template: document.getElementById('spotEditor-template').innerHTML,
     });
-
-
-
 </script>
 <!--End of spot editor component-->
 
@@ -277,28 +274,28 @@
             <button type="button" class="btn btn-secondary" v-on:click="reload()">Отменить</button>
         </div>
 
-        <input v-if="editMode" :value="river.title" style="display:block"/>
+        <input v-if="editMode" v-model.trim="river.title" style="display:block"/>
         <h1 v-else>{{ river.title }}</h1>
         <dl>
             <dt>Регион:</dt>
             <dd>
                 <div v-if="editMode">
                     <select v-model="river.region.id">
-                        <option v-for="region in regions" v-bind:value="region">{{region.title}}</option>
+                        <option v-for="region in regions" v-bind:value="region.id">{{region.title}}</option>
                     </select>
                 </div>
-                <div style="padding-left:40px;" v:else>
+                <div v-else style="padding-left:40px;">
                     {{river.region.title}}
                 </div>
             </dd>
             <dt>Алиасы:</dt>
             <dd>
-                <div v-if="editMode">
-                    <textarea rows="10" cols="120" style="resize: none; padding-left:40px;">{{ river.aliases.join('\n') }}</textarea>
-                </div>
+                <textarea v-if="editMode" v-bind:text-content="river.aliases" v-on:input="river.aliases = parseAliases($event.target.value)"
+                          rows="10" cols="120" style="resize: none; margin-left:40px;">{{ river.aliases.join('\n') }}</textarea>
                 <ul v-else>
                     <li v-for="alias in river.aliases">{{alias}}</li>
                 </ul>
+
             </dd>
             <dt>Отчёты:</dt>
             <dd>
@@ -306,7 +303,6 @@
                     <li v-for="report in reports"><a target="_blank" :href="report.url">{{report.title}}</a></li>
                 </ul></dd>
         </dl>
-
     </div>
 </div>
 
@@ -317,15 +313,19 @@
         data:function() {
             return {
                 editMode: false,
+                regions: getAllRegions(),
                 getEditModeButtonTitle: function() {
                     return this.editMode ? 'Просмотр' : 'Редактирование';
                 },
                 save:function() {
+                    this.river = saveRiver(this.river)
                 },
                 reload:function() {
                     this.river = getRiver(this.river.id)
                 },
-                regions: getAllRegions()
+                parseAliases:function(strVal) {
+                    return strVal.split('\n').map(function(x) {return x.trim()}).filter(function(x){return x.length>0})
+                },
             }
         }
     });
@@ -364,6 +364,7 @@
         el: '#wwmap',
         data: {
           countries: getCountries(),
+          regions: getAllRegions(),
           "spoteditorstate": {
             "visible": false
           },

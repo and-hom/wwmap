@@ -45,6 +45,7 @@ type RiverDao interface {
 	FindTitles(titles []string) ([]RiverTitle, error)
 	ListByCountry(countryId int64) ([]RiverTitle, error)
 	ListByRegion(regionId int64) ([]RiverTitle, error)
+	Save(river RiverTitle) error
 }
 
 type WhiteWaterDao interface {

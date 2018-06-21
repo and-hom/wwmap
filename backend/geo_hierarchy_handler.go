@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/lib/dao"
+	"io/ioutil"
 )
 
 type GeoHierarchyHandler struct {
@@ -17,6 +18,7 @@ type GeoHierarchyHandler struct {
 
 func (this *GeoHierarchyHandler) ListCountries(w http.ResponseWriter, r *http.Request) {
 	CorsHeaders(w, "GET, OPTIONS, POST, DELETE")
+	JsonResponse(w)
 
 	countries, err := this.countryDao.List()
 	if err != nil {
@@ -32,6 +34,7 @@ func (this *GeoHierarchyHandler) ListCountries(w http.ResponseWriter, r *http.Re
 
 func (this *GeoHierarchyHandler) ListRegions(w http.ResponseWriter, r *http.Request) {
 	CorsHeaders(w, "GET, OPTIONS, POST, DELETE")
+	JsonResponse(w)
 
 	pathParams := mux.Vars(r)
 	countryId, err := strconv.ParseInt(pathParams["countryId"], 10, 64)
@@ -54,7 +57,7 @@ func (this *GeoHierarchyHandler) ListRegions(w http.ResponseWriter, r *http.Requ
 
 func (this *GeoHierarchyHandler) ListAllRegions(w http.ResponseWriter, r *http.Request) {
 	CorsHeaders(w, "GET, OPTIONS, POST, DELETE")
-
+	JsonResponse(w)
 
 	regions, err := this.regionDao.ListAllWithCountry()
 	if err != nil {
@@ -70,6 +73,7 @@ func (this *GeoHierarchyHandler) ListAllRegions(w http.ResponseWriter, r *http.R
 
 func (this *GeoHierarchyHandler) ListCountryRivers(w http.ResponseWriter, r *http.Request) {
 	CorsHeaders(w, "GET, OPTIONS, POST, DELETE")
+	JsonResponse(w)
 
 	pathParams := mux.Vars(r)
 	countryId, err := strconv.ParseInt(pathParams["countryId"], 10, 64)
@@ -92,6 +96,7 @@ func (this *GeoHierarchyHandler) ListCountryRivers(w http.ResponseWriter, r *htt
 
 func (this *GeoHierarchyHandler) ListRegionRivers(w http.ResponseWriter, r *http.Request) {
 	CorsHeaders(w, "GET, OPTIONS, POST, DELETE")
+	JsonResponse(w)
 
 	pathParams := mux.Vars(r)
 	regionId, err := strconv.ParseInt(pathParams["regionId"], 10, 64)
@@ -116,6 +121,7 @@ const DEFAULT_REPORT_GROUP_LIMIT int = 20
 
 func (this *GeoHierarchyHandler) ListRiverReports(w http.ResponseWriter, r *http.Request) {
 	CorsHeaders(w, "GET, OPTIONS, POST, DELETE")
+	JsonResponse(w)
 
 	pathParams := mux.Vars(r)
 	riverId, err := strconv.ParseInt(pathParams["riverId"], 10, 64)
@@ -149,6 +155,7 @@ func (this *GeoHierarchyHandler) ListRiverReports(w http.ResponseWriter, r *http
 
 func (this *GeoHierarchyHandler) ListSpots(w http.ResponseWriter, r *http.Request) {
 	CorsHeaders(w, "GET, OPTIONS, POST, DELETE")
+	JsonResponse(w)
 
 	pathParams := mux.Vars(r)
 	riverId, err := strconv.ParseInt(pathParams["riverId"], 10, 64)
@@ -171,6 +178,7 @@ func (this *GeoHierarchyHandler) ListSpots(w http.ResponseWriter, r *http.Reques
 
 func (this *GeoHierarchyHandler) GetRiver(w http.ResponseWriter, r *http.Request) {
 	CorsHeaders(w, "GET, OPTIONS, POST, DELETE")
+	JsonResponse(w)
 
 	pathParams := mux.Vars(r)
 	riverId, err := strconv.ParseInt(pathParams["riverId"], 10, 64)
@@ -179,6 +187,38 @@ func (this *GeoHierarchyHandler) GetRiver(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	this.writeRiver(riverId, w)
+}
+
+func (this *GeoHierarchyHandler) SaveRiver(w http.ResponseWriter, r *http.Request) {
+	CorsHeaders(w, "GET, OPTIONS, POST, DELETE")
+	JsonResponse(w)
+
+	bodyBytes, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		OnError500(w, err, "Can not read request body")
+	}
+	river := dao.RiverTitleWithRegion{}
+	err = json.Unmarshal(bodyBytes, &river)
+	if err != nil {
+		OnError500(w, err, "Can not parse json from request body: " + string(bodyBytes))
+	}
+
+	riverForDb := dao.RiverTitle{
+		Id:river.Id,
+		Title:river.Title,
+		RegionId:river.Region.Id,
+		Aliases:river.Aliases,
+	}
+	err = this.riverDao.Save(riverForDb)
+	if err != nil {
+		OnError500(w, err, fmt.Sprintf("Can not save river %d", string(bodyBytes)))
+	}
+
+	this.writeRiver(river.Id, w)
+}
+
+func (this *GeoHierarchyHandler) writeRiver(riverId int64, w http.ResponseWriter) {
 	river, err := this.riverDao.RiverById(riverId)
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not get river %d", riverId))

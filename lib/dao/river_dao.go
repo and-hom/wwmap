@@ -19,6 +19,7 @@ func NewRiverPostgresDao(postgresStorage PostgresStorage) RiverDao {
 		byIdQuery:queries.SqlQuery("river", "by-id"),
 		listByCountryQuery:queries.SqlQuery("river", "by-country"),
 		listByRegionQuery:queries.SqlQuery("river", "by-region"),
+		updateQuery:queries.SqlQuery("river", "update"),
 	}
 }
 
@@ -30,6 +31,7 @@ type riverStorage struct {
 	byIdQuery          string
 	listByCountryQuery string
 	listByRegionQuery  string
+	updateQuery  string
 }
 
 func (this riverStorage) FindTitles(titles []string) ([]RiverTitle, error) {
@@ -65,6 +67,17 @@ func (this riverStorage) ListByCountry(countryId int64) ([]RiverTitle, error) {
 
 func (this riverStorage) ListByRegion(regionId int64) ([]RiverTitle, error) {
 	return this.listRiverTitles(this.listByRegionQuery, regionId)
+}
+
+func (this riverStorage) Save(river RiverTitle) error {
+	return this.performUpdates(this.updateQuery, func(entity interface{}) ([]interface{}, error){
+		_river := entity.(RiverTitle)
+		aliasesB, err := json.Marshal(_river.Aliases)
+		if err!=nil {
+			return []interface{}{}, err
+		}
+		return []interface{}{_river.RegionId, _river.Title, string(aliasesB), _river.Id}, nil
+	}, river)
 }
 
 func (this riverStorage) listRiverTitles(query string, queryParams ...interface{}) ([]RiverTitle, error) {

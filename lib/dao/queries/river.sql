@@ -24,3 +24,6 @@ SELECT river.id, region_id, river.title, NULL, river.aliases
 --@by-country
 SELECT river.id as id, region_id, river.title as title, NULL, river.aliases as aliases
     FROM river INNER JOIN region ON river.region_id=region.id WHERE region.fake AND region.country_id=$1
+
+--@update
+UPDATE river SET region_id=$1, title=$2, aliases=$3 WHERE id=$4
