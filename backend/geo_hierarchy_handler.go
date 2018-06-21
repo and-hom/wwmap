@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"fmt"
 	"github.com/Sirupsen/logrus"
+	"github.com/and-hom/wwmap/lib/dao"
 )
 
 type GeoHierarchyHandler struct {
@@ -46,6 +47,22 @@ func (this *GeoHierarchyHandler) ListRegions(w http.ResponseWriter, r *http.Requ
 	bytes, err := json.Marshal(regions)
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not serialize regions of country %d", countryId))
+	}
+
+	w.Write(bytes)
+}
+
+func (this *GeoHierarchyHandler) ListAllRegions(w http.ResponseWriter, r *http.Request) {
+	CorsHeaders(w, "GET, OPTIONS, POST, DELETE")
+
+
+	regions, err := this.regionDao.ListAllWithCountry()
+	if err != nil {
+		OnError500(w, err, "Can not list regions")
+	}
+	bytes, err := json.Marshal(regions)
+	if err != nil {
+		OnError500(w, err, "Can not serialize regions")
 	}
 
 	w.Write(bytes)
@@ -130,7 +147,6 @@ func (this *GeoHierarchyHandler) ListRiverReports(w http.ResponseWriter, r *http
 	w.Write(bytes)
 }
 
-
 func (this *GeoHierarchyHandler) ListSpots(w http.ResponseWriter, r *http.Request) {
 	CorsHeaders(w, "GET, OPTIONS, POST, DELETE")
 
@@ -148,6 +164,40 @@ func (this *GeoHierarchyHandler) ListSpots(w http.ResponseWriter, r *http.Reques
 	bytes, err := json.Marshal(voyageReports)
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not serialize spots of river %d", riverId))
+	}
+
+	w.Write(bytes)
+}
+
+func (this *GeoHierarchyHandler) GetRiver(w http.ResponseWriter, r *http.Request) {
+	CorsHeaders(w, "GET, OPTIONS, POST, DELETE")
+
+	pathParams := mux.Vars(r)
+	riverId, err := strconv.ParseInt(pathParams["riverId"], 10, 64)
+	if err != nil {
+		OnError(w, err, "Can not parse id", http.StatusBadRequest)
+		return
+	}
+
+	river, err := this.riverDao.RiverById(riverId)
+	if err != nil {
+		OnError500(w, err, fmt.Sprintf("Can not get river %d", riverId))
+	}
+
+	region, err := this.regionDao.Get(river.RegionId)
+	if err != nil {
+		OnError500(w, err, fmt.Sprintf("Can not get region for river %d", riverId))
+	}
+
+	riverWithRegion := dao.RiverTitleWithRegion{
+		Id:river.Id,
+		Title:river.Title,
+		Aliases:river.Aliases,
+		Region:region,
+	}
+	bytes, err := json.Marshal(riverWithRegion)
+	if err != nil {
+		OnError500(w, err, fmt.Sprintf("Can not serialize river %d", riverId))
 	}
 
 	w.Write(bytes)

@@ -95,7 +95,9 @@ type CountryDao interface {
 }
 
 type RegionDao interface {
+	Get(id int64) (Region, error)
 	List(countryId int64) ([]Region, error)
+	ListAllWithCountry() ([]RegionWithCountry, error)
 }
 
 type PostgresStorage struct {
@@ -434,6 +436,7 @@ func getOrElse(val sql.NullInt64, _default int64) int64 {
 	}
 }
 
+// Deprecated. Use doFindAndReturn
 func (this *PostgresStorage)doFind(query string, callback func(rows *sql.Rows) error, args ...interface{}) (bool, error) {
 	rows, err := this.db.Query(query, args...)
 	if err != nil {
@@ -449,6 +452,23 @@ func (this *PostgresStorage)doFind(query string, callback func(rows *sql.Rows) e
 		return true, nil
 	}
 	return false, nil
+}
+
+func (this *PostgresStorage)doFindAndReturn(query string, callback func(rows *sql.Rows) (interface{}, error), args ...interface{}) (interface{}, bool, error) {
+	rows, err := this.db.Query(query, args...)
+	if err != nil {
+		return nil, false, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		obj, err := callback(rows)
+		if err != nil {
+			return nil, false, err
+		}
+		return obj, true, nil
+	}
+	return nil, false, nil
 }
 
 func (this *PostgresStorage)doFindList(query string, callback interface{}, args ...interface{}) (interface{}, error) {

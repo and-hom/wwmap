@@ -140,11 +140,19 @@ type ExtDataTrack struct {
 }
 
 type RiverTitle struct {
+	Id       int64 `json:"id"`
+	OsmId    int64 `json:"osm_id"`
+	RegionId int64 `json:"region_id"`
+	Title    string `json:"title"`
+	Bounds   Bbox `json:"bounds"`
+	Aliases  []string `json:"aliases"`
+}
+
+type RiverTitleWithRegion struct {
 	Id      int64 `json:"id"`
-	OsmId   int64 `json:"osm_id"`
 	Title   string `json:"title"`
-	Bounds  Bbox `json:"bounds"`
 	Aliases []string `json:"aliases"`
+	Region  Region `json:"region"`
 }
 
 type WaterWay struct {
@@ -269,4 +277,10 @@ type Region struct {
 	Id        int64 `json:"id,omitempty"`
 	CountryId int64 `json:"country_id,omitempty"`
 	Title     string `json:"title"`
+}
+
+type RegionWithCountry struct {
+	Id      int64 `json:"id,omitempty"`
+	Country Country `json:"country,omitempty"`
+	Title   string `json:"title"`
 }

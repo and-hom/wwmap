@@ -26,10 +26,18 @@ function getRiversByRegion(countryId, regionId) {
     return doGetJsonSync(apiBase + "/country/" + countryId + "/region/" + regionId + "/river")
 }
 
+function getRiver(riverId) {
+    return doGetJsonSync(apiBase + "/river/" + riverId)
+}
+
 function getReports(riverId) {
     return doGetJsonSync(apiBase + "/river/" + riverId + "/reports")
 }
 
 function getSpots(riverId) {
     return doGetJsonSync(apiBase + "/river/" + riverId + "/spots")
+}
+
+function getAllRegions() {
+    return doGetJsonSync(apiBase + "/region")
 }

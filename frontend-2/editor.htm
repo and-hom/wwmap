@@ -57,7 +57,13 @@
         <ul>
             <region v-bind:key="region.id" v-bind:region="region" v-for="region in regions"/>
         </ul>
-        <ul><li><ul><river v-bind:key="river.id" v-bind:river="river" v-for="river in rivers"/></ul></li></ul>
+        <ul>
+            <li>
+                <ul>
+                    <river v-bind:key="river.id" v-bind:river="river" v-for="river in rivers"/>
+                </ul>
+            </li>
+        </ul>
     </li>
 </div>
 
@@ -88,6 +94,7 @@
             }
         }
     });
+
 
 
 </script>
@@ -128,6 +135,7 @@
     });
 
 
+
 </script>
 <!--End of region component-->
 
@@ -137,7 +145,7 @@
                                              class="title-link btn btn-outline-info">{{ river.title }}</a>
         <ul>
             <li class="menu-item spot-menu-item" v-on:click.stop="selectSpot(spot)" v-for="spot in spots"><a href="#"
-                                                                                                                class="title-link btn btn-outline-primary">{{spot.title}}</a>
+                                                                                                             class="title-link btn btn-outline-primary">{{spot.title}}</a>
             </li>
         </ul>
     </li>
@@ -175,13 +183,14 @@
                     app.spoteditorstate.visible = false
                     app.riverditorstate.visible=false;
 
-                    app.riverditorstate.river = this.river
+                    app.riverditorstate.river = getRiver(this.river.id)
                     app.riverditorstate.reports=getReports(this.river.id)
                     app.riverditorstate.visible = true
                 },
             }
         },
     });
+
 
 
 </script>
@@ -225,7 +234,8 @@
                     <br/>
                     К.с. нв/св/вв:&nbsp;{{ spot.low_water_category }}/{{ spot.medium_water_category
                     }}/{{ spot.high_water_category }}
-                    <div v-if="spot.category!='0' && spot.category!='-1'">К.с. по классификатору: {{ spot.category }}</div>
+                    <div v-if="spot.category!='0' && spot.category!='-1'">К.с. по классификатору: {{ spot.category }}
+                    </div>
 
                 </td>
             </tr>
@@ -252,6 +262,7 @@
     });
 
 
+
 </script>
 <!--End of spot editor component-->
 
@@ -259,15 +270,43 @@
 <!--river editor component-->
 <div id="river-editor-template" style="display:none">
     <div v-if="visible">
-        <h1>{{ river.title }}</h1>
-        Алиасы:
-        <ul>
-            <li v-for="alias in river.aliases">{{alias}}</li>
-        </ul>
-        Отчёты:
-        <ul>
-            <li v-for="report in reports"><a target="_blank" :href="report.url">{{report.title}}</a></li>
-        </ul>
+        <div class="btn-group" role="group" aria-label="Basic example">
+            <button type="button" class="btn btn-info" v-on:click="editMode=!editMode">{{getEditModeButtonTitle()}}
+            </button>
+            <button type="button" class="btn btn-success" v-on:click="save()">Сохранить</button>
+            <button type="button" class="btn btn-secondary" v-on:click="reload()">Отменить</button>
+        </div>
+
+        <input v-if="editMode" :value="river.title" style="display:block"/>
+        <h1 v-else>{{ river.title }}</h1>
+        <dl>
+            <dt>Регион:</dt>
+            <dd>
+                <div v-if="editMode">
+                    <select v-model="river.region.id">
+                        <option v-for="region in regions" v-bind:value="region">{{region.title}}</option>
+                    </select>
+                </div>
+                <div style="padding-left:40px;" v:else>
+                    {{river.region.title}}
+                </div>
+            </dd>
+            <dt>Алиасы:</dt>
+            <dd>
+                <div v-if="editMode">
+                    <textarea rows="10" cols="120" style="resize: none; padding-left:40px;">{{ river.aliases.join('\n') }}</textarea>
+                </div>
+                <ul v-else>
+                    <li v-for="alias in river.aliases">{{alias}}</li>
+                </ul>
+            </dd>
+            <dt>Отчёты:</dt>
+            <dd>
+                <ul>
+                    <li v-for="report in reports"><a target="_blank" :href="report.url">{{report.title}}</a></li>
+                </ul></dd>
+        </dl>
+
     </div>
 </div>
 
@@ -275,7 +314,22 @@
     Vue.component('river-editor', {
         props: ['river', 'reports', 'visible'],
         template: document.getElementById('river-editor-template').innerHTML,
+        data:function() {
+            return {
+                editMode: false,
+                getEditModeButtonTitle: function() {
+                    return this.editMode ? 'Просмотр' : 'Редактирование';
+                },
+                save:function() {
+                },
+                reload:function() {
+                    this.river = getRiver(this.river.id)
+                },
+                regions: getAllRegions()
+            }
+        }
     });
+
 
 
 </script>
@@ -288,7 +342,8 @@
         <a href="javascript:clearToken(); location.reload();">Выход</a>
     </div>
     <div class="auth" v-else>
-        <div>Здравствуйте! Для редактирования надо</div><a href="javascript:forceRedirect();">авторизоваться через Яндекс</a>
+        <div>Здравствуйте! Для редактирования надо</div>
+        <a href="javascript:forceRedirect();">авторизоваться через Яндекс</a>
     </div>
 </div>
 <script type="text/javascript">
@@ -300,6 +355,7 @@
             }
         }
     });
+
 </script>
 <!--End of auth component-->
 
@@ -316,6 +372,7 @@
           }
         }
     })
+
 
 
 </script>

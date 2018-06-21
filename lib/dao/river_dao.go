@@ -68,12 +68,13 @@ func (this riverStorage) ListByRegion(regionId int64) ([]RiverTitle, error) {
 }
 
 func (this riverStorage) listRiverTitles(query string, queryParams ...interface{}) ([]RiverTitle, error) {
+	fmt.Println(query)
 	result, err := this.doFindList(query,
 		func(rows *sql.Rows) (RiverTitle, error) {
 			riverTitle := RiverTitle{}
 			boundsStr := sql.NullString{}
 			aliases := sql.NullString{}
-			err := rows.Scan(&riverTitle.Id, &riverTitle.Title, &boundsStr, &aliases)
+			err := rows.Scan(&riverTitle.Id, &riverTitle.RegionId, &riverTitle.Title, &boundsStr, &aliases)
 			if err != nil {
 				return RiverTitle{}, err
 			}

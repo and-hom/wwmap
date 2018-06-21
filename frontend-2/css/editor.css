@@ -38,3 +38,8 @@ ul {
     font-weight: bold;
     background-color: #fafafa
 }
+
+.list-item-input {
+    display: block;
+    withd:400px;
+}
