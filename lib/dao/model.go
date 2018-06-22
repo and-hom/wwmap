@@ -6,6 +6,7 @@ import (
 	"math"
 	. "github.com/and-hom/wwmap/lib/geo"
 	"github.com/and-hom/wwmap/lib/model"
+	"bytes"
 )
 
 type JSONTime time.Time
@@ -262,10 +263,27 @@ const ADMIN Role = "ADMIN"
 const USER Role = "USER"
 const ANONYMOUS Role = "ANON"
 
+func Join(separator string, roles ...Role) string {
+	if len(roles) == 1 {
+		return string(roles[0])
+	}
+	if len(roles) == 2 {
+		return string(roles[0]) + separator + string(roles[1])
+	}
+	var buffer bytes.Buffer
+	for i := 0; i < len(roles); i++ {
+		if i > 0 {
+			buffer.WriteString(separator)
+		}
+		buffer.WriteString(string(roles[i]))
+	}
+	return buffer.String()
+}
+
 type User struct {
-	Id       int64
-	YandexId int64
-	Role     Role
+	Id        int64
+	YandexId  int64
+	Role      Role
 }
 
 type Country struct {

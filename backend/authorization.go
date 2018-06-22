@@ -12,6 +12,12 @@ type UserInfoHandler struct {
 	Handler
 }
 
+type UserInfoDto struct {
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Roles     []dao.Role `json:"roles"`
+}
+
 func (this *UserInfoHandler) GetUserInfo(w http.ResponseWriter, r *http.Request) {
 	CorsHeaders(w, "GET, OPTIONS")
 	err := this.CreateMissingUser(r)
@@ -26,7 +32,20 @@ func (this *UserInfoHandler) GetUserInfo(w http.ResponseWriter, r *http.Request)
 		onPassportErr(err, w, "Can not do request to Yandex Passport")
 		return
 	}
-	bytes, err := json.Marshal(info)
+
+	role, err := this.userDao.GetRole(info.Id)
+	if err != nil {
+		onPassportErr(err, w, "Can not get role for user")
+		return
+	}
+
+	infoDto := UserInfoDto{
+		FirstName:info.FirstName,
+		LastName:info.LastName,
+		Roles:[]dao.Role{role},
+	}
+
+	bytes, err := json.Marshal(infoDto)
 	if err != nil {
 		OnError500(w, err, "Can not create response")
 		return

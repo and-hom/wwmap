@@ -97,6 +97,8 @@
 
 
 
+
+
 </script>
 <!--End of country component-->
 
@@ -133,6 +135,8 @@
             }
         },
     });
+
+
 
 
 
@@ -190,6 +194,8 @@
             }
         },
     });
+
+
 
 
 
@@ -260,6 +266,8 @@
         props: ['spot', "visible"],
         template: document.getElementById('spotEditor-template').innerHTML,
     });
+
+
 </script>
 <!--End of spot editor component-->
 
@@ -267,8 +275,14 @@
 <!--river editor component-->
 <div id="river-editor-template" style="display:none">
     <div v-if="visible">
-        <div class="btn-group" role="group" aria-label="Basic example">
-            <button type="button" class="btn btn-info" v-on:click="editMode=!editMode">{{getEditModeButtonTitle()}}
+        <transition name="fade">
+            <div class="alert alert-danger" role="alert" v-if="errMsg">
+                {{errMsg}}
+            </div>
+        </transition>
+
+        <div v-if="canEdit()" class="btn-group" role="group" aria-label="Basic example">
+            <button type="button" class="btn btn-info" v-on:click="editMode=!editMode; hideError();">{{getEditModeButtonTitle()}}
             </button>
             <button type="button" class="btn btn-success" v-on:click="save()">Сохранить</button>
             <button type="button" class="btn btn-secondary" v-on:click="reload()">Отменить</button>
@@ -290,8 +304,10 @@
             </dd>
             <dt>Алиасы:</dt>
             <dd>
-                <textarea v-if="editMode" v-bind:text-content="river.aliases" v-on:input="river.aliases = parseAliases($event.target.value)"
-                          rows="10" cols="120" style="resize: none; margin-left:40px;">{{ river.aliases.join('\n') }}</textarea>
+                <textarea v-if="editMode" v-bind:text-content="river.aliases"
+                          v-on:input="river.aliases = parseAliases($event.target.value)"
+                          rows="10" cols="120"
+                          style="resize: none; margin-left:40px;">{{ river.aliases.join('\n') }}</textarea>
                 <ul v-else>
                     <li v-for="alias in river.aliases">{{alias}}</li>
                 </ul>
@@ -301,7 +317,8 @@
             <dd>
                 <ul>
                     <li v-for="report in reports"><a target="_blank" :href="report.url">{{report.title}}</a></li>
-                </ul></dd>
+                </ul>
+            </dd>
         </dl>
     </div>
 </div>
@@ -312,23 +329,43 @@
         template: document.getElementById('river-editor-template').innerHTML,
         data:function() {
             return {
+                userInfo: getAuthorizedUserInfoOrNull(),
+                canEdit: function(){
+                 return this.userInfo!=null && this.userInfo.roles.includes("ADMIN")
+                },
                 editMode: false,
+                errMsg:null,
                 regions: getAllRegions(),
                 getEditModeButtonTitle: function() {
                     return this.editMode ? 'Просмотр' : 'Редактирование';
                 },
                 save:function() {
-                    this.river = saveRiver(this.river)
+                    updated = saveRiver(this.river)
+                    if (updated) {
+                        this.river = updated
+                        this.hideError()
+                    } else {
+                        this.showError("Не удалось сохранить реку. Возможно, недостаточно прав")
+                    }
                 },
                 reload:function() {
                     this.river = getRiver(this.river.id)
+                    this.hideError()
                 },
                 parseAliases:function(strVal) {
                     return strVal.split('\n').map(function(x) {return x.trim()}).filter(function(x){return x.length>0})
                 },
+                showError: function(errMsg) {
+                    this.errMsg = errMsg
+                },
+                hideError: function(errMsg) {
+                    this.errMsg = null
+                },
             }
         }
     });
+
+
 
 
 
@@ -370,12 +407,9 @@
           },
           "riverditorstate": {
             "visible": false
-          }
+          },
         }
     })
-
-
-
 </script>
 
 </body>

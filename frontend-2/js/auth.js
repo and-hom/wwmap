@@ -67,7 +67,14 @@ function storeTokenFromRequest() {
     }
 }
 
+var cachedUserInfo = null
+var userInfoWasCached = false
+
 function getAuthorizedUserInfoOrNull() {
+    if (userInfoWasCached) {
+        return cachedUserInfo
+    }
+
     token = getToken()
     if (!token) {
         token = extractToken()
@@ -75,7 +82,10 @@ function getAuthorizedUserInfoOrNull() {
     if (token) {
         setToken(token)
         try {
-            return getUserInfo(token)
+            userInfo = getUserInfo(token)
+            cachedUserInfo = userInfo
+            userInfoWasCached = true
+            return userInfo
          } catch (err) {
             console.error(err)
             return null

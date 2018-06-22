@@ -193,6 +193,10 @@ func (this *GeoHierarchyHandler) GetRiver(w http.ResponseWriter, r *http.Request
 func (this *GeoHierarchyHandler) SaveRiver(w http.ResponseWriter, r *http.Request) {
 	CorsHeaders(w, "GET, OPTIONS, POST, DELETE")
 	JsonResponse(w)
+	if !this.CheckRoleAllowedAndMakeResponse(w, r, dao.ADMIN) {
+		return
+	}
+
 
 	bodyBytes, err := ioutil.ReadAll(r.Body)
 	if err != nil {

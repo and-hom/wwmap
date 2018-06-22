@@ -10,10 +10,13 @@ function doGetJsonSync(url) {
     return null
 }
 
-function doPostJsonSync(url, value) {
+function doPostJsonSync(url, value, auth) {
     var xhr = new XMLHttpRequest();
     xhr.open('POST', url, false);
     xhr.setRequestHeader("Content-Type", "application/json");
+    if (auth) {
+        xhr.setRequestHeader("Authorization", "Token " + getToken());
+    }
     var data = JSON.stringify(value);
     xhr.send(data);
     if (xhr.status == 200) {
@@ -55,5 +58,5 @@ function getAllRegions() {
 }
 
 function saveRiver(river) {
-    return doPostJsonSync(apiBase + "/river/" + river.id, river)
+    return doPostJsonSync(apiBase + "/river/" + river.id, river, true)
 }

@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
+	"strings"
 )
 
 func CorsHeaders(w http.ResponseWriter, methods string) {
@@ -27,5 +28,11 @@ func OnError500(w http.ResponseWriter, err error, msg string) {
 }
 
 func GetOauthToken(r *http.Request) string {
+	authorization := r.Header.Get("Authorization")
+	parts := strings.Split(authorization, " ")
+	if len(parts) > 1 && parts[1] != "" {
+		return parts[1]
+	}
+
 	return r.FormValue("token")
 }
