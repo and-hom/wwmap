@@ -1,3 +1,11 @@
+wwmap-frontend (0.0.12) unstable; urgency=medium
+
+  * #71 Entity editor frontend
+  * #71 Yandex Passport auth
+  * Some look improvements
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Fri, 22 Jun 2018 02:54:08 +0300
+
 wwmap-frontend (0.0.11) unstable; urgency=medium
 
   * #54 Short description of ww point increased up to 4096 on the UI and unlimited (text) in the database

@@ -1,3 +1,10 @@
+wwmap-db (0.0.7) unstable; urgency=medium
+
+  * #71 Users table
+  * #71 Region now is mandatory field for river
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Fri, 22 Jun 2018 02:54:12 +0300
+
 wwmap-db (0.0.6) unstable; urgency=medium
 
   * #52 Import reports from tlib
