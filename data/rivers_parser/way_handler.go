@@ -8,8 +8,17 @@ import (
 	"strconv"
 	"log"
 	"github.com/and-hom/wwmap/data"
-	"github.com/and-hom/wwmap/lib/dao"
 )
+
+
+type WaterWayTmp struct {
+	Id            int64 `json:"id"`
+	Title         string `json:"title"`
+	Type          string `json:"type"`
+	ParentId      int64 `json:"parentId"`
+	Comment       string `json:"comment"`
+	PathPointRefs []int64 `json:"path_point_refs"`
+}
 
 var supported_types = map[string]bool{
 	//"ditch", // канава
@@ -47,7 +56,7 @@ var supported_types = map[string]bool{
 type WayIterHandler struct {
 	saxlike.VoidHandler
 
-	WayObjIndex       map[int64]dao.WaterWayTmp
+	WayObjIndex       map[int64]WaterWayTmp
 	WayObjectsByPoint map[int64][]int64
 
 	way               bool
@@ -56,7 +65,7 @@ type WayIterHandler struct {
 	cnt               int
 	foundcnt          int
 
-	currentWay        dao.WaterWayTmp
+	currentWay        WaterWayTmp
 	fileName          string
 }
 
@@ -67,7 +76,7 @@ func (h *WayIterHandler) StartDocument() {
 }
 
 func (h *WayIterHandler) re_init() {
-	h.WayObjIndex = make(map[int64]dao.WaterWayTmp)
+	h.WayObjIndex = make(map[int64]WaterWayTmp)
 	h.WayObjectsByPoint = make(map[int64][]int64)
 }
 
@@ -80,7 +89,7 @@ func (h *WayIterHandler) StartElement(element xml.StartElement) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		h.currentWay = dao.WaterWayTmp{Id:wayId, Comment: h.fileName}
+		h.currentWay = WaterWayTmp{Id:wayId, Comment: h.fileName}
 	}
 	if h.way && element.Name.Local == "tag" && data.Attr(element.Attr, "k") == "name" {
 		h.currentWay.Title = data.Attr(element.Attr, "v")

@@ -36,6 +36,11 @@ func ParseEventPointType(s string) (EventPointType, error) {
 	return "", fmt.Errorf("Unsupported point type %s", s)
 }
 
+type IdTitle struct {
+	Id    int64 `json:"id"`
+	Title string `json:"title"`
+}
+
 type EventPoint struct {
 	Id      int64 `json:"id"`
 	Type    EventPointType `json:"type"`
@@ -141,10 +146,9 @@ type ExtDataTrack struct {
 }
 
 type RiverTitle struct {
-	Id       int64 `json:"id"`
+	IdTitle
 	OsmId    int64 `json:"osm_id"`
 	RegionId int64 `json:"region_id"`
-	Title    string `json:"title"`
 	Bounds   Bbox `json:"bounds"`
 	Aliases  []string `json:"aliases"`
 }
@@ -160,16 +164,32 @@ type WaterWay struct {
 }
 
 type WhiteWaterPoint struct {
-	Id        int64 `json:"id"`
+	IdTitle
 	OsmId     int64 `json:"-"`
 	RiverId   int64 `json:"river_id"`
 	Type      string `json:"-"`
 	Category  model.SportCategory `json:"category"`
 	Point     Point `json:"point"`
-	Title     string `json:"title"`
 	Link      string `json:"link"`
 	Comment   string `json:"-"`
 	ShortDesc string `json:"short_description"`
+}
+
+type WhiteWaterPointFull struct {
+	WhiteWaterPoint
+	LowWaterCategory       model.SportCategory `json:"lw_category"`
+	LowWaterDescription    string `json:"lw_description"`
+	MediumWaterCategory    model.SportCategory `json:"mw_category"`
+	MediumWaterDescription string `json:"mw_description"`
+	HighWaterCategory      model.SportCategory `json:"hw_category"`
+	HighWaterDescription   string `json:"hw_description"`
+
+	Orient                 string `json:"orient"`
+	Approach               string `json:"approach"`
+	Safety                 string `json:"safety"`
+
+	Preview                string `json:"preview"`
+	River                  IdTitle `json:"river"`
 }
 
 type WhiteWaterPointWithRiverTitle struct {
@@ -181,15 +201,6 @@ type WhiteWaterPointWithRiverTitle struct {
 type WhiteWaterPointWithPath struct {
 	WhiteWaterPoint
 	Path []string
-}
-
-type WaterWayTmp struct {
-	Id            int64 `json:"id"`
-	Title         string `json:"title"`
-	Type          string `json:"type"`
-	ParentId      int64 `json:"parentId"`
-	Comment       string `json:"comment"`
-	PathPointRefs []int64 `json:"path_point_refs"`
 }
 
 type PointRef struct {
@@ -274,9 +285,9 @@ func Join(separator string, roles ...Role) string {
 }
 
 type User struct {
-	Id        int64
-	YandexId  int64
-	Role      Role
+	Id       int64
+	YandexId int64
+	Role     Role
 }
 
 type Country struct {

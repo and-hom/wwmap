@@ -232,8 +232,10 @@ func (this *GeoHierarchyHandler) SaveRiver(w http.ResponseWriter, r *http.Reques
 	}
 
 	riverForDb := dao.RiverTitle{
-		Id:river.Id,
-		Title:river.Title,
+		IdTitle:dao.IdTitle{
+			Id:river.Id,
+			Title:river.Title,
+		},
 		RegionId:river.Region.Id,
 		Aliases:river.Aliases,
 	}
@@ -301,14 +303,14 @@ func (this *GeoHierarchyHandler) SaveSpot(w http.ResponseWriter, r *http.Request
 		OnError500(w, err, "Can not read request body")
 		return
 	}
-	spot := dao.WhiteWaterPointWithRiverTitle{}
+	spot := dao.WhiteWaterPointFull{}
 	err = json.Unmarshal(bodyBytes, &spot)
 	if err != nil {
 		OnError500(w, err, "Can not parse json from request body: " + string(bodyBytes))
 		return
 	}
 
-	err = this.whiteWaterDao.UpdateWhiteWaterPoints(spot.WhiteWaterPoint)
+	err = this.whiteWaterDao.UpdateWhiteWaterPointsFull(spot)
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not save spot %d", string(bodyBytes)))
 		return
@@ -318,7 +320,7 @@ func (this *GeoHierarchyHandler) SaveSpot(w http.ResponseWriter, r *http.Request
 }
 
 func (this *GeoHierarchyHandler) writeSpot(spotId int64, w http.ResponseWriter) {
-	spot, err := this.whiteWaterDao.Find(spotId)
+	spot, err := this.whiteWaterDao.FindFull(spotId)
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not get spot %d", spotId))
 		return

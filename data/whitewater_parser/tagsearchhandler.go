@@ -22,7 +22,7 @@ type NodeSearchHandler struct {
 	lat        float64
 	lon        float64
 	_type      string
-	id	   int64
+	id         int64
 
 	comment    string
 
@@ -108,12 +108,14 @@ func (h *NodeSearchHandler) EndElement(element xml.EndElement) {
 			}
 
 			point := dao.WhiteWaterPoint{
+				IdTitle: dao.IdTitle{
+					Title:name,
+				},
 				OsmId: h.id,
 				Point:geo.Point{
 					Lat:h.lat,
 					Lon: h.lon,
 				},
-				Title:name,
 				Category:category,
 				Type:h._type,
 				Comment:h.comment,
@@ -135,7 +137,7 @@ func (h *NodeSearchHandler) EndDocument() {
 	}
 }
 
-func (h* NodeSearchHandler) flush() {
+func (h*NodeSearchHandler) flush() {
 	h.store(h.result_buf)
 	h.result_buf = nil
 }

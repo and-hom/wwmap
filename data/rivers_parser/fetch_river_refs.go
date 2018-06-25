@@ -10,7 +10,7 @@ import (
 	"fmt"
 )
 
-func load_waterways(fname string) (map[int64]dao.WaterWayTmp, map[int64][]int64) {
+func load_waterways(fname string) (map[int64]WaterWayTmp, map[int64][]int64) {
 	inFile, err := os.Open(fname)
 	if err != nil {
 		log.Fatal(err)

@@ -94,13 +94,6 @@
             }
         }
     });
-
-
-
-
-
-
-
 </script>
 <!--End of country component-->
 
@@ -137,13 +130,6 @@
             }
         },
     });
-
-
-
-
-
-
-
 </script>
 <!--End of region component-->
 
@@ -185,7 +171,7 @@
                     app.riverditorstate.visible=false;
 
                     app.spoteditorstate.visible=true;
-                    app.spoteditorstate.spot=spot
+                    app.spoteditorstate.spot=getSpot(spot.id)
                 },
                 selectRiver:function() {
                     app.spoteditorstate.visible = false
@@ -198,13 +184,6 @@
             }
         },
     });
-
-
-
-
-
-
-
 </script>
 
 
@@ -262,31 +241,31 @@
             </div>
             <div>
                 <strong>Описание: </strong>
-                <textarea rows="10" cols="120">{{ spot.short_description }}</textarea>
+                <textarea rows="10" cols="120" v-model="spot.short_description"></textarea>
             </div>
             <div>
                 <strong>Ориентиры:</strong>
-                <textarea v-if="editMode" rows="10" cols="120">{{ spot.orient }}</textarea>
+                <textarea rows="10" cols="120" v-model="spot.orient"></textarea>
             </div>
             <div>
                 <strong>Подход/выход:</strong>
-                <textarea v-if="editMode" rows="10" cols="120">{{ spot.orient }}</textarea>
+                <textarea rows="10" cols="120" v-model="spot.approach"></textarea>
             </div>
             <div>
                 <strong>Страховка:</strong>
-                <textarea v-if="editMode" rows="10" cols="120">{{ spot.orient }}</textarea>
+                <textarea rows="10" cols="120" v-model="spot.safety"></textarea>
             </div>
             <div>
                 <strong>Описание для низкого уровня воды:</strong>
-                <textarea v-if="editMode" rows="10" cols="120">{{ spot.low_water_desc }}</textarea>
+                <textarea rows="10" cols="120" v-model="spot.lw_description"></textarea>
             </div>
             <div>
                 <strong>Описание для среднего уровня воды:</strong>
-                <textarea v-if="editMode" rows="10" cols="120">{{ spot.medium_water_desc }}</textarea>
+                <textarea rows="10" cols="120" v-model="spot.mw_description"></textarea>
             </div>
             <div>
                 <strong>Описание для высокого уровня воды:</strong>
-                <textarea v-if="editMode" rows="10" cols="120">{{ spot.high_water_desc }}</textarea>
+                <textarea rows="10" cols="120" v-model="spot.hw_description"></textarea>
             </div>
         </div>
         <div v-else>
@@ -297,7 +276,7 @@
                     <td rowspan="2"><img :scr="spot.thumbnail"/></td>
                 </tr>
                 <tr>
-                    <td class="cell-title" colspan="2">{{ spot.orient }}</td>
+                    <td colspan="2"><strong>Ориентиры:</strong>&nbsp;{{ spot.orient }}</td>
                 </tr>
                 <tr>
                     <td class="cell-title">Уровень воды</td>
@@ -306,15 +285,15 @@
                 </tr>
                 <tr>
                     <td class="cell-title">Низкая вода</td>
-                    <td>{{ spot.low_water_desc }}</td>
+                    <td>{{ spot.lw_description }}</td>
                 </tr>
                 <tr>
                     <td class="cell-title">Средняя вода</td>
-                    <td>{{ spot.medium_water_desc }}</td>
+                    <td>{{ spot.mw_description }}</td>
                 </tr>
                 <tr>
                     <td class="cell-title">Высокая вода</td>
-                    <td>{{ spot.high_water_desc }}</td>
+                    <td>{{ spot.hw_description }}</td>
                 </tr>
                 <tr>
                     <td class="cell-title" colspan="2">Подход/выход</td>
@@ -323,22 +302,20 @@
                         <br/>Долгота:&nbsp;{{ spot.point[0] }}
                         <br/>
                         <br/>
-                        К.с. нв/св/вв:&nbsp;{{ spot.low_water_category }}/{{ spot.medium_water_category
-                        }}/{{ spot.high_water_category }}
-                        <div v-if="spot.category!='0' && spot.category!='-1'">К.с. по классификатору: {{ spot.category
-                            }}
+                        К.с. нв/св/вв:&nbsp;{{ spot.lw_category }}/{{ spot.mw_category }}/{{ spot.hw_category }}
+                        <div v-if="spot.category!='0' && spot.category!='-1'">К.с. по классификатору: {{ spot.category }}
                         </div>
 
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="2">{{ spot.point.approach }}</td>
+                    <td colspan="2">{{ spot.approach }}</td>
                 </tr>
                 <tr>
                     <td class="cell-title" colspan="2">Страховка</td>
                 </tr>
                 <tr>
-                    <td colspan="2">{{ spot.point.safety }}</td>
+                    <td colspan="2">{{ spot.safety }}</td>
                 </tr>
             </table>
             <h2>Схемы</h2>
@@ -389,10 +366,6 @@
             }
         },
     });
-
-
-
-
 </script>
 <!--End of spot editor component-->
 
