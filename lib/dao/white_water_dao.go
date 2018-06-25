@@ -8,6 +8,7 @@ import (
 	"github.com/and-hom/wwmap/lib/model"
 	"strings"
 	"github.com/and-hom/wwmap/lib/dao/queries"
+	"fmt"
 )
 
 func NewWhiteWaterPostgresDao(postgresStorage PostgresStorage) WhiteWaterDao {
@@ -18,6 +19,8 @@ func NewWhiteWaterPostgresDao(postgresStorage PostgresStorage) WhiteWaterDao {
 		listByRiverAndTitleQuery: queries.SqlQuery("white-water", "by-river-and-title"),
 		listWithPathQuery: queries.SqlQuery("white-water", "with-path"),
 		insertQuery: queries.SqlQuery("white-water", "insert"),
+		updateQuery: queries.SqlQuery("white-water", "update"),
+		byIdQuery: queries.SqlQuery("white-water", "by-id"),
 	}
 }
 
@@ -28,6 +31,8 @@ type whiteWaterStorage struct {
 	listByRiverAndTitleQuery string
 	listWithPathQuery        string
 	insertQuery              string
+	updateQuery              string
+	byIdQuery                string
 }
 
 func (this whiteWaterStorage) ListWithPath() ([]WhiteWaterPointWithPath, error) {
@@ -44,6 +49,17 @@ func (this whiteWaterStorage) ListByRiver(id int64) ([]WhiteWaterPointWithRiverT
 
 func (this whiteWaterStorage) ListByRiverAndTitle(riverId int64, title string) ([]WhiteWaterPointWithRiverTitle, error) {
 	return this.list(this.listByRiverAndTitleQuery, riverId, title)
+}
+
+func (this whiteWaterStorage) Find(id int64) (WhiteWaterPointWithRiverTitle, error) {
+	found, err := this.list(this.byIdQuery, id)
+	if err != nil {
+		return WhiteWaterPointWithRiverTitle{}, err
+	}
+	if len(found) == 0 {
+		return WhiteWaterPointWithRiverTitle{}, fmt.Errorf("River with id %d not found", id)
+	}
+	return found[0], nil
 }
 
 func (this whiteWaterStorage) list(query string, vars ...interface{}) ([]WhiteWaterPointWithRiverTitle, error) {
@@ -105,17 +121,14 @@ func (this whiteWaterStorage) listWithPath(query string, vars ...interface{}) ([
 func scanWwPoint(rows *sql.Rows, additionalVars ...interface{}) (WhiteWaterPoint, error) {
 	var err error
 	id := int64(-1)
-	osmId := sql.NullInt64{}
-	_type := ""
 	title := ""
-	comment := ""
 	pointStr := ""
 	categoryStr := ""
 	shortDesc := sql.NullString{}
 	link := sql.NullString{}
 	riverId := sql.NullInt64{}
 
-	fields := append([]interface{}{&id, &osmId, &_type, &title, &comment, &pointStr, &categoryStr, &shortDesc, &link, &riverId}, additionalVars...)
+	fields := append([]interface{}{&id, &title, &pointStr, &categoryStr, &shortDesc, &link, &riverId}, additionalVars...)
 	err = rows.Scan(fields...)
 	if err != nil {
 		log.Errorf("Can not read from db: %v", err)
@@ -141,12 +154,9 @@ func scanWwPoint(rows *sql.Rows, additionalVars ...interface{}) (WhiteWaterPoint
 
 	return WhiteWaterPoint{
 		Id:id,
-		OsmId:getOrElse(osmId, -1),
 		RiverId:getOrElse(riverId, -1),
 		Title: title,
-		Type: _type,
 		Point: pgPoint.Coordinates,
-		Comment: comment,
 		Category: category,
 		ShortDesc: shortDesc.String,
 		Link: link.String,
@@ -154,11 +164,20 @@ func scanWwPoint(rows *sql.Rows, additionalVars ...interface{}) (WhiteWaterPoint
 }
 
 func (this whiteWaterStorage) AddWhiteWaterPoints(whiteWaterPoints ...WhiteWaterPoint) error {
+	return this.update(this.insertQuery, whiteWaterPoints...)
+}
+
+func (this whiteWaterStorage) UpdateWhiteWaterPoints(whiteWaterPoints ...WhiteWaterPoint) error {
+	return this.update(this.updateQuery, whiteWaterPoints...)
+}
+
+func (this whiteWaterStorage) update(query string, whiteWaterPoints ...WhiteWaterPoint) error {
+	fmt.Println(query)
 	vars := make([]interface{}, len(whiteWaterPoints))
 	for i, p := range whiteWaterPoints {
 		vars[i] = p
 	}
-	return this.performUpdates(this.insertQuery,
+	return this.performUpdates(query,
 		func(entity interface{}) ([]interface{}, error) {
 			wwp := entity.(WhiteWaterPoint)
 			pathBytes, err := json.Marshal(geo.NewGeoPoint(wwp.Point))
@@ -169,7 +188,9 @@ func (this whiteWaterStorage) AddWhiteWaterPoints(whiteWaterPoints ...WhiteWater
 			if err != nil {
 				return nil, err
 			}
-			return []interface{}{wwp.OsmId, wwp.Title, wwp.Type, cat, wwp.Comment, string(pathBytes), wwp.ShortDesc, wwp.Link, nullIf0(wwp.RiverId)}, nil
+			params := []interface{}{nullIf0(wwp.Id), wwp.Title, cat, string(pathBytes), wwp.ShortDesc, wwp.Link, nullIf0(wwp.RiverId)}
+			fmt.Println(params)
+			return params, nil
 		}, vars...)
 }
 

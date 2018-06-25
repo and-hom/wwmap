@@ -53,6 +53,14 @@ function getSpots(riverId) {
     return doGetJsonSync(apiBase + "/river/" + riverId + "/spots")
 }
 
+function getSpot(spotId) {
+    return doGetJsonSync(apiBase + "/spot/" + spotId)
+}
+
+function saveSpot(spot) {
+    return doPostJsonSync(apiBase + "/spot/" + spot.id, spot, true)
+}
+
 function getAllRegions() {
     return doGetJsonSync(apiBase + "/region")
 }

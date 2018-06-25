@@ -32,6 +32,7 @@ ul {
 
 .spot-desc {
     width: 100%;
+    vertical-align: top;
 }
 
 .spot-desc .cell-title {

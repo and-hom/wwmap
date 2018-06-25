@@ -149,13 +149,6 @@ type RiverTitle struct {
 	Aliases  []string `json:"aliases"`
 }
 
-type RiverTitleWithRegion struct {
-	Id      int64 `json:"id"`
-	Title   string `json:"title"`
-	Aliases []string `json:"aliases"`
-	Region  Region `json:"region"`
-}
-
 type WaterWay struct {
 	Id      int64 `json:"id"`
 	OsmId   int64 `json:"osm_id"`
@@ -168,14 +161,14 @@ type WaterWay struct {
 
 type WhiteWaterPoint struct {
 	Id        int64 `json:"id"`
-	OsmId     int64 `json:"osm_id,string"`
+	OsmId     int64 `json:"-"`
 	RiverId   int64 `json:"river_id"`
-	Type      string `json:"type"`
+	Type      string `json:"-"`
 	Category  model.SportCategory `json:"category"`
 	Point     Point `json:"point"`
 	Title     string `json:"title"`
 	Link      string `json:"link"`
-	Comment   string `json:"comment"`
+	Comment   string `json:"-"`
 	ShortDesc string `json:"short_description"`
 }
 

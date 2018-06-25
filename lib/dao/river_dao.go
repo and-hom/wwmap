@@ -50,7 +50,7 @@ func (this riverStorage) ListRiversWithBounds(bbox geo.Bbox, limit int) ([]River
 	return this.listRiverTitles(this.insideBoundsQuery, bbox.X1, bbox.Y1, bbox.X2, bbox.Y2, limit)
 }
 
-func (this riverStorage) RiverById(id int64) (RiverTitle, error) {
+func (this riverStorage) Find(id int64) (RiverTitle, error) {
 	found, err := this.listRiverTitles(this.byIdQuery, id)
 	if err != nil {
 		return RiverTitle{}, err

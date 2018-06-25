@@ -40,7 +40,7 @@ type Storage interface {
 
 type RiverDao interface {
 	NearestRivers(point Point, limit int) ([]RiverTitle, error)
-	RiverById(id int64) (RiverTitle, error)
+	Find(id int64) (RiverTitle, error)
 	ListRiversWithBounds(bbox Bbox, limit int) ([]RiverTitle, error)
 	FindTitles(titles []string) ([]RiverTitle, error)
 	ListByCountry(countryId int64) ([]RiverTitle, error)
@@ -50,6 +50,8 @@ type RiverDao interface {
 
 type WhiteWaterDao interface {
 	AddWhiteWaterPoints(whiteWaterPoint ...WhiteWaterPoint) error
+	UpdateWhiteWaterPoints(whiteWaterPoints ...WhiteWaterPoint) error
+	Find(id int64) (WhiteWaterPointWithRiverTitle, error)
 	ListWithPath() ([]WhiteWaterPointWithPath, error)
 	ListByBbox(bbox Bbox) ([]WhiteWaterPointWithRiverTitle, error)
 	ListByRiver(riverId int64) ([]WhiteWaterPointWithRiverTitle, error)
