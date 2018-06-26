@@ -1,7 +1,5 @@
     ymaps.ready(init);
     var myMap;
-    var trackHighlighter = {val:null};
-    var pointHighlighter = {val:null};
 
     function loadRivers(bounds) {
         if ($('#riversMenuTemplate').length==0 || $("#rivers").length==0) {

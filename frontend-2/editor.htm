@@ -9,6 +9,8 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <script type="text/javascript" src="js/editor.js"></script>
     <script type="text/javascript" src="js/auth.js"></script>
+    <script type="text/javascript" src="https://api-maps.yandex.ru/2.1/?lang=ru_RU"></script>
+    <script type="text/javascript" src="js/map-common.js"></script>
 </head>
 <body>
 
@@ -34,11 +36,11 @@
             </div>
             <div id="editor-pane" class="col-9" style="bgcolor:red">
                 <div>
-                    <river-editor v-bind:visible="riverditorstate.visible" v-bind:river="riverditorstate.river"
+                    <river-editor v-if="riverditorstate.visible" v-bind:river="riverditorstate.river"
                                   v-bind:reports="riverditorstate.reports"/>
                 </div>
                 <div>
-                    <spot-editor v-bind:visible="spoteditorstate.visible" v-bind:spot="spoteditorstate.spot"/>
+                    <spot-editor v-if="spoteditorstate.visible" v-bind:spot="spoteditorstate.spot"/>
                 </div>
             </div>
         </div>
@@ -189,7 +191,7 @@
 
 <!--Spot editor component-->
 <div id="spotEditor-template" style="display:none">
-    <div v-if="visible">
+    <div>
         <transition name="fade">
             <div class="alert alert-danger" role="alert" v-if="errMsg">
                 {{errMsg}}
@@ -209,6 +211,7 @@
             </div>
             <div>
                 <strong>Расположение: </strong>
+                <div id="map" style="width: 600px; height: 400px"></div>
             </div>
             <div>
                 <strong>Категория сложности: </strong><a target="_blank" href="https://huskytm.ru/rules2018-2019/#categories_tab"><img src="img/question_16.png"></a>
@@ -298,8 +301,8 @@
                 <tr>
                     <td class="cell-title" colspan="2">Подход/выход</td>
                     <td rowspan="4">
-                        Координаты:<br/>Широта:&nbsp;{{ spot.point[1] }}
-                        <br/>Долгота:&nbsp;{{ spot.point[0] }}
+                        Координаты:<br/>Широта:&nbsp;{{ spot.point[0] }}
+                        <br/>Долгота:&nbsp;{{ spot.point[1] }}
                         <br/>
                         <br/>
                         К.с. нв/св/вв:&nbsp;{{ spot.lw_category }}/{{ spot.mw_category }}/{{ spot.hw_category }}
@@ -327,12 +330,14 @@
 
 <script type="text/javascript">
     Vue.component('spot-editor', {
-        props: ['spot', "visible"],
+        props: ['spot'],
         template: document.getElementById('spotEditor-template').innerHTML,
         data:function() {
             return {
                 // for editor
                 userInfo: getAuthorizedUserInfoOrNull(),
+                map: null,
+                label: null,
                 canEdit: function(){
                  return this.userInfo!=null && this.userInfo.roles.includes("ADMIN")
                 },
@@ -365,6 +370,63 @@
                 all_categories:all_categories,
             }
         },
+        updated: function() {
+                if (this.editMode) {
+                    var component = this
+                    ymaps.ready(function() {
+                        if (component.map) {
+                            component.map.destroy()
+                            component.label.geometry.setCoordinates(component.spot.point);
+                        } else {
+                            addCachedLayer('osm#standard', 'OSM', 'OpenStreetMap contributors, CC-BY-SA', 'osm')
+                            addLayer('google#satellite', 'Спутник Google', 'Изображения © DigitalGlobe,CNES / Airbus, 2018,Картографические данные © Google, 2018', GOOGLE_SAT_TILES)
+                            addCachedLayer('ggc#standard', 'Топографическая карта', '', 'ggc', 0, 15)
+                        }
+
+                        var myMap = new ymaps.Map("map", {
+                            center: component.spot.point,
+                            zoom: 12,
+                            controls: ["zoomControl"],
+                            type: "osm#standard",
+                        });
+                        myMap.controls.add(
+                            new ymaps.control.TypeSelector([
+                                'osm#standard',
+                                'ggc#standard',
+                                'yandex#satellite',
+                                'google#satellite',
+                            ])
+                        );
+
+                        var label = new ymaps.GeoObject({
+                                geometry: {
+                                    type: "Point",
+                                    coordinates: component.spot.point
+                                },
+                                properties: {
+                                }
+                            }, {
+                                preset: 'islands#blueIcon',
+                                draggable: true
+                            })
+
+                        myMap.geoObjects.add(label)
+                        label.events.add('dragend', function (e) {
+                            component.spot.point = label.geometry.getCoordinates()
+                        });
+
+                        myMap.events.add('click', function (e) {
+                            p = e.get('coords')
+                            label.geometry.setCoordinates(p)
+                            component.spot.point = p
+                        });
+                        component.label = label
+                        component.map = myMap
+
+                    })
+
+                }
+        },
     });
 </script>
 <!--End of spot editor component-->
@@ -372,7 +434,7 @@
 
 <!--river editor component-->
 <div id="river-editor-template" style="display:none">
-    <div v-if="visible">
+    <div>
         <transition name="fade">
             <div class="alert alert-danger" role="alert" v-if="errMsg">
                 {{errMsg}}
@@ -422,7 +484,7 @@
 
 <script type="text/javascript">
     Vue.component('river-editor', {
-        props: ['river', 'reports', 'visible'],
+        props: ['river', 'reports'],
         template: document.getElementById('river-editor-template').innerHTML,
         data:function() {
             return {
@@ -465,13 +527,6 @@
             }
         }
     });
-
-
-
-
-
-
-
 </script>
 <!--End of river editor component-->
 
@@ -502,26 +557,7 @@
 <!--End of auth component-->
 
 <script type="text/javascript">
-    var all_categories = [
-        {id:"-1", title:"Непроход."},
-        {id:"0", title:"Неизестно"},
-        {id:"1", title:"1"},
-        {id:"2", title:"2"},
-        {id:"3", title:"3"},
-        {id:"4", title:"4"},
-        {id:"4a", title:"   4a"},
-        {id:"4b", title:"   4b"},
-        {id:"4c", title:"   4c"},
-        {id:"5", title:"5"},
-        {id:"5a", title:"   5a"},
-        {id:"5b", title:"   5b"},
-        {id:"5c", title:"   5c"},
-        {id:"6", title:"6"},
-        {id:"6a", title:"   6a"},
-        {id:"6b", title:"   6b"},
-        {id:"6c", title:"   6c"},
-    ]
-    
+
     var app = new Vue({
         el: '#wwmap',
         data: {
