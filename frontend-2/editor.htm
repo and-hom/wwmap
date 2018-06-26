@@ -397,6 +397,14 @@
                                 'google#satellite',
                             ])
                         );
+                        var objectManager = new ymaps.RemoteObjectManager(apiBase + '/ymaps-tile-ww?bbox=%b&zoom=%z&skip=' + component.spot.id, {
+                            clusterHasBalloon: false,
+                            geoObjectOpenBalloonOnClick: false,
+                            geoObjectStrokeWidth: 3,
+                            splitRequests: true,
+                            clusterHasBalloon: false,
+                        });
+                        myMap.geoObjects.add(objectManager);
 
                         var label = new ymaps.GeoObject({
                                 geometry: {
@@ -404,6 +412,7 @@
                                     coordinates: component.spot.point
                                 },
                                 properties: {
+                                    hintContent: component.spot.title,
                                 }
                             }, {
                                 preset: 'islands#blueIcon',
