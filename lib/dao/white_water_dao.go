@@ -23,6 +23,7 @@ func NewWhiteWaterPostgresDao(postgresStorage PostgresStorage) WhiteWaterDao {
 		byIdQuery: queries.SqlQuery("white-water", "by-id"),
 		byIdFullQuery: queries.SqlQuery("white-water", "by-id-full"),
 		updateFullQuery: queries.SqlQuery("white-water", "update-full"),
+		deleteQuery: queries.SqlQuery("white-water", "delete"),
 	}
 }
 
@@ -37,6 +38,7 @@ type whiteWaterStorage struct {
 	byIdQuery                string
 	byIdFullQuery            string
 	updateFullQuery          string
+	deleteQuery          string
 }
 
 func (this whiteWaterStorage) ListWithPath() ([]WhiteWaterPointWithPath, error) {
@@ -299,5 +301,10 @@ func (this whiteWaterStorage) update(query string, whiteWaterPoints ...WhiteWate
 			fmt.Println(params)
 			return params, nil
 		}, vars...)
+}
+
+func (this whiteWaterStorage) Remove(id int64) error {
+	log.Infof("Remove spot %d", id)
+	return this.performUpdates(this.deleteQuery, idMapper, id)
 }
 

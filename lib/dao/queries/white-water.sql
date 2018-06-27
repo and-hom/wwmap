@@ -110,3 +110,6 @@ UPDATE white_water_rapid SET title=$2,category=$3, point=ST_GeomFromGeoJSON($4),
     orient=$14, approach=$15, safety=$16,
     preview=$17
     WHERE id=$1
+
+--@delete
+DELETE FROM white_water_rapid WHERE id=$1

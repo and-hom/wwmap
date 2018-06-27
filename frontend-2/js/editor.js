@@ -30,6 +30,20 @@ function doGetJsonSync(url) {
     return null
 }
 
+function doDeleteJsonSync(url, auth) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('DELETE', url, false);
+    if (auth) {
+        xhr.setRequestHeader("Authorization", "Token " + getToken());
+    }
+    try {
+        xhr.send();
+    } catch (err) {
+        return false
+    }
+    return (xhr.status == 200)
+}
+
 function doPostJsonSync(url, value, auth) {
     var xhr = new XMLHttpRequest();
     xhr.open('POST', url, false);
@@ -61,10 +75,6 @@ function getRiversByRegion(countryId, regionId) {
     return doGetJsonSync(apiBase + "/country/" + countryId + "/region/" + regionId + "/river")
 }
 
-function getRiver(riverId) {
-    return doGetJsonSync(apiBase + "/river/" + riverId)
-}
-
 function getReports(riverId) {
     return doGetJsonSync(apiBase + "/river/" + riverId + "/reports")
 }
@@ -81,10 +91,23 @@ function saveSpot(spot) {
     return doPostJsonSync(apiBase + "/spot/" + spot.id, spot, true)
 }
 
+function removeSpot(id) {
+    return doDeleteJsonSync(apiBase + "/spot/" + id, true)
+}
+
 function getAllRegions() {
     return doGetJsonSync(apiBase + "/region")
 }
 
+
+function getRiver(riverId) {
+    return doGetJsonSync(apiBase + "/river/" + riverId)
+}
+
 function saveRiver(river) {
     return doPostJsonSync(apiBase + "/river/" + river.id, river, true)
+}
+
+function removeRiver(id) {
+    return doDeleteJsonSync(apiBase + "/river/" + id, true)
 }

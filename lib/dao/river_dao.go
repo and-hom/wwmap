@@ -20,18 +20,26 @@ func NewRiverPostgresDao(postgresStorage PostgresStorage) RiverDao {
 		listByCountryQuery:queries.SqlQuery("river", "by-country"),
 		listByRegionQuery:queries.SqlQuery("river", "by-region"),
 		updateQuery:queries.SqlQuery("river", "update"),
+		fixLinkedWaterWaysQuery:queries.SqlQuery("river", "fix-linked-waterways"),
+		deleteLinkedWwptsQuery:queries.SqlQuery("river", "delete-linked-wwpts"),
+		deleteLinkedReportsQuery:queries.SqlQuery("river", "delete-linked-reports"),
+		deleteQuery:queries.SqlQuery("river", "delete"),
 	}
 }
 
 type riverStorage struct {
 	PostgresStorage
-	findByTagsQuery    string
-	nearestQuery       string
-	insideBoundsQuery  string
-	byIdQuery          string
-	listByCountryQuery string
-	listByRegionQuery  string
-	updateQuery  string
+	findByTagsQuery          string
+	nearestQuery             string
+	insideBoundsQuery        string
+	byIdQuery                string
+	listByCountryQuery       string
+	listByRegionQuery        string
+	updateQuery              string
+	fixLinkedWaterWaysQuery  string
+	deleteLinkedWwptsQuery   string
+	deleteLinkedReportsQuery string
+	deleteQuery              string
 }
 
 func (this riverStorage) FindTitles(titles []string) ([]RiverTitle, error) {
@@ -70,10 +78,10 @@ func (this riverStorage) ListByRegion(regionId int64) ([]RiverTitle, error) {
 }
 
 func (this riverStorage) Save(river RiverTitle) error {
-	return this.performUpdates(this.updateQuery, func(entity interface{}) ([]interface{}, error){
+	return this.performUpdates(this.updateQuery, func(entity interface{}) ([]interface{}, error) {
 		_river := entity.(RiverTitle)
 		aliasesB, err := json.Marshal(_river.Aliases)
-		if err!=nil {
+		if err != nil {
 			return []interface{}{}, err
 		}
 		return []interface{}{_river.RegionId, _river.Title, string(aliasesB), _river.Id}, nil
@@ -138,4 +146,21 @@ func (this riverStorage) listRiverTitles(query string, queryParams ...interface{
 		return []RiverTitle{}, err
 	}
 	return result.([]RiverTitle), nil
+}
+
+func (this riverStorage) Remove(id int64) error {
+	log.Infof("Remove river %d", id)
+	tx, err := this.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Close();
+
+	for _, q :=range []string{this.fixLinkedWaterWaysQuery, this.deleteLinkedWwptsQuery, this.deleteLinkedReportsQuery, this.deleteQuery} {
+		err = tx.performUpdates(q, idMapper, id)
+		if err != nil {
+			return err
+		}
+	}
+	return tx.Commit()
 }

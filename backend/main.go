@@ -122,6 +122,7 @@ func main() {
 	r.HandleFunc("/river/{riverId}", geoHierarchyHandler.CorsGetOptionsStub).Methods("OPTIONS")
 	r.HandleFunc("/river/{riverId}", geoHierarchyHandler.GetRiver).Methods("GET")
 	r.HandleFunc("/river/{riverId}", geoHierarchyHandler.SaveRiver).Methods("POST", "PUT")
+	r.HandleFunc("/river/{riverId}", geoHierarchyHandler.RemoveRiver).Methods("DELETE")
 	r.HandleFunc("/river/{riverId}/reports", geoHierarchyHandler.CorsGetOptionsStub).Methods("OPTIONS")
 	r.HandleFunc("/river/{riverId}/reports", geoHierarchyHandler.ListRiverReports).Methods("GET")
 	r.HandleFunc("/river/{riverId}/spots", geoHierarchyHandler.CorsGetOptionsStub).Methods("OPTIONS")
@@ -131,6 +132,7 @@ func main() {
 	r.HandleFunc("/spot/{spotId}", geoHierarchyHandler.CorsGetOptionsStub).Methods("OPTIONS")
 	r.HandleFunc("/spot/{spotId}", geoHierarchyHandler.GetSpot).Methods("GET")
 	r.HandleFunc("/spot/{spotId}", geoHierarchyHandler.SaveSpot).Methods("POST", "PUT")
+	r.HandleFunc("/spot/{spotId}", geoHierarchyHandler.RemoveSpot).Methods("DELETE")
 
 	log.Infof("Starting http server on %s", configuration.Api.BindTo)
 	http.Handle("/", r)

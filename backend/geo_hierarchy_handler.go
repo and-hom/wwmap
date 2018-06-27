@@ -218,7 +218,6 @@ func (this *GeoHierarchyHandler) SaveRiver(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-
 	bodyBytes, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		OnError500(w, err, "Can not read request body")
@@ -246,6 +245,27 @@ func (this *GeoHierarchyHandler) SaveRiver(w http.ResponseWriter, r *http.Reques
 	}
 
 	this.writeRiver(river.Id, w)
+}
+
+func (this *GeoHierarchyHandler) RemoveRiver(w http.ResponseWriter, r *http.Request) {
+	CorsHeaders(w, "GET, OPTIONS, POST, DELETE")
+	JsonResponse(w)
+	if !this.CheckRoleAllowedAndMakeResponse(w, r, dao.ADMIN) {
+		return
+	}
+
+	pathParams := mux.Vars(r)
+	riverId, err := strconv.ParseInt(pathParams["riverId"], 10, 64)
+	if err != nil {
+		OnError(w, err, "Can not parse id", http.StatusBadRequest)
+		return
+	}
+
+	err = this.riverDao.Remove(riverId)
+	if err != nil {
+		OnError500(w, err, fmt.Sprintf("Can not remove river by id: %d", riverId))
+		return
+	}
 }
 
 func (this *GeoHierarchyHandler) writeRiver(riverId int64, w http.ResponseWriter) {
@@ -297,7 +317,6 @@ func (this *GeoHierarchyHandler) SaveSpot(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-
 	bodyBytes, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		OnError500(w, err, "Can not read request body")
@@ -317,6 +336,27 @@ func (this *GeoHierarchyHandler) SaveSpot(w http.ResponseWriter, r *http.Request
 	}
 
 	this.writeSpot(spot.Id, w)
+}
+
+func (this *GeoHierarchyHandler) RemoveSpot(w http.ResponseWriter, r *http.Request) {
+	CorsHeaders(w, "GET, OPTIONS, POST, DELETE")
+	JsonResponse(w)
+	if !this.CheckRoleAllowedAndMakeResponse(w, r, dao.ADMIN) {
+		return
+	}
+
+	pathParams := mux.Vars(r)
+	spotId, err := strconv.ParseInt(pathParams["spotId"], 10, 64)
+	if err != nil {
+		OnError(w, err, "Can not parse id", http.StatusBadRequest)
+		return
+	}
+
+	err = this.whiteWaterDao.Remove(spotId)
+	if err != nil {
+		OnError500(w, err, fmt.Sprintf("Can not remove spot by id: %d", spotId))
+		return
+	}
 }
 
 func (this *GeoHierarchyHandler) writeSpot(spotId int64, w http.ResponseWriter) {
