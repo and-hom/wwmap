@@ -45,6 +45,7 @@ type RiverDao interface {
 	FindTitles(titles []string) ([]RiverTitle, error)
 	ListByCountry(countryId int64) ([]RiverTitle, error)
 	ListByRegion(regionId int64) ([]RiverTitle, error)
+	ListByFirstLetters(query string, limit int) ([]RiverTitle, error)
 	Save(river RiverTitle) error
 	Remove(id int64) error
 }

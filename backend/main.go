@@ -26,6 +26,7 @@ type App struct {
 }
 
 func main() {
+	log.SetLevel(log.DebugLevel)
 	log.Infof("Starting wwmap")
 
 	configuration := config.Load("")
@@ -69,7 +70,7 @@ func main() {
 	reportHandler := ReportHandler{handler}
 	pictureHandler := PictureHandler{handler}
 	userInfoHandler := UserInfoHandler{handler}
-	geoHierarchyHandler := GeoHierarchyHandler{handler}
+	geoHierarchyHandler := GeoHierarchyHandler{Handler: handler}
 
 	r := mux.NewRouter()
 	r.HandleFunc("/ymaps-tile", handler.TileHandler)
@@ -119,6 +120,8 @@ func main() {
 	r.HandleFunc("/country/{countryId}/region/{regionId}/river", geoHierarchyHandler.ListRegionRivers).Methods("GET")
 	r.HandleFunc("/country/{countryId}/river", geoHierarchyHandler.CorsGetOptionsStub).Methods("OPTIONS")
 	r.HandleFunc("/country/{countryId}/river", geoHierarchyHandler.ListCountryRivers).Methods("GET")
+	r.HandleFunc("/river", geoHierarchyHandler.CorsGetOptionsStub).Methods("OPTIONS")
+	r.HandleFunc("/river", geoHierarchyHandler.FilterRivers).Methods("GET")
 	r.HandleFunc("/river/{riverId}", geoHierarchyHandler.CorsGetOptionsStub).Methods("OPTIONS")
 	r.HandleFunc("/river/{riverId}", geoHierarchyHandler.GetRiver).Methods("GET")
 	r.HandleFunc("/river/{riverId}", geoHierarchyHandler.SaveRiver).Methods("POST", "PUT")

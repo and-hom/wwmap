@@ -37,7 +37,6 @@ func CreateApp() App {
 }
 
 func main() {
-	log.SetLevel(log.DebugLevel)
 	log.Infof("Starting wwmap")
 	app := CreateApp()
 	app.DoSyncReports()

@@ -19,6 +19,7 @@ func NewRiverPostgresDao(postgresStorage PostgresStorage) RiverDao {
 		byIdQuery:queries.SqlQuery("river", "by-id"),
 		listByCountryQuery:queries.SqlQuery("river", "by-country"),
 		listByRegionQuery:queries.SqlQuery("river", "by-region"),
+		listByFirstLettersQuery:queries.SqlQuery("river", "by-first-letters"),
 		updateQuery:queries.SqlQuery("river", "update"),
 		fixLinkedWaterWaysQuery:queries.SqlQuery("river", "fix-linked-waterways"),
 		deleteLinkedWwptsQuery:queries.SqlQuery("river", "delete-linked-wwpts"),
@@ -35,6 +36,7 @@ type riverStorage struct {
 	byIdQuery                string
 	listByCountryQuery       string
 	listByRegionQuery        string
+	listByFirstLettersQuery        string
 	updateQuery              string
 	fixLinkedWaterWaysQuery  string
 	deleteLinkedWwptsQuery   string
@@ -75,6 +77,10 @@ func (this riverStorage) ListByCountry(countryId int64) ([]RiverTitle, error) {
 
 func (this riverStorage) ListByRegion(regionId int64) ([]RiverTitle, error) {
 	return this.listRiverTitles(this.listByRegionQuery, regionId)
+}
+
+func (this riverStorage) ListByFirstLetters(query string, limit int) ([]RiverTitle, error) {
+	return this.listRiverTitles(this.listByFirstLettersQuery, query, limit)
 }
 
 func (this riverStorage) Save(river RiverTitle) error {

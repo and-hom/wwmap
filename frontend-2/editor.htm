@@ -8,6 +8,7 @@
     <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
     <script type="text/javascript" src="js/bootstrap.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/vue-select@2.4.0/dist/vue-select.js"></script>
     <script type="text/javascript" src="js/editor.js"></script>
     <script type="text/javascript" src="js/auth.js"></script>
     <script type="text/javascript" src="https://api-maps.yandex.ru/2.1/?lang=ru_RU"></script>
@@ -217,6 +218,24 @@
                 <input v-model.trim="spot.title" style="display:block"/>
             </div>
             <div>
+                <strong>Река: </strong>
+                <v-select v-model="spot.river" label="name" :filterable="false" :options="options" @search="onSearch">
+                    <template slot="no-options">
+                        Начните печатать название реки
+                    </template>
+                    <template slot="option" slot-scope="option">
+                        <div class="d-center">
+                            {{ option.title }}
+                        </div>
+                    </template>
+                    <template slot="selected-option" scope="option">
+                        <div class="selected d-center">
+                            {{ option.title }}
+                        </div>
+                    </template>
+                </v-select>
+            </div>
+            <div>
                 <strong>Расположение: </strong>
                 <div id="map" style="width: 600px; height: 400px"></div>
             </div>
@@ -339,6 +358,21 @@
     Vue.component('spot-editor', {
         props: ['spot'],
         template: document.getElementById('spotEditor-template').innerHTML,
+
+        methods: {
+            onSearch: function(search, loading) {
+                loading(true);
+                var component = this
+                fetch(
+                  `${apiBase}/river?q=${search}`
+                ).then(res => {
+                    res.json().then(function(json){
+                        component.options = json
+                    });
+                    loading(false);
+                });
+            },
+        },
         data:function() {
             return {
                 // for editor
@@ -382,6 +416,8 @@
                 },
                 // end of editor
                 all_categories:all_categories,
+
+                options: [getRiver(this.spot.river.id)],
             }
         },
         updated: function() {
@@ -620,7 +656,7 @@
 <!--End of modal dialog component-->
 
 <script type="text/javascript">
-
+    Vue.component('v-select', VueSelect.VueSelect)
     var app = new Vue({
         el: '#wwmap',
         data: {

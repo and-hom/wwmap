@@ -7,13 +7,15 @@ import (
 	"github.com/gorilla/mux"
 	"strconv"
 	"fmt"
-	"github.com/Sirupsen/logrus"
+	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/lib/dao"
 	"io/ioutil"
+	"github.com/and-hom/wwmap/lib/util"
 )
 
 type GeoHierarchyHandler struct {
 	Handler
+	regions map[int64]dao.Region
 }
 
 type RiverDto struct {
@@ -21,6 +23,26 @@ type RiverDto struct {
 	Title   string `json:"title"`
 	Aliases []string `json:"aliases"`
 	Region  dao.Region `json:"region"`
+}
+
+func (this *GeoHierarchyHandler) getRegion(id int64) dao.Region {
+	if this.regions == nil {
+		this.regions = make(map[int64]dao.Region)
+	}
+
+	region, found := this.regions[id]
+	if found {
+		return region
+	} else {
+		log.Debugf("Region id=%d not found in cache. Select.", id)
+		region, err := this.regionDao.Get(id)
+		if err != nil {
+			log.Errorf("Can not get region by id :", id, err)
+			return dao.Region{Id:0, CountryId:0, Title:"-"}
+		}
+		this.regions[id] = region
+		return region
+	}
 }
 
 func (this *GeoHierarchyHandler) ListCountries(w http.ResponseWriter, r *http.Request) {
@@ -153,7 +175,7 @@ func (this *GeoHierarchyHandler) ListRiverReports(w http.ResponseWriter, r *http
 		groupLimit64, err := strconv.ParseInt(limitByGroupStr, 10, 32)
 		groupLimit = int(groupLimit64)
 		if err != nil {
-			logrus.Warn("Can not parse limit-by-group parameter: ", limitByGroupStr, err)
+			log.Warn("Can not parse limit-by-group parameter: ", limitByGroupStr, err)
 			groupLimit = DEFAULT_REPORT_GROUP_LIMIT
 		}
 	}
@@ -290,6 +312,39 @@ func (this *GeoHierarchyHandler) writeRiver(riverId int64, w http.ResponseWriter
 	bytes, err := json.Marshal(riverWithRegion)
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not serialize river %d", riverId))
+		return
+	}
+
+	w.Write(bytes)
+}
+
+func (this *GeoHierarchyHandler) FilterRivers(w http.ResponseWriter, r *http.Request) {
+	CorsHeaders(w, "GET, OPTIONS")
+	JsonResponse(w)
+
+	limit := 20
+
+	query := util.FirstOr(r.URL.Query()["q"], "")
+
+	rivers, err := this.riverDao.ListByFirstLetters(query, limit)
+	if err != nil {
+		OnError500(w, err, "Can not fetch rivers for query" + query)
+		return
+	}
+
+	dtos := make([]RiverDto, len(rivers))
+	for i := 0; i < len(rivers); i++ {
+		river := &(rivers[i])
+		dtos[i] = RiverDto{
+			Id:river.Id,
+			Title:river.Title,
+			Aliases:river.Aliases,
+			Region:this.getRegion(river.RegionId),
+		}
+	}
+	bytes, err := json.Marshal(dtos)
+	if err != nil {
+		OnError500(w, err, fmt.Sprintf("Can not serialize rivers: %v", dtos))
 		return
 	}
 
