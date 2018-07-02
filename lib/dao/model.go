@@ -6,6 +6,7 @@ import (
 	"math"
 	. "github.com/and-hom/wwmap/lib/geo"
 	"github.com/and-hom/wwmap/lib/model"
+	"bytes"
 )
 
 type JSONTime time.Time
@@ -33,6 +34,11 @@ func ParseEventPointType(s string) (EventPointType, error) {
 		}
 	}
 	return "", fmt.Errorf("Unsupported point type %s", s)
+}
+
+type IdTitle struct {
+	Id    int64 `json:"id"`
+	Title string `json:"title"`
 }
 
 type EventPoint struct {
@@ -140,19 +146,11 @@ type ExtDataTrack struct {
 }
 
 type RiverTitle struct {
-	Id       int64 `json:"id"`
+	IdTitle
 	OsmId    int64 `json:"osm_id"`
 	RegionId int64 `json:"region_id"`
-	Title    string `json:"title"`
 	Bounds   Bbox `json:"bounds"`
 	Aliases  []string `json:"aliases"`
-}
-
-type RiverTitleWithRegion struct {
-	Id      int64 `json:"id"`
-	Title   string `json:"title"`
-	Aliases []string `json:"aliases"`
-	Region  Region `json:"region"`
 }
 
 type WaterWay struct {
@@ -166,16 +164,32 @@ type WaterWay struct {
 }
 
 type WhiteWaterPoint struct {
-	Id        int64 `json:"id"`
-	OsmId     int64 `json:"osm_id,string"`
+	IdTitle
+	OsmId     int64 `json:"-"`
 	RiverId   int64 `json:"river_id"`
-	Type      string `json:"type"`
+	Type      string `json:"-"`
 	Category  model.SportCategory `json:"category"`
 	Point     Point `json:"point"`
-	Title     string `json:"title"`
 	Link      string `json:"link"`
-	Comment   string `json:"comment"`
+	Comment   string `json:"-"`
 	ShortDesc string `json:"short_description"`
+}
+
+type WhiteWaterPointFull struct {
+	WhiteWaterPoint
+	LowWaterCategory       model.SportCategory `json:"lw_category"`
+	LowWaterDescription    string `json:"lw_description"`
+	MediumWaterCategory    model.SportCategory `json:"mw_category"`
+	MediumWaterDescription string `json:"mw_description"`
+	HighWaterCategory      model.SportCategory `json:"hw_category"`
+	HighWaterDescription   string `json:"hw_description"`
+
+	Orient                 string `json:"orient"`
+	Approach               string `json:"approach"`
+	Safety                 string `json:"safety"`
+
+	Preview                string `json:"preview"`
+	River                  IdTitle `json:"river"`
 }
 
 type WhiteWaterPointWithRiverTitle struct {
@@ -187,15 +201,6 @@ type WhiteWaterPointWithRiverTitle struct {
 type WhiteWaterPointWithPath struct {
 	WhiteWaterPoint
 	Path []string
-}
-
-type WaterWayTmp struct {
-	Id            int64 `json:"id"`
-	Title         string `json:"title"`
-	Type          string `json:"type"`
-	ParentId      int64 `json:"parentId"`
-	Comment       string `json:"comment"`
-	PathPointRefs []int64 `json:"path_point_refs"`
 }
 
 type PointRef struct {
@@ -261,6 +266,23 @@ type Role string
 const ADMIN Role = "ADMIN"
 const USER Role = "USER"
 const ANONYMOUS Role = "ANON"
+
+func Join(separator string, roles ...Role) string {
+	if len(roles) == 1 {
+		return string(roles[0])
+	}
+	if len(roles) == 2 {
+		return string(roles[0]) + separator + string(roles[1])
+	}
+	var buffer bytes.Buffer
+	for i := 0; i < len(roles); i++ {
+		if i > 0 {
+			buffer.WriteString(separator)
+		}
+		buffer.WriteString(string(roles[i]))
+	}
+	return buffer.String()
+}
 
 type User struct {
 	Id       int64

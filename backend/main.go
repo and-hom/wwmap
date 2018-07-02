@@ -69,7 +69,7 @@ func main() {
 	reportHandler := ReportHandler{handler}
 	pictureHandler := PictureHandler{handler}
 	userInfoHandler := UserInfoHandler{handler}
-	geoHierarchyHandler := GeoHierarchyHandler{handler}
+	geoHierarchyHandler := GeoHierarchyHandler{Handler: handler}
 
 	r := mux.NewRouter()
 	r.HandleFunc("/ymaps-tile", handler.TileHandler)
@@ -97,7 +97,7 @@ func main() {
 
 	r.HandleFunc("/ymaps-tile-ww", whiteWaterHandler.TileWhiteWaterHandler)
 	r.HandleFunc("/whitewater", whiteWaterHandler.CorsGetOptionsStub).Methods("OPTIONS")
-	r.HandleFunc("/whitewater", whiteWaterHandler.AddWhiteWaterPoints).Methods("PUT", "POST")
+	r.HandleFunc("/whitewater", whiteWaterHandler.InsertWhiteWaterPoints).Methods("PUT", "POST")
 
 	r.HandleFunc("/nearest-rivers", riverHandler.GetNearestRivers).Methods("GET")
 	r.HandleFunc("/visible-rivers", riverHandler.GetVisibleRivers).Methods("GET")
@@ -119,15 +119,24 @@ func main() {
 	r.HandleFunc("/country/{countryId}/region/{regionId}/river", geoHierarchyHandler.ListRegionRivers).Methods("GET")
 	r.HandleFunc("/country/{countryId}/river", geoHierarchyHandler.CorsGetOptionsStub).Methods("OPTIONS")
 	r.HandleFunc("/country/{countryId}/river", geoHierarchyHandler.ListCountryRivers).Methods("GET")
+	r.HandleFunc("/region/{regionId}", geoHierarchyHandler.CorsGetOptionsStub).Methods("OPTIONS")
+	r.HandleFunc("/region/{regionId}", geoHierarchyHandler.GetRegion).Methods("GET")
+	r.HandleFunc("/river", geoHierarchyHandler.CorsGetOptionsStub).Methods("OPTIONS")
+	r.HandleFunc("/river", geoHierarchyHandler.FilterRivers).Methods("GET")
 	r.HandleFunc("/river/{riverId}", geoHierarchyHandler.CorsGetOptionsStub).Methods("OPTIONS")
 	r.HandleFunc("/river/{riverId}", geoHierarchyHandler.GetRiver).Methods("GET")
 	r.HandleFunc("/river/{riverId}", geoHierarchyHandler.SaveRiver).Methods("POST", "PUT")
+	r.HandleFunc("/river/{riverId}", geoHierarchyHandler.RemoveRiver).Methods("DELETE")
 	r.HandleFunc("/river/{riverId}/reports", geoHierarchyHandler.CorsGetOptionsStub).Methods("OPTIONS")
 	r.HandleFunc("/river/{riverId}/reports", geoHierarchyHandler.ListRiverReports).Methods("GET")
 	r.HandleFunc("/river/{riverId}/spots", geoHierarchyHandler.CorsGetOptionsStub).Methods("OPTIONS")
 	r.HandleFunc("/river/{riverId}/spots", geoHierarchyHandler.ListSpots).Methods("GET")
 	r.HandleFunc("/region", geoHierarchyHandler.CorsGetOptionsStub).Methods("OPTIONS")
 	r.HandleFunc("/region", geoHierarchyHandler.ListAllRegions).Methods("GET")
+	r.HandleFunc("/spot/{spotId}", geoHierarchyHandler.CorsGetOptionsStub).Methods("OPTIONS")
+	r.HandleFunc("/spot/{spotId}", geoHierarchyHandler.GetSpot).Methods("GET")
+	r.HandleFunc("/spot/{spotId}", geoHierarchyHandler.SaveSpot).Methods("POST", "PUT")
+	r.HandleFunc("/spot/{spotId}", geoHierarchyHandler.RemoveSpot).Methods("DELETE")
 
 	log.Infof("Starting http server on %s", configuration.Api.BindTo)
 	http.Handle("/", r)

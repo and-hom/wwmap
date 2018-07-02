@@ -32,6 +32,7 @@ ul {
 
 .spot-desc {
     width: 100%;
+    vertical-align: top;
 }
 
 .spot-desc .cell-title {
@@ -42,4 +43,42 @@ ul {
 .list-item-input {
     display: block;
     withd:400px;
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity .5s;
+}
+.fade-enter, .fade-leave-to /* .fade-leave-active до версии 2.1.8 */ {
+  opacity: 0;
+}
+
+
+.d-center {
+  display: flex;
+  align-items: center;
+}
+
+.selected img {
+  width: auto;
+  max-height: 23px;
+  margin-right: 0.5rem;
+}
+
+.v-select .dropdown li {
+  border-bottom: 1px solid rgba(112, 128, 144, 0.1);
+}
+
+.v-select .dropdown li:last-child {
+  border-bottom: none;
+}
+
+.v-select .dropdown li a {
+  padding: 10px 20px;
+  width: 100%;
+  font-size: 1.25em;
+  color: #3c3c3c;
+}
+
+.v-select .dropdown-menu .active > a {
+  color: #fff;
 }

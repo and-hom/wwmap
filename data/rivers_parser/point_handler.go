@@ -16,7 +16,7 @@ import (
 type PointHandler struct {
 	saxlike.VoidHandler
 
-	waterwayIdx        map[int64]dao.WaterWayTmp
+	waterwayIdx        map[int64]WaterWayTmp
 	waterwayReverseIdx map[int64][]int64
 	points_by_way      map[int64][]geo.Point
 	found_count_by_way map[int64]int

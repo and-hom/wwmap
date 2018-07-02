@@ -40,20 +40,29 @@ type Storage interface {
 
 type RiverDao interface {
 	NearestRivers(point Point, limit int) ([]RiverTitle, error)
-	RiverById(id int64) (RiverTitle, error)
+	Find(id int64) (RiverTitle, error)
 	ListRiversWithBounds(bbox Bbox, limit int) ([]RiverTitle, error)
 	FindTitles(titles []string) ([]RiverTitle, error)
 	ListByCountry(countryId int64) ([]RiverTitle, error)
 	ListByRegion(regionId int64) ([]RiverTitle, error)
-	Save(river RiverTitle) error
+	ListByFirstLetters(query string, limit int) ([]RiverTitle, error)
+	Insert(river RiverTitle) (int64, error)
+	Save(river ...RiverTitle) error
+	Remove(id int64) error
 }
 
 type WhiteWaterDao interface {
-	AddWhiteWaterPoints(whiteWaterPoint ...WhiteWaterPoint) error
+	InsertWhiteWaterPoints(whiteWaterPoints ...WhiteWaterPoint) error
+	InsertWhiteWaterPointFull(whiteWaterPoints WhiteWaterPointFull) (int64, error)
+	UpdateWhiteWaterPoints(whiteWaterPoints ...WhiteWaterPoint) error
+	UpdateWhiteWaterPointsFull(whiteWaterPoints ...WhiteWaterPointFull) error
+	Find(id int64) (WhiteWaterPointWithRiverTitle, error)
+	FindFull(id int64) (WhiteWaterPointFull, error)
 	ListWithPath() ([]WhiteWaterPointWithPath, error)
 	ListByBbox(bbox Bbox) ([]WhiteWaterPointWithRiverTitle, error)
 	ListByRiver(riverId int64) ([]WhiteWaterPointWithRiverTitle, error)
 	ListByRiverAndTitle(riverId int64, title string) ([]WhiteWaterPointWithRiverTitle, error)
+	Remove(id int64) error
 }
 
 type ReportDao interface {
@@ -597,7 +606,7 @@ func (this *PostgresStorage) updateReturningId(query string, mapper func(entity 
 	return result, nil
 }
 
-func (this *PostgresStorage)performUpdates(query string, mapper func(entity interface{}) ([]interface{}, error), values ...interface{}) error {
+func (this *PostgresStorage) performUpdates(query string, mapper func(entity interface{}) ([]interface{}, error), values ...interface{}) error {
 	tx, err := this.db.Begin()
 	if err != nil {
 		return err
@@ -628,9 +637,64 @@ func (this *PostgresStorage)performUpdates(query string, mapper func(entity inte
 	return tx.Commit()
 }
 
+func (this *PostgresStorage) Begin() (TxHolder, error) {
+	tx, err := this.db.Begin()
+	if err != nil {
+		return TxHolder{}, err
+	}
+	return TxHolder{PostgresStorage:*this, tx:tx}, nil
+}
+
+type TxHolder struct {
+	PostgresStorage
+	tx *sql.Tx
+	commited bool
+}
+
+func (this *TxHolder) Close() error {
+	if !this.commited {
+		return this.tx.Rollback()
+	}
+	return nil
+}
+
+func (this *TxHolder) Commit() error {
+	err := this.tx.Commit()
+	if err==nil {
+		this.commited = true
+	}
+	return err
+}
+
+func (this *TxHolder)performUpdates(query string, mapper func(entity interface{}) ([]interface{}, error), values ...interface{}) error {
+	stmt, err := this.tx.Prepare(query)
+	if err != nil {
+		return err
+	}
+	for _, entity := range values {
+		values, err := mapper(entity)
+		if err != nil {
+			log.Errorf("Can not update %v", err)
+			return err
+		}
+		_, err = stmt.Exec(values...)
+		if err != nil {
+			log.Errorf("Can not update %v", err)
+			return err
+		}
+	}
+
+	log.Infof("Update completed. Commit.")
+	return stmt.Close()
+}
+
 type PgPoint struct {
 	Coordinates Point `json:"coordinates"`
 }
 type PgPolygon struct {
 	Coordinates [][]Point `json:"coordinates"`
+}
+
+func idMapper(_id interface{}) ([]interface{}, error) {
+	return []interface{}{_id}, nil;
 }

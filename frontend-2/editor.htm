@@ -5,10 +5,14 @@
     <title>Реки</title>
     <link rel="stylesheet" href="css/editor.css">
     <link rel="stylesheet" href="css/bootstrap.min.css">
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
     <script type="text/javascript" src="js/bootstrap.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/vue-select@2.4.0/dist/vue-select.js"></script>
     <script type="text/javascript" src="js/editor.js"></script>
     <script type="text/javascript" src="js/auth.js"></script>
+    <script type="text/javascript" src="https://api-maps.yandex.ru/2.1/?lang=ru_RU"></script>
+    <script type="text/javascript" src="js/map-common.js"></script>
 </head>
 <body>
 
@@ -25,20 +29,24 @@
         <auth/>
     </nav>
 
-    <div class="container-fluid">
+    <div class="container-fluid" style="margin-top: 20px;">
         <div class="row">
             <div class="col-3" id="left-menu">
                 <ul>
                     <country v-bind:key="country.id" v-bind:country="country" v-for="country in countries"/>
                 </ul>
             </div>
-            <div id="editor-pane" class="col-9" style="bgcolor:red">
+            <div id="editor-pane" class="col-9" style="bgcolor:red;">
                 <div>
-                    <river-editor v-bind:visible="riverditorstate.visible" v-bind:river="riverditorstate.river"
-                                  v-bind:reports="riverditorstate.reports"/>
+                    <region-editor v-if="regioneditorstate.visible" v-bind:region="regioneditorstate.region"
+                                  v-bind:reports="regioneditorstate.reports"/>
                 </div>
                 <div>
-                    <spot-editor v-bind:visible="spoteditorstate.visible" v-bind:spot="spoteditorstate.spot"/>
+                    <river-editor v-if="rivereditorstate.visible" v-bind:river="rivereditorstate.river"
+                                  v-bind:reports="rivereditorstate.reports"/>
+                </div>
+                <div>
+                    <spot-editor v-if="spoteditorstate.visible" v-bind:spot="spoteditorstate.spot"/>
                 </div>
             </div>
         </div>
@@ -94,15 +102,12 @@
             }
         }
     });
-
-
-
 </script>
 <!--End of country component-->
 
 <!--Region component-->
 <div id="region-template" style="display:none">
-    <li class="menu-item region-menu-item"><a href="#" v-on:click='changeExpandState()'
+    <li class="menu-item region-menu-item"><a href="#" v-on:click='changeExpandState();selectRegion();'
                                               class="title-link btn btn-outline-secondary">{{ region.title }}</a>
         <ul>
             <river v-bind:key="river.id" v-bind:river="river" v-for="river in rivers"/>
@@ -129,13 +134,19 @@
                     } else {
                         this.collapse();
                     }
-                }
+                },
+                selectRegion:function() {
+                    app.spoteditorstate.visible = false
+                    app.rivereditorstate.visible=false;
+                    app.regioneditorstate.visible = false;
+
+                    app.regioneditorstate.region = getRegion(this.region.id)
+                    app.regioneditorstate.editMode = false;
+                    app.regioneditorstate.visible = true
+                },
             }
         },
     });
-
-
-
 </script>
 <!--End of region component-->
 
@@ -174,104 +185,365 @@
                 },
                 selectSpot:function(spot) {
                     app.spoteditorstate.visible = false
-                    app.riverditorstate.visible=false;
+                    app.rivereditorstate.visible=false;
+                    app.regioneditorstate.visible = false;
 
                     app.spoteditorstate.visible=true;
-                    app.spoteditorstate.spot=spot
+                    app.spoteditorstate.editMode = false;
+                    app.spoteditorstate.spot=getSpot(spot.id)
                 },
                 selectRiver:function() {
                     app.spoteditorstate.visible = false
-                    app.riverditorstate.visible=false;
+                    app.rivereditorstate.visible=false;
+                    app.regioneditorstate.visible = false;
 
-                    app.riverditorstate.river = getRiver(this.river.id)
-                    app.riverditorstate.reports=getReports(this.river.id)
-                    app.riverditorstate.visible = true
+                    app.rivereditorstate.river = getRiver(this.river.id)
+                    app.rivereditorstate.editMode = false;
+                    app.rivereditorstate.reports=getReports(this.river.id)
+                    app.rivereditorstate.visible = true
                 },
             }
         },
     });
-
-
-
 </script>
 
 
 <!--Spot editor component-->
 <div id="spotEditor-template" style="display:none">
-    <div v-if="visible">
-        <h1>{{ spot.title }}</h1>
-        <table class="spot-desc">
-            <tr>
-                <td colspan="2">{{ spot.short_description }}</td>
-                <td rowspan="2"><img :scr="spot.thumbnail"/></td>
-            </tr>
-            <tr>
-                <td class="cell-title" colspan="2">Ориентиры: {{ spot.orient }}</td>
-            </tr>
-            <tr>
-                <td class="cell-title">Уровень воды</td>
-                <td class="cell-title">Тех. описание</td>
-                <td class="cell-title" rowspan="4">Карта</td>
-            </tr>
-            <tr>
-                <td class="cell-title">Низкая вода</td>
-                <td>{{ spot.low_water_desc }}</td>
-            </tr>
-            <tr>
-                <td class="cell-title">Средняя вода</td>
-                <td>{{ spot.medium_water_desc }}</td>
-            </tr>
-            <tr>
-                <td class="cell-title">Высокая вода</td>
-                <td>{{ spot.high_water_desc }}</td>
-            </tr>
-            <tr>
-                <td class="cell-title" colspan="2">Подход/выход</td>
-                <td rowspan="4">
-                    Координаты:<br/>Широта:&nbsp;{{ spot.point[1] }}
-                    <br/>Долгота:&nbsp;{{ spot.point[0] }}
-                    <br/>
-                    <br/>
-                    К.с. нв/св/вв:&nbsp;{{ spot.low_water_category }}/{{ spot.medium_water_category
-                    }}/{{ spot.high_water_category }}
-                    <div v-if="spot.category!='0' && spot.category!='-1'">К.с. по классификатору: {{ spot.category }}
-                    </div>
+    <div>
+        <transition name="fade">
+            <div class="alert alert-danger" role="alert" v-if="errMsg">
+                {{errMsg}}
+            </div>
+        </transition>
+        <ask id="del-spot" title="Точно?" msg="Совсем удалить?" :okfn="function() { remove(); }"></ask>
 
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">{{ spot.point.approach }}</td>
-            </tr>
-            <tr>
-                <td class="cell-title" colspan="2">Страховка</td>
-            </tr>
-            <tr>
-                <td colspan="2">{{ spot.point.safety }}</td>
-            </tr>
-        </table>
-        <h2>Схемы</h2>
-        <h2>Фото галерея</h2>
-        <h2>Видео</h2>
+        <div v-if="canEdit()" class="btn-toolbar">
+            <div class="btn-group mr-2" role="group" aria-label="First group">
+                <button type="button" class="btn btn-info" v-on:click="editMode=!editMode; hideError();">{{getEditModeButtonTitle()}}</button>
+                <button type="button" class="btn btn-success" v-on:click="save()">Сохранить</button>
+                <button type="button" class="btn btn-secondary" v-on:click="reload()">Отменить</button>
+            </div>
+            <div class="btn-group">
+                <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#del-spot">Удалить</button>
+            </div>
+        </div>
+
+        <div v-if="editMode">
+            <div>
+                <strong>Название: </strong>
+                <input v-model.trim="spot.title" style="display:block"/>
+            </div>
+            <div>
+                <strong>Река: </strong>
+                <v-select v-model="spot.river" label="name" :filterable="false" :options="options" @search="onSearch">
+                    <template slot="no-options">
+                        Начните печатать название реки
+                    </template>
+                    <template slot="option" slot-scope="option">
+                        <div class="d-center">
+                            {{ option.title }}
+                        </div>
+                    </template>
+                    <template slot="selected-option" scope="option">
+                        <div class="selected d-center">
+                            {{ option.title }}
+                        </div>
+                    </template>
+                </v-select>
+            </div>
+            <div>
+                <strong>Расположение: </strong>
+                <ya-map-location-editor :spot="spot"></ya-map-location-editor>
+            </div>
+            <div>
+                <strong>Категория сложности: </strong><a target="_blank" href="https://huskytm.ru/rules2018-2019/#categories_tab"><img src="img/question_16.png"></a>
+                <dl style="padding-left:40px;">
+                    <dt>По классификатору</dt>
+                    <dd>
+                        <select v-model="spot.category">
+                            <option v-for="cat in all_categories" v-bind:value="cat.id">{{cat.title}}</option>
+                        </select>
+                    </dd>
+                    <dt>Низкий уровень воды</dt>
+                    <dd>
+                        <select v-model="spot.lw_category">
+                            <option v-for="cat in all_categories" v-bind:value="cat.id">{{cat.title}}</option>
+                        </select>
+                    </dd>
+                    <dt>Средний уровень воды</dt>
+                    <dd>
+                        <select v-model="spot.mw_category">
+                            <option v-for="cat in all_categories" v-bind:value="cat.id">{{cat.title}}</option>
+                        </select>
+                    </dd>
+                    <dt>Высокий уровень воды</dt>
+                    <dd>
+                        <select v-model="spot.hw_category">
+                            <option v-for="cat in all_categories" v-bind:value="cat.id">{{cat.title}}</option>
+                        </select>
+                    </dd>
+                </dl>
+            </div>
+            <div>
+                <strong>Описание: </strong>
+                <textarea rows="10" cols="120" v-model="spot.short_description"></textarea>
+            </div>
+            <div>
+                <strong>Ориентиры:</strong>
+                <textarea rows="10" cols="120" v-model="spot.orient"></textarea>
+            </div>
+            <div>
+                <strong>Подход/выход:</strong>
+                <textarea rows="10" cols="120" v-model="spot.approach"></textarea>
+            </div>
+            <div>
+                <strong>Страховка:</strong>
+                <textarea rows="10" cols="120" v-model="spot.safety"></textarea>
+            </div>
+            <div>
+                <strong>Описание для низкого уровня воды:</strong>
+                <textarea rows="10" cols="120" v-model="spot.lw_description"></textarea>
+            </div>
+            <div>
+                <strong>Описание для среднего уровня воды:</strong>
+                <textarea rows="10" cols="120" v-model="spot.mw_description"></textarea>
+            </div>
+            <div>
+                <strong>Описание для высокого уровня воды:</strong>
+                <textarea rows="10" cols="120" v-model="spot.hw_description"></textarea>
+            </div>
+        </div>
+        <div v-else>
+            <h1>{{ spot.title }}</h1>
+            <table class="spot-desc">
+                <tr>
+                    <td colspan="2">{{ spot.short_description }}</td>
+                    <td rowspan="2"><img :scr="spot.thumbnail"/></td>
+                </tr>
+                <tr>
+                    <td colspan="2"><strong>Ориентиры:</strong>&nbsp;{{ spot.orient }}</td>
+                </tr>
+                <tr>
+                    <td class="cell-title">Уровень воды</td>
+                    <td class="cell-title">Тех. описание</td>
+                    <td class="cell-title" rowspan="4">Карта</td>
+                </tr>
+                <tr>
+                    <td class="cell-title">Низкая вода</td>
+                    <td>{{ spot.lw_description }}</td>
+                </tr>
+                <tr>
+                    <td class="cell-title">Средняя вода</td>
+                    <td>{{ spot.mw_description }}</td>
+                </tr>
+                <tr>
+                    <td class="cell-title">Высокая вода</td>
+                    <td>{{ spot.hw_description }}</td>
+                </tr>
+                <tr>
+                    <td class="cell-title" colspan="2">Подход/выход</td>
+                    <td rowspan="4">
+                        Координаты:<br/>Широта:&nbsp;{{ spot.point[0] }}
+                        <br/>Долгота:&nbsp;{{ spot.point[1] }}
+                        <br/>
+                        <br/>
+                        К.с. нв/св/вв:&nbsp;{{ spot.lw_category }}/{{ spot.mw_category }}/{{ spot.hw_category }}
+                        <div v-if="spot.category!='0' && spot.category!='-1'">К.с. по классификатору: {{ spot.category }}
+                        </div>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">{{ spot.approach }}</td>
+                </tr>
+                <tr>
+                    <td class="cell-title" colspan="2">Страховка</td>
+                </tr>
+                <tr>
+                    <td colspan="2">{{ spot.safety }}</td>
+                </tr>
+            </table>
+            <h2>Схемы</h2>
+            <h2>Фото галерея</h2>
+            <h2>Видео</h2>
+        </div>
     </div>
 </div>
 
 <script type="text/javascript">
     Vue.component('spot-editor', {
-        props: ['spot', "visible"],
+        props: ['spot'],
         template: document.getElementById('spotEditor-template').innerHTML,
+
+        methods: {
+            onSearch: function(search, loading) {
+                loading(true);
+                var component = this
+                fetch(
+                  `${apiBase}/river?q=${search}`
+                ).then(res => {
+                    res.json().then(function(json){
+                        component.options = json
+                    });
+                    loading(false);
+                });
+            },
+        },
+        data:function() {
+            return {
+                // for editor
+                userInfo: getAuthorizedUserInfoOrNull(),
+                map: null,
+                label: null,
+                canEdit: function(){
+                 return this.userInfo!=null && this.userInfo.roles.includes("ADMIN")
+                },
+                editMode: app.spoteditorstate.editMode,
+                errMsg:null,
+                askForRemove: false,
+                save:function() {
+                    updated = saveSpot(this.spot)
+                    if (updated) {
+                        this.spot = updated
+                        this.editMode=false
+                        this.hideError()
+                    } else {
+                        this.showError("Не удалось сохранить препятствие. Возможно, недостаточно прав")
+                    }
+                },
+                reload:function() {
+                    this.spot = getSpot(this.spot.id)
+                    this.hideError()
+                },
+                remove: function() {
+                    this.hideError()
+                    if (!removeSpot(this.spot.id)) {
+                        this.showError("Can not delete")
+                    }
+                },
+                showError: function(errMsg) {
+                    this.errMsg = errMsg
+                },
+                hideError: function(errMsg) {
+                    this.errMsg = null
+                },
+                getEditModeButtonTitle: function() {
+                    return this.editMode ? 'Просмотр' : 'Редактирование';
+                },
+                // end of editor
+                all_categories:all_categories,
+
+                options: [getRiver(this.spot.river.id)],
+            }
+        }
     });
 </script>
 <!--End of spot editor component-->
 
+<!--Ya maps component-->
+<div id="ya-map-location-editor-template" style="display:none">
+    <div id="map" style="width: 600px; height: 400px"></div>
+</div>
+<script type="text/javascript">
+    Vue.component('ya-map-location-editor', {
+        template: document.getElementById('ya-map-location-editor-template').innerHTML,
+        props: ['spot'],
+        created: function() {
+            var component = this
+            ymaps.ready(function() {
+                if (component.map) {
+                    component.map.destroy()
+                    component.label.geometry.setCoordinates(component.spot.point);
+                } else {
+                    addCachedLayer('osm#standard', 'OSM', 'OpenStreetMap contributors, CC-BY-SA', 'osm')
+                    addLayer('google#satellite', 'Спутник Google', 'Изображения © DigitalGlobe,CNES / Airbus, 2018,Картографические данные © Google, 2018', GOOGLE_SAT_TILES)
+                    addCachedLayer('ggc#standard', 'Топографическая карта', '', 'ggc', 0, 15)
+                }
+
+                var myMap = new ymaps.Map("map", {
+                    center: component.spot.point,
+                    zoom: 12,
+                    controls: ["zoomControl"],
+                    type: "osm#standard",
+                });
+                myMap.controls.add(
+                    new ymaps.control.TypeSelector([
+                        'osm#standard',
+                        'ggc#standard',
+                        'yandex#satellite',
+                        'google#satellite',
+                    ])
+                );
+
+                var skip = 0
+                if (component.spot && component.spot.id) {
+                    skip = component.spot.id
+                }
+                var objectManager = new ymaps.RemoteObjectManager(apiBase + '/ymaps-tile-ww?bbox=%b&zoom=%z&skip=' + skip, {
+                    clusterHasBalloon: false,
+                    geoObjectOpenBalloonOnClick: false,
+                    geoObjectStrokeWidth: 3,
+                    splitRequests: true,
+                    clusterHasBalloon: false,
+                });
+                myMap.geoObjects.add(objectManager);
+
+                var label = new ymaps.GeoObject({
+                        geometry: {
+                            type: "Point",
+                            coordinates: component.spot.point
+                        },
+                        properties: {
+                            hintContent: component.spot.title,
+                        }
+                    }, {
+                        preset: 'islands#blueIcon',
+                        draggable: true
+                    })
+
+                myMap.geoObjects.add(label)
+                label.events.add('dragend', function (e) {
+                    component.spot.point = label.geometry.getCoordinates()
+                });
+
+                myMap.events.add('click', function (e) {
+                    p = e.get('coords')
+                    label.geometry.setCoordinates(p)
+                    component.spot.point = p
+                });
+                component.label = label
+                component.map = myMap
+
+            })
+        },
+    });
+</script>
+<!--End of Ya maps component-->
+
 
 <!--river editor component-->
 <div id="river-editor-template" style="display:none">
-    <div v-if="visible">
-        <div class="btn-group" role="group" aria-label="Basic example">
-            <button type="button" class="btn btn-info" v-on:click="editMode=!editMode">{{getEditModeButtonTitle()}}
-            </button>
-            <button type="button" class="btn btn-success" v-on:click="save()">Сохранить</button>
-            <button type="button" class="btn btn-secondary" v-on:click="reload()">Отменить</button>
+    <div>
+        <transition name="fade">
+            <div class="alert alert-danger" role="alert" v-if="errMsg">
+                {{errMsg}}
+            </div>
+        </transition>
+        <ask id="del-river" title="Точно?" msg="Совсем удалить? Все пороги будут также удалены! Да, совсем! Восстановить будет никак нельзя!" :okfn="function() { remove(); }"></ask>
+
+        <div v-if="canEdit()" class="btn-toolbar">
+            <div v-if="river.id" class="btn-group mr-2" role="group">
+                <button type="button" class="btn btn-primary" v-on:click="add_spot()">Добавить препятствие</button>
+            </div>
+            <div class="btn-group mr-2" role="group" aria-label="First group">
+                <button type="button" class="btn btn-info" v-on:click="editMode=!editMode; hideError();">{{getEditModeButtonTitle()}}</button>
+                <button type="button" class="btn btn-success" v-on:click="save()">Сохранить</button>
+                <button type="button" class="btn btn-secondary" v-on:click="reload()">Отменить</button>
+            </div>
+            <div class="btn-group">
+                <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#del-river">Удалить</button>
+            </div>
         </div>
 
         <input v-if="editMode" v-model.trim="river.title" style="display:block"/>
@@ -290,8 +562,10 @@
             </dd>
             <dt>Алиасы:</dt>
             <dd>
-                <textarea v-if="editMode" v-bind:text-content="river.aliases" v-on:input="river.aliases = parseAliases($event.target.value)"
-                          rows="10" cols="120" style="resize: none; margin-left:40px;">{{ river.aliases.join('\n') }}</textarea>
+                <textarea v-if="editMode" v-bind:text-content="river.aliases"
+                          v-on:input="river.aliases = parseAliases($event.target.value)"
+                          rows="10" cols="120"
+                          style="resize: none; margin-left:40px;">{{ river.aliases.join('\n') }}</textarea>
                 <ul v-else>
                     <li v-for="alias in river.aliases">{{alias}}</li>
                 </ul>
@@ -301,39 +575,131 @@
             <dd>
                 <ul>
                     <li v-for="report in reports"><a target="_blank" :href="report.url">{{report.title}}</a></li>
-                </ul></dd>
+                </ul>
+            </dd>
         </dl>
     </div>
 </div>
 
 <script type="text/javascript">
     Vue.component('river-editor', {
-        props: ['river', 'reports', 'visible'],
+        props: ['river', 'reports'],
         template: document.getElementById('river-editor-template').innerHTML,
         data:function() {
             return {
-                editMode: false,
-                regions: getAllRegions(),
-                getEditModeButtonTitle: function() {
-                    return this.editMode ? 'Просмотр' : 'Редактирование';
+                // for editor
+                userInfo: getAuthorizedUserInfoOrNull(),
+                canEdit: function(){
+                 return this.userInfo!=null && this.userInfo.roles.includes("ADMIN")
                 },
+                editMode: app.rivereditorstate.editMode,
+                errMsg:null,
+                askForRemove: true,
                 save:function() {
-                    this.river = saveRiver(this.river)
+                    updated = saveRiver(this.river)
+                    if (updated) {
+                        this.river = updated
+                        this.editMode=false
+                        this.hideError()
+                    } else {
+                        this.showError("Не удалось сохранить реку. Возможно, недостаточно прав")
+                    }
                 },
                 reload:function() {
                     this.river = getRiver(this.river.id)
+                    this.hideError()
                 },
+                remove: function() {
+                    this.hideError()
+                    if (!removeRiver(this.river.id)) {
+                        this.showError("Can not delete")
+                    }
+                },
+                showError: function(errMsg) {
+                    this.errMsg = errMsg
+                },
+                hideError: function(errMsg) {
+                    this.errMsg = null
+                },
+                getEditModeButtonTitle: function() {
+                    return this.editMode ? 'Просмотр' : 'Редактирование';
+                },
+                // end of editor
+
+                add_spot: function() {
+                    app.spoteditorstate.visible = false
+                    app.rivereditorstate.visible = false;
+
+                    app.spoteditorstate.visible = true;
+                    app.spoteditorstate.editMode = true;
+                    app.spoteditorstate.spot={
+                        id: 0,
+                        river: this.river,
+                        point:[0.0, 0.0, ],
+                    }
+                },
+
+                regions: getAllRegions(),
                 parseAliases:function(strVal) {
                     return strVal.split('\n').map(function(x) {return x.trim()}).filter(function(x){return x.length>0})
                 },
             }
         }
     });
-
-
-
 </script>
 <!--End of river editor component-->
+
+<!--region editor component-->
+<div id="region-editor-template" style="display:none">
+    <div>
+        <div v-if="canEdit()" class="btn-toolbar">
+            <div class="btn-group mr-2" role="group">
+                <button type="button" class="btn btn-primary" v-on:click="add_river()">Добавить реку</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    Vue.component('region-editor', {
+        props: ['region'],
+        template: document.getElementById('region-editor-template').innerHTML,
+        data:function() {
+            return {
+                // for editor
+                userInfo: getAuthorizedUserInfoOrNull(),
+                canEdit: function(){
+                 return this.userInfo!=null && this.userInfo.roles.includes("ADMIN")
+                },
+                
+                getEditModeButtonTitle: function() {
+                    return this.editMode ? 'Просмотр' : 'Редактирование';
+                },
+                // end of editor
+
+                add_river: function() {
+                    app.spoteditorstate.visible = false
+                    app.rivereditorstate.visible = false;
+                    app.regioneditorstate.visible = false;
+
+                    app.rivereditorstate.visible = true;
+                    app.rivereditorstate.editMode = true;
+                    app.rivereditorstate.river = {
+                        id: 0,
+                        region: this.region,
+                        aliases: [],
+                    }
+                },
+
+                regions: getAllRegions(),
+                parseAliases:function(strVal) {
+                    return strVal.split('\n').map(function(x) {return x.trim()}).filter(function(x){return x.length>0})
+                },
+            }
+        }
+    });
+</script>
+<!--End of region editor component-->
 
 <!--Auth component-->
 <div id="auth-template" style="display:none">
@@ -355,27 +721,60 @@
             }
         }
     });
-
 </script>
 <!--End of auth component-->
 
+<!--Modal dialog component-->
+<div id="ask-template" style="display:none;">
+    <div :id="id" class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">{{ title }}</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>{{ msg }}</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal" v-on:click="okfn()">Да</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Нет</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 <script type="text/javascript">
+    Vue.component('ask', {
+        template: document.getElementById('ask-template').innerHTML,
+        props: ['id', 'msg', 'title', 'okfn'],
+    });
+</script>
+<!--End of modal dialog component-->
+
+<script type="text/javascript">
+    Vue.component('v-select', VueSelect.VueSelect)
     var app = new Vue({
         el: '#wwmap',
         data: {
           countries: getCountries(),
           regions: getAllRegions(),
           "spoteditorstate": {
-            "visible": false
+            "visible": false,
+            "editMode": false,
           },
-          "riverditorstate": {
-            "visible": false
-          }
+          "rivereditorstate": {
+            "visible": false,
+            "editMode": false,
+          },
+          "regioneditorstate": {
+            "visible": false,
+            "editMode": false,
+          },
         }
     })
-
-
-
 </script>
 
 </body>

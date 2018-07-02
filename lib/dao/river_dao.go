@@ -19,19 +19,31 @@ func NewRiverPostgresDao(postgresStorage PostgresStorage) RiverDao {
 		byIdQuery:queries.SqlQuery("river", "by-id"),
 		listByCountryQuery:queries.SqlQuery("river", "by-country"),
 		listByRegionQuery:queries.SqlQuery("river", "by-region"),
+		listByFirstLettersQuery:queries.SqlQuery("river", "by-first-letters"),
+		insertQuery:queries.SqlQuery("river", "insert"),
 		updateQuery:queries.SqlQuery("river", "update"),
+		fixLinkedWaterWaysQuery:queries.SqlQuery("river", "fix-linked-waterways"),
+		deleteLinkedWwptsQuery:queries.SqlQuery("river", "delete-linked-wwpts"),
+		deleteLinkedReportsQuery:queries.SqlQuery("river", "delete-linked-reports"),
+		deleteQuery:queries.SqlQuery("river", "delete"),
 	}
 }
 
 type riverStorage struct {
 	PostgresStorage
-	findByTagsQuery    string
-	nearestQuery       string
-	insideBoundsQuery  string
-	byIdQuery          string
-	listByCountryQuery string
-	listByRegionQuery  string
-	updateQuery  string
+	findByTagsQuery          string
+	nearestQuery             string
+	insideBoundsQuery        string
+	byIdQuery                string
+	listByCountryQuery       string
+	listByRegionQuery        string
+	listByFirstLettersQuery  string
+	insertQuery              string
+	updateQuery              string
+	fixLinkedWaterWaysQuery  string
+	deleteLinkedWwptsQuery   string
+	deleteLinkedReportsQuery string
+	deleteQuery              string
 }
 
 func (this riverStorage) FindTitles(titles []string) ([]RiverTitle, error) {
@@ -50,7 +62,7 @@ func (this riverStorage) ListRiversWithBounds(bbox geo.Bbox, limit int) ([]River
 	return this.listRiverTitles(this.insideBoundsQuery, bbox.X1, bbox.Y1, bbox.X2, bbox.Y2, limit)
 }
 
-func (this riverStorage) RiverById(id int64) (RiverTitle, error) {
+func (this riverStorage) Find(id int64) (RiverTitle, error) {
 	found, err := this.listRiverTitles(this.byIdQuery, id)
 	if err != nil {
 		return RiverTitle{}, err
@@ -69,19 +81,34 @@ func (this riverStorage) ListByRegion(regionId int64) ([]RiverTitle, error) {
 	return this.listRiverTitles(this.listByRegionQuery, regionId)
 }
 
-func (this riverStorage) Save(river RiverTitle) error {
-	return this.performUpdates(this.updateQuery, func(entity interface{}) ([]interface{}, error){
+func (this riverStorage) ListByFirstLetters(query string, limit int) ([]RiverTitle, error) {
+	return this.listRiverTitles(this.listByFirstLettersQuery, query, limit)
+}
+
+func (this riverStorage) Insert(river RiverTitle) (int64, error) {
+	aliasesB, err := json.Marshal(river.Aliases)
+	if err != nil {
+		return 0, err
+	}
+	return this.insertReturningId(this.insertQuery, river.RegionId, river.Title, string(aliasesB))
+}
+
+func (this riverStorage) Save(rivers ...RiverTitle) error {
+	vars := make([]interface{}, len(rivers))
+	for i, p := range rivers {
+		vars[i] = p
+	}
+	return this.performUpdates(this.updateQuery, func(entity interface{}) ([]interface{}, error) {
 		_river := entity.(RiverTitle)
 		aliasesB, err := json.Marshal(_river.Aliases)
-		if err!=nil {
+		if err != nil {
 			return []interface{}{}, err
 		}
-		return []interface{}{_river.RegionId, _river.Title, string(aliasesB), _river.Id}, nil
-	}, river)
+		return []interface{}{_river.Id, _river.RegionId, _river.Title, string(aliasesB)}, nil
+	}, vars...)
 }
 
 func (this riverStorage) listRiverTitles(query string, queryParams ...interface{}) ([]RiverTitle, error) {
-	fmt.Println(query)
 	result, err := this.doFindList(query,
 		func(rows *sql.Rows) (RiverTitle, error) {
 			riverTitle := RiverTitle{}
@@ -138,4 +165,21 @@ func (this riverStorage) listRiverTitles(query string, queryParams ...interface{
 		return []RiverTitle{}, err
 	}
 	return result.([]RiverTitle), nil
+}
+
+func (this riverStorage) Remove(id int64) error {
+	log.Infof("Remove river %d", id)
+	tx, err := this.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Close();
+
+	for _, q := range []string{this.fixLinkedWaterWaysQuery, this.deleteLinkedWwptsQuery, this.deleteLinkedReportsQuery, this.deleteQuery} {
+		err = tx.performUpdates(q, idMapper, id)
+		if err != nil {
+			return err
+		}
+	}
+	return tx.Commit()
 }

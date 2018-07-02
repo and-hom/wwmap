@@ -233,7 +233,7 @@ func mkCluster(Id ClusterId, points []WhiteWaterPointWithRiverTitle) Feature {
 	}
 }
 
-func whiteWaterPointsToYmaps(clusterMaker ClusterMaker, rivers []RiverTitle, bbox Bbox, zoom int, resourcesBase string) ([]Feature, error) {
+func whiteWaterPointsToYmaps(clusterMaker ClusterMaker, rivers []RiverTitle, bbox Bbox, zoom int, resourcesBase string, skipId int64) ([]Feature, error) {
 	result := make([]Feature, 0)
 	for _,river := range rivers {
 		riverClusters, err := clusterMaker.Get(river.Id, zoom, bbox)
@@ -244,7 +244,10 @@ func whiteWaterPointsToYmaps(clusterMaker ClusterMaker, rivers []RiverTitle, bbo
 		for id, obj := range riverClusters {
 			switch obj.(type) {
 			case WhiteWaterPointWithRiverTitle:
-				result = append(result, mkFeature(obj.(WhiteWaterPointWithRiverTitle), true, resourcesBase))
+				wwp := obj.(WhiteWaterPointWithRiverTitle)
+				if wwp.Id != skipId {
+					result = append(result, mkFeature(wwp, true, resourcesBase))
+				}
 			case Cluster:
 				result = append(result, mkCluster(id, obj.(Cluster).Points))
 			}

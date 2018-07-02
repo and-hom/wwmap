@@ -105,6 +105,25 @@ func (this *Handler) CreateMissingUser(r *http.Request) error {
 	})
 }
 
+func (this *Handler) CheckRoleAllowedAndMakeResponse(w http.ResponseWriter, r *http.Request, allowedRoles ...dao.Role) bool {
+	allowed, err := this.CheckRoleAllowed(r, allowedRoles...)
+	if err != nil {
+		OnError500(w, err, "Can not check permissions")
+		return false
+	}
+	if !allowed {
+		msg := ""
+		if len(allowedRoles) == 1 {
+			fmt.Sprintf("Sorry! You haven't role %s", allowedRoles[0])
+		} else {
+			fmt.Sprintf("Sorry! You haven't any of following roles: %s", dao.Join(", ", allowedRoles...))
+		}
+		OnError(w, nil, msg, http.StatusUnauthorized)
+		return false
+	}
+	return true
+}
+
 func (this *Handler) CheckRoleAllowed(r *http.Request, allowedRoles ...dao.Role) (bool, error) {
 	token := GetOauthToken(r)
 	info, err := this.yandexPassport.ResolveUserInfo(token)
