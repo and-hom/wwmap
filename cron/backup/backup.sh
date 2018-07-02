@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-TABLES="river white_water_rapid report"
+TABLES="schema_migrations user report country region river white_water_rapid voyage_report image"
 
 function config() {
     python -c 'import yaml; print(yaml.load(open("/etc/wwmap/config.yaml","r"))'$1')'
