@@ -19,6 +19,7 @@ func NewWhiteWaterPostgresDao(postgresStorage PostgresStorage) WhiteWaterDao {
 		listByRiverAndTitleQuery: queries.SqlQuery("white-water", "by-river-and-title"),
 		listWithPathQuery: queries.SqlQuery("white-water", "with-path"),
 		insertQuery: queries.SqlQuery("white-water", "insert"),
+		insertFullQuery: queries.SqlQuery("white-water", "insert-full"),
 		updateQuery: queries.SqlQuery("white-water", "update"),
 		byIdQuery: queries.SqlQuery("white-water", "by-id"),
 		byIdFullQuery: queries.SqlQuery("white-water", "by-id-full"),
@@ -34,6 +35,7 @@ type whiteWaterStorage struct {
 	listByRiverAndTitleQuery string
 	listWithPathQuery        string
 	insertQuery              string
+	insertFullQuery              string
 	updateQuery              string
 	byIdQuery                string
 	byIdFullQuery            string
@@ -129,12 +131,20 @@ func (this whiteWaterStorage) FindFull(id int64) (WhiteWaterPointFull, error) {
 	return result.(WhiteWaterPointFull), nil
 }
 
+func (this whiteWaterStorage) InsertWhiteWaterPointsFull(whiteWaterPoints ...WhiteWaterPointFull) error {
+	return this.updateFull(this.insertFullQuery, whiteWaterPoints...)
+}
+
 func (this whiteWaterStorage) UpdateWhiteWaterPointsFull(whiteWaterPoints ...WhiteWaterPointFull) error {
+	return this.updateFull(this.updateFullQuery, whiteWaterPoints...)
+}
+
+func (this whiteWaterStorage) updateFull(query string, whiteWaterPoints ...WhiteWaterPointFull) error {
 	vars := make([]interface{}, len(whiteWaterPoints))
 	for i, p := range whiteWaterPoints {
 		vars[i] = p
 	}
-	return this.performUpdates(this.updateFullQuery,
+	return this.performUpdates(query,
 		func(entity interface{}) ([]interface{}, error) {
 			wwp := entity.(WhiteWaterPointFull)
 			pointBytes, err := json.Marshal(geo.NewGeoPoint(wwp.Point))
@@ -273,7 +283,7 @@ func categoryStrBytes(categoryStr string) []byte {
 	return []byte(categoryStr)
 }
 
-func (this whiteWaterStorage) AddWhiteWaterPoints(whiteWaterPoints ...WhiteWaterPoint) error {
+func (this whiteWaterStorage) InsertWhiteWaterPoints(whiteWaterPoints ...WhiteWaterPoint) error {
 	return this.update(this.insertQuery, whiteWaterPoints...)
 }
 

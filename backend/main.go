@@ -98,7 +98,7 @@ func main() {
 
 	r.HandleFunc("/ymaps-tile-ww", whiteWaterHandler.TileWhiteWaterHandler)
 	r.HandleFunc("/whitewater", whiteWaterHandler.CorsGetOptionsStub).Methods("OPTIONS")
-	r.HandleFunc("/whitewater", whiteWaterHandler.AddWhiteWaterPoints).Methods("PUT", "POST")
+	r.HandleFunc("/whitewater", whiteWaterHandler.InsertWhiteWaterPoints).Methods("PUT", "POST")
 
 	r.HandleFunc("/nearest-rivers", riverHandler.GetNearestRivers).Methods("GET")
 	r.HandleFunc("/visible-rivers", riverHandler.GetVisibleRivers).Methods("GET")

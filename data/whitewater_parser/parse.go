@@ -20,7 +20,7 @@ func main() {
 	storage := dao.NewPostgresStorage(configuration.DbConnString)
 	whiteWaterDao := dao.NewWhiteWaterPostgresDao(storage)
 	store := func(wpts[]dao.WhiteWaterPoint) {
-		err := whiteWaterDao.AddWhiteWaterPoints(wpts...)
+		err := whiteWaterDao.InsertWhiteWaterPoints(wpts...)
 		if err != nil {
 			log.Fatal(err)
 		}

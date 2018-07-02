@@ -385,12 +385,16 @@ func (this *GeoHierarchyHandler) SaveSpot(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	if spot.River.Id<=0 {
+	if spot.River.Id <= 0 {
 		OnError(w, errors.New(""), "Can not save spot without river", http.StatusBadRequest)
 		return
 	}
 
-	err = this.whiteWaterDao.UpdateWhiteWaterPointsFull(spot)
+	if spot.Id > 0 {
+		err = this.whiteWaterDao.UpdateWhiteWaterPointsFull(spot)
+	} else {
+		err = this.whiteWaterDao.InsertWhiteWaterPointsFull(spot)
+	}
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not save spot %d", string(bodyBytes)))
 		return

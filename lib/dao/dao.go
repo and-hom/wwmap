@@ -51,7 +51,8 @@ type RiverDao interface {
 }
 
 type WhiteWaterDao interface {
-	AddWhiteWaterPoints(whiteWaterPoint ...WhiteWaterPoint) error
+	InsertWhiteWaterPoints(whiteWaterPoints ...WhiteWaterPoint) error
+	InsertWhiteWaterPointsFull(whiteWaterPoints ...WhiteWaterPointFull) error
 	UpdateWhiteWaterPoints(whiteWaterPoints ...WhiteWaterPoint) error
 	UpdateWhiteWaterPointsFull(whiteWaterPoints ...WhiteWaterPointFull) error
 	Find(id int64) (WhiteWaterPointWithRiverTitle, error)

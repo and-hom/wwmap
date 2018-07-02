@@ -54,7 +54,7 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 	w.Write(this.JsonpAnswer(callback, featureCollection, "{}"))
 }
 
-func (this *WhiteWaterHandler) AddWhiteWaterPoints(w http.ResponseWriter, r *http.Request) {
+func (this *WhiteWaterHandler) InsertWhiteWaterPoints(w http.ResponseWriter, r *http.Request) {
 	CorsHeaders(w, "POST, GET, OPTIONS, PUT, DELETE")
 	found, err := this.CheckRoleAllowed(r, ADMIN)
 	if err != nil {
@@ -78,7 +78,7 @@ func (this *WhiteWaterHandler) AddWhiteWaterPoints(w http.ResponseWriter, r *htt
 		return
 	}
 
-	err = this.whiteWaterDao.AddWhiteWaterPoints(wwPoints...)
+	err = this.whiteWaterDao.InsertWhiteWaterPoints(wwPoints...)
 
 	if err != nil {
 		OnError500(w, err, "Can not insert")
