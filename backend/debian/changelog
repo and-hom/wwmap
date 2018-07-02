@@ -1,3 +1,10 @@
+wwmap-backend (0.0.18) UNRELEASED; urgency=medium
+
+  * #71 Add and remove rivers and spots, editor improvements
+  * #71 Permissions for editor
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Mon, 02 Jul 2018 12:12:38 +0300
+
 wwmap-backend (0.0.17) unstable; urgency=medium
 
   * #71 Yandex passport auth

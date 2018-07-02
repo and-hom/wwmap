@@ -1,3 +1,11 @@
+wwmap-frontend (0.0.13) unstable; urgency=medium
+
+  * #71 Add and remove rivers and spots, editor improvements, visual ya maps point editor
+  * #71 Permissions for editor
+  * Changed google satellite maps version
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Mon, 02 Jul 2018 12:16:38 +0300
+
 wwmap-frontend (0.0.12) unstable; urgency=medium
 
   * #71 Entity editor frontend

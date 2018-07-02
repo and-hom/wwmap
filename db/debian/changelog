@@ -1,3 +1,9 @@
+wwmap-db (0.0.8) unstable; urgency=medium
+
+  * #71 Added more fields to white_water_rapid
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Mon, 02 Jul 2018 12:12:49 +0300
+
 wwmap-db (0.0.7) unstable; urgency=medium
 
   * #71 Users table
