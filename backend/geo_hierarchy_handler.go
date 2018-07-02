@@ -11,6 +11,7 @@ import (
 	"github.com/and-hom/wwmap/lib/dao"
 	"io/ioutil"
 	"github.com/and-hom/wwmap/lib/util"
+	"github.com/pkg/errors"
 )
 
 type GeoHierarchyHandler struct {
@@ -381,6 +382,11 @@ func (this *GeoHierarchyHandler) SaveSpot(w http.ResponseWriter, r *http.Request
 	err = json.Unmarshal(bodyBytes, &spot)
 	if err != nil {
 		OnError500(w, err, "Can not parse json from request body: " + string(bodyBytes))
+		return
+	}
+
+	if spot.River.Id<=0 {
+		OnError(w, errors.New(""), "Can not save spot without river", http.StatusBadRequest)
 		return
 	}
 
