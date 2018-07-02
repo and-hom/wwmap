@@ -1,3 +1,9 @@
+wwmap-cron (0.0.5) unstable; urgency=medium
+
+  * Fix #73 backup new tables
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Mon, 02 Jul 2018 13:35:25 +0300
+
 wwmap-cron (0.0.4) unstable; urgency=medium
 
   * WW matching fix: '-' and spaces are equal during string comparsion
