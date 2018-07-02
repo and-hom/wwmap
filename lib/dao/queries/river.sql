@@ -29,7 +29,10 @@ SELECT river.id as id, region_id, river.title as title, NULL, river.aliases as a
 SELECT id, region_id, title, NULL, aliases FROM river WHERE title ilike $1||'%' LIMIT $2
 
 --@update
-UPDATE river SET region_id=$1, title=$2, aliases=$3 WHERE id=$4
+UPDATE river SET region_id=$2, title=$3, aliases=$4 WHERE id=$1
+
+--@insert
+INSERT INTO river(region_id, title, aliases) VALUES($1,$2,$3) RETURNING id
 
 --@fix-linked-waterways
 UPDATE waterway SET river_id=NULL WHERE river_id=$1

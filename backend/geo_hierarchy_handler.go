@@ -107,6 +107,36 @@ func (this *GeoHierarchyHandler) ListAllRegions(w http.ResponseWriter, r *http.R
 	w.Write(bytes)
 }
 
+func (this *GeoHierarchyHandler) GetRegion(w http.ResponseWriter, r *http.Request) {
+	CorsHeaders(w, "GET, OPTIONS, POST, DELETE")
+	JsonResponse(w)
+
+	pathParams := mux.Vars(r)
+	riverId, err := strconv.ParseInt(pathParams["regionId"], 10, 64)
+	if err != nil {
+		OnError(w, err, "Can not parse id", http.StatusBadRequest)
+		return
+	}
+
+	this.writeRegion(riverId, w)
+}
+
+func (this *GeoHierarchyHandler) writeRegion(regionId int64, w http.ResponseWriter) {
+	region, err := this.regionDao.Get(regionId)
+	if err != nil {
+		OnError500(w, err, fmt.Sprintf("Can not get region %d", regionId))
+		return
+	}
+
+	bytes, err := json.Marshal(region)
+	if err != nil {
+		OnError500(w, err, fmt.Sprintf("Can not serialize region %d", regionId))
+		return
+	}
+
+	w.Write(bytes)
+}
+
 func (this *GeoHierarchyHandler) ListCountryRivers(w http.ResponseWriter, r *http.Request) {
 	CorsHeaders(w, "GET, OPTIONS, POST, DELETE")
 	JsonResponse(w)
@@ -261,13 +291,20 @@ func (this *GeoHierarchyHandler) SaveRiver(w http.ResponseWriter, r *http.Reques
 		RegionId:river.Region.Id,
 		Aliases:river.Aliases,
 	}
-	err = this.riverDao.Save(riverForDb)
+
+	var id int64
+	if river.Id > 0 {
+		err = this.riverDao.Save(riverForDb)
+		id = river.Id
+	} else {
+		id, err = this.riverDao.Insert(riverForDb)
+	}
 	if err != nil {
-		OnError500(w, err, fmt.Sprintf("Can not save river %d", string(bodyBytes)))
+		OnError500(w, err, fmt.Sprintf("Can not save river %s", string(bodyBytes)))
 		return
 	}
 
-	this.writeRiver(river.Id, w)
+	this.writeRiver(id, w)
 }
 
 func (this *GeoHierarchyHandler) RemoveRiver(w http.ResponseWriter, r *http.Request) {
@@ -390,17 +427,19 @@ func (this *GeoHierarchyHandler) SaveSpot(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	var id int64
 	if spot.Id > 0 {
 		err = this.whiteWaterDao.UpdateWhiteWaterPointsFull(spot)
+		id = spot.Id
 	} else {
-		err = this.whiteWaterDao.InsertWhiteWaterPointsFull(spot)
+		id, err = this.whiteWaterDao.InsertWhiteWaterPointFull(spot)
 	}
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not save spot %d", string(bodyBytes)))
 		return
 	}
 
-	this.writeSpot(spot.Id, w)
+	this.writeSpot(id, w)
 }
 
 func (this *GeoHierarchyHandler) RemoveSpot(w http.ResponseWriter, r *http.Request) {

@@ -20,6 +20,7 @@ func NewRiverPostgresDao(postgresStorage PostgresStorage) RiverDao {
 		listByCountryQuery:queries.SqlQuery("river", "by-country"),
 		listByRegionQuery:queries.SqlQuery("river", "by-region"),
 		listByFirstLettersQuery:queries.SqlQuery("river", "by-first-letters"),
+		insertQuery:queries.SqlQuery("river", "insert"),
 		updateQuery:queries.SqlQuery("river", "update"),
 		fixLinkedWaterWaysQuery:queries.SqlQuery("river", "fix-linked-waterways"),
 		deleteLinkedWwptsQuery:queries.SqlQuery("river", "delete-linked-wwpts"),
@@ -36,7 +37,8 @@ type riverStorage struct {
 	byIdQuery                string
 	listByCountryQuery       string
 	listByRegionQuery        string
-	listByFirstLettersQuery        string
+	listByFirstLettersQuery  string
+	insertQuery              string
 	updateQuery              string
 	fixLinkedWaterWaysQuery  string
 	deleteLinkedWwptsQuery   string
@@ -83,19 +85,30 @@ func (this riverStorage) ListByFirstLetters(query string, limit int) ([]RiverTit
 	return this.listRiverTitles(this.listByFirstLettersQuery, query, limit)
 }
 
-func (this riverStorage) Save(river RiverTitle) error {
+func (this riverStorage) Insert(river RiverTitle) (int64, error) {
+	aliasesB, err := json.Marshal(river.Aliases)
+	if err != nil {
+		return 0, err
+	}
+	return this.insertReturningId(this.insertQuery, river.RegionId, river.Title, string(aliasesB))
+}
+
+func (this riverStorage) Save(rivers ...RiverTitle) error {
+	vars := make([]interface{}, len(rivers))
+	for i, p := range rivers {
+		vars[i] = p
+	}
 	return this.performUpdates(this.updateQuery, func(entity interface{}) ([]interface{}, error) {
 		_river := entity.(RiverTitle)
 		aliasesB, err := json.Marshal(_river.Aliases)
 		if err != nil {
 			return []interface{}{}, err
 		}
-		return []interface{}{_river.RegionId, _river.Title, string(aliasesB), _river.Id}, nil
-	}, river)
+		return []interface{}{_river.Id, _river.RegionId, _river.Title, string(aliasesB)}, nil
+	}, vars...)
 }
 
 func (this riverStorage) listRiverTitles(query string, queryParams ...interface{}) ([]RiverTitle, error) {
-	fmt.Println(query)
 	result, err := this.doFindList(query,
 		func(rows *sql.Rows) (RiverTitle, error) {
 			riverTitle := RiverTitle{}
@@ -162,7 +175,7 @@ func (this riverStorage) Remove(id int64) error {
 	}
 	defer tx.Close();
 
-	for _, q :=range []string{this.fixLinkedWaterWaysQuery, this.deleteLinkedWwptsQuery, this.deleteLinkedReportsQuery, this.deleteQuery} {
+	for _, q := range []string{this.fixLinkedWaterWaysQuery, this.deleteLinkedWwptsQuery, this.deleteLinkedReportsQuery, this.deleteQuery} {
 		err = tx.performUpdates(q, idMapper, id)
 		if err != nil {
 			return err

@@ -67,6 +67,10 @@ function getRegions(countryId) {
     return doGetJsonSync(apiBase + "/country/" + countryId + "/region")
 }
 
+function getRegion(regionId) {
+    return doGetJsonSync(apiBase + "/region/" + regionId)
+}
+
 function getRiversByCountry(countryId) {
     return doGetJsonSync(apiBase + "/country/" + countryId + "/river")
 }

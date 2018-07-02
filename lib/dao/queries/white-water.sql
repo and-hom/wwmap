@@ -103,12 +103,12 @@ INNER JOIN river ON white_water_rapid.river_id=river.id
     WHERE white_water_rapid.id=$1
 
 --@insert-full
-INSERT INTO white_water_rapid(id, title,category, point, short_description, link, river_id,
+INSERT INTO white_water_rapid(title,category, point, short_description, link, river_id,
     lw_category, lw_description,
     mw_category, mw_description,
     hw_category, hw_description,
     orient, approach, safety,
-    preview) VALUES ($1,$2,$3,ST_GeomFromGeoJSON($4),$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
+    preview) VALUES ($1,$2,ST_GeomFromGeoJSON($3),$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) RETURNING id
     
 --@update-full
 UPDATE white_water_rapid SET title=$2,category=$3, point=ST_GeomFromGeoJSON($4), short_description=$5, link=$6, river_id=$7,

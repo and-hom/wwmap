@@ -46,13 +46,14 @@ type RiverDao interface {
 	ListByCountry(countryId int64) ([]RiverTitle, error)
 	ListByRegion(regionId int64) ([]RiverTitle, error)
 	ListByFirstLetters(query string, limit int) ([]RiverTitle, error)
-	Save(river RiverTitle) error
+	Insert(river RiverTitle) (int64, error)
+	Save(river ...RiverTitle) error
 	Remove(id int64) error
 }
 
 type WhiteWaterDao interface {
 	InsertWhiteWaterPoints(whiteWaterPoints ...WhiteWaterPoint) error
-	InsertWhiteWaterPointsFull(whiteWaterPoints ...WhiteWaterPointFull) error
+	InsertWhiteWaterPointFull(whiteWaterPoints WhiteWaterPointFull) (int64, error)
 	UpdateWhiteWaterPoints(whiteWaterPoints ...WhiteWaterPoint) error
 	UpdateWhiteWaterPointsFull(whiteWaterPoints ...WhiteWaterPointFull) error
 	Find(id int64) (WhiteWaterPointWithRiverTitle, error)

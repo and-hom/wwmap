@@ -35,12 +35,12 @@ type whiteWaterStorage struct {
 	listByRiverAndTitleQuery string
 	listWithPathQuery        string
 	insertQuery              string
-	insertFullQuery              string
+	insertFullQuery          string
 	updateQuery              string
 	byIdQuery                string
 	byIdFullQuery            string
 	updateFullQuery          string
-	deleteQuery          string
+	deleteQuery              string
 }
 
 func (this whiteWaterStorage) ListWithPath() ([]WhiteWaterPointWithPath, error) {
@@ -109,7 +109,6 @@ func (this whiteWaterStorage) FindFull(id int64) (WhiteWaterPointFull, error) {
 			return WhiteWaterPoint{}, err
 		}
 
-
 		var pgPoint PgPoint
 		err = json.Unmarshal([]byte(pointString), &pgPoint)
 		if err != nil {
@@ -131,49 +130,56 @@ func (this whiteWaterStorage) FindFull(id int64) (WhiteWaterPointFull, error) {
 	return result.(WhiteWaterPointFull), nil
 }
 
-func (this whiteWaterStorage) InsertWhiteWaterPointsFull(whiteWaterPoints ...WhiteWaterPointFull) error {
-	return this.updateFull(this.insertFullQuery, whiteWaterPoints...)
+func (this whiteWaterStorage) InsertWhiteWaterPointFull(whiteWaterPoint WhiteWaterPointFull) (int64, error) {
+	params, err := paramsFull(whiteWaterPoint)
+	if err != nil {
+		return -1, nil
+	}
+	return this.insertReturningId(this.insertFullQuery, params...)
 }
 
 func (this whiteWaterStorage) UpdateWhiteWaterPointsFull(whiteWaterPoints ...WhiteWaterPointFull) error {
-	return this.updateFull(this.updateFullQuery, whiteWaterPoints...)
-}
-
-func (this whiteWaterStorage) updateFull(query string, whiteWaterPoints ...WhiteWaterPointFull) error {
 	vars := make([]interface{}, len(whiteWaterPoints))
 	for i, p := range whiteWaterPoints {
 		vars[i] = p
 	}
-	return this.performUpdates(query,
+	return this.performUpdates(this.updateFullQuery,
 		func(entity interface{}) ([]interface{}, error) {
 			wwp := entity.(WhiteWaterPointFull)
-			pointBytes, err := json.Marshal(geo.NewGeoPoint(wwp.Point))
+			params, err := paramsFull(wwp)
 			if err != nil {
 				return nil, err
 			}
-
-			cat, err := wwp.Category.MarshalJSON()
-			if err != nil {
-				return nil, err
-			}
-			lwCat, err := wwp.LowWaterCategory.MarshalJSON()
-			if err != nil {
-				return nil, err
-			}
-			mwCat, err := wwp.MediumWaterCategory.MarshalJSON()
-			if err != nil {
-				return nil, err
-			}
-			hwCat, err := wwp.HighWaterCategory.MarshalJSON()
-			if err != nil {
-				return nil, err
-			}
-
-			params := []interface{}{wwp.Id, wwp.Title, string(cat), string(pointBytes), wwp.ShortDesc, wwp.Link, nullIf0(wwp.River.Id),
-				string(lwCat), wwp.LowWaterDescription, string(mwCat), wwp.MediumWaterDescription, string(hwCat), wwp.HighWaterDescription,
-				wwp.Orient, wwp.Approach, wwp.Safety, wwp.Preview}
-			return params, nil
+			return append([]interface{}{wwp.Id}, params...), nil
 		}, vars...)
+}
+
+func paramsFull(wwp WhiteWaterPointFull) ([]interface{}, error) {
+	pointBytes, err := json.Marshal(geo.NewGeoPoint(wwp.Point))
+	if err != nil {
+		return nil, err
+	}
+
+	cat, err := wwp.Category.MarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	lwCat, err := wwp.LowWaterCategory.MarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	mwCat, err := wwp.MediumWaterCategory.MarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	hwCat, err := wwp.HighWaterCategory.MarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+
+	return []interface{}{wwp.Title, string(cat), string(pointBytes), wwp.ShortDesc, wwp.Link, nullIf0(wwp.River.Id),
+		string(lwCat), wwp.LowWaterDescription, string(mwCat), wwp.MediumWaterDescription, string(hwCat), wwp.HighWaterDescription,
+		wwp.Orient, wwp.Approach, wwp.Safety, wwp.Preview}, nil
 }
 
 func (this whiteWaterStorage) list(query string, vars ...interface{}) ([]WhiteWaterPointWithRiverTitle, error) {
@@ -308,7 +314,6 @@ func (this whiteWaterStorage) update(query string, whiteWaterPoints ...WhiteWate
 				return nil, err
 			}
 			params := []interface{}{nullIf0(wwp.Id), wwp.Title, cat, string(pathBytes), wwp.ShortDesc, wwp.Link, nullIf0(wwp.RiverId)}
-			fmt.Println(params)
 			return params, nil
 		}, vars...)
 }

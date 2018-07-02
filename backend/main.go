@@ -26,7 +26,6 @@ type App struct {
 }
 
 func main() {
-	log.SetLevel(log.DebugLevel)
 	log.Infof("Starting wwmap")
 
 	configuration := config.Load("")
@@ -120,6 +119,8 @@ func main() {
 	r.HandleFunc("/country/{countryId}/region/{regionId}/river", geoHierarchyHandler.ListRegionRivers).Methods("GET")
 	r.HandleFunc("/country/{countryId}/river", geoHierarchyHandler.CorsGetOptionsStub).Methods("OPTIONS")
 	r.HandleFunc("/country/{countryId}/river", geoHierarchyHandler.ListCountryRivers).Methods("GET")
+	r.HandleFunc("/region/{regionId}", geoHierarchyHandler.CorsGetOptionsStub).Methods("OPTIONS")
+	r.HandleFunc("/region/{regionId}", geoHierarchyHandler.GetRegion).Methods("GET")
 	r.HandleFunc("/river", geoHierarchyHandler.CorsGetOptionsStub).Methods("OPTIONS")
 	r.HandleFunc("/river", geoHierarchyHandler.FilterRivers).Methods("GET")
 	r.HandleFunc("/river/{riverId}", geoHierarchyHandler.CorsGetOptionsStub).Methods("OPTIONS")
