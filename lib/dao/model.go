@@ -284,10 +284,17 @@ func Join(separator string, roles ...Role) string {
 	return buffer.String()
 }
 
+type UserInfo struct {
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Login  string `json:"login"`
+}
+
 type User struct {
 	Id       int64
 	YandexId int64
 	Role     Role
+	Info     UserInfo
 }
 
 type Country struct {

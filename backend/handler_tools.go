@@ -101,6 +101,11 @@ func (this *Handler) CreateMissingUser(r *http.Request) error {
 	return this.userDao.CreateIfNotExists(dao.User{
 		YandexId:info.Id,
 		Role:dao.USER,
+		Info: dao.UserInfo{
+			FirstName:info.FirstName,
+			LastName:info.LastName,
+			Login:info.Login,
+		},
 
 	})
 }
