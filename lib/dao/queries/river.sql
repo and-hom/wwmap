@@ -1,6 +1,6 @@
 --@find-by-tags
 SELECT id,region_id,title,NULL, NULL FROM (
-		SELECT id, title, CASE aliases WHEN '[]' THEN NULL ELSE jsonb_array_elements_text(aliases) END AS alias FROM river) sq
+		SELECT id,region_id, title, CASE aliases WHEN '[]' THEN NULL ELSE jsonb_array_elements_text(aliases) END AS alias FROM river) sq
 WHERE title ilike ANY($1) OR alias ilike ANY($1)
 --@nearest
 SELECT id,region_id, title, NULL, aliases FROM (
