@@ -237,7 +237,7 @@
             </div>
             <div>
                 <strong>Расположение: </strong>
-                <div id="map" style="width: 600px; height: 400px"></div>
+                <ya-map-location-editor :spot="spot"></ya-map-location-editor>
             </div>
             <div>
                 <strong>Категория сложности: </strong><a target="_blank" href="https://huskytm.ru/rules2018-2019/#categories_tab"><img src="img/question_16.png"></a>
@@ -419,76 +419,85 @@
 
                 options: [getRiver(this.spot.river.id)],
             }
-        },
-        updated: function() {
-                if (this.editMode) {
-                    var component = this
-                    ymaps.ready(function() {
-                        if (component.map) {
-                            component.map.destroy()
-                            component.label.geometry.setCoordinates(component.spot.point);
-                        } else {
-                            addCachedLayer('osm#standard', 'OSM', 'OpenStreetMap contributors, CC-BY-SA', 'osm')
-                            addLayer('google#satellite', 'Спутник Google', 'Изображения © DigitalGlobe,CNES / Airbus, 2018,Картографические данные © Google, 2018', GOOGLE_SAT_TILES)
-                            addCachedLayer('ggc#standard', 'Топографическая карта', '', 'ggc', 0, 15)
-                        }
-
-                        var myMap = new ymaps.Map("map", {
-                            center: component.spot.point,
-                            zoom: 12,
-                            controls: ["zoomControl"],
-                            type: "osm#standard",
-                        });
-                        myMap.controls.add(
-                            new ymaps.control.TypeSelector([
-                                'osm#standard',
-                                'ggc#standard',
-                                'yandex#satellite',
-                                'google#satellite',
-                            ])
-                        );
-                        var objectManager = new ymaps.RemoteObjectManager(apiBase + '/ymaps-tile-ww?bbox=%b&zoom=%z&skip=' + component.spot.id, {
-                            clusterHasBalloon: false,
-                            geoObjectOpenBalloonOnClick: false,
-                            geoObjectStrokeWidth: 3,
-                            splitRequests: true,
-                            clusterHasBalloon: false,
-                        });
-                        myMap.geoObjects.add(objectManager);
-
-                        var label = new ymaps.GeoObject({
-                                geometry: {
-                                    type: "Point",
-                                    coordinates: component.spot.point
-                                },
-                                properties: {
-                                    hintContent: component.spot.title,
-                                }
-                            }, {
-                                preset: 'islands#blueIcon',
-                                draggable: true
-                            })
-
-                        myMap.geoObjects.add(label)
-                        label.events.add('dragend', function (e) {
-                            component.spot.point = label.geometry.getCoordinates()
-                        });
-
-                        myMap.events.add('click', function (e) {
-                            p = e.get('coords')
-                            label.geometry.setCoordinates(p)
-                            component.spot.point = p
-                        });
-                        component.label = label
-                        component.map = myMap
-
-                    })
-
-                }
-        },
+        }
     });
 </script>
 <!--End of spot editor component-->
+
+<!--Ya maps component-->
+<div id="ya-map-location-editor-template" style="display:none">
+    <div id="map" style="width: 600px; height: 400px"></div>
+</div>
+<script type="text/javascript">
+    Vue.component('ya-map-location-editor', {
+        template: document.getElementById('ya-map-location-editor-template').innerHTML,
+        props: ['spot'],
+        created: function() {
+            var component = this
+            ymaps.ready(function() {
+                if (component.map) {
+                    component.map.destroy()
+                    component.label.geometry.setCoordinates(component.spot.point);
+                } else {
+                    addCachedLayer('osm#standard', 'OSM', 'OpenStreetMap contributors, CC-BY-SA', 'osm')
+                    addLayer('google#satellite', 'Спутник Google', 'Изображения © DigitalGlobe,CNES / Airbus, 2018,Картографические данные © Google, 2018', GOOGLE_SAT_TILES)
+                    addCachedLayer('ggc#standard', 'Топографическая карта', '', 'ggc', 0, 15)
+                }
+
+                var myMap = new ymaps.Map("map", {
+                    center: component.spot.point,
+                    zoom: 12,
+                    controls: ["zoomControl"],
+                    type: "osm#standard",
+                });
+                myMap.controls.add(
+                    new ymaps.control.TypeSelector([
+                        'osm#standard',
+                        'ggc#standard',
+                        'yandex#satellite',
+                        'google#satellite',
+                    ])
+                );
+                var objectManager = new ymaps.RemoteObjectManager(apiBase + '/ymaps-tile-ww?bbox=%b&zoom=%z&skip=' + component.spot.id, {
+                    clusterHasBalloon: false,
+                    geoObjectOpenBalloonOnClick: false,
+                    geoObjectStrokeWidth: 3,
+                    splitRequests: true,
+                    clusterHasBalloon: false,
+                });
+                myMap.geoObjects.add(objectManager);
+
+                var label = new ymaps.GeoObject({
+                        geometry: {
+                            type: "Point",
+                            coordinates: component.spot.point
+                        },
+                        properties: {
+                            hintContent: component.spot.title,
+                        }
+                    }, {
+                        preset: 'islands#blueIcon',
+                        draggable: true
+                    })
+
+                myMap.geoObjects.add(label)
+                label.events.add('dragend', function (e) {
+                    component.spot.point = label.geometry.getCoordinates()
+                });
+
+                myMap.events.add('click', function (e) {
+                    p = e.get('coords')
+                    label.geometry.setCoordinates(p)
+                    component.spot.point = p
+                });
+                component.label = label
+                component.map = myMap
+
+            })
+        },
+    });
+</script>
+<!--End of Ya maps component-->
 
 
 <!--river editor component-->
