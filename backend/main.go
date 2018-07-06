@@ -10,6 +10,7 @@ import (
 	"os"
 	"github.com/and-hom/wwmap/backend/passport"
 	"time"
+	"github.com/and-hom/wwmap/backend/referer"
 )
 
 type App struct {
@@ -23,6 +24,7 @@ type App struct {
 	countryDao      CountryDao
 	regionDao       RegionDao
 	yandexPassport  passport.YandexPassport
+	refererStorage  referer.RefererStorage
 }
 
 func main() {
@@ -57,6 +59,7 @@ func main() {
 		countryDao: countryDao,
 		regionDao: regionDao,
 		yandexPassport: yandexPassport,
+		refererStorage: referer.Dummy{},
 	}
 
 	handler := Handler{app}

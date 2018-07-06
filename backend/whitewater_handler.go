@@ -22,6 +22,7 @@ type WhiteWaterHandler struct {
 
 func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req *http.Request) {
 	CorsHeaders(w, "GET, OPTIONS")
+	this.collectReferer(req)
 
 	callback, bbox, zoom, err := this.tileParamsZ(w, req)
 	if err != nil {

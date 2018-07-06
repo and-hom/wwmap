@@ -13,6 +13,7 @@ import (
 	. "github.com/and-hom/wwmap/lib/http"
 	"strconv"
 	"github.com/and-hom/wwmap/lib/dao"
+	"net/url"
 )
 
 func (this *Handler) JsonpAnswer(callback string, object interface{}, _default string) []byte {
@@ -146,4 +147,26 @@ func (this *Handler) CheckRoleAllowed(r *http.Request, allowedRoles ...dao.Role)
 		}
 	}
 	return false, nil
+}
+
+func (this *Handler) collectReferer(r *http.Request) {
+	referer := r.Header.Get("Referer")
+	if referer == "" {
+		return
+	}
+
+	refererUrl, err := url.Parse(referer)
+	if err != nil {
+		log.Warnf("Invalid referer: %s", referer)
+		return
+	}
+	if refererUrl.Hostname() == "localhost" {
+		return
+	}
+
+	if refererUrl.Scheme == "https" {
+		this.refererStorage.PutHttps(refererUrl.Host)
+	} else {
+		this.refererStorage.PutHttp(refererUrl.Host)
+	}
 }
