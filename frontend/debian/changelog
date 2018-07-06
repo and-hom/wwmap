@@ -1,3 +1,9 @@
+wwmap-frontend (0.0.15) unstable; urgency=medium
+
+  * js warnings fix
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Fri, 06 Jul 2018 23:42:53 +0300
+
 wwmap-frontend (0.0.14) unstable; urgency=medium
 
   * Fix #85: html/css/js refactoring, map integration tutorial improvements.
