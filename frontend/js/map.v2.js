@@ -230,10 +230,14 @@ class WWMapPopup {
 }
 
 function loadFragment(url, fromId, onLoad) {
-    var virtualElement = $('<div id="loaded-content"></div>' )
+    var virtualElement = $('<div id="loaded-content"></div>')
     virtualElement.load( url + ' #' + fromId, () => {
         onLoad(virtualElement.html())
     });
+}
+
+function extractInnerHtml(str) {
+    return $(str).html()
 }
 
 
@@ -299,7 +303,7 @@ function initWWMap(mapId, riversListId) {
     // init and show map
     ymaps.ready(function() {
         loadFragment(MAP_FRAGMENTS_URL, 'bubble_template', (bubbleContent) => {
-            wwMap = new WWMap(mapId, bubbleContent, riverList, tutorialPopup)
+            wwMap = new WWMap(mapId, extractInnerHtml(bubbleContent), riverList, tutorialPopup)
             wwMap.init()
         })
     });
