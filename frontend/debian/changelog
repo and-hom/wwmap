@@ -1,3 +1,9 @@
+wwmap-frontend (0.0.14) unstable; urgency=medium
+
+  * Fix #85: html/css/js refactoring, map integration tutorial improvements.
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Fri, 06 Jul 2018 22:41:10 +0300
+
 wwmap-frontend (0.0.13) unstable; urgency=medium
 
   * #71 Add and remove rivers and spots, editor improvements, visual ya maps point editor
