@@ -12,32 +12,32 @@ const GOOGLE_SAT_TILES = 'http://khms' + Math.floor(Math.random()) % 4 + '.googl
 const THUNDERFOREST_OUTDOOR_TILES = 'http://a.tile.thunderforest.com/outdoors/%z/%x/%y.png';
 const THUNDERFOREST_LANDSCAPE_TILES = 'http://a.tile.thunderforest.com/landscape/%z/%x/%y.png';
 
-
+const MAP_FRAGMENTS_URL = 'https://wwmap.ru/map-html-components.htm'
 
 function getLastPosition() {
     lastPos = $.cookie(LAST_POS_COOKIE_NAME);
     if (lastPos) {
-        return $.parseJSON(lastPos)
+        return JSON.parse(lastPos)
     } else {
         return [78, 46]
     }
 }
 
 function setLastPosition(pos) {
-    $.cookie(LAST_POS_COOKIE_NAME, $.toJSON(pos), {path: '/'})
+    $.cookie(LAST_POS_COOKIE_NAME, JSON.stringify(pos), {path: '/'})
 }
 
 function getLastZoom() {
     lastZoom = $.cookie(LAST_ZOOM_COOKIE_NAME);
     if (lastZoom) {
-        return $.parseJSON(lastZoom)
+        return JSON.parse(lastZoom)
     } else {
         return 3
     }
 }
 
 function setLastZoom(z) {
-    $.cookie(LAST_ZOOM_COOKIE_NAME, $.toJSON(z), {path: '/'})
+    $.cookie(LAST_ZOOM_COOKIE_NAME, JSON.stringify(z), {path: '/'})
 }
 
 function setLastPositionZoomType(pos, z, type) {
@@ -86,12 +86,12 @@ function getLastPositionAndZoom() {
 function getLastMapType() {
     lastMapType = $.cookie(LAST_MAP_TYPE_COOKIE_NAME);
     if (lastMapType) {
-        return $.parseJSON(lastMapType)
+        return JSON.parse(lastMapType)
     } else {
         return "osm#standard"
     }
 }
 
 function setLastMapType(z) {
-    $.cookie(LAST_MAP_TYPE_COOKIE_NAME, $.toJSON(z), {path: '/'})
+    $.cookie(LAST_MAP_TYPE_COOKIE_NAME, JSON.stringify(z), {path: '/'})
 }
