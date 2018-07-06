@@ -587,7 +587,7 @@ func (this *PostgresStorage) updateReturningId(query string, mapper func(entity 
 		if rows.Next() {
 			rows.Scan(&result[idx])
 		} else {
-			return []int64{}, fmt.Errorf("Value is not inserted: %v+\n %s", value, query)
+			return []int64{}, fmt.Errorf("Value is not inserted: %v+\n %s", args, query)
 		}
 		err = rows.Close()
 		if err != nil {

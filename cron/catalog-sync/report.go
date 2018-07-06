@@ -78,7 +78,7 @@ func (this *App) associateReportsWithRivers(source string, resultHandlerMap *map
 }
 
 func (this *App) associateReportWithRiver(report *dao.VoyageReport, resultHandlerMap *map[int64][]dao.RiverTitle) error {
-	log.Infof("Tags are: %v", report.Tags)
+	log.Debugf("Tags are: %v", report.Tags)
 	rivers, err := this.RiverDao.FindTitles(report.Tags)
 	if err != nil {
 		return err
@@ -103,11 +103,11 @@ func (this *App) findMatchAndStoreImages(report dao.VoyageReport, rivers []dao.R
 	if err != nil {
 		this.Fatalf(err, "Can not load images for report %d", report.Id)
 	}
-	log.Infof("%d images found for %s %d", len(imgs), report.Source, report.Id)
-	log.Infof("Bind images to ww spots for report %d", report.Id)
+	log.Debugf("%d images found for %s %d", len(imgs), report.Source, report.Id)
+	log.Debugf("Bind images to ww spots for report %d", report.Id)
 	matchedImgs := []dao.Img{}
 	candidates := this.matchImgsToWhiteWaterPoints(report, imgs, rivers)
-	log.Infof("%d images matched for %s %d", len(candidates), report.Source, report.Id)
+	log.Debugf("%d images matched for %s %d", len(candidates), report.Source, report.Id)
 
 	for _, imgToWwpts := range candidates {
 		if len(imgToWwpts.Wwpts) == 1 {

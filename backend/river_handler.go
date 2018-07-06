@@ -43,6 +43,7 @@ func (this *RiverHandler) GetNearestRivers(w http.ResponseWriter, r *http.Reques
 type VoyageReportDto struct {
 	Id            int64 `json:"id"`
 	Title         string `json:"title"`
+	Author        string `json:"author"`
 	Year          int `json:"year"`
 	Url           string `json:"url"`
 	SourceLogoUrl string `json:"source_logo_url"`
@@ -83,6 +84,7 @@ func (this *RiverHandler) GetVisibleRivers(w http.ResponseWriter, req *http.Requ
 				Id:report.Id,
 				Url:report.Url,
 				Title:report.Title,
+				Author:report.Author,
 				Year:report.DateOfTrip.Year(),
 				SourceLogoUrl:this.resourceBase + "/img/report_sources/" + strings.ToLower(report.Source) + ".png",
 			}

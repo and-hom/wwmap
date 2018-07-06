@@ -39,7 +39,7 @@ func (this voyageReportStorage) UpsertVoyageReports(reports ...VoyageReport) ([]
 			if err != nil {
 				return []interface{}{}, err
 			}
-			return []interface{}{_report.Title, _report.RemoteId, _report.Source, _report.Url, _report.DatePublished, _report.DateModified, _report.DateOfTrip, tags}, nil
+			return []interface{}{_report.Title, _report.RemoteId, _report.Source, _report.Url, _report.DatePublished, _report.DateModified, _report.DateOfTrip, tags, _report.Author}, nil
 		}, reports_i...)
 
 	if err != nil {
@@ -97,7 +97,7 @@ func readReportFromRows(rows *sql.Rows) (VoyageReport, error) {
 	report := VoyageReport{}
 	dateOfTrip := pq.NullTime{}
 	var tags string
-	err := rows.Scan(&report.Id, &report.Title, &report.RemoteId, &report.Source, &report.Url, &report.DatePublished, &report.DateModified, &dateOfTrip, &tags)
+	err := rows.Scan(&report.Id, &report.Title, &report.RemoteId, &report.Source, &report.Url, &report.DatePublished, &report.DateModified, &dateOfTrip, &tags, &report.Author)
 	if dateOfTrip.Valid {
 		report.DateOfTrip = dateOfTrip.Time
 	}

@@ -19,9 +19,11 @@ const SOURCE string = "tlib"
 const SITE_URL = "http://www.tlib.ru"
 const TIME_FORMAT string = "02.01.2006 15:04:05"
 const DATE_FORMAT string = "02.01.2006"
+const DEFAULT_AUTHOR string = "tlib.ru"
 
 const URL_ID_RE = "id=(\\d+)"
 const TITILE_RE = "Маршрут:[\\s\n]*?(.*?)[\\s\n]*?Тип:"
+const AUTHOR_RE = "Автор:[\\s\n]*?(.*?);?[\\s\n]*?Город:"
 const YEAR_MONTH_RE = "год:[\\s\n]*?(\\d{4})[\\s\n]*?(;[\\s\n]*?месяц:[\\s\n]*?(январь|февраль|март|апрель|май|июнь|июль|август|сентябрь|октябрь|ноябрь|декабрь)[\\s\n]*?)?"
 const RIVER_RE = "([рp]\\.\\s?|река\\s+)(.*?)\\s?[=$\\(]"
 const PUBLISHED_DATE_RE = "Загружено:\\s*(\\d{1,2}\\.\\d{1,2}\\.\\d{4} \\d{1,2}:\\d{1,2}:\\d{1,2})"
@@ -31,6 +33,7 @@ var zero = util.ZeroDateUTC()
 var urlIdRe = regexp.MustCompile(URL_ID_RE)
 var titleRe = regexp.MustCompile(TITILE_RE)
 var yearMonthRe = regexp.MustCompile(YEAR_MONTH_RE)
+var authorRe = regexp.MustCompile(AUTHOR_RE)
 var riverRe = regexp.MustCompile(RIVER_RE)
 var publishedDateRe = regexp.MustCompile(PUBLISHED_DATE_RE)
 
@@ -173,10 +176,17 @@ func (this TlibReportsProvider) queryData(pageNum int, viewState ViewState, date
 
 		remoteId := urlIdRe.FindStringSubmatch(reportUrl)[1]
 
-		datePublished, err := this.getDatePublished(reportUrl)
+		datePublished := zero
+		author := DEFAULT_AUTHOR
+		pageContents, err := this.getReportPageContents(reportUrl)
 		if err != nil {
-			log.Errorf("Can not find date published for %s %s", reportUrl, err.Error())
-			datePublished = zero
+			log.Errorf("Can not read report page for for %s %s", reportUrl, err.Error())
+		} else {
+			datePublished, err = this.parseDatePublished(reportUrl, pageContents)
+			if err != nil {
+				log.Errorf("Can not find date published for %s %s", reportUrl, err.Error())
+			}
+			author = this.parseAuthor(reportUrl, pageContents)
 		}
 
 		descritionText := row.Find("td:nth-of-type(2)").Text()
@@ -200,6 +210,7 @@ func (this TlibReportsProvider) queryData(pageNum int, viewState ViewState, date
 		report := dao.VoyageReport{
 			RemoteId: remoteId,
 			Title: title,
+			Author: author,
 			Source: SOURCE,
 			Url: reportUrl,
 			Tags: tags,
@@ -251,27 +262,40 @@ func parseDateOfTrip(desc string) (time.Time, error) {
 	return dateOfTheTrip, nil
 }
 
-func (this TlibReportsProvider) getDatePublished(reportUrl string) (time.Time, error) {
+func (this TlibReportsProvider) getReportPageContents(reportUrl string) (string, error) {
 	req, err := http.NewRequest("GET", reportUrl, nil)
 	if err != nil {
-		return zero, err
+		return "", err
 	}
 	resp, err := this.client.Do(req)
 	if err != nil {
-		return zero, err
+		return "", err
 	}
 	document, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
-		return zero, err
+		return "", err
 	}
-	descriptionBodyText := document.Find("#Label1").Text()
-	found := publishedDateRe.FindStringSubmatch(descriptionBodyText)
+	return document.Find("#Label1").Text(), nil
+}
+
+func (this TlibReportsProvider) parseDatePublished(reportUrl string, pageContents string) (time.Time, error) {
+
+	found := publishedDateRe.FindStringSubmatch(pageContents)
 	if len(found) < 2 {
-		log.Warnf("Date not found for description %s %s:\n%s", reportUrl, found, descriptionBodyText)
+		log.Warnf("Date not found for description %s %s:\n%s", reportUrl, found, pageContents)
 		return zero, nil
 	}
 	dateStr := found[1]
 	return time.Parse(TIME_FORMAT, dateStr)
+}
+
+func (this TlibReportsProvider) parseAuthor(reportUrl string, pageContents string) string {
+	found := authorRe.FindStringSubmatch(pageContents)
+	if len(found) < 2 {
+		log.Warnf("Author not found for description %s %s:\n%s", reportUrl, found, pageContents)
+		return DEFAULT_AUTHOR
+	}
+	return strings.TrimSpace(found[1])
 }
 
 func (this TlibReportsProvider) Images(reportId string) ([]dao.Img, error) {

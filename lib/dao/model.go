@@ -228,6 +228,7 @@ type ReportWithName struct {
 type VoyageReport struct {
 	Id            int64 `json:"id,omitempty"`
 	Title         string `json:"title"`
+	Author        string `json:"author"`
 	Source        string `json:"source"`
 	RemoteId      string `json:"remote_id"`
 	Url           string `json:"url"`

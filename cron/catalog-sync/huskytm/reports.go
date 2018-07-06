@@ -144,6 +144,7 @@ func (this *HuskytmReportProvider) ReportsSince(key time.Time) ([]dao.VoyageRepo
 		ids = append(ids, dao.VoyageReport{
 			RemoteId:fmt.Sprintf("%d", post.ID),
 			Title: title,
+			Author: "Husky Team",
 			Url:post.Link,
 			DatePublished: datePublished,
 			DateModified: dateModified,
