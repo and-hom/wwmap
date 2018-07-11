@@ -2,10 +2,6 @@
     width: 100%;
 }
 
-ul {
-    list-style-type: none;
-}
-
 .menu-item a {
     float: right;
     padding-left: 10px;

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Сайты</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script type="text/javascript" src="js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="js/api.js"></script>
+    <script type="text/javascript" src="js/auth.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+            <a class="nav-link" href="editor.htm">Редактор</a>
+        </li>
+        <li class="nav-item active">
+            <a class="nav-link" href="#">Сайты</a>
+        </li>
+    </ul>
+    <auth/>
+</nav>
+
+<div id="ref-sites">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12" id="left-menu">
+                <h1>Сайты, на которых размещена карта</h1>
+                <ul>
+                    <li v-for="ref in refs"><a target="_blank" :href="ref.page">{{ ref.page }}</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    function getRefs() {
+        return doGetJsonSync(apiBase + "/ref-sites")
+    }
+
+    var app = new Vue({
+        el: '#ref-sites',
+        data: {
+          refs: getRefs(),
+        }
+    })
+
+</script>
+
+</body>
+</html>
