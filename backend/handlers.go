@@ -5,6 +5,7 @@ import (
 	"net/http"
 	. "github.com/and-hom/wwmap/lib/geo"
 	. "github.com/and-hom/wwmap/lib/http"
+	"encoding/json"
 )
 
 type Handler struct {
@@ -25,6 +26,19 @@ func (this *Handler) TileHandler(w http.ResponseWriter, req *http.Request) {
 	log.Infof("Found %d", len(featureCollection.Features))
 
 	w.Write(this.JsonpAnswer(callback, featureCollection, "{}"))
+}
+
+func (this *Handler) RefSites(w http.ResponseWriter, req *http.Request) {
+	CorsHeaders(w, "GET, OPTIONS")
+	JsonResponse(w)
+
+	refs := this.refererStorage.List()
+	bytes, err := json.Marshal(refs)
+	if err != nil {
+		OnError500(w, err, "Can not marshal json")
+		return
+	}
+	w.Write(bytes)
 }
 
 

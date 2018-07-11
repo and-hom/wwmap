@@ -164,9 +164,5 @@ func (this *Handler) collectReferer(r *http.Request) {
 		return
 	}
 
-	if refererUrl.Scheme == "https" {
-		this.refererStorage.PutHttps(refererUrl.Host)
-	} else {
-		this.refererStorage.PutHttp(refererUrl.Host)
-	}
+	this.refererStorage.Put(refererUrl)
 }

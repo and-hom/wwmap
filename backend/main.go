@@ -59,7 +59,7 @@ func main() {
 		countryDao: countryDao,
 		regionDao: regionDao,
 		yandexPassport: yandexPassport,
-		refererStorage: referer.Dummy{},
+		refererStorage: referer.CreateDummyReferrerStorage(),
 	}
 
 	handler := Handler{app}
@@ -140,6 +140,9 @@ func main() {
 	r.HandleFunc("/spot/{spotId}", geoHierarchyHandler.GetSpot).Methods("GET")
 	r.HandleFunc("/spot/{spotId}", geoHierarchyHandler.SaveSpot).Methods("POST", "PUT")
 	r.HandleFunc("/spot/{spotId}", geoHierarchyHandler.RemoveSpot).Methods("DELETE")
+
+	r.HandleFunc("/ref-sites", handler.CorsGetOptionsStub).Methods("OPTIONS")
+	r.HandleFunc("/ref-sites", handler.RefSites).Methods("GET")
 
 	log.Infof("Starting http server on %s", configuration.Api.BindTo)
 	http.Handle("/", r)
