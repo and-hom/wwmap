@@ -22,10 +22,10 @@ type EventPointType string;
 const (
 	PHOTO EventPointType = "photo"
 	VIDEO EventPointType = "video"
-	POST EventPointType = "post"
+	POST_ EventPointType = "post"
 )
 
-var EventPointAvailableTypes []EventPointType = []EventPointType{PHOTO, VIDEO, POST}
+var EventPointAvailableTypes []EventPointType = []EventPointType{PHOTO, VIDEO, POST_}
 
 func ParseEventPointType(s string) (EventPointType, error) {
 	for _, t := range EventPointAvailableTypes {
@@ -239,16 +239,21 @@ type VoyageReport struct {
 }
 
 type Img struct {
-	Id              int64
-	WwId            int64
-	ReportId        int64
-	Source          string
-	RemoteId        string
-	RawUrl          string
-	Url             string
-	PreviewUrl      string
-	DatePublished   time.Time
-	LabelsForSearch []string
+	Id              int64 `json:"id"`
+	WwId            int64 `json:"ww_id"`
+	ReportId        int64 `json:"report_id"`
+	Source          string `json:"source"`
+	RemoteId        string `json:"remote_id"`
+	RawUrl          string `json:"-"`
+	Url             string `json:"url"`
+	PreviewUrl      string `json:"preview_url"`
+	DatePublished   time.Time `json:"date_published"`
+	LabelsForSearch []string `json:"-"`
+	Enabled		bool `json:"enabled"`
+}
+
+func (this Img) IdStr() string {
+	return fmt.Sprintf("%d", this.Id)
 }
 
 type WWPassport struct {

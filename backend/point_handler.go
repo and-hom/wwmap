@@ -17,7 +17,7 @@ type PointHandler struct {
 }
 
 func (this *PointHandler) GetPoint(w http.ResponseWriter, r *http.Request) {
-	CorsHeaders(w, "POST, GET, OPTIONS, PUT, DELETE")
+	CorsHeaders(w, POST, GET, OPTIONS, PUT, DELETE)
 
 	pathParams := mux.Vars(r)
 	id, err := strconv.ParseInt(pathParams["id"], 10, 64)
@@ -47,7 +47,7 @@ func (this *PointHandler) writePointToResponse(id int64, w http.ResponseWriter) 
 }
 
 func (this *PointHandler) DelPoint(w http.ResponseWriter, r *http.Request) {
-	CorsHeaders(w, "POST, GET, OPTIONS, PUT, DELETE")
+	CorsHeaders(w, POST, GET, OPTIONS, PUT, DELETE)
 	pathParams := mux.Vars(r)
 	id, err := strconv.ParseInt(pathParams["id"], 10, 64)
 	if err != nil {
@@ -62,7 +62,7 @@ func (this *PointHandler) DelPoint(w http.ResponseWriter, r *http.Request) {
 }
 
 func (this *PointHandler) EditPoint(w http.ResponseWriter, r *http.Request) {
-	CorsHeaders(w, "POST, GET, OPTIONS, PUT, DELETE")
+	CorsHeaders(w, POST, GET, OPTIONS, PUT, DELETE)
 	err := r.ParseForm()
 	if err != nil {
 		OnError(w, err, "Can not parse form", http.StatusBadRequest)
@@ -92,7 +92,7 @@ func (this *PointHandler) EditPoint(w http.ResponseWriter, r *http.Request) {
 }
 
 func (this *PointHandler) AddPoint(w http.ResponseWriter, r *http.Request) {
-	CorsHeaders(w, "POST, GET, OPTIONS, PUT, DELETE")
+	CorsHeaders(w, POST, GET, OPTIONS, PUT, DELETE)
 	err := r.ParseForm()
 	if err != nil {
 		OnError(w, err, "Can not parse form", http.StatusBadRequest)

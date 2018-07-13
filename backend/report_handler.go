@@ -13,7 +13,7 @@ type ReportHandler struct {
 }
 
 func (this *ReportHandler) AddReport(w http.ResponseWriter, r *http.Request) {
-	CorsHeaders(w, "POST")
+	CorsHeaders(w, POST)
 
 	comment := r.FormValue("comment")
 	objectIdStr := r.FormValue("object_id")

@@ -10,6 +10,7 @@ import (
 	"os"
 	"github.com/and-hom/wwmap/backend/passport"
 	"time"
+	"github.com/and-hom/wwmap/lib/img_storage"
 )
 
 type App struct {
@@ -24,6 +25,15 @@ type App struct {
 	regionDao       RegionDao
 	yandexPassport  passport.YandexPassport
 }
+
+const (
+	OPTIONS = "OPTIONS"
+	HEAD = "HEAD"
+	GET = "GET"
+	PUT = "PUT"
+	POST = "POST"
+	DELETE = "DELETE"
+)
 
 func main() {
 	log.Infof("Starting wwmap")
@@ -70,6 +80,17 @@ func main() {
 	pictureHandler := PictureHandler{handler}
 	userInfoHandler := UserInfoHandler{handler}
 	geoHierarchyHandler := GeoHierarchyHandler{Handler: handler}
+	imgHandler := ImgHandler{
+		Handler:handler,
+		imgStorage: img_storage.BasicFsStorage{
+			BaseDir:configuration.ImgStorage.Full.Dir,
+		},
+		previewImgStorage: img_storage.BasicFsStorage{
+			BaseDir:configuration.ImgStorage.Preview.Dir,
+		},
+		imgUrlBase:configuration.ImgStorage.Full.UrlBase,
+		imgUrlPreviewBase:configuration.ImgStorage.Preview.UrlBase,
+	}
 
 	r := mux.NewRouter()
 	r.HandleFunc("/ymaps-tile", handler.TileHandler)
@@ -77,66 +98,73 @@ func main() {
 	//r.HandleFunc("/track-active-areas/{id:[0-9]+}/{x:[0-9]+}/{y:[0-9]+}/{z:[0-9]+}", handler.TrackPointsToClickHandler)
 	r.HandleFunc("/visible-routes", routeHandler.GetVisibleRoutes)
 
-	r.HandleFunc("/route/{id}", handler.CorsGetOptionsStub).Methods("GET", "OPTIONS")
-	r.HandleFunc("/route/{id}", routeHandler.EditRoute).Methods("PUT")
-	r.HandleFunc("/route/{id}", routeHandler.DelRoute).Methods("DELETE")
+	r.HandleFunc("/route/{id}", handler.CorsGetOptionsStub).Methods(GET, OPTIONS)
+	r.HandleFunc("/route/{id}", routeHandler.EditRoute).Methods(PUT)
+	r.HandleFunc("/route/{id}", routeHandler.DelRoute).Methods(DELETE)
 	r.HandleFunc("/route-editor-page", routeHandler.RouteEditorPageHandler)
 
-	r.HandleFunc("/track/{id}", trackHandler.EditTrack).Methods("PUT")
-	r.HandleFunc("/track/{id}", trackHandler.DelTrack).Methods("DELETE")
-	r.HandleFunc("/track/{id}", handler.CorsGetOptionsStub).Methods("GET", "OPTIONS")
+	r.HandleFunc("/track/{id}", trackHandler.EditTrack).Methods(PUT)
+	r.HandleFunc("/track/{id}", trackHandler.DelTrack).Methods(DELETE)
+	r.HandleFunc("/track/{id}", handler.CorsGetOptionsStub).Methods(GET, OPTIONS)
 
-	r.HandleFunc("/upload-track", trackHandler.UploadTrack).Methods("POST")
+	r.HandleFunc("/upload-track", trackHandler.UploadTrack).Methods(POST)
 
-	r.HandleFunc("/point", pointHandler.AddPoint).Methods("POST")
-	r.HandleFunc("/point/{id}", pointHandler.EditPoint).Methods("PUT")
-	r.HandleFunc("/point/{id}", pointHandler.DelPoint).Methods("DELETE")
-	r.HandleFunc("/point/{id}", pointHandler.GetPoint).Methods("OPTIONS", "GET")
+	r.HandleFunc("/point", pointHandler.AddPoint).Methods(POST)
+	r.HandleFunc("/point/{id}", pointHandler.EditPoint).Methods(PUT)
+	r.HandleFunc("/point/{id}", pointHandler.DelPoint).Methods(DELETE)
+	r.HandleFunc("/point/{id}", pointHandler.GetPoint).Methods(OPTIONS, GET)
 
-	r.HandleFunc("/picture-metadata", pictureHandler.PictureMetadataHandler).Methods("POST")
+	r.HandleFunc("/picture-metadata", pictureHandler.PictureMetadataHandler).Methods(POST)
 
 	r.HandleFunc("/ymaps-tile-ww", whiteWaterHandler.TileWhiteWaterHandler)
-	r.HandleFunc("/whitewater", whiteWaterHandler.CorsGetOptionsStub).Methods("OPTIONS")
-	r.HandleFunc("/whitewater", whiteWaterHandler.InsertWhiteWaterPoints).Methods("PUT", "POST")
+	r.HandleFunc("/whitewater", whiteWaterHandler.CorsGetOptionsStub).Methods(OPTIONS)
+	r.HandleFunc("/whitewater", whiteWaterHandler.InsertWhiteWaterPoints).Methods(PUT, POST)
 
-	r.HandleFunc("/nearest-rivers", riverHandler.GetNearestRivers).Methods("GET")
-	r.HandleFunc("/visible-rivers", riverHandler.GetVisibleRivers).Methods("GET")
+	r.HandleFunc("/nearest-rivers", riverHandler.GetNearestRivers).Methods(GET)
+	r.HandleFunc("/visible-rivers", riverHandler.GetVisibleRivers).Methods(GET)
 
-	r.HandleFunc("/gpx/{id}", gpxHandler.DownloadGpx).Methods("GET")
+	r.HandleFunc("/gpx/{id}", gpxHandler.DownloadGpx).Methods(GET)
 
-	r.HandleFunc("/report", reportHandler.AddReport).Methods("POST")
+	r.HandleFunc("/report", reportHandler.AddReport).Methods(POST)
 
-	r.HandleFunc("/user-info", userInfoHandler.CorsGetOptionsStub).Methods("OPTIONS")
-	r.HandleFunc("/user-info", userInfoHandler.GetUserInfo).Methods("GET")
-	r.HandleFunc("/auth-test", userInfoHandler.TestAuth).Methods("GET")
+	r.HandleFunc("/user-info", userInfoHandler.CorsGetOptionsStub).Methods(OPTIONS)
+	r.HandleFunc("/user-info", userInfoHandler.GetUserInfo).Methods(GET)
+	r.HandleFunc("/auth-test", userInfoHandler.TestAuth).Methods(GET)
 
 	// Web editor support
-	r.HandleFunc("/country", geoHierarchyHandler.CorsGetOptionsStub).Methods("OPTIONS")
-	r.HandleFunc("/country", geoHierarchyHandler.ListCountries).Methods("GET")
-	r.HandleFunc("/country/{countryId}/region", geoHierarchyHandler.CorsGetOptionsStub).Methods("OPTIONS")
-	r.HandleFunc("/country/{countryId}/region", geoHierarchyHandler.ListRegions).Methods("GET")
-	r.HandleFunc("/country/{countryId}/region/{regionId}/river", geoHierarchyHandler.CorsGetOptionsStub).Methods("OPTIONS")
-	r.HandleFunc("/country/{countryId}/region/{regionId}/river", geoHierarchyHandler.ListRegionRivers).Methods("GET")
-	r.HandleFunc("/country/{countryId}/river", geoHierarchyHandler.CorsGetOptionsStub).Methods("OPTIONS")
-	r.HandleFunc("/country/{countryId}/river", geoHierarchyHandler.ListCountryRivers).Methods("GET")
-	r.HandleFunc("/region/{regionId}", geoHierarchyHandler.CorsGetOptionsStub).Methods("OPTIONS")
-	r.HandleFunc("/region/{regionId}", geoHierarchyHandler.GetRegion).Methods("GET")
-	r.HandleFunc("/river", geoHierarchyHandler.CorsGetOptionsStub).Methods("OPTIONS")
-	r.HandleFunc("/river", geoHierarchyHandler.FilterRivers).Methods("GET")
-	r.HandleFunc("/river/{riverId}", geoHierarchyHandler.CorsGetOptionsStub).Methods("OPTIONS")
-	r.HandleFunc("/river/{riverId}", geoHierarchyHandler.GetRiver).Methods("GET")
-	r.HandleFunc("/river/{riverId}", geoHierarchyHandler.SaveRiver).Methods("POST", "PUT")
-	r.HandleFunc("/river/{riverId}", geoHierarchyHandler.RemoveRiver).Methods("DELETE")
-	r.HandleFunc("/river/{riverId}/reports", geoHierarchyHandler.CorsGetOptionsStub).Methods("OPTIONS")
-	r.HandleFunc("/river/{riverId}/reports", geoHierarchyHandler.ListRiverReports).Methods("GET")
-	r.HandleFunc("/river/{riverId}/spots", geoHierarchyHandler.CorsGetOptionsStub).Methods("OPTIONS")
-	r.HandleFunc("/river/{riverId}/spots", geoHierarchyHandler.ListSpots).Methods("GET")
-	r.HandleFunc("/region", geoHierarchyHandler.CorsGetOptionsStub).Methods("OPTIONS")
-	r.HandleFunc("/region", geoHierarchyHandler.ListAllRegions).Methods("GET")
-	r.HandleFunc("/spot/{spotId}", geoHierarchyHandler.CorsGetOptionsStub).Methods("OPTIONS")
-	r.HandleFunc("/spot/{spotId}", geoHierarchyHandler.GetSpot).Methods("GET")
-	r.HandleFunc("/spot/{spotId}", geoHierarchyHandler.SaveSpot).Methods("POST", "PUT")
-	r.HandleFunc("/spot/{spotId}", geoHierarchyHandler.RemoveSpot).Methods("DELETE")
+	r.HandleFunc("/country", geoHierarchyHandler.CorsGetOptionsStub).Methods(OPTIONS)
+	r.HandleFunc("/country", geoHierarchyHandler.ListCountries).Methods(GET)
+	r.HandleFunc("/country/{countryId}/region", geoHierarchyHandler.CorsGetOptionsStub).Methods(OPTIONS)
+	r.HandleFunc("/country/{countryId}/region", geoHierarchyHandler.ListRegions).Methods(GET)
+	r.HandleFunc("/country/{countryId}/region/{regionId}/river", geoHierarchyHandler.CorsGetOptionsStub).Methods(OPTIONS)
+	r.HandleFunc("/country/{countryId}/region/{regionId}/river", geoHierarchyHandler.ListRegionRivers).Methods(GET)
+	r.HandleFunc("/country/{countryId}/river", geoHierarchyHandler.CorsGetOptionsStub).Methods(OPTIONS)
+	r.HandleFunc("/country/{countryId}/river", geoHierarchyHandler.ListCountryRivers).Methods(GET)
+	r.HandleFunc("/region/{regionId}", geoHierarchyHandler.CorsGetOptionsStub).Methods(OPTIONS)
+	r.HandleFunc("/region/{regionId}", geoHierarchyHandler.GetRegion).Methods(GET)
+	r.HandleFunc("/river", geoHierarchyHandler.CorsGetOptionsStub).Methods(OPTIONS)
+	r.HandleFunc("/river", geoHierarchyHandler.FilterRivers).Methods(GET)
+	r.HandleFunc("/river/{riverId}", geoHierarchyHandler.CorsGetOptionsStub).Methods(OPTIONS)
+	r.HandleFunc("/river/{riverId}", geoHierarchyHandler.GetRiver).Methods(GET)
+	r.HandleFunc("/river/{riverId}", geoHierarchyHandler.SaveRiver).Methods(POST, PUT)
+	r.HandleFunc("/river/{riverId}", geoHierarchyHandler.RemoveRiver).Methods(DELETE)
+	r.HandleFunc("/river/{riverId}/reports", geoHierarchyHandler.CorsGetOptionsStub).Methods(OPTIONS)
+	r.HandleFunc("/river/{riverId}/reports", geoHierarchyHandler.ListRiverReports).Methods(GET)
+	r.HandleFunc("/river/{riverId}/spots", geoHierarchyHandler.CorsGetOptionsStub).Methods(OPTIONS)
+	r.HandleFunc("/river/{riverId}/spots", geoHierarchyHandler.ListSpots).Methods(GET)
+	r.HandleFunc("/region", geoHierarchyHandler.CorsGetOptionsStub).Methods(OPTIONS)
+	r.HandleFunc("/region", geoHierarchyHandler.ListAllRegions).Methods(GET)
+	r.HandleFunc("/spot/{spotId}", geoHierarchyHandler.CorsGetOptionsStub).Methods(OPTIONS)
+	r.HandleFunc("/spot/{spotId}", geoHierarchyHandler.GetSpot).Methods(GET)
+	r.HandleFunc("/spot/{spotId}", geoHierarchyHandler.SaveSpot).Methods(POST, PUT)
+	r.HandleFunc("/spot/{spotId}", geoHierarchyHandler.RemoveSpot).Methods(DELETE)
+	
+	r.HandleFunc("/spot/{spotId}/img", imgHandler.CorsGetOptionsStub).Methods(OPTIONS)
+	r.HandleFunc("/spot/{spotId}/img", imgHandler.GetImages).Methods(GET)
+	r.HandleFunc("/spot/{spotId}/img", imgHandler.Upload).Methods(POST)
+	r.HandleFunc("/spot/{spotId}/img/{imgId}", imgHandler.Upload).Methods(DELETE)
+	r.HandleFunc("/spot/{spotId}/img/{imgId}", imgHandler.GetImage).Methods(GET)
+	r.HandleFunc("/spot/{spotId}/img/{imgId}/preview", imgHandler.GetImagePreview).Methods(GET)
 
 	log.Infof("Starting http server on %s", configuration.Api.BindTo)
 	http.Handle("/", r)

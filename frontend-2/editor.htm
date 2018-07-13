@@ -5,10 +5,22 @@
     <title>Реки</title>
     <link rel="stylesheet" href="css/editor.css">
     <link rel="stylesheet" href="css/bootstrap.min.css">
+
     <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
     <script type="text/javascript" src="js/bootstrap.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <script type="text/javascript" src="https://unpkg.com/vue-select@2.4.0/dist/vue-select.js"></script>
+
+    <!--gallery-->
+    <link rel="stylesheet" type="text/css" href="https://unpkg.com/blueimp-gallery@2.27.0/css/blueimp-gallery.min.css">
+    <script type="text/javascript" src="https://unpkg.com/blueimp-gallery@2.27.0/js/blueimp-helper.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/blueimp-gallery@2.27.0/js/blueimp-gallery.js"></script>
+    <script type="text/javascript"
+            src="https://unpkg.com/blueimp-gallery@2.27.0/js/blueimp-gallery-fullscreen.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/vue-gallery@1.4.0/dist/js/vue-gallery.min.js"></script>
+    <!--end of gallery-->
+    <script src="https://unpkg.com/vue-upload-component"></script>
+
     <script type="text/javascript" src="js/editor.js"></script>
     <script type="text/javascript" src="js/auth.js"></script>
     <script type="text/javascript" src="https://api-maps.yandex.ru/2.1/?lang=ru_RU"></script>
@@ -39,7 +51,7 @@
             <div id="editor-pane" class="col-9" style="bgcolor:red;">
                 <div>
                     <region-editor v-if="regioneditorstate.visible" v-bind:region="regioneditorstate.region"
-                                  v-bind:reports="regioneditorstate.reports"/>
+                                   v-bind:reports="regioneditorstate.reports"/>
                 </div>
                 <div>
                     <river-editor v-if="rivereditorstate.visible" v-bind:river="rivereditorstate.river"
@@ -102,6 +114,7 @@
             }
         }
     });
+
 </script>
 <!--End of country component-->
 
@@ -147,6 +160,7 @@
             }
         },
     });
+
 </script>
 <!--End of region component-->
 
@@ -205,6 +219,7 @@
             }
         },
     });
+
 </script>
 
 
@@ -220,12 +235,15 @@
 
         <div v-if="canEdit()" class="btn-toolbar">
             <div class="btn-group mr-2" role="group" aria-label="First group">
-                <button type="button" class="btn btn-info" v-on:click="editMode=!editMode; hideError();">{{getEditModeButtonTitle()}}</button>
+                <button type="button" class="btn btn-info" v-on:click="editMode=!editMode; hideError();">
+                    {{getEditModeButtonTitle()}}
+                </button>
                 <button type="button" class="btn btn-success" v-on:click="save()">Сохранить</button>
                 <button type="button" class="btn btn-secondary" v-on:click="reload()">Отменить</button>
             </div>
             <div class="btn-group">
-                <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#del-spot">Удалить</button>
+                <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#del-spot">Удалить
+                </button>
             </div>
         </div>
 
@@ -257,7 +275,9 @@
                 <ya-map-location-editor :spot="spot"></ya-map-location-editor>
             </div>
             <div>
-                <strong>Категория сложности: </strong><a target="_blank" href="https://huskytm.ru/rules2018-2019/#categories_tab"><img src="img/question_16.png"></a>
+                <strong>Категория сложности: </strong><a target="_blank"
+                                                         href="https://huskytm.ru/rules2018-2019/#categories_tab"><img
+                    src="img/question_16.png"></a>
                 <dl style="padding-left:40px;">
                     <dt>По классификатору</dt>
                     <dd>
@@ -313,6 +333,10 @@
                 <strong>Описание для высокого уровня воды:</strong>
                 <textarea rows="10" cols="120" v-model="spot.hw_description"></textarea>
             </div>
+            <div>
+                <strong>Фото</strong>
+                <img-list :spot="spot"></img-list>
+            </div>
         </div>
         <div v-else>
             <h1>{{ spot.title }}</h1>
@@ -349,7 +373,8 @@
                         <br/>
                         <br/>
                         К.с. нв/св/вв:&nbsp;{{ spot.lw_category }}/{{ spot.mw_category }}/{{ spot.hw_category }}
-                        <div v-if="spot.category!='0' && spot.category!='-1'">К.с. по классификатору: {{ spot.category }}
+                        <div v-if="spot.category!='0' && spot.category!='-1'">К.с. по классификатору: {{ spot.category
+                            }}
                         </div>
 
                     </td>
@@ -366,6 +391,15 @@
             </table>
             <h2>Схемы</h2>
             <h2>Фото галерея</h2>
+            <div>
+                <gallery :images="images" :index="index" @close="index = null"></gallery>
+                <div
+                        class="image"
+                        v-for="image, imageIndex in images"
+                        @click="index = imageIndex"
+                        :style="{ backgroundImage: 'url(' + image + ')', width: '300px', height: '200px' }"
+                ></div>
+            </div>
             <h2>Видео</h2>
         </div>
     </div>
@@ -435,11 +469,116 @@
                 all_categories:all_categories,
 
                 options: [getRiver(this.spot.river.id)],
+
+                // imgs
+                images: getImages(this.spot.id).map(x => x.url),
+                index: null,
             }
         }
     });
+
 </script>
 <!--End of spot editor component-->
+
+<!--Image list component-->
+<div id="img-list-template" style="display:none">
+    <div>
+        <template>
+            <div class="example-drag">
+                <div class="upload">
+                    <ul v-if="files.length">
+                        <li v-for="(file, index) in files" :key="file.id">
+                            <span>{{file.name}}</span> -
+                            <span>{{file.size | formatSize}}</span> -
+                            <span v-if="file.error">{{file.error}}</span>
+                            <span v-else-if="file.success">success</span>
+                            <span v-else-if="file.active">active</span>
+                            <span v-else-if="file.active">active</span>
+                            <span v-else></span>
+                        </li>
+                    </ul>
+                    <ul v-else>
+                        <td colspan="7">
+                            <div class="text-center p-5">
+                                <h4>Drop files anywhere to upload<br/>or</h4>
+                                <label for="file" class="btn btn-lg btn-primary">Select Files</label>
+                            </div>
+                        </td>
+                    </ul>
+
+                    <div v-show="$refs.upload && $refs.upload.dropActive" class="drop-active">
+                        <h3>Drop files to upload</h3>
+                    </div>
+
+                    <div class="example-btn">
+                        <file-upload
+                                class="btn btn-primary"
+                                :post-action="uploadPath"
+                                extensions="gif,jpg,jpeg,png"
+                                accept="image/png,image/gif,image/jpeg"
+                                :multiple="true"
+                                v-model="files"
+                                ref="upload">
+                            <i class="fa fa-plus"></i>
+                            Select files
+                        </file-upload>
+                        <button type="button" class="btn btn-success" v-if="!$refs.upload || !$refs.upload.active"
+                                @click.prevent="$refs.upload.active = true">
+                            <i class="fa fa-arrow-up" aria-hidden="true"></i>
+                            Start Upload
+                        </button>
+                        <button type="button" class="btn btn-danger" v-else
+                                @click.prevent="$refs.upload.active = false">
+                            <i class="fa fa-stop" aria-hidden="true"></i>
+                            Stop Upload
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
+        <table>
+            <tr>
+                <td></td>
+                <td>Ссылка на источник</td>
+                <td></td>
+            </tr>
+            <tr v-for="image in images">
+                <td><img :src="image.preview_url"/></td>
+                <td>
+                    <div v-if="image.source=='wwmap'">Загружено пользователем</div>
+                    <a v-else target="_blank" :href="image.report_url">{{image.report_title}}</a>
+                </td>
+                <td>
+                    <button v-if="image.enabled==false">Показывать</button>
+                    <button v-if="image.enabled==true">Не показывать</button>
+                    <button v-if="image.source=='wwmap'" v-on:click="removeImage(image.id)">Удалить</button>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+<script type="text/javascript">
+    Vue.component('img-list', {
+        template: document.getElementById('img-list-template').innerHTML,
+        props: ['spot'],
+        components: {
+          FileUpload: VueUploadComponent
+        },
+        data:function() {
+            return {
+                images: getImages(this.spot.id),
+                files: [],
+                uploadPath: apiBase + "/spot/" + this.spot.id +"/img",
+                removeImage: function(imgId) {
+                    removeImage(imgId);
+                    this.images = getImages(this.spot.id)
+                },
+            }
+        },
+    });
+
+</script>
+<!--End of image list component-->
 
 <!--Ya maps component-->
 <div id="ya-map-location-editor-template" style="display:none">
@@ -518,6 +657,7 @@
             })
         },
     });
+
 </script>
 <!--End of Ya maps component-->
 
@@ -530,19 +670,24 @@
                 {{errMsg}}
             </div>
         </transition>
-        <ask id="del-river" title="Точно?" msg="Совсем удалить? Все пороги будут также удалены! Да, совсем! Восстановить будет никак нельзя!" :okfn="function() { remove(); }"></ask>
+        <ask id="del-river" title="Точно?"
+             msg="Совсем удалить? Все пороги будут также удалены! Да, совсем! Восстановить будет никак нельзя!"
+             :okfn="function() { remove(); }"></ask>
 
         <div v-if="canEdit()" class="btn-toolbar">
             <div v-if="river.id" class="btn-group mr-2" role="group">
                 <button type="button" class="btn btn-primary" v-on:click="add_spot()">Добавить препятствие</button>
             </div>
             <div class="btn-group mr-2" role="group" aria-label="First group">
-                <button type="button" class="btn btn-info" v-on:click="editMode=!editMode; hideError();">{{getEditModeButtonTitle()}}</button>
+                <button type="button" class="btn btn-info" v-on:click="editMode=!editMode; hideError();">
+                    {{getEditModeButtonTitle()}}
+                </button>
                 <button type="button" class="btn btn-success" v-on:click="save()">Сохранить</button>
                 <button type="button" class="btn btn-secondary" v-on:click="reload()">Отменить</button>
             </div>
             <div class="btn-group">
-                <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#del-river">Удалить</button>
+                <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#del-river">Удалить
+                </button>
             </div>
         </div>
 
@@ -646,6 +791,7 @@
             }
         }
     });
+
 </script>
 <!--End of river editor component-->
 
@@ -698,6 +844,7 @@
             }
         }
     });
+
 </script>
 <!--End of region editor component-->
 
@@ -721,6 +868,7 @@
             }
         }
     });
+
 </script>
 <!--End of auth component-->
 
@@ -751,11 +899,14 @@
         template: document.getElementById('ask-template').innerHTML,
         props: ['id', 'msg', 'title', 'okfn'],
     });
+
 </script>
 <!--End of modal dialog component-->
 
 <script type="text/javascript">
     Vue.component('v-select', VueSelect.VueSelect)
+    Vue.component('gallery', VueGallery)
+    Vue.component('file-upload', VueUploadComponent)
     var app = new Vue({
         el: '#wwmap',
         data: {
@@ -775,6 +926,7 @@
           },
         }
     })
+
 </script>
 
 </body>

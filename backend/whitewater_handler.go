@@ -21,7 +21,7 @@ type WhiteWaterHandler struct {
 }
 
 func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req *http.Request) {
-	CorsHeaders(w, "GET, OPTIONS")
+	CorsHeaders(w, GET, OPTIONS)
 
 	callback, bbox, zoom, err := this.tileParamsZ(w, req)
 	if err != nil {
@@ -55,7 +55,7 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 }
 
 func (this *WhiteWaterHandler) InsertWhiteWaterPoints(w http.ResponseWriter, r *http.Request) {
-	CorsHeaders(w, "POST, GET, OPTIONS, PUT, DELETE")
+	CorsHeaders(w, POST, GET, OPTIONS, PUT, DELETE)
 	found, err := this.CheckRoleAllowed(r, ADMIN)
 	if err != nil {
 		onPassportErr(err, w, "Can not do request to Yandex Passport")

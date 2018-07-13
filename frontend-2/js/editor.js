@@ -115,3 +115,11 @@ function saveRiver(river) {
 function removeRiver(id) {
     return doDeleteJsonSync(apiBase + "/river/" + id, true)
 }
+
+function getImages(id) {
+    return doGetJsonSync(apiBase + "/spot/" + id + "/img")
+}
+
+function removeImage(id) {
+    return doDeleteJsonSync(apiBase + "/spot/0/img/" + id, true)
+}

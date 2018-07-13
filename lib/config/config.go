@@ -42,6 +42,16 @@ type WordpressSync struct {
 	Password string `yaml:"password"`
 }
 
+type ImgStorageParams struct {
+	Dir string `yaml:"dir"`
+	UrlBase string `yaml:"url-base"`
+}
+
+type ImgStorage struct {
+	Full ImgStorageParams `yaml:"full"`
+	Preview ImgStorageParams `yaml:"preview"`
+}
+
 type Configuration struct {
 	DbConnString         string `yaml:"db-connection-string"`
 	ClusterizationParams ClusterizationParams `yaml:"clusterization"`
@@ -50,6 +60,7 @@ type Configuration struct {
 	Content              Content `yaml:"content"`
 	TileCache            TileCache `yaml:"tile-cache"`
 	Sync                 WordpressSync `yaml:"sync"`
+	ImgStorage	     ImgStorage `yaml:"img-storage"`
 }
 
 func loadConf(filename string) (Configuration, error) {
