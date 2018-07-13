@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strings"
 	. "github.com/and-hom/wwmap/lib/http"
+	"github.com/and-hom/wwmap/lib/model"
 )
 
 type GpxHandler struct{ Handler };
@@ -23,7 +24,7 @@ func (this *GpxHandler) DownloadGpx(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	transliterate := req.FormValue("tr")!=""
+	transliterate := req.FormValue("tr") != ""
 
 	whitewaterPoints, err := this.whiteWaterDao.ListByRiver(id)
 	if err != nil {
@@ -40,9 +41,9 @@ func (this *GpxHandler) DownloadGpx(w http.ResponseWriter, req *http.Request) {
 			Cmt: whitewaterPoint.Comment,
 		}
 		if transliterate {
-			waypoints[i].Name = cyrillicToTranslit(whitewaterPoint.Title)
+			waypoints[i].Name = catStr(whitewaterPoint.Category) + cyrillicToTranslit(whitewaterPoint.Title)
 		} else {
-			waypoints[i].Name = whitewaterPoint.Title
+			waypoints[i].Name = catStr(whitewaterPoint.Category) + whitewaterPoint.Title
 		}
 	}
 	if len(whitewaterPoints) == 0 {
@@ -58,6 +59,19 @@ func (this *GpxHandler) DownloadGpx(w http.ResponseWriter, req *http.Request) {
 
 	xmlBytes := gpxData.ToXML()
 	w.Write(xmlBytes)
+}
+
+func catStr(category model.SportCategory) string {
+	if category.Category == -1 {
+		return "(Непроход)"
+	}
+	if category.Category == 0 {
+		return ""
+	}
+	if category.Sub == "" {
+		return "(" + category.Serialize() + "к.с.)"
+	}
+	return "(" + category.Serialize() + " к.с.)"
 }
 
 var translitCharMap = map[string]string{
