@@ -134,3 +134,7 @@ function getImages(id, _type) {
 function removeImage(spotId, id, _type) {
     return doDeleteWithJsonRespSync(apiBase + "/spot/" + spotId + "/img/" + id + "?type=" + _type, true)
 }
+
+function setImageEnabled(spotId, id, enabled) {
+    return doPostJsonSync(apiBase + "/spot/" + spotId + "/img/" + id + "/enabled", enabled, true)
+}

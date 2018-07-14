@@ -18,6 +18,8 @@ import (
 	"fmt"
 	"github.com/and-hom/wwmap/lib/dao"
 	"github.com/Sirupsen/logrus"
+	"encoding/json"
+	"io/ioutil"
 )
 
 const SOURCE string = "wwmap"
@@ -166,6 +168,40 @@ func (this *ImgHandler) Delete(w http.ResponseWriter, req *http.Request) {
 	}
 	if previewRemoveErr != nil {
 		logrus.Errorf("Can not delete image preview: ", previewRemoveErr)
+	}
+
+	this.listImagesForSpot(w, spotId, getImgType(req))
+}
+
+
+func (this *ImgHandler) SetEnabled(w http.ResponseWriter, req *http.Request) {
+	CorsHeaders(w, GET, POST, PUT, DELETE)
+
+	pathParams := mux.Vars(req)
+	spotId, err := strconv.ParseInt(pathParams["spotId"], 10, 64)
+	if err != nil {
+		OnError(w, err, "Can not parse id", http.StatusBadRequest)
+		return
+	}
+	imgIdStr := pathParams["imgId"]
+	imgId, err := strconv.ParseInt(imgIdStr, 10, 64)
+	if err != nil {
+		OnError(w, err, "Can not parse img id", http.StatusBadRequest)
+		return
+	}
+
+	bodyBytes, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		OnError500(w, err, "Can not read body")
+		return
+	}
+	enabled := false
+	json.Unmarshal(bodyBytes, &enabled)
+
+	err = this.imgDao.SetEnabled(imgId, enabled)
+	if err != nil {
+		OnError500(w, err, "Can not set image enables/disabled")
+		return
 	}
 
 	this.listImagesForSpot(w, spotId, getImgType(req))

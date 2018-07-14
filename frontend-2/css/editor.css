@@ -111,3 +111,7 @@ ul {
   color: #fff;
   padding: 0;
 }
+
+.wwmap-img-disabled {
+    opacity: 0.3;
+}

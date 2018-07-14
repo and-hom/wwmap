@@ -1,6 +1,6 @@
 --@list
-SELECT id, report_id, white_water_rapid_id,source,remote_id,url,preview_url,date_published
-FROM image WHERE white_water_rapid_id=$1 AND "type"=$2 AND (NOT $3 OR enabled) LIMIT $4
+SELECT id, report_id, white_water_rapid_id,source,remote_id,url,preview_url,date_published, enabled, "type"
+FROM image WHERE white_water_rapid_id=$1 AND "type"=$2 AND (NOT $3 OR enabled) LIMIT $4 ORDER BY id DESC
 
 --@upsert
 INSERT INTO image(report_id, white_water_rapid_id,source,remote_id,url,preview_url,date_published, "type")
@@ -13,3 +13,6 @@ RETURNING id, enabled
 
 --@delete
 DELETE FROM image WHERE id=$1
+
+--@set-enabled
+UPDATE image SET enabled=$1 WHERE id=$2

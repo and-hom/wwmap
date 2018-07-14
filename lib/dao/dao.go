@@ -90,6 +90,7 @@ type ImgDao interface {
 	Upsert(img ...Img) ([]Img, error)
 	List(wwId int64, limit int, _type ImageType, enabledOnly bool) ([]Img, error)
 	Remove(id int64) error
+	SetEnabled(id int64, enabled bool) error
 }
 
 type WwPassportDao interface {

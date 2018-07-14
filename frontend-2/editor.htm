@@ -549,14 +549,14 @@
                 <td></td>
             </tr>
             <tr v-for="image in images">
-                <td><img :src="image.preview_url"/></td>
+                <td><img :class="imageClass(image)" :src="image.preview_url"/></td>
                 <td>
                     <div v-if="image.source=='wwmap'">Загружено пользователем</div>
                     <a v-else target="_blank" :href="image.report_url">{{image.report_title}}</a>
                 </td>
                 <td>
-                    <button v-if="image.enabled==false">Показывать</button>
-                    <button v-if="image.enabled==true">Не показывать</button>
+                    <button v-if="image.enabled==false" v-on:click="setImgEnabled(true, image.id)">Показывать</button>
+                    <button v-if="image.enabled==true" v-on:click="setImgEnabled(false, image.id)">Не показывать</button>
                     <button v-if="image.source=='wwmap'" v-on:click="removeImage(image.id)">Удалить</button>
                 </td>
             </tr>
@@ -591,9 +591,18 @@
                 removeImage: function(imgId) {
                     this.images = removeImage(this.spot.id, imgId, this.type);
                 },
+                setImgEnabled: function(enabled, imgId) {
+                    this.images = setImageEnabled(this.spot.id, imgId, enabled);
+                },
                 refresh:function() {
                         this.images = getImages(this.spot.id, this.type)
                 },
+                imageClass:function(image) {
+                    if(image.enabled==false) {
+                        return "wwmap-img-disabled"
+                    }
+                    return ""
+                }
             }
         },
     });

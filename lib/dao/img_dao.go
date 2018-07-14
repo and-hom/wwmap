@@ -15,6 +15,7 @@ type imgStorage struct {
 	listQuery        string
 	insertLocalQuery string
 	deleteQuery      string
+	setEnabledQuery      string
 }
 
 func NewImgPostgresDao(postgresStorage PostgresStorage) ImgDao {
@@ -24,6 +25,7 @@ func NewImgPostgresDao(postgresStorage PostgresStorage) ImgDao {
 		listQuery : queries.SqlQuery("img", "list"),
 		insertLocalQuery : queries.SqlQuery("img", "insert-local"),
 		deleteQuery : queries.SqlQuery("img", "delete"),
+		setEnabledQuery : queries.SqlQuery("img", "set-enabled"),
 	}
 }
 
@@ -50,7 +52,8 @@ func (this imgStorage) Upsert(imgs ...Img) ([]Img, error) {
 func (this imgStorage) List(wwId int64, limit int, _type ImageType, enabledOnly bool) ([]Img, error) {
 	result, err := this.doFindList(this.listQuery, func(rows *sql.Rows) (Img, error) {
 		img := Img{}
-		err := rows.Scan(&img.Id, &img.ReportId, &img.WwId, &img.Source, &img.RemoteId, &img.Url, &img.PreviewUrl, &img.DatePublished)
+		err := rows.Scan(&img.Id, &img.ReportId, &img.WwId, &img.Source, &img.RemoteId, &img.Url, &img.PreviewUrl,
+			&img.DatePublished, &img.Enabled, &img.Type)
 		if err != nil {
 			return img, err
 		}
@@ -94,8 +97,14 @@ func (this imgStorage) InsertLocal(wwId int64, _type ImageType, source string, u
 }
 
 func (this imgStorage) Remove(id int64) error {
-	log.Infof("Remove spot %d", id)
+	log.Infof("Remove image %d", id)
 	return this.performUpdates(this.deleteQuery, idMapper, id)
+}
+
+func (this imgStorage) SetEnabled(id int64, enabled bool) error{
+	return this.performUpdates(this.setEnabledQuery, func(entity interface{}) ([]interface{}, error) {
+		return entity.([]interface{}), nil
+	}, []interface{}{enabled, id})
 }
 
 func (this imgStorage) toInterface(imgs ...Img) []interface{} {

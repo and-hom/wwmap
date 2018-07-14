@@ -166,6 +166,8 @@ func main() {
 	r.HandleFunc("/spot/{spotId}/img/{imgId}", imgHandler.Delete).Methods(DELETE)
 	r.HandleFunc("/spot/{spotId}/img/{imgId}", imgHandler.GetImage).Methods(GET)
 	r.HandleFunc("/spot/{spotId}/img/{imgId}/preview", imgHandler.GetImagePreview).Methods(GET)
+	r.HandleFunc("/spot/{spotId}/img/{imgId}/enabled", imgHandler.CorsGetOptionsStub).Methods(OPTIONS)
+	r.HandleFunc("/spot/{spotId}/img/{imgId}/enabled", imgHandler.SetEnabled).Methods(POST)
 
 	log.Infof("Starting http server on %s", configuration.Api.BindTo)
 	http.Handle("/", r)
