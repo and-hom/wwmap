@@ -570,7 +570,7 @@
             if(this.$refs.upload && this.$refs.upload.value.length && this.$refs.upload.uploaded) {
                 if (this.imagesOutOfDate) {
                     setTimeout(() => {
-                        this.images = getImages(this.spot.id)
+                        this.refresh()
                     }, 700);
                     this.imagesOutOfDate = false
                 } else {
@@ -584,9 +584,11 @@
                 imagesOutOfDate: true,
                 files: [],
                 uploadPath: apiBase + "/spot/" + this.spot.id +"/img",
-                removeImage: function(imgId) {img-list
-                    removeImage(imgId);
-                    this.images = getImages(this.spot.id)
+                removeImage: function(imgId) {
+                    this.images = removeImage(this.spot.id, imgId);
+                },
+                refresh:function() {
+                        this.images = getImages(this.spot.id)
                 },
             }
         },

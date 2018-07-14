@@ -162,7 +162,8 @@ func main() {
 	r.HandleFunc("/spot/{spotId}/img", imgHandler.CorsGetOptionsStub).Methods(OPTIONS)
 	r.HandleFunc("/spot/{spotId}/img", imgHandler.GetImages).Methods(GET)
 	r.HandleFunc("/spot/{spotId}/img", imgHandler.Upload).Methods(POST)
-	r.HandleFunc("/spot/{spotId}/img/{imgId}", imgHandler.Upload).Methods(DELETE)
+	r.HandleFunc("/spot/{spotId}/img/{imgId}", imgHandler.CorsGetOptionsStub).Methods(OPTIONS)
+	r.HandleFunc("/spot/{spotId}/img/{imgId}", imgHandler.Delete).Methods(DELETE)
 	r.HandleFunc("/spot/{spotId}/img/{imgId}", imgHandler.GetImage).Methods(GET)
 	r.HandleFunc("/spot/{spotId}/img/{imgId}/preview", imgHandler.GetImagePreview).Methods(GET)
 
