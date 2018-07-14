@@ -47,7 +47,7 @@ func (this *ImgHandler) GetImages(w http.ResponseWriter, req *http.Request) {
 		OnError500(w, err, "Can not list images")
 		return
 	}
-	for i:=0;i<len(imgs);i++ {
+	for i := 0; i < len(imgs); i++ {
 		if imgs[i].Source == SOURCE {
 			imgs[i].Url = fmt.Sprintf(this.imgUrlBase, imgs[i].Id)
 			imgs[i].PreviewUrl = fmt.Sprintf(this.imgUrlPreviewBase, imgs[i].Id)
@@ -125,7 +125,6 @@ func (this *ImgHandler) Upload(w http.ResponseWriter, req *http.Request) {
 	}
 	this.previewImgStorage.Store(img.IdStr(), &b)
 
-
 	f.Seek(0, 0)
 	err = this.imgStorage.Store(img.IdStr(), f)
 	if err != nil {
@@ -152,11 +151,27 @@ func (this *ImgHandler) Delete(w http.ResponseWriter, req *http.Request) {
 	CorsHeaders(w, GET, POST, PUT, DELETE)
 
 	pathParams := mux.Vars(req)
-	imgId, err := strconv.ParseInt(pathParams["imgId"], 10, 64)
+	imgIdStr := pathParams["imgId"]
+	imgId, err := strconv.ParseInt(imgIdStr, 10, 64)
 	if err != nil {
 		OnError(w, err, "Can not parse img id", http.StatusBadRequest)
 		return
 	}
 
-	this.imgDao.Remove(imgId)
+	err = this.imgDao.Remove(imgId)
+	if err != nil {
+		OnError500(w, err, "Can not delete image from db")
+		return
+	}
+
+	imgRemoveErr := this.imgStorage.Remove(imgId)
+	previewRemoveErr := this.previewImgStorage.Remove(imgId)
+	if imgRemoveErr != nil {
+		OnError500(w, imgRemoveErr, "Can not delete image data")
+		return
+	}
+	if previewRemoveErr != nil {
+		OnError500(w, previewRemoveErr, "Can not delete image preview")
+		return
+	}
 }

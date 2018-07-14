@@ -9,6 +9,7 @@ import (
 type ImgStorage interface {
 	Store(id string, r io.Reader) error
 	Read(id string) (io.ReadCloser, error)
+	Remove(id string) error
 }
 
 type BasicFsStorage struct {
@@ -27,6 +28,10 @@ func (this BasicFsStorage) Store(id string, r io.Reader) error {
 
 func (this BasicFsStorage) Read(id string) (io.ReadCloser, error) {
 	return  os.Open(this.path(id))
+}
+
+func (this BasicFsStorage) Remove(id string) error {
+	return  os.Remove(this.path(id))
 }
 
 func (this BasicFsStorage) path(id string) string {
