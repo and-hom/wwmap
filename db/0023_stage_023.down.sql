@@ -1,1 +1,2 @@
 ALTER TABLE image DROP COLUMN enabled;
+ALTER TABLE image DROP COLUMN "type";

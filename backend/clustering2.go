@@ -90,7 +90,7 @@ func (this *ClusterMaker) doCluster(riverId int64, zoom int) (RiverClusters, err
 		return result, err
 	}
 	for i := 0; i < len(points); i++ {
-		imgs, err := this.imgDao.List(points[i].Id, PREVIEWS_COUNT)
+		imgs, err := this.imgDao.List(points[i].Id, PREVIEWS_COUNT, dao.IMAGE_TYPE_IMAGE, true)
 		if err != nil {
 			log.Warnf("Can not read whitewater point images for point %d: %s", points[i].Id, err.Error())
 			continue

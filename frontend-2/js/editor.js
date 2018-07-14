@@ -127,10 +127,10 @@ function removeRiver(id) {
     return doDeleteSync(apiBase + "/river/" + id, true)
 }
 
-function getImages(id) {
-    return doGetJsonSync(apiBase + "/spot/" + id + "/img")
+function getImages(id, _type) {
+    return doGetJsonSync(apiBase + "/spot/" + id + "/img?type=" + _type)
 }
 
-function removeImage(spotId, id) {
-    return doDeleteWithJsonRespSync(apiBase + "/spot/" + spotId + "/img/" + id, true)
+function removeImage(spotId, id, _type) {
+    return doDeleteWithJsonRespSync(apiBase + "/spot/" + spotId + "/img/" + id + "?type=" + _type, true)
 }

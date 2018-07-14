@@ -238,6 +238,13 @@ type VoyageReport struct {
 	Tags          []string `json:"-"`
 }
 
+type ImageType string;
+
+const (
+	IMAGE_TYPE_IMAGE ImageType = "image"
+	IMAGE_TYPE_SCHEMA ImageType = "schema"
+)
+
 type Img struct {
 	Id              int64 `json:"id"`
 	WwId            int64 `json:"ww_id"`
@@ -249,7 +256,25 @@ type Img struct {
 	PreviewUrl      string `json:"preview_url"`
 	DatePublished   time.Time `json:"date_published"`
 	LabelsForSearch []string `json:"-"`
-	Enabled		bool `json:"enabled"`
+	Enabled         bool `json:"enabled"`
+	Type            ImageType `json:"type"`
+}
+
+func GetImgType(_type string) ImageType {
+	if t, f := checkType(_type, IMAGE_TYPE_IMAGE); f {
+		return t
+	}
+	if t, f := checkType(_type, IMAGE_TYPE_SCHEMA); f {
+		return t
+	}
+	return IMAGE_TYPE_IMAGE
+}
+
+func checkType(val string, _type ImageType) (ImageType, bool) {
+	if val == string(_type) {
+		return _type, true
+	}
+	return IMAGE_TYPE_IMAGE, false
 }
 
 func (this Img) IdStr() string {
@@ -293,7 +318,7 @@ func Join(separator string, roles ...Role) string {
 type UserInfo struct {
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
-	Login  string `json:"login"`
+	Login     string `json:"login"`
 }
 
 type User struct {

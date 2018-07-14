@@ -212,6 +212,7 @@ func (this *HuskytmReportProvider) cacheImages() error {
 				//m.Caption.Rendered,
 				//m.AltText,
 			},
+			Type:dao.IMAGE_TYPE_IMAGE,
 		}
 	}
 	//b,_ := json.Marshal(this.images)

@@ -334,8 +334,12 @@
                 <textarea rows="10" cols="120" v-model="spot.hw_description"></textarea>
             </div>
             <div>
+                <strong>Схемы</strong>
+                <img-list :spot="spot" type="schema"></img-list>
+            </div>
+            <div>
                 <strong>Фото</strong>
-                <img-list :spot="spot"></img-list>
+                <img-list :spot="spot" type="image"></img-list>
             </div>
         </div>
         <div v-else>
@@ -471,7 +475,7 @@
                 options: [getRiver(this.spot.river.id)],
 
                 // imgs
-                images: getImages(this.spot.id).map(x => x.url),
+                images: getImages(this.spot.id, "image").map(x => x.url),
                 index: null,
             }
         }
@@ -562,7 +566,7 @@
 <script type="text/javascript">
     Vue.component('img-list', {
         template: document.getElementById('img-list-template').innerHTML,
-        props: ['spot'],
+        props: ['spot', 'type'],
         components: {
           FileUpload: VueUploadComponent
         },
@@ -580,15 +584,15 @@
         },
         data:function() {
             return {
-                images: getImages(this.spot.id),
+                images: getImages(this.spot.id, this.type),
                 imagesOutOfDate: true,
                 files: [],
-                uploadPath: apiBase + "/spot/" + this.spot.id +"/img",
+                uploadPath: apiBase + "/spot/" + this.spot.id +"/img?type=" + this.type,
                 removeImage: function(imgId) {
-                    this.images = removeImage(this.spot.id, imgId);
+                    this.images = removeImage(this.spot.id, imgId, this.type);
                 },
                 refresh:function() {
-                        this.images = getImages(this.spot.id)
+                        this.images = getImages(this.spot.id, this.type)
                 },
             }
         },

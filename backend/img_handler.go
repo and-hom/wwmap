@@ -16,6 +16,8 @@ import (
 	"bytes"
 	"math"
 	"fmt"
+	"github.com/and-hom/wwmap/lib/dao"
+	"github.com/Sirupsen/logrus"
 )
 
 const SOURCE string = "wwmap"
@@ -42,7 +44,7 @@ func (this *ImgHandler) GetImages(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	this.listImagesForSpot(w, spotId)
+	this.listImagesForSpot(w, spotId, getImgType(req))
 }
 
 func (this *ImgHandler) GetImage(w http.ResponseWriter, req *http.Request) {
@@ -79,7 +81,7 @@ func (this *ImgHandler) Upload(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	img, err := this.imgDao.InsertLocal(spotId, SOURCE, this.imgUrlBase, this.imgUrlPreviewBase, time.Now())
+	img, err := this.imgDao.InsertLocal(spotId, getImgType(req), SOURCE, this.imgUrlBase, this.imgUrlPreviewBase, time.Now())
 	if err != nil {
 		OnError500(w, err, "Can not insert")
 		return
@@ -160,19 +162,17 @@ func (this *ImgHandler) Delete(w http.ResponseWriter, req *http.Request) {
 	imgRemoveErr := this.imgStorage.Remove(imgIdStr)
 	previewRemoveErr := this.previewImgStorage.Remove(imgIdStr)
 	if imgRemoveErr != nil {
-		OnError500(w, imgRemoveErr, "Can not delete image data")
-		return
+		logrus.Errorf("Can not delete image data: ", imgRemoveErr)
 	}
 	if previewRemoveErr != nil {
-		OnError500(w, previewRemoveErr, "Can not delete image preview")
-		return
+		logrus.Errorf("Can not delete image preview: ", previewRemoveErr)
 	}
 
-	this.listImagesForSpot(w, spotId)
+	this.listImagesForSpot(w, spotId, getImgType(req))
 }
 
-func (this *ImgHandler) listImagesForSpot(w http.ResponseWriter, spotId int64)  {
-	imgs, err := this.imgDao.List(spotId, 16384)
+func (this *ImgHandler) listImagesForSpot(w http.ResponseWriter, spotId int64, _type dao.ImageType) {
+	imgs, err := this.imgDao.List(spotId, 16384, _type, false)
 	if err != nil {
 		OnError500(w, err, "Can not list images")
 		return
@@ -185,4 +185,8 @@ func (this *ImgHandler) listImagesForSpot(w http.ResponseWriter, spotId int64)  
 	}
 
 	this.JsonAnswer(w, imgs)
+}
+
+func getImgType(req *http.Request) dao.ImageType {
+	return dao.GetImgType(req.FormValue("type"))
 }

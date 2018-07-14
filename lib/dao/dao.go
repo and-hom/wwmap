@@ -86,9 +86,9 @@ type VoyageReportDao interface {
 }
 
 type ImgDao interface {
-	InsertLocal(wwId int64, source string, urlBase string, previewUrlBase string, datePublished time.Time) (Img, error)
+	InsertLocal(wwId int64, _type ImageType, source string, urlBase string, previewUrlBase string, datePublished time.Time) (Img, error)
 	Upsert(img ...Img) ([]Img, error)
-	List(wwId int64, limit int) ([]Img, error)
+	List(wwId int64, limit int, _type ImageType, enabledOnly bool) ([]Img, error)
 	Remove(id int64) error
 }
 

@@ -14,7 +14,7 @@ type imgStorage struct {
 	upsertQuery      string
 	listQuery        string
 	insertLocalQuery string
-	deleteQuery string
+	deleteQuery      string
 }
 
 func NewImgPostgresDao(postgresStorage PostgresStorage) ImgDao {
@@ -32,7 +32,7 @@ func (this imgStorage) Upsert(imgs ...Img) ([]Img, error) {
 	ids, err := this.updateReturningId(this.upsertQuery,
 		func(entity interface{}) ([]interface{}, error) {
 			_img := entity.(Img)
-			return []interface{}{_img.ReportId, _img.WwId, _img.Source, _img.RemoteId, _img.Url, _img.PreviewUrl, _img.DatePublished}, nil
+			return []interface{}{_img.ReportId, _img.WwId, _img.Source, _img.RemoteId, _img.Url, _img.PreviewUrl, _img.DatePublished, _img.Type}, nil
 		}, this.toInterface(imgs...)...)
 
 	if err != nil {
@@ -47,7 +47,7 @@ func (this imgStorage) Upsert(imgs ...Img) ([]Img, error) {
 	return result, nil
 }
 
-func (this imgStorage) List(wwId int64, limit int) ([]Img, error) {
+func (this imgStorage) List(wwId int64, limit int, _type ImageType, enabledOnly bool) ([]Img, error) {
 	result, err := this.doFindList(this.listQuery, func(rows *sql.Rows) (Img, error) {
 		img := Img{}
 		err := rows.Scan(&img.Id, &img.ReportId, &img.WwId, &img.Source, &img.RemoteId, &img.Url, &img.PreviewUrl, &img.DatePublished)
@@ -55,15 +55,15 @@ func (this imgStorage) List(wwId int64, limit int) ([]Img, error) {
 			return img, err
 		}
 		return img, nil
-	}, wwId, limit)
+	}, wwId, _type, enabledOnly, limit)
 	if err != nil {
 		return []Img{}, err
 	}
 	return result.([]Img), nil
 }
 
-func (this imgStorage) InsertLocal(wwId int64, source string, urlBase string, previewUrlBase string, datePublished time.Time) (Img, error) {
-	params := []interface{}{wwId, source, urlBase, previewUrlBase, datePublished}
+func (this imgStorage) InsertLocal(wwId int64, _type ImageType, source string, urlBase string, previewUrlBase string, datePublished time.Time) (Img, error) {
+	params := []interface{}{wwId, _type, source, datePublished}
 	vals, err := this.updateReturningColumns(this.insertLocalQuery,
 		func(entity interface{}) ([]interface{}, error) {
 			return entity.([]interface{}), nil
@@ -76,14 +76,17 @@ func (this imgStorage) InsertLocal(wwId int64, source string, urlBase string, pr
 	}
 	row := vals[0]
 	id := *row[0].(*int64)
+	enabled := *row[1].(*bool)
 	result := Img{
 		Id:id,
 		WwId:wwId,
 		Source:source,
 		RemoteId:fmt.Sprintf("%d", id),
 		DatePublished:datePublished,
-		Url:*row[1].(*string),
-		PreviewUrl:*row[2].(*string),
+		Url:"",
+		PreviewUrl:"",
+		Type:_type,
+		Enabled:enabled,
 	}
 
 	fmt.Println(result)
