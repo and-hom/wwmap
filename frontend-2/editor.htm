@@ -489,7 +489,7 @@
                     <ul v-if="files.length">
                         <li v-for="(file, index) in files" :key="file.id">
                             <span>{{file.name}}</span> -
-                            <span>{{file.size | formatSize}}</span> -
+                            <span>{{file.size}}</span> -
                             <span v-if="file.error">{{file.error}}</span>
                             <span v-else-if="file.success">success</span>
                             <span v-else-if="file.active">active</span>
@@ -517,6 +517,8 @@
                                 extensions="gif,jpg,jpeg,png"
                                 accept="image/png,image/gif,image/jpeg"
                                 :multiple="true"
+                                :drop="true"
+                                :drop-directory="true"
                                 v-model="files"
                                 ref="upload">
                             <i class="fa fa-plus"></i>
@@ -564,12 +566,25 @@
         components: {
           FileUpload: VueUploadComponent
         },
+        updated: function() {
+            if(this.$refs.upload && this.$refs.upload.value.length && this.$refs.upload.uploaded) {
+                if (this.imagesOutOfDate) {
+                    setTimeout(() => {
+                        this.images = getImages(this.spot.id)
+                    }, 700);
+                    this.imagesOutOfDate = false
+                } else {
+                    this.imagesOutOfDate = true
+                }
+            }
+        },
         data:function() {
             return {
                 images: getImages(this.spot.id),
+                imagesOutOfDate: true,
                 files: [],
                 uploadPath: apiBase + "/spot/" + this.spot.id +"/img",
-                removeImage: function(imgId) {
+                removeImage: function(imgId) {img-list
                     removeImage(imgId);
                     this.images = getImages(this.spot.id)
                 },

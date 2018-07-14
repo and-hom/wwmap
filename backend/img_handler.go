@@ -164,8 +164,8 @@ func (this *ImgHandler) Delete(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	imgRemoveErr := this.imgStorage.Remove(imgId)
-	previewRemoveErr := this.previewImgStorage.Remove(imgId)
+	imgRemoveErr := this.imgStorage.Remove(imgIdStr)
+	previewRemoveErr := this.previewImgStorage.Remove(imgIdStr)
 	if imgRemoveErr != nil {
 		OnError500(w, imgRemoveErr, "Can not delete image data")
 		return
