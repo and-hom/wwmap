@@ -119,6 +119,7 @@
         }
     });
 
+
 </script>
 <!--End of country component-->
 
@@ -254,70 +255,81 @@
         <div v-if="editMode" style="padding-top:15px;">
             <b-tabs>
                 <b-tab title="Главное" active>
-                    <div>
-                        <strong>Название: </strong>
-                        <input v-model.trim="spot.title" style="display:block"/>
-                    </div>
-                    <div>
-                        <strong>Река: </strong>
-                        <v-select v-model="spot.river" label="name" :filterable="false" :options="options" @search="onSearch">
-                            <template slot="no-options">
-                                Начните печатать название реки
-                            </template>
-                            <template slot="option" slot-scope="option">
-                                <div class="d-center">
-                                    {{ option.title }}
+                    <div class="container-fluid" style="margin-top: 20px;">
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="short-div">
+                                    <strong>Название: </strong>
+                                    <input v-model.trim="spot.title" style="display:block"/>
                                 </div>
-                            </template>
-                            <template slot="selected-option" scope="option">
-                                <div class="selected d-center">
-                                    {{ option.title }}
+                                <div class="short-div">
+                                    <strong>Река: </strong>
+                                    <v-select v-model="spot.river" label="name" :filterable="false" :options="options"
+                                              @search="onSearch">
+                                        <template slot="no-options">
+                                            Начните печатать название реки
+                                        </template>
+                                        <template slot="option" slot-scope="option">
+                                            <div class="d-center">
+                                                {{ option.title }}
+                                            </div>
+                                        </template>
+                                        <template slot="selected-option" scope="option">
+                                            <div class="selected d-center">
+                                                {{ option.title }}
+                                            </div>
+                                        </template>
+                                    </v-select>
                                 </div>
-                            </template>
-                        </v-select>
+                                <div class="short-div">
+                                    <strong>Категория сложности: </strong><a target="_blank"
+                                                                             href="https://huskytm.ru/rules2018-2019/#categories_tab"><img
+                                        src="img/question_16.png"></a>
+                                    <dl style="padding-left:40px;">
+                                        <dt>По классификатору</dt>
+                                        <dd>
+                                            <select v-model="spot.category">
+                                                <option v-for="cat in all_categories" v-bind:value="cat.id">{{cat.title}}</option>
+                                            </select>
+                                        </dd>
+                                        <dt>Низкий уровень воды</dt>
+                                        <dd>
+                                            <select v-model="spot.lw_category">
+                                                <option v-for="cat in all_categories" v-bind:value="cat.id">{{cat.title}}</option>
+                                            </select>
+                                        </dd>
+                                        <dt>Средний уровень воды</dt>
+                                        <dd>
+                                            <select v-model="spot.mw_category">
+                                                <option v-for="cat in all_categories" v-bind:value="cat.id">{{cat.title}}</option>
+                                            </select>
+                                        </dd>
+                                        <dt>Высокий уровень воды</dt>
+                                        <dd>
+                                            <select v-model="spot.hw_category">
+                                                <option v-for="cat in all_categories" v-bind:value="cat.id">{{cat.title}}</option>
+                                            </select>
+                                        </dd>
+                                    </dl>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <strong>Расположение: </strong>
+                                <ya-map-location-editor :spot="spot"></ya-map-location-editor>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6">
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <strong>Расположение: </strong>
-                        <ya-map-location-editor :spot="spot"></ya-map-location-editor>
-                    </div>
-                    <div>
-                        <strong>Категория сложности: </strong><a target="_blank"
-                                                                 href="https://huskytm.ru/rules2018-2019/#categories_tab"><img
-                            src="img/question_16.png"></a>
-                        <dl style="padding-left:40px;">
-                            <dt>По классификатору</dt>
-                            <dd>
-                                <select v-model="spot.category">
-                                    <option v-for="cat in all_categories" v-bind:value="cat.id">{{cat.title}}</option>
-                                </select>
-                            </dd>
-                            <dt>Низкий уровень воды</dt>
-                            <dd>
-                                <select v-model="spot.lw_category">
-                                    <option v-for="cat in all_categories" v-bind:value="cat.id">{{cat.title}}</option>
-                                </select>
-                            </dd>
-                            <dt>Средний уровень воды</dt>
-                            <dd>
-                                <select v-model="spot.mw_category">
-                                    <option v-for="cat in all_categories" v-bind:value="cat.id">{{cat.title}}</option>
-                                </select>
-                            </dd>
-                            <dt>Высокий уровень воды</dt>
-                            <dd>
-                                <select v-model="spot.hw_category">
-                                    <option v-for="cat in all_categories" v-bind:value="cat.id">{{cat.title}}</option>
-                                </select>
-                            </dd>
-                        </dl>
-                    </div>
-                    <div>
-                        <strong>Описание: </strong>
-                        <textarea rows="10" cols="120" v-model="spot.short_description"></textarea>
+                    <div class="row">
+                        <div class="col-2"><strong>Описание: </strong></div>
+                        <div class="col-10"><textarea rows="10" cols="120" v-model="spot.short_description"></textarea></div>
                     </div>
                     <div>
                         <strong>Ориентиры:</strong>
-                        <textarea rows="10" cols="120" v-model="spot.orient"></textarea>
+                        <textarea rows="10" style="width:100%" v-model="spot.orient"></textarea>
                     </div>
                     <div>
                         <strong>Подход/выход:</strong>
@@ -340,10 +352,10 @@
                         <textarea rows="10" cols="120" v-model="spot.hw_description"></textarea>
                     </div>
                 </b-tab>
-                <b-tab title="Схемы" >
+                <b-tab title="Схемы">
                     <img-list :spot="spot" type="schema"></img-list>
                 </b-tab>
-                <b-tab title="Фото" >
+                <b-tab title="Фото">
                     <img-list :spot="spot" type="photo"></img-list>
                 </b-tab>
                 <b-tab title="Видео" disabled>
@@ -565,7 +577,8 @@
                 </td>
                 <td>
                     <button v-if="image.enabled==false" v-on:click="setImgEnabled(true, image.id)">Показывать</button>
-                    <button v-if="image.enabled==true" v-on:click="setImgEnabled(false, image.id)">Не показывать</button>
+                    <button v-if="image.enabled==true" v-on:click="setImgEnabled(false, image.id)">Не показывать
+                    </button>
                     <button v-if="image.source=='wwmap'" v-on:click="removeImage(image.id)">Удалить</button>
                 </td>
             </tr>
