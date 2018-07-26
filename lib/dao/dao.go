@@ -567,7 +567,7 @@ func (this *PostgresStorage) insertReturningId(query string, args ...interface{}
 }
 
 func (this *PostgresStorage) updateReturningId(query string, mapper func(entity interface{}) ([]interface{}, error), values ...interface{}) ([]int64, error) {
-	rows, err := this.updateReturningColumns(query, mapper, values)
+	rows, err := this.updateReturningColumns(query, mapper, values...)
 	if err != nil {
 		return []int64{}, err
 	}
