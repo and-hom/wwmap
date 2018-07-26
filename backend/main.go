@@ -152,6 +152,8 @@ func main() {
 	r.HandleFunc("/river/{riverId}/reports", geoHierarchyHandler.ListRiverReports).Methods(GET)
 	r.HandleFunc("/river/{riverId}/spots", geoHierarchyHandler.CorsGetOptionsStub).Methods(OPTIONS)
 	r.HandleFunc("/river/{riverId}/spots", geoHierarchyHandler.ListSpots).Methods(GET)
+	r.HandleFunc("/river/{riverId}/gpx", geoHierarchyHandler.CorsGetOptionsStub).Methods(OPTIONS)
+	r.HandleFunc("/river/{riverId}/gpx", geoHierarchyHandler.UploadGpx).Methods(POST, PUT)
 	r.HandleFunc("/region", geoHierarchyHandler.CorsGetOptionsStub).Methods(OPTIONS)
 	r.HandleFunc("/region", geoHierarchyHandler.ListAllRegions).Methods(GET)
 	r.HandleFunc("/spot/{spotId}", geoHierarchyHandler.CorsGetOptionsStub).Methods(OPTIONS)

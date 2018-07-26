@@ -775,6 +775,54 @@
                 </ul>
             </dd>
         </dl>
+        <div v-if="canEdit() && river.id && !editMode">
+            <template>
+                <div class="example-drag">
+                    <div class="upload">
+                        <ul v-if="files.length">
+                            <li v-for="(file, index) in files" :key="file.id">
+                                <span>{{file.name}}</span> -
+                                <span>{{file.size}}</span> -
+                                <span v-if="file.error">{{file.error}}</span>
+                                <span v-else-if="file.success">success</span>
+                                <span v-else-if="file.active">active</span>
+                                <span v-else-if="file.active">active</span>
+                                <span v-else></span>
+                            </li>
+                        </ul>
+
+                        <div v-show="$refs.upload && $refs.upload.dropActive" class="drop-active">
+                            <h3>Drop files to upload</h3>
+                        </div>
+
+                        <div class="example-btn">
+                            <file-upload
+                                    class="btn btn-primary"
+                                    :post-action="uploadPath"
+                                    extensions="gpx"
+                                    :multiple="false"
+                                    :drop="false"
+                                    :drop-directory="false"
+                                    v-model="files"
+                                    ref="uploadGpx">
+                                <i class="fa fa-plus"></i>
+                                Выберите GPX-файл с точками препятствий.
+                            </file-upload>
+                            <button type="button" class="btn btn-success" v-if="!$refs.uploadGpx || !$refs.uploadGpx.active"
+                                    @click.prevent="$refs.uploadGpx.active = true">
+                                <i class="fa fa-arrow-up" aria-hidden="true"></i>
+                                Начать загрузку
+                            </button>
+                            <button type="button" class="btn btn-danger" v-else
+                                    @click.prevent="$refs.uploadGpx.active = false">
+                                <i class="fa fa-stop" aria-hidden="true"></i>
+                                Stop Upload
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
     </div>
 </div>
 
@@ -782,6 +830,21 @@
     Vue.component('river-editor', {
         props: ['river', 'reports'],
         template: document.getElementById('river-editor-template').innerHTML,
+        components: {
+          FileUpload: VueUploadComponent
+        },
+        updated: function() {
+            if(this.$refs.uploadGpx && this.$refs.uploadGpx.value.length && this.$refs.uploadGpx.uploaded) {
+                if (this.imagesOutOfDate) {
+                    setTimeout(() => {
+                        this.refresh()
+                    }, 700);
+                    this.imagesOutOfDate = false
+                } else {
+                    this.imagesOutOfDate = true
+                }
+            }
+        },
         data:function() {
             return {
                 // for editor
@@ -823,6 +886,8 @@
                 },
                 // end of editor
 
+                files: [],
+                uploadPath: apiBase + "/river/" + this.river.id +"/gpx",
                 add_spot: function() {
                     app.spoteditorstate.visible = false
                     app.rivereditorstate.visible = false;
