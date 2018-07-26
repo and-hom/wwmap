@@ -12,6 +12,9 @@ import (
 	"io/ioutil"
 	"github.com/and-hom/wwmap/lib/util"
 	"github.com/pkg/errors"
+	"github.com/ptrv/go-gpx"
+	"github.com/and-hom/wwmap/lib/geo"
+	"github.com/and-hom/wwmap/lib/model"
 )
 
 type GeoHierarchyHandler struct {
@@ -191,6 +194,49 @@ func (this *GeoHierarchyHandler) ListSpots(w http.ResponseWriter, r *http.Reques
 		return
 	}
 	this.JsonAnswer(w, voyageReports)
+}
+
+func (this *GeoHierarchyHandler) UploadGpx(w http.ResponseWriter, req *http.Request) {
+	CorsHeaders(w, POST, PUT)
+
+	pathParams := mux.Vars(req)
+	riverId, err := strconv.ParseInt(pathParams["riverId"], 10, 64)
+	if err != nil {
+		OnError(w, err, "Can not parse id", http.StatusBadRequest)
+		return
+	}
+
+	err = req.ParseMultipartForm(128 * 1024 * 1024)
+	if err != nil {
+		OnError500(w, err, "Can not parse multipart form")
+		return
+	}
+	f, _, err := req.FormFile("file")
+	if err != nil {
+		OnError500(w, err, "Can not get uploaded file")
+		return
+	}
+	defer f.Close()
+
+	gpx_data, err := gpx.Parse(f)
+	if err != nil {
+		OnError(w, err, "Can not parse gpx", http.StatusBadRequest)
+		return
+	}
+
+	for _, wpt := range gpx_data.Waypoints {
+		spot := dao.WhiteWaterPointFull{}
+		spot.Title = wpt.Name
+		spot.River = dao.IdTitle{Id:riverId}
+		spot.Point = geo.Point{Lat:wpt.Lat, Lon:wpt.Lon}
+		spot.ShortDesc = wpt.Desc
+		spot.Category = model.SportCategory{Category:model.UNDEFINED_CATEGORY}
+		_, err = this.whiteWaterDao.InsertWhiteWaterPointFull(spot)
+		if err!=nil {
+			OnError500(w, err, "Can not insert spot")
+			return
+		}
+	}
 }
 
 func (this *GeoHierarchyHandler) GetRiver(w http.ResponseWriter, r *http.Request) {
