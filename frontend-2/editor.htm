@@ -237,13 +237,13 @@
         data: function () {
             return {
                 categoryString: function() {
-                    if (category.category==0) {
+                    if (this.category=="0") {
                         return "-"
                     }
-                    if (category.category==-1) {
+                    if (this.category=="-1") {
                         return "Непроход."
                     }
-                    return category.category + "" + category.sub
+                    return this.category
                 }
             }
         },
@@ -339,7 +339,7 @@
                             </div>
                             <div class="col-6">
                                 <strong>Расположение: </strong>
-                                <ya-map-location :spot="spot" width="100%" editable="true"></ya-map-location>
+                                <ya-map-location :spot="spot" width="100%" :editable="true"></ya-map-location>
                             </div>
                         </div>
                         <div class="row">
@@ -390,7 +390,7 @@
         <div v-else class="spot-display">
             <div class="container-fluid" style="margin-top: 20px;">
                 <div class="row">
-                    <div class="col-6">
+                    <div class="col-7">
                         <div class="short-div">
                             <h1>{{ spot.title }}</h1>
                         </div>
@@ -402,13 +402,13 @@
                             {{ spot.orient }}
                         </div>
                     </div>
-                    <div class="col-6">
+                    <div class="col-5">
                         <img v-if="spot.preview" :src="spot.preview" style="width:100%"/>
                         <img v-else src="img/no-photo.png" style="width:100%"/>
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-6">
+                    <div class="col-7">
                         <div class="container-fluid" style="padding-bottom:15px;">
                             <div class="row">
                                 <div class="col-4"><strong>Уровень воды</strong></div>
@@ -437,9 +437,9 @@
                             <td colspan="2">{{ spot.safety }}</td>
                         </div>
                     </div>
-                    <div class="col-6">
+                    <div class="col-5">
                         <strong>Расположение: </strong>
-                        <ya-map-location :spot="spot" width="100%" editable="false"></ya-map-location>
+                        <ya-map-location :spot="spot" width="100%" :editable="false"></ya-map-location>
                         <div class="short-div">
                             <strong>Координаты:</strong><br/><strong>Широта:</strong>&nbsp;{{ spot.point[0] }}
                             <br/><strong>Долгота:</strong>&nbsp;{{ spot.point[1] }}
@@ -450,18 +450,27 @@
                     </div>
                 </div>
             </div>
-            <div v-if="schemas.length>0">
+            <div v-if="schemas.length">
                 <h2>Схемы</h2>
+                <div>
+                    <gallery id="schemas-gallery" :images="schemas" :index="schIndex" @close="schemaIndex = null"></gallery>
+                    <div
+                            class="image wwmap-gallery-cell"
+                            v-for="schema, schemaIndex in schemas"
+                            @click="schIndex = schemaIndex"
+                            :style="{ backgroundImage: 'url(' + schema + ')' }"
+                    ></div>
+                </div>
             </div>
-            <div v-if="images.length>0">
+            <div v-if="images.length">
                 <h2>Фото галерея</h2>
                 <div>
-                    <gallery :images="images" :index="index" @close="index = null"></gallery>
+                    <gallery id="image-gallery" :images="images" :index="imgIndex" @close="imageIndex = null"></gallery>
                     <div
-                            class="image"
+                            class="image wwmap-gallery-cell"
                             v-for="image, imageIndex in images"
-                            @click="index = imageIndex"
-                            :style="{ backgroundImage: 'url(' + image + ')', width: '300px', height: '200px' }"
+                            @click="imgIndex = imageIndex"
+                            :style="{ backgroundImage: 'url(' + image + ')' }"
                     ></div>
                 </div>
             </div>
@@ -536,8 +545,9 @@
 
                 // imgs
                 images: getImages(this.spot.id, "image").map(x => x.url),
+                imgIndex: null,
                 schemas: getImages(this.spot.id, "schema").map(x => x.url),
-                index: null,
+                schIndex: null,
             }
         }
     });
