@@ -83,6 +83,24 @@ ul {
   color: #fff;
 }
 
+.spot-editor-panel .row {
+    padding-top: 10px;
+}
+.spot-editor-panel textarea {
+    width: 100%;
+}
+
+
+.spot-display .row {
+    padding-top: 10px;
+}
+.spot-display dd {
+    display: inline;
+}
+.spot-display dt {
+    display: inline;
+}
+
 .wwmap-upload-drag label.btn {
   margin-bottom: 0;
   margin-right: 1rem;

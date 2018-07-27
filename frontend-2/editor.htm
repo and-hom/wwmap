@@ -181,7 +181,6 @@
     </li>
 </div>
 
-<!--End of river component-->
 <script type="text/javascript">
     Vue.component('river', {
         props: ['river'],
@@ -224,8 +223,33 @@
             }
         },
     });
-
 </script>
+<!--End of river component-->
+
+<!--Category display-->
+<div id="category-template" style="display:none">
+    <div style="display:inline">{{ categoryString() }}</div>
+</div>
+<script type="text/javascript">
+    Vue.component('category', {
+        props: ['category'],
+        template: document.getElementById('category-template').innerHTML,
+        data: function () {
+            return {
+                categoryString: function() {
+                    if (category.category==0) {
+                        return "-"
+                    }
+                    if (category.category==-1) {
+                        return "Непроход."
+                    }
+                    return category.category + "" + category.sub
+                }
+            }
+        },
+    })
+</script>
+<!--End of category display-->
 
 
 <!--Spot editor component-->
@@ -252,7 +276,7 @@
             </div>
         </div>
 
-        <div v-if="editMode" style="padding-top:15px;">
+        <div v-if="editMode" class="spot-editor-panel" style="padding-top:15px;">
             <b-tabs>
                 <b-tab title="Главное" active>
                     <div class="container-fluid" style="margin-top: 20px;">
@@ -260,7 +284,7 @@
                             <div class="col-6">
                                 <div class="short-div">
                                     <strong>Название: </strong>
-                                    <input v-model.trim="spot.title" style="display:block"/>
+                                    <input v-model.trim="spot.title" style="display:block; width: 100%;"/>
                                 </div>
                                 <div class="short-div">
                                     <strong>Река: </strong>
@@ -315,7 +339,7 @@
                             </div>
                             <div class="col-6">
                                 <strong>Расположение: </strong>
-                                <ya-map-location-editor :spot="spot"></ya-map-location-editor>
+                                <ya-map-location :spot="spot" width="100%" editable="true"></ya-map-location>
                             </div>
                         </div>
                         <div class="row">
@@ -327,29 +351,29 @@
                         <div class="col-2"><strong>Описание: </strong></div>
                         <div class="col-10"><textarea rows="10" cols="120" v-model="spot.short_description"></textarea></div>
                     </div>
-                    <div>
-                        <strong>Ориентиры:</strong>
-                        <textarea rows="10" style="width:100%" v-model="spot.orient"></textarea>
+                    <div class="row">
+                        <div class="col-2"><strong>Ориентиры:</strong></div>
+                        <div class="col-10"><textarea rows="10" style="width:100%" v-model="spot.orient"></textarea></div>
                     </div>
-                    <div>
-                        <strong>Подход/выход:</strong>
-                        <textarea rows="10" cols="120" v-model="spot.approach"></textarea>
+                    <div class="row">
+                        <div class="col-2"><strong>Подход/выход:</strong></div>
+                        <div class="col-10"><textarea rows="10" cols="120" v-model="spot.approach"></textarea></div>
                     </div>
-                    <div>
-                        <strong>Страховка:</strong>
-                        <textarea rows="10" cols="120" v-model="spot.safety"></textarea>
+                    <div class="row">
+                        <div class="col-2"><strong>Страховка:</strong></div>
+                        <div class="col-10"><textarea rows="10" cols="120" v-model="spot.safety"></textarea></div>
                     </div>
-                    <div>
-                        <strong>Описание для низкого уровня воды:</strong>
-                        <textarea rows="10" cols="120" v-model="spot.lw_description"></textarea>
+                    <div class="row">
+                        <div class="col-2"><strong>Описание для низкого уровня воды:</strong></div>
+                        <div class="col-10"><textarea rows="10" cols="120" v-model="spot.lw_description"></textarea></div>
                     </div>
-                    <div>
-                        <strong>Описание для среднего уровня воды:</strong>
-                        <textarea rows="10" cols="120" v-model="spot.mw_description"></textarea>
+                    <div class="row">
+                        <div class="col-2"><strong>Описание для среднего уровня воды:</strong></div>
+                        <div class="col-10"><textarea rows="10" cols="120" v-model="spot.mw_description"></textarea></div>
                     </div>
-                    <div>
-                        <strong>Описание для высокого уровня воды:</strong>
-                        <textarea rows="10" cols="120" v-model="spot.hw_description"></textarea>
+                    <div class="row">
+                        <div class="col-2"><strong>Описание для высокого уровня воды:</strong></div>
+                        <div class="col-10"><textarea rows="10" cols="120" v-model="spot.hw_description"></textarea></div>
                     </div>
                 </b-tab>
                 <b-tab title="Схемы">
@@ -363,69 +387,84 @@
                 </b-tab>
             </b-tabs>
         </div>
-        <div v-else>
-            <h1>{{ spot.title }}</h1>
-            <table class="spot-desc">
-                <tr>
-                    <td colspan="2">{{ spot.short_description }}</td>
-                    <td rowspan="2"><img :scr="spot.thumbnail"/></td>
-                </tr>
-                <tr>
-                    <td colspan="2"><strong>Ориентиры:</strong>&nbsp;{{ spot.orient }}</td>
-                </tr>
-                <tr>
-                    <td class="cell-title">Уровень воды</td>
-                    <td class="cell-title">Тех. описание</td>
-                    <td class="cell-title" rowspan="4">Карта</td>
-                </tr>
-                <tr>
-                    <td class="cell-title">Низкая вода</td>
-                    <td>{{ spot.lw_description }}</td>
-                </tr>
-                <tr>
-                    <td class="cell-title">Средняя вода</td>
-                    <td>{{ spot.mw_description }}</td>
-                </tr>
-                <tr>
-                    <td class="cell-title">Высокая вода</td>
-                    <td>{{ spot.hw_description }}</td>
-                </tr>
-                <tr>
-                    <td class="cell-title" colspan="2">Подход/выход</td>
-                    <td rowspan="4">
-                        Координаты:<br/>Широта:&nbsp;{{ spot.point[0] }}
-                        <br/>Долгота:&nbsp;{{ spot.point[1] }}
-                        <br/>
-                        <br/>
-                        К.с. нв/св/вв:&nbsp;{{ spot.lw_category }}/{{ spot.mw_category }}/{{ spot.hw_category }}
-                        <div v-if="spot.category!='0' && spot.category!='-1'">К.с. по классификатору: {{ spot.category
-                            }}
+        <div v-else class="spot-display">
+            <div class="container-fluid" style="margin-top: 20px;">
+                <div class="row">
+                    <div class="col-6">
+                        <div class="short-div">
+                            <h1>{{ spot.title }}</h1>
+                        </div>
+                        <div class="short-div">
+                            {{ spot.short_description }}
+                        </div>
+                        <div class="short-div">
+                            <strong>Ориентиры:</strong><br/>
+                            {{ spot.orient }}
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <img v-if="spot.preview" :src="spot.preview" style="width:100%"/>
+                        <img v-else src="img/no-photo.png" style="width:100%"/>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <div class="container-fluid" style="padding-bottom:15px;">
+                            <div class="row">
+                                <div class="col-4"><strong>Уровень воды</strong></div>
+                                <div class="col-8"><strong>Тех. описание</strong></div>
+                            </div>
+                            <div class="row">
+                                <div class="col-4"><strong>Низкая вода</strong></div>
+                                <div class="col-8">{{ spot.lw_description }}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-4"><strong>Средняя вода</strong></div>
+                                <div class="col-8">{{ spot.mw_description }}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-4"><strong>Высокая вода</strong></div>
+                                <div class="col-8">{{ spot.hw_description }}</div>
+                            </div>
                         </div>
 
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="2">{{ spot.approach }}</td>
-                </tr>
-                <tr>
-                    <td class="cell-title" colspan="2">Страховка</td>
-                </tr>
-                <tr>
-                    <td colspan="2">{{ spot.safety }}</td>
-                </tr>
-            </table>
-            <h2>Схемы</h2>
-            <h2>Фото галерея</h2>
-            <div>
-                <gallery :images="images" :index="index" @close="index = null"></gallery>
-                <div
-                        class="image"
-                        v-for="image, imageIndex in images"
-                        @click="index = imageIndex"
-                        :style="{ backgroundImage: 'url(' + image + ')', width: '300px', height: '200px' }"
-                ></div>
+                        <div v:if="spot.approach" class="short-div">
+                            <strong>Подход/выход</strong>
+                            <td colspan="2">{{ spot.approach }}</td>
+                        </div>
+                        <div v:if="spot.safety" class="short-div">
+                            <strong>Страховка</strong>
+                            <td colspan="2">{{ spot.safety }}</td>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <strong>Расположение: </strong>
+                        <ya-map-location :spot="spot" width="100%" editable="false"></ya-map-location>
+                        <div class="short-div">
+                            <strong>Координаты:</strong><br/><strong>Широта:</strong>&nbsp;{{ spot.point[0] }}
+                            <br/><strong>Долгота:</strong>&nbsp;{{ spot.point[1] }}
+                            <br/>
+                            <div><strong>К.с. нв/св/вв:</strong>&nbsp;<category :category="spot.lw_category"></category>/<category :category="spot.mw_category"></category>/<category :category="spot.hw_category"></category></div>
+                            <div><strong>К.с. по классификатору:</strong>&nbsp;<category :category="spot.category"></category></div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <h2>Видео</h2>
+            <div v-if="schemas.length>0">
+                <h2>Схемы</h2>
+            </div>
+            <div v-if="images.length>0">
+                <h2>Фото галерея</h2>
+                <div>
+                    <gallery :images="images" :index="index" @close="index = null"></gallery>
+                    <div
+                            class="image"
+                            v-for="image, imageIndex in images"
+                            @click="index = imageIndex"
+                            :style="{ backgroundImage: 'url(' + image + ')', width: '300px', height: '200px' }"
+                    ></div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -497,6 +536,7 @@
 
                 // imgs
                 images: getImages(this.spot.id, "image").map(x => x.url),
+                schemas: getImages(this.spot.id, "schema").map(x => x.url),
                 index: null,
             }
         }
@@ -633,13 +673,27 @@
 <!--End of image list component-->
 
 <!--Ya maps component-->
-<div id="ya-map-location-editor-template" style="display:none">
-    <div id="map" style="width: 600px; height: 400px"></div>
+<div id="ya-map-location-template" style="display:none">
+    <div id="map" :style="mapDivStyle()"></div>
 </div>
 <script type="text/javascript">
-    Vue.component('ya-map-location-editor', {
-        template: document.getElementById('ya-map-location-editor-template').innerHTML,
-        props: ['spot'],
+    Vue.component('ya-map-location', {
+        template: document.getElementById('ya-map-location-template').innerHTML,
+        props: {
+            spot: Object,
+            width: {
+                type: String,
+                default: 600
+            },
+            height: {
+                type: Number,
+                default: 400
+            },
+            editable: {
+                type: Boolean,
+                default: false,
+            },
+        },
         created: function() {
             var component = this
             ymaps.ready(function() {
@@ -690,7 +744,7 @@
                         }
                     }, {
                         preset: 'islands#blueIcon',
-                        draggable: true
+                        draggable: this.editable,
                     })
 
                 myMap.geoObjects.add(label)
@@ -707,6 +761,13 @@
                 component.map = myMap
 
             })
+        },
+        data: function() {
+            return {
+                mapDivStyle: function() {
+                    return 'width: ' + this.width + 'px; height: ' + this.height + 'px'
+                }
+            }
         },
     });
 
