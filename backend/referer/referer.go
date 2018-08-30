@@ -41,6 +41,10 @@ func (this dummy) Put(url *url.URL) {
 			return
 		}
 	}
+
+	if url.Scheme == "" {
+		url.Scheme = "http"
+	}
 	this.cache.Set(key, SiteRef{
 		Scheme:  url.Scheme,
 		BaseUrl: url.Scheme + "://" + url.Host,
