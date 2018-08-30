@@ -40,11 +40,14 @@ func (this *GpxHandler) DownloadGpx(w http.ResponseWriter, req *http.Request) {
 			Lon: whitewaterPoint.Point.Lon,
 			Cmt: whitewaterPoint.Comment,
 		}
+		categoryString := catStr(whitewaterPoint.Category, transliterate)
+
+		titleString := whitewaterPoint.Title
 		if transliterate {
-			waypoints[i].Name = catStr(whitewaterPoint.Category) + cyrillicToTranslit(whitewaterPoint.Title)
-		} else {
-			waypoints[i].Name = catStr(whitewaterPoint.Category) + whitewaterPoint.Title
+			titleString = cyrillicToTranslit(whitewaterPoint.Title)
 		}
+
+		waypoints[i].Name = categoryString + titleString
 	}
 	if len(whitewaterPoints) == 0 {
 		OnError(w, nil, fmt.Sprintf("No whitewater points found for river with id %d", id), http.StatusNotFound)
@@ -61,17 +64,21 @@ func (this *GpxHandler) DownloadGpx(w http.ResponseWriter, req *http.Request) {
 	w.Write(xmlBytes)
 }
 
-func catStr(category model.SportCategory) string {
+func catStr(category model.SportCategory, translit bool) string {
 	if category.Category == -1 {
-		return "(Непроход)"
+		if translit {
+			return "(Stop!)"
+		} else {
+			return "(Непроход)"
+		}
 	}
 	if category.Category == 0 {
 		return ""
 	}
 	if category.Sub == "" {
-		return "(" + category.Serialize() + "к.с.)"
+		return "(" + category.Serialize() + ")"
 	}
-	return "(" + category.Serialize() + " к.с.)"
+	return "(" + category.Serialize() + ")"
 }
 
 var translitCharMap = map[string]string{
