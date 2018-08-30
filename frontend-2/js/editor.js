@@ -128,7 +128,12 @@ function removeRiver(id) {
 }
 
 function getImages(id, _type) {
-    return doGetJsonSync(apiBase + "/spot/" + id + "/img?type=" + _type)
+    var imgs = doGetJsonSync(apiBase + "/spot/" + id + "/img?type=" + _type)
+    if (imgs) {
+        return imgs
+    } else {
+        return []
+    }
 }
 
 function removeImage(spotId, id, _type) {
