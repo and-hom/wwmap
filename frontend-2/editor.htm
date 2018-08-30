@@ -62,7 +62,7 @@
                                   v-bind:reports="rivereditorstate.reports"/>
                 </div>
                 <div>
-                    <spot-editor v-if="spoteditorstate.visible" v-bind:spot="spoteditorstate.spot"/>
+                    <spot-editor v-if="spoteditorstate.visible" v-bind:initial-spot="spoteditorstate.spot"/>
                 </div>
             </div>
         </div>
@@ -268,7 +268,7 @@
                     {{getEditModeButtonTitle()}}
                 </button>
                 <button type="button" class="btn btn-success" v-on:click="save()">Сохранить</button>
-                <button type="button" class="btn btn-secondary" v-on:click="reload()">Отменить</button>
+                <button type="button" class="btn btn-secondary" v-on:click="editMode=!editMode; reload()">Отменить</button>
             </div>
             <div class="btn-group">
                 <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#del-spot">Удалить
@@ -339,7 +339,7 @@
                             </div>
                             <div class="col-6">
                                 <strong>Расположение: </strong>
-                                <ya-map-location :spot="spot" width="100%" :editable="true"></ya-map-location>
+                                <ya-map-location ref="locationEdit" v-bind:spot="spot" width="100%" :editable="true"></ya-map-location>
                             </div>
                         </div>
                         <div class="row">
@@ -438,7 +438,7 @@
                     </div>
                     <div class="col-5">
                         <strong>Расположение: </strong>
-                        <ya-map-location :spot="spot" width="100%" :editable="false"></ya-map-location>
+                        <ya-map-location ref="locationView" v-bind:spot="spot" width="100%" :editable="false"></ya-map-location>
                         <div class="short-div">
                             <strong>Координаты:</strong><br/><strong>Широта:</strong>&nbsp;{{ spot.point[0] }}
                             <br/><strong>Долгота:</strong>&nbsp;{{ spot.point[1] }}
@@ -479,7 +479,7 @@
 
 <script type="text/javascript">
     Vue.component('spot-editor', {
-        props: ['spot'],
+        props: ['initialSpot'],
         template: document.getElementById('spotEditor-template').innerHTML,
 
         methods: {
@@ -495,6 +495,20 @@
                     loading(false);
                 });
             },
+        },
+        updated: function() {
+            // It's an ugly hack. I really do not know, why child's update lifecycle handler method is not called on spot changed
+            // Maybe computed properties are not allowed in v-bind ?
+            if (this.editMode) {
+                this.$refs.locationEdit.doUpdate()
+            } else {
+                this.$refs.locationView.doUpdate()
+            }
+        },
+        computed: {
+                spot:function () { return this.initialSpot },
+                images: function () {return getImages(this.initialSpot.id, "image").map(x => x.url)},
+                schemas: function () {return getImages(this.initialSpot.id, "schema").map(x => x.url)},
         },
         data:function() {
             return {
@@ -513,6 +527,7 @@
                     if (updated) {
                         this.spot = updated
                         this.editMode=false
+                        this.reloadImgs()
                         this.hideError()
                     } else {
                         this.showError("Не удалось сохранить препятствие. Возможно, недостаточно прав")
@@ -520,7 +535,14 @@
                 },
                 reload:function() {
                     this.spot = getSpot(this.spot.id)
+                    this.reloadImgs()
                     this.hideError()
+                },
+                reloadImgs: function() {
+                    this.images = getImages(this.initialSpot.id, "image").map(x => x.url)
+                    this.imgIndex = null
+                    this.schemas = getImages(this.initialSpot.id, "schema").map(x => x.url)
+                    this.schIndex = null
                 },
                 remove: function() {
                     this.hideError()
@@ -540,12 +562,10 @@
                 // end of editor
                 all_categories:all_categories,
 
-                options: [getRiver(this.spot.river.id)],
+                options: [getRiver(this.initialSpot.river.id)],
 
                 // imgs
-                images: getImages(this.spot.id, "image").map(x => x.url),
                 imgIndex: null,
-                schemas: getImages(this.spot.id, "schema").map(x => x.url),
                 schIndex: null,
             }
         }
@@ -673,6 +693,7 @@
 <div id="ya-map-location-template" style="display:none">
     <div id="map" :style="mapDivStyle()"></div>
 </div>
+<!--End of Ya maps component-->
 <script type="text/javascript">
     Vue.component('ya-map-location', {
         template: document.getElementById('ya-map-location-template').innerHTML,
@@ -680,16 +701,19 @@
             spot: Object,
             width: {
                 type: String,
-                default: 600
+                default: "600px",
             },
             height: {
-                type: Number,
-                default: 400
+                type: String,
+                default: "400px",
             },
             editable: {
                 type: Boolean,
                 default: false,
             },
+        },
+        updated: function() {
+            this.doUpdate()
         },
         created: function() {
             var component = this
@@ -717,59 +741,83 @@
                         'google#satellite',
                     ])
                 );
-
-                var skip = 0
-                if (component.spot && component.spot.id) {
-                    skip = component.spot.id
-                }
-                var objectManager = new ymaps.RemoteObjectManager(apiBase + '/ymaps-tile-ww?bbox=%b&zoom=%z&skip=' + skip, {
-                    clusterHasBalloon: false,
-                    geoObjectOpenBalloonOnClick: false,
-                    geoObjectStrokeWidth: 3,
-                    splitRequests: true,
-                    clusterHasBalloon: false,
-                });
-                myMap.geoObjects.add(objectManager);
-
-                var label = new ymaps.GeoObject({
-                        geometry: {
-                            type: "Point",
-                            coordinates: component.spot.point
-                        },
-                        properties: {
-                            hintContent: component.spot.title,
-                        }
-                    }, {
-                        preset: 'islands#blueIcon',
-                        draggable: this.editable,
-                    })
-
-                myMap.geoObjects.add(label)
-                label.events.add('dragend', function (e) {
-                    component.spot.point = label.geometry.getCoordinates()
-                });
-
-                myMap.events.add('click', function (e) {
-                    p = e.get('coords')
-                    label.geometry.setCoordinates(p)
-                    component.spot.point = p
-                });
-                component.label = label
                 component.map = myMap
+
+
+                component.addObjectManager()
+                component.addLabel()
+
 
             })
         },
         data: function() {
             return {
                 mapDivStyle: function() {
-                    return 'width: ' + this.width + 'px; height: ' + this.height + 'px'
-                }
+                    return 'width: ' + this.width + '; height: ' + this.height + ';'
+                },
+                doUpdate: function() {
+                    if (this.map) {
+                        this.map.setCenter(this.spot.point)
+
+                        this.map.geoObjects.remove(this.label)
+                        this.addLabel()
+
+                        this.map.geoObjects.remove(this.objectManager)
+                        this.addObjectManager()
+                    }
+                },
+                objectManagerUrlTemplate: function() {
+                    var skip = 0
+                    if (this.spot && this.spot.id) {
+                        skip = this.spot.id
+                    }
+                    return apiBase + '/ymaps-tile-ww?bbox=%b&zoom=%z&skip=' + skip
+                },
+                addObjectManager:function() {
+                        var objectManager = new ymaps.RemoteObjectManager(this.objectManagerUrlTemplate(), {
+                        clusterHasBalloon: false,
+                        geoObjectOpenBalloonOnClick: false,
+                        geoObjectStrokeWidth: 3,
+                        splitRequests: true,
+                        clusterHasBalloon: false,
+                    });
+                    this.map.geoObjects.add(objectManager);
+                    this.objectManager = objectManager
+                },
+                addLabel: function() {
+                    var component = this
+                    var label = new ymaps.GeoObject({
+                        geometry: {
+                            type: "Point",
+                            coordinates: this.spot.point
+                        },
+                        properties: {
+                            hintContent: this.spot.title,
+                        }
+                    }, {
+                        preset: 'islands#blueIcon',
+                        draggable: this.editable,
+                    })
+                    label.events.add('dragend', function (e) {
+                        component.spot.point = label.geometry.getCoordinates()
+                    });
+
+                    if (this.editable) {
+                        this.map.events.add('click', function (e) {
+                            p = e.get('coords')
+                            label.geometry.setCoordinates(p)
+                            component.spot.point = p
+                        });
+                    }
+
+                    this.map.geoObjects.add(label)
+                    this.label = label
+                },
             }
         },
     });
 
 </script>
-<!--End of Ya maps component-->
 
 
 <!--river editor component-->
