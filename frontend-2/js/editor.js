@@ -20,28 +20,39 @@ var all_categories = [
     {id:"6c", title:"   6c"},
 ]
 
-function doGetJsonSync(url) {
+function sendRequest(url , _type, auth) {
     var xhr = new XMLHttpRequest();
-    xhr.open('GET', url, false);
-    xhr.send();
-    if (xhr.status == 200) {
-        return JSON.parse(xhr.response)
-    }
-    return null
-}
-
-function doDeleteJsonSync(url, auth) {
-    var xhr = new XMLHttpRequest();
-    xhr.open('DELETE', url, false);
+    xhr.open(_type, url, false);
     if (auth) {
         xhr.setRequestHeader("Authorization", "Token " + getToken());
     }
     try {
         xhr.send();
+        return xhr
     } catch (err) {
-        return false
+        return null
     }
-    return (xhr.status == 200)
+}
+
+function doGetJsonSync(url) {
+    var xhr = sendRequest(url, "GET", false)
+    if (xhr && xhr.status == 200) {
+        return JSON.parse(xhr.response)
+    }
+    return null
+}
+
+function doDeleteSync(url, auth) {
+    var xhr = sendRequest(url, "DELETE", auth)
+    return (xhr && xhr.status == 200)
+}
+
+function doDeleteWithJsonRespSync(url, auth) {
+    var xhr = sendRequest(url, "DELETE", auth)
+    if (xhr && xhr.status == 200) {
+        return JSON.parse(xhr.response)
+    }
+    return null
 }
 
 function doPostJsonSync(url, value, auth) {
@@ -96,7 +107,7 @@ function saveSpot(spot) {
 }
 
 function removeSpot(id) {
-    return doDeleteJsonSync(apiBase + "/spot/" + id, true)
+    return doDeleteSync(apiBase + "/spot/" + id, true)
 }
 
 function getAllRegions() {
@@ -113,5 +124,22 @@ function saveRiver(river) {
 }
 
 function removeRiver(id) {
-    return doDeleteJsonSync(apiBase + "/river/" + id, true)
+    return doDeleteSync(apiBase + "/river/" + id, true)
+}
+
+function getImages(id, _type) {
+    var imgs = doGetJsonSync(apiBase + "/spot/" + id + "/img?type=" + _type)
+    if (imgs) {
+        return imgs
+    } else {
+        return []
+    }
+}
+
+function removeImage(spotId, id, _type) {
+    return doDeleteWithJsonRespSync(apiBase + "/spot/" + spotId + "/img/" + id + "?type=" + _type, true)
+}
+
+function setImageEnabled(spotId, id, enabled) {
+    return doPostJsonSync(apiBase + "/spot/" + spotId + "/img/" + id + "/enabled", enabled, true)
 }

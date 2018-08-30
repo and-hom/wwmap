@@ -12,6 +12,9 @@ import (
 	"io/ioutil"
 	"github.com/and-hom/wwmap/lib/util"
 	"github.com/pkg/errors"
+	"github.com/ptrv/go-gpx"
+	"github.com/and-hom/wwmap/lib/geo"
+	"github.com/and-hom/wwmap/lib/model"
 )
 
 type GeoHierarchyHandler struct {
@@ -47,26 +50,18 @@ func (this *GeoHierarchyHandler) getRegion(id int64) dao.Region {
 }
 
 func (this *GeoHierarchyHandler) ListCountries(w http.ResponseWriter, r *http.Request) {
-	CorsHeaders(w, "GET, OPTIONS, POST, DELETE")
-	JsonResponse(w)
+	CorsHeaders(w, GET, OPTIONS, POST, DELETE)
 
 	countries, err := this.countryDao.List()
 	if err != nil {
 		OnError500(w, err, "Can not list countries")
 		return
 	}
-	bytes, err := json.Marshal(countries)
-	if err != nil {
-		OnError500(w, err, "Can not serialize countries")
-		return
-	}
-
-	w.Write(bytes)
+	this.JsonAnswer(w, countries)
 }
 
 func (this *GeoHierarchyHandler) ListRegions(w http.ResponseWriter, r *http.Request) {
-	CorsHeaders(w, "GET, OPTIONS, POST, DELETE")
-	JsonResponse(w)
+	CorsHeaders(w, GET, OPTIONS, POST, DELETE)
 
 	pathParams := mux.Vars(r)
 	countryId, err := strconv.ParseInt(pathParams["countryId"], 10, 64)
@@ -80,36 +75,22 @@ func (this *GeoHierarchyHandler) ListRegions(w http.ResponseWriter, r *http.Requ
 		OnError500(w, err, fmt.Sprintf("Can not list regions of country %d", countryId))
 		return
 	}
-	bytes, err := json.Marshal(regions)
-	if err != nil {
-		OnError500(w, err, fmt.Sprintf("Can not serialize regions of country %d", countryId))
-		return
-	}
-
-	w.Write(bytes)
+	this.JsonAnswer(w, regions)
 }
 
 func (this *GeoHierarchyHandler) ListAllRegions(w http.ResponseWriter, r *http.Request) {
-	CorsHeaders(w, "GET, OPTIONS, POST, DELETE")
-	JsonResponse(w)
+	CorsHeaders(w, GET, OPTIONS, POST, DELETE)
 
 	regions, err := this.regionDao.ListAllWithCountry()
 	if err != nil {
 		OnError500(w, err, "Can not list regions")
 		return
 	}
-	bytes, err := json.Marshal(regions)
-	if err != nil {
-		OnError500(w, err, "Can not serialize regions")
-		return
-	}
-
-	w.Write(bytes)
+	this.JsonAnswer(w, regions)
 }
 
 func (this *GeoHierarchyHandler) GetRegion(w http.ResponseWriter, r *http.Request) {
-	CorsHeaders(w, "GET, OPTIONS, POST, DELETE")
-	JsonResponse(w)
+	CorsHeaders(w, GET, OPTIONS, POST, DELETE)
 
 	pathParams := mux.Vars(r)
 	riverId, err := strconv.ParseInt(pathParams["regionId"], 10, 64)
@@ -127,19 +108,11 @@ func (this *GeoHierarchyHandler) writeRegion(regionId int64, w http.ResponseWrit
 		OnError500(w, err, fmt.Sprintf("Can not get region %d", regionId))
 		return
 	}
-
-	bytes, err := json.Marshal(region)
-	if err != nil {
-		OnError500(w, err, fmt.Sprintf("Can not serialize region %d", regionId))
-		return
-	}
-
-	w.Write(bytes)
+	this.JsonAnswer(w, region)
 }
 
 func (this *GeoHierarchyHandler) ListCountryRivers(w http.ResponseWriter, r *http.Request) {
-	CorsHeaders(w, "GET, OPTIONS, POST, DELETE")
-	JsonResponse(w)
+	CorsHeaders(w, GET, OPTIONS, POST, DELETE)
 
 	pathParams := mux.Vars(r)
 	countryId, err := strconv.ParseInt(pathParams["countryId"], 10, 64)
@@ -153,18 +126,11 @@ func (this *GeoHierarchyHandler) ListCountryRivers(w http.ResponseWriter, r *htt
 		OnError500(w, err, fmt.Sprintf("Can not list rivers of country %d", countryId))
 		return
 	}
-	bytes, err := json.Marshal(rivers)
-	if err != nil {
-		OnError500(w, err, fmt.Sprintf("Can not serialize rivers of country %d", countryId))
-		return
-	}
-
-	w.Write(bytes)
+	this.JsonAnswer(w, rivers)
 }
 
 func (this *GeoHierarchyHandler) ListRegionRivers(w http.ResponseWriter, r *http.Request) {
-	CorsHeaders(w, "GET, OPTIONS, POST, DELETE")
-	JsonResponse(w)
+	CorsHeaders(w, GET, OPTIONS, POST, DELETE)
 
 	pathParams := mux.Vars(r)
 	regionId, err := strconv.ParseInt(pathParams["regionId"], 10, 64)
@@ -178,20 +144,13 @@ func (this *GeoHierarchyHandler) ListRegionRivers(w http.ResponseWriter, r *http
 		OnError500(w, err, fmt.Sprintf("Can not list rivers of region %d", regionId))
 		return
 	}
-	bytes, err := json.Marshal(rivers)
-	if err != nil {
-		OnError500(w, err, fmt.Sprintf("Can not serialize rivers of region %d", regionId))
-		return
-	}
-
-	w.Write(bytes)
+	this.JsonAnswer(w, rivers)
 }
 
 const DEFAULT_REPORT_GROUP_LIMIT int = 20
 
 func (this *GeoHierarchyHandler) ListRiverReports(w http.ResponseWriter, r *http.Request) {
-	CorsHeaders(w, "GET, OPTIONS, POST, DELETE")
-	JsonResponse(w)
+	CorsHeaders(w, GET, OPTIONS, POST, DELETE)
 
 	pathParams := mux.Vars(r)
 	riverId, err := strconv.ParseInt(pathParams["riverId"], 10, 64)
@@ -216,18 +175,11 @@ func (this *GeoHierarchyHandler) ListRiverReports(w http.ResponseWriter, r *http
 		OnError500(w, err, fmt.Sprintf("Can not list reports of river %d", riverId))
 		return
 	}
-	bytes, err := json.Marshal(voyageReports)
-	if err != nil {
-		OnError500(w, err, fmt.Sprintf("Can not serialize reports of river %d", riverId))
-		return
-	}
-
-	w.Write(bytes)
+	this.JsonAnswer(w, voyageReports)
 }
 
 func (this *GeoHierarchyHandler) ListSpots(w http.ResponseWriter, r *http.Request) {
-	CorsHeaders(w, "GET, OPTIONS, POST, DELETE")
-	JsonResponse(w)
+	CorsHeaders(w, GET, OPTIONS, POST, DELETE)
 
 	pathParams := mux.Vars(r)
 	riverId, err := strconv.ParseInt(pathParams["riverId"], 10, 64)
@@ -241,18 +193,54 @@ func (this *GeoHierarchyHandler) ListSpots(w http.ResponseWriter, r *http.Reques
 		OnError500(w, err, fmt.Sprintf("Can not list spots of river %d", riverId))
 		return
 	}
-	bytes, err := json.Marshal(voyageReports)
+	this.JsonAnswer(w, voyageReports)
+}
+
+func (this *GeoHierarchyHandler) UploadGpx(w http.ResponseWriter, req *http.Request) {
+	CorsHeaders(w, POST, PUT)
+
+	pathParams := mux.Vars(req)
+	riverId, err := strconv.ParseInt(pathParams["riverId"], 10, 64)
 	if err != nil {
-		OnError500(w, err, fmt.Sprintf("Can not serialize spots of river %d", riverId))
+		OnError(w, err, "Can not parse id", http.StatusBadRequest)
 		return
 	}
 
-	w.Write(bytes)
+	err = req.ParseMultipartForm(128 * 1024 * 1024)
+	if err != nil {
+		OnError500(w, err, "Can not parse multipart form")
+		return
+	}
+	f, _, err := req.FormFile("file")
+	if err != nil {
+		OnError500(w, err, "Can not get uploaded file")
+		return
+	}
+	defer f.Close()
+
+	gpx_data, err := gpx.Parse(f)
+	if err != nil {
+		OnError(w, err, "Can not parse gpx", http.StatusBadRequest)
+		return
+	}
+
+	for _, wpt := range gpx_data.Waypoints {
+		spot := dao.WhiteWaterPointFull{}
+		spot.Title = wpt.Name
+		spot.River = dao.IdTitle{Id:riverId}
+		spot.Point = geo.Point{Lat:wpt.Lat, Lon:wpt.Lon}
+		spot.ShortDesc = wpt.Desc
+		spot.Category = model.SportCategory{Category:model.UNDEFINED_CATEGORY}
+		_, err = this.whiteWaterDao.InsertWhiteWaterPointFull(spot)
+		if err!=nil {
+			OnError500(w, err, "Can not insert spot")
+			return
+		}
+	}
 }
 
 func (this *GeoHierarchyHandler) GetRiver(w http.ResponseWriter, r *http.Request) {
-	CorsHeaders(w, "GET, OPTIONS, POST, DELETE")
-	JsonResponse(w)
+	CorsHeaders(w, GET, OPTIONS, POST, DELETE)
 
 	pathParams := mux.Vars(r)
 	riverId, err := strconv.ParseInt(pathParams["riverId"], 10, 64)
@@ -265,8 +253,7 @@ func (this *GeoHierarchyHandler) GetRiver(w http.ResponseWriter, r *http.Request
 }
 
 func (this *GeoHierarchyHandler) SaveRiver(w http.ResponseWriter, r *http.Request) {
-	CorsHeaders(w, "GET, OPTIONS, POST, DELETE")
-	JsonResponse(w)
+	CorsHeaders(w, GET, OPTIONS, POST, DELETE)
 	if !this.CheckRoleAllowedAndMakeResponse(w, r, dao.ADMIN) {
 		return
 	}
@@ -308,8 +295,7 @@ func (this *GeoHierarchyHandler) SaveRiver(w http.ResponseWriter, r *http.Reques
 }
 
 func (this *GeoHierarchyHandler) RemoveRiver(w http.ResponseWriter, r *http.Request) {
-	CorsHeaders(w, "GET, OPTIONS, POST, DELETE")
-	JsonResponse(w)
+	CorsHeaders(w, GET, OPTIONS, POST, DELETE)
 	if !this.CheckRoleAllowedAndMakeResponse(w, r, dao.ADMIN) {
 		return
 	}
@@ -347,18 +333,11 @@ func (this *GeoHierarchyHandler) writeRiver(riverId int64, w http.ResponseWriter
 		Aliases:river.Aliases,
 		Region:region,
 	}
-	bytes, err := json.Marshal(riverWithRegion)
-	if err != nil {
-		OnError500(w, err, fmt.Sprintf("Can not serialize river %d", riverId))
-		return
-	}
-
-	w.Write(bytes)
+	this.JsonAnswer(w, riverWithRegion)
 }
 
 func (this *GeoHierarchyHandler) FilterRivers(w http.ResponseWriter, r *http.Request) {
-	CorsHeaders(w, "GET, OPTIONS")
-	JsonResponse(w)
+	CorsHeaders(w, GET, OPTIONS)
 
 	limit := 20
 
@@ -380,18 +359,11 @@ func (this *GeoHierarchyHandler) FilterRivers(w http.ResponseWriter, r *http.Req
 			Region:this.getRegion(river.RegionId),
 		}
 	}
-	bytes, err := json.Marshal(dtos)
-	if err != nil {
-		OnError500(w, err, fmt.Sprintf("Can not serialize rivers: %v", dtos))
-		return
-	}
-
-	w.Write(bytes)
+	this.JsonAnswer(w, dtos)
 }
 
 func (this *GeoHierarchyHandler) GetSpot(w http.ResponseWriter, r *http.Request) {
-	CorsHeaders(w, "GET, OPTIONS, POST, DELETE")
-	JsonResponse(w)
+	CorsHeaders(w, GET, OPTIONS, POST, DELETE)
 
 	pathParams := mux.Vars(r)
 	spotId, err := strconv.ParseInt(pathParams["spotId"], 10, 64)
@@ -404,8 +376,7 @@ func (this *GeoHierarchyHandler) GetSpot(w http.ResponseWriter, r *http.Request)
 }
 
 func (this *GeoHierarchyHandler) SaveSpot(w http.ResponseWriter, r *http.Request) {
-	CorsHeaders(w, "GET, OPTIONS, POST, DELETE")
-	JsonResponse(w)
+	CorsHeaders(w, GET, OPTIONS, POST, DELETE)
 	if !this.CheckRoleAllowedAndMakeResponse(w, r, dao.ADMIN) {
 		return
 	}
@@ -443,8 +414,7 @@ func (this *GeoHierarchyHandler) SaveSpot(w http.ResponseWriter, r *http.Request
 }
 
 func (this *GeoHierarchyHandler) RemoveSpot(w http.ResponseWriter, r *http.Request) {
-	CorsHeaders(w, "GET, OPTIONS, POST, DELETE")
-	JsonResponse(w)
+	CorsHeaders(w, GET, OPTIONS, POST, DELETE)
 	if !this.CheckRoleAllowedAndMakeResponse(w, r, dao.ADMIN) {
 		return
 	}
@@ -469,12 +439,5 @@ func (this *GeoHierarchyHandler) writeSpot(spotId int64, w http.ResponseWriter) 
 		OnError500(w, err, fmt.Sprintf("Can not get spot %d", spotId))
 		return
 	}
-
-	bytes, err := json.Marshal(spot)
-	if err != nil {
-		OnError500(w, err, fmt.Sprintf("Can not serialize spot %d", spotId))
-		return
-	}
-
-	w.Write(bytes)
+	this.JsonAnswer(w, spot)
 }

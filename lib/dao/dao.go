@@ -86,8 +86,11 @@ type VoyageReportDao interface {
 }
 
 type ImgDao interface {
-	Upsert(report ...Img) ([]Img, error)
-	List(wwId int64, limit int) ([]Img, error)
+	InsertLocal(wwId int64, _type ImageType, source string, urlBase string, previewUrlBase string, datePublished time.Time) (Img, error)
+	Upsert(img ...Img) ([]Img, error)
+	List(wwId int64, limit int, _type ImageType, enabledOnly bool) ([]Img, error)
+	Remove(id int64) error
+	SetEnabled(id int64, enabled bool) error
 }
 
 type WwPassportDao interface {
@@ -564,44 +567,64 @@ func (this *PostgresStorage) insertReturningId(query string, args ...interface{}
 }
 
 func (this *PostgresStorage) updateReturningId(query string, mapper func(entity interface{}) ([]interface{}, error), values ...interface{}) ([]int64, error) {
-	tx, err := this.db.Begin()
+	rows, err := this.updateReturningColumns(query, mapper, values...)
 	if err != nil {
 		return []int64{}, err
+	}
+	result := make([]int64, len(rows))
+	for i,row := range rows {
+		result[i] = *row[0].(*int64)
+	}
+	return result, nil
+}
+
+func (this *PostgresStorage) updateReturningColumns(query string, mapper func(entity interface{}) ([]interface{}, error), values ...interface{}) ([][]interface{}, error) {
+	tx, err := this.db.Begin()
+	if err != nil {
+		return [][]interface{}{}, err
 	}
 
 	stmt, err := tx.Prepare(query)
 	if err != nil {
-		return []int64{}, err
+		return [][]interface{}{}, err
 	}
 
-	result := make([]int64, len(values))
+	result := make([][]interface{}, len(values))
 	for idx, value := range values {
 		args, err := mapper(value)
 		if err != nil {
-			return []int64{}, err
+			return [][]interface{}{}, err
 		}
 		rows, err := stmt.Query(args...)
 		if err != nil {
-			return []int64{}, err
+			return [][]interface{}{}, err
+		}
+		colTypes, err := rows.ColumnTypes()
+		if err != nil {
+			return [][]interface{}{}, err
 		}
 		if rows.Next() {
-			rows.Scan(&result[idx])
+			result[idx] = make([]interface{}, len(colTypes))
+			for i, t := range colTypes {
+				result[idx][i] = reflect.New(t.ScanType()).Interface()
+			}
+			rows.Scan(result[idx]...)
 		} else {
-			return []int64{}, fmt.Errorf("Value is not inserted: %v+\n %s", args, query)
+			return [][]interface{}{}, fmt.Errorf("Value is not inserted: %v+\n %s", args, query)
 		}
 		err = rows.Close()
 		if err != nil {
-			return []int64{}, err
+			return [][]interface{}{}, err
 		}
 	}
 
 	err = stmt.Close()
 	if err != nil {
-		return []int64{}, err
+		return [][]interface{}{}, err
 	}
 	err = tx.Commit()
 	if err != nil {
-		return []int64{}, err
+		return [][]interface{}{}, err
 	}
 	return result, nil
 }
@@ -647,7 +670,7 @@ func (this *PostgresStorage) Begin() (TxHolder, error) {
 
 type TxHolder struct {
 	PostgresStorage
-	tx *sql.Tx
+	tx       *sql.Tx
 	commited bool
 }
 
@@ -660,7 +683,7 @@ func (this *TxHolder) Close() error {
 
 func (this *TxHolder) Commit() error {
 	err := this.tx.Commit()
-	if err==nil {
+	if err == nil {
 		this.commited = true
 	}
 	return err

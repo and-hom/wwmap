@@ -199,7 +199,7 @@ func (this *Handler) fetch(w http.ResponseWriter, pos Pos) error {
 }
 
 func (this *Handler) tile(w http.ResponseWriter, req *http.Request) {
-	CorsHeaders(w, "GET, HEAD")
+	CorsHeaders(w, GET, HEAD)
 
 	pathParams := mux.Vars(req)
 

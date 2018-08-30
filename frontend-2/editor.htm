@@ -5,10 +5,26 @@
     <title>Реки</title>
     <link rel="stylesheet" href="css/editor.css">
     <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link type="text/css" rel="stylesheet" href="//unpkg.com/bootstrap/dist/css/bootstrap.min.css"/>
+    <link type="text/css" rel="stylesheet" href="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.css"/>
+
     <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
     <script type="text/javascript" src="js/bootstrap.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <script type="text/javascript" src="https://unpkg.com/vue-select@2.4.0/dist/vue-select.js"></script>
+    <script type="text/javascript" src="//unpkg.com/babel-polyfill@latest/dist/polyfill.min.js"></script>
+    <script type="text/javascript" src="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.js"></script>
+
+    <!--gallery-->
+    <link rel="stylesheet" type="text/css" href="https://unpkg.com/blueimp-gallery@2.27.0/css/blueimp-gallery.min.css">
+    <script type="text/javascript" src="https://unpkg.com/blueimp-gallery@2.27.0/js/blueimp-helper.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/blueimp-gallery@2.27.0/js/blueimp-gallery.js"></script>
+    <script type="text/javascript"
+            src="https://unpkg.com/blueimp-gallery@2.27.0/js/blueimp-gallery-fullscreen.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/vue-gallery@1.4.0/dist/js/vue-gallery.min.js"></script>
+    <!--end of gallery-->
+    <script src="https://unpkg.com/vue-upload-component"></script>
+
     <script type="text/javascript" src="js/editor.js"></script>
     <script type="text/javascript" src="js/auth.js"></script>
     <script type="text/javascript" src="https://api-maps.yandex.ru/2.1/?lang=ru_RU"></script>
@@ -39,14 +55,14 @@
             <div id="editor-pane" class="col-9" style="bgcolor:red;">
                 <div>
                     <region-editor v-if="regioneditorstate.visible" v-bind:region="regioneditorstate.region"
-                                  v-bind:reports="regioneditorstate.reports"/>
+                                   v-bind:reports="regioneditorstate.reports"/>
                 </div>
                 <div>
                     <river-editor v-if="rivereditorstate.visible" v-bind:river="rivereditorstate.river"
                                   v-bind:reports="rivereditorstate.reports"/>
                 </div>
                 <div>
-                    <spot-editor v-if="spoteditorstate.visible" v-bind:spot="spoteditorstate.spot"/>
+                    <spot-editor v-if="spoteditorstate.visible" v-bind:initial-spot="spoteditorstate.spot"/>
                 </div>
             </div>
         </div>
@@ -102,6 +118,8 @@
             }
         }
     });
+
+
 </script>
 <!--End of country component-->
 
@@ -147,6 +165,7 @@
             }
         },
     });
+
 </script>
 <!--End of region component-->
 
@@ -162,7 +181,6 @@
     </li>
 </div>
 
-<!--End of river component-->
 <script type="text/javascript">
     Vue.component('river', {
         props: ['river'],
@@ -206,6 +224,32 @@
         },
     });
 </script>
+<!--End of river component-->
+
+<!--Category display-->
+<div id="category-template" style="display:none">
+    <div style="display:inline">{{ categoryString() }}</div>
+</div>
+<script type="text/javascript">
+    Vue.component('category', {
+        props: ['category'],
+        template: document.getElementById('category-template').innerHTML,
+        data: function () {
+            return {
+                categoryString: function() {
+                    if (this.category=="0") {
+                        return "-"
+                    }
+                    if (this.category=="-1") {
+                        return "Непроход."
+                    }
+                    return this.category
+                }
+            }
+        },
+    })
+</script>
+<!--End of category display-->
 
 
 <!--Spot editor component-->
@@ -220,160 +264,222 @@
 
         <div v-if="canEdit()" class="btn-toolbar">
             <div class="btn-group mr-2" role="group" aria-label="First group">
-                <button type="button" class="btn btn-info" v-on:click="editMode=!editMode; hideError();">{{getEditModeButtonTitle()}}</button>
+                <button type="button" class="btn btn-info" v-on:click="editMode=!editMode; hideError();">
+                    {{getEditModeButtonTitle()}}
+                </button>
                 <button type="button" class="btn btn-success" v-on:click="save()">Сохранить</button>
-                <button type="button" class="btn btn-secondary" v-on:click="reload()">Отменить</button>
+                <button type="button" class="btn btn-secondary" v-on:click="editMode=!editMode; reload()">Отменить</button>
             </div>
             <div class="btn-group">
-                <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#del-spot">Удалить</button>
+                <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#del-spot">Удалить
+                </button>
             </div>
         </div>
 
-        <div v-if="editMode">
-            <div>
-                <strong>Название: </strong>
-                <input v-model.trim="spot.title" style="display:block"/>
-            </div>
-            <div>
-                <strong>Река: </strong>
-                <v-select v-model="spot.river" label="name" :filterable="false" :options="options" @search="onSearch">
-                    <template slot="no-options">
-                        Начните печатать название реки
-                    </template>
-                    <template slot="option" slot-scope="option">
-                        <div class="d-center">
-                            {{ option.title }}
+        <div v-if="editMode" class="spot-editor-panel" style="padding-top:15px;">
+            <b-tabs>
+                <b-tab title="Главное" active>
+                    <div class="container-fluid" style="margin-top: 20px;">
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="short-div">
+                                    <strong>Название: </strong>
+                                    <input v-model.trim="spot.title" style="display:block; width: 100%;"/>
+                                </div>
+                                <div class="short-div">
+                                    <strong>Река: </strong>
+                                    <v-select v-model="spot.river" label="name" :filterable="false" :options="options"
+                                              @search="onSearch">
+                                        <template slot="no-options">
+                                            Начните печатать название реки
+                                        </template>
+                                        <template slot="option" slot-scope="option">
+                                            <div class="d-center">
+                                                {{ option.title }}
+                                            </div>
+                                        </template>
+                                        <template slot="selected-option" scope="option">
+                                            <div class="selected d-center">
+                                                {{ option.title }}
+                                            </div>
+                                        </template>
+                                    </v-select>
+                                </div>
+                                <div class="short-div">
+                                    <strong>Категория сложности: </strong><a target="_blank"
+                                                                             href="https://huskytm.ru/rules2018-2019/#categories_tab"><img
+                                        src="img/question_16.png"></a>
+                                    <dl style="padding-left:40px;">
+                                        <dt>По классификатору</dt>
+                                        <dd>
+                                            <select v-model="spot.category">
+                                                <option v-for="cat in all_categories" v-bind:value="cat.id">{{cat.title}}</option>
+                                            </select>
+                                        </dd>
+                                        <dt>Низкий уровень воды</dt>
+                                        <dd>
+                                            <select v-model="spot.lw_category">
+                                                <option v-for="cat in all_categories" v-bind:value="cat.id">{{cat.title}}</option>
+                                            </select>
+                                        </dd>
+                                        <dt>Средний уровень воды</dt>
+                                        <dd>
+                                            <select v-model="spot.mw_category">
+                                                <option v-for="cat in all_categories" v-bind:value="cat.id">{{cat.title}}</option>
+                                            </select>
+                                        </dd>
+                                        <dt>Высокий уровень воды</dt>
+                                        <dd>
+                                            <select v-model="spot.hw_category">
+                                                <option v-for="cat in all_categories" v-bind:value="cat.id">{{cat.title}}</option>
+                                            </select>
+                                        </dd>
+                                    </dl>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <strong>Расположение: </strong>
+                                <ya-map-location ref="locationEdit" v-bind:spot="spot" width="100%" :editable="true"></ya-map-location>
+                            </div>
                         </div>
-                    </template>
-                    <template slot="selected-option" scope="option">
-                        <div class="selected d-center">
-                            {{ option.title }}
+                        <div class="row">
+                            <div class="col-6">
+                            </div>
                         </div>
-                    </template>
-                </v-select>
-            </div>
-            <div>
-                <strong>Расположение: </strong>
-                <ya-map-location-editor :spot="spot"></ya-map-location-editor>
-            </div>
-            <div>
-                <strong>Категория сложности: </strong><a target="_blank" href="https://huskytm.ru/rules2018-2019/#categories_tab"><img src="img/question_16.png"></a>
-                <dl style="padding-left:40px;">
-                    <dt>По классификатору</dt>
-                    <dd>
-                        <select v-model="spot.category">
-                            <option v-for="cat in all_categories" v-bind:value="cat.id">{{cat.title}}</option>
-                        </select>
-                    </dd>
-                    <dt>Низкий уровень воды</dt>
-                    <dd>
-                        <select v-model="spot.lw_category">
-                            <option v-for="cat in all_categories" v-bind:value="cat.id">{{cat.title}}</option>
-                        </select>
-                    </dd>
-                    <dt>Средний уровень воды</dt>
-                    <dd>
-                        <select v-model="spot.mw_category">
-                            <option v-for="cat in all_categories" v-bind:value="cat.id">{{cat.title}}</option>
-                        </select>
-                    </dd>
-                    <dt>Высокий уровень воды</dt>
-                    <dd>
-                        <select v-model="spot.hw_category">
-                            <option v-for="cat in all_categories" v-bind:value="cat.id">{{cat.title}}</option>
-                        </select>
-                    </dd>
-                </dl>
-            </div>
-            <div>
-                <strong>Описание: </strong>
-                <textarea rows="10" cols="120" v-model="spot.short_description"></textarea>
-            </div>
-            <div>
-                <strong>Ориентиры:</strong>
-                <textarea rows="10" cols="120" v-model="spot.orient"></textarea>
-            </div>
-            <div>
-                <strong>Подход/выход:</strong>
-                <textarea rows="10" cols="120" v-model="spot.approach"></textarea>
-            </div>
-            <div>
-                <strong>Страховка:</strong>
-                <textarea rows="10" cols="120" v-model="spot.safety"></textarea>
-            </div>
-            <div>
-                <strong>Описание для низкого уровня воды:</strong>
-                <textarea rows="10" cols="120" v-model="spot.lw_description"></textarea>
-            </div>
-            <div>
-                <strong>Описание для среднего уровня воды:</strong>
-                <textarea rows="10" cols="120" v-model="spot.mw_description"></textarea>
-            </div>
-            <div>
-                <strong>Описание для высокого уровня воды:</strong>
-                <textarea rows="10" cols="120" v-model="spot.hw_description"></textarea>
-            </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-2"><strong>Описание: </strong></div>
+                        <div class="col-10"><textarea rows="10" cols="120" v-model="spot.short_description"></textarea></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-2"><strong>Ориентиры:</strong></div>
+                        <div class="col-10"><textarea rows="10" style="width:100%" v-model="spot.orient"></textarea></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-2"><strong>Подход/выход:</strong></div>
+                        <div class="col-10"><textarea rows="10" cols="120" v-model="spot.approach"></textarea></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-2"><strong>Страховка:</strong></div>
+                        <div class="col-10"><textarea rows="10" cols="120" v-model="spot.safety"></textarea></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-2"><strong>Описание для низкого уровня воды:</strong></div>
+                        <div class="col-10"><textarea rows="10" cols="120" v-model="spot.lw_description"></textarea></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-2"><strong>Описание для среднего уровня воды:</strong></div>
+                        <div class="col-10"><textarea rows="10" cols="120" v-model="spot.mw_description"></textarea></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-2"><strong>Описание для высокого уровня воды:</strong></div>
+                        <div class="col-10"><textarea rows="10" cols="120" v-model="spot.hw_description"></textarea></div>
+                    </div>
+                </b-tab>
+                <b-tab title="Схемы">
+                    <img-upload :spot="spot" type="schema"></img-upload>
+                </b-tab>
+                <b-tab title="Фото">
+                    <img-upload :spot="spot" type="photo"></img-upload>
+                </b-tab>
+                <b-tab title="Видео" disabled>
+                </b-tab>
+            </b-tabs>
         </div>
-        <div v-else>
-            <h1>{{ spot.title }}</h1>
-            <table class="spot-desc">
-                <tr>
-                    <td colspan="2">{{ spot.short_description }}</td>
-                    <td rowspan="2"><img :scr="spot.thumbnail"/></td>
-                </tr>
-                <tr>
-                    <td colspan="2"><strong>Ориентиры:</strong>&nbsp;{{ spot.orient }}</td>
-                </tr>
-                <tr>
-                    <td class="cell-title">Уровень воды</td>
-                    <td class="cell-title">Тех. описание</td>
-                    <td class="cell-title" rowspan="4">Карта</td>
-                </tr>
-                <tr>
-                    <td class="cell-title">Низкая вода</td>
-                    <td>{{ spot.lw_description }}</td>
-                </tr>
-                <tr>
-                    <td class="cell-title">Средняя вода</td>
-                    <td>{{ spot.mw_description }}</td>
-                </tr>
-                <tr>
-                    <td class="cell-title">Высокая вода</td>
-                    <td>{{ spot.hw_description }}</td>
-                </tr>
-                <tr>
-                    <td class="cell-title" colspan="2">Подход/выход</td>
-                    <td rowspan="4">
-                        Координаты:<br/>Широта:&nbsp;{{ spot.point[0] }}
-                        <br/>Долгота:&nbsp;{{ spot.point[1] }}
-                        <br/>
-                        <br/>
-                        К.с. нв/св/вв:&nbsp;{{ spot.lw_category }}/{{ spot.mw_category }}/{{ spot.hw_category }}
-                        <div v-if="spot.category!='0' && spot.category!='-1'">К.с. по классификатору: {{ spot.category }}
+        <div v-else class="spot-display">
+            <div class="container-fluid" style="margin-top: 20px;">
+                <div class="row">
+                    <div class="col-7">
+                        <div class="short-div">
+                            <h1>{{ spot.title }}</h1>
+                        </div>
+                        <div class="short-div">
+                            {{ spot.short_description }}
+                        </div>
+                        <div class="short-div">
+                            <strong>Ориентиры:</strong><br/>
+                            {{ spot.orient }}
+                        </div>
+                    </div>
+                    <div class="col-5">
+                        <img v-if="spot.preview" :src="spot.preview" style="width:100%"/>
+                        <img v-else src="img/no-photo.png" style="width:100%"/>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-7">
+                        <div class="container-fluid" style="padding-bottom:15px;">
+                            <div class="row">
+                                <div class="col-4"><strong>Уровень воды</strong></div>
+                                <div class="col-8"><strong>Тех. описание</strong></div>
+                            </div>
+                            <div class="row">
+                                <div class="col-4"><strong>Низкая вода</strong></div>
+                                <div class="col-8">{{ spot.lw_description }}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-4"><strong>Средняя вода</strong></div>
+                                <div class="col-8">{{ spot.mw_description }}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-4"><strong>Высокая вода</strong></div>
+                                <div class="col-8">{{ spot.hw_description }}</div>
+                            </div>
                         </div>
 
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="2">{{ spot.approach }}</td>
-                </tr>
-                <tr>
-                    <td class="cell-title" colspan="2">Страховка</td>
-                </tr>
-                <tr>
-                    <td colspan="2">{{ spot.safety }}</td>
-                </tr>
-            </table>
-            <h2>Схемы</h2>
-            <h2>Фото галерея</h2>
-            <h2>Видео</h2>
+                        <div v:if="spot.approach" class="short-div">
+                            <strong>Подход/выход</strong>
+                            <td colspan="2">{{ spot.approach }}</td>
+                        </div>
+                        <div v:if="spot.safety" class="short-div">
+                            <strong>Страховка</strong>
+                            <td colspan="2">{{ spot.safety }}</td>
+                        </div>
+                    </div>
+                    <div class="col-5">
+                        <strong>Расположение: </strong>
+                        <ya-map-location ref="locationView" v-bind:spot="spot" width="100%" :editable="false"></ya-map-location>
+                        <div class="short-div">
+                            <strong>Координаты:</strong><br/><strong>Широта:</strong>&nbsp;{{ spot.point[0] }}
+                            <br/><strong>Долгота:</strong>&nbsp;{{ spot.point[1] }}
+                            <br/>
+                            <div><strong>К.с. нв/св/вв:</strong>&nbsp;<category :category="spot.lw_category"></category>/<category :category="spot.mw_category"></category>/<category :category="spot.hw_category"></category></div>
+                            <div><strong>К.с. по классификатору:</strong>&nbsp;<category :category="spot.category"></category></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div v-if="schemas.length">
+                <h2>Схемы</h2>
+                <div>
+                    <gallery id="schemas-gallery" :images="schemas" :index="schIndex" @close="schemaIndex = null"></gallery>
+                    <div
+                            class="image wwmap-gallery-cell"
+                            v-for="schema, schemaIndex in schemas"
+                            @click="schIndex = schemaIndex"
+                            :style="{ backgroundImage: 'url(' + schema + ')' }"
+                    ></div>
+                </div>
+            </div>
+            <div v-if="images.length">
+                <h2>Фото галерея</h2>
+                <div>
+                    <gallery id="image-gallery" :images="images" :index="imgIndex" @close="imageIndex = null"></gallery>
+                    <div
+                            class="image wwmap-gallery-cell"
+                            v-for="image, imageIndex in images"
+                            @click="imgIndex = imageIndex"
+                            :style="{ backgroundImage: 'url(' + image + ')' }"
+                    ></div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
 <script type="text/javascript">
     Vue.component('spot-editor', {
-        props: ['spot'],
+        props: ['initialSpot'],
         template: document.getElementById('spotEditor-template').innerHTML,
 
         methods: {
@@ -389,6 +495,20 @@
                     loading(false);
                 });
             },
+        },
+        updated: function() {
+            // It's an ugly hack. I really do not know, why child's update lifecycle handler method is not called on spot changed
+            // Maybe computed properties are not allowed in v-bind ?
+            if (this.editMode) {
+                this.$refs.locationEdit.doUpdate()
+            } else {
+                this.$refs.locationView.doUpdate()
+            }
+        },
+        computed: {
+                spot:function () { return this.initialSpot },
+                images: function () {return getImages(this.initialSpot.id, "image").map(x => x.url)},
+                schemas: function () {return getImages(this.initialSpot.id, "schema").map(x => x.url)},
         },
         data:function() {
             return {
@@ -407,6 +527,7 @@
                     if (updated) {
                         this.spot = updated
                         this.editMode=false
+                        this.reloadImgs()
                         this.hideError()
                     } else {
                         this.showError("Не удалось сохранить препятствие. Возможно, недостаточно прав")
@@ -414,7 +535,14 @@
                 },
                 reload:function() {
                     this.spot = getSpot(this.spot.id)
+                    this.reloadImgs()
                     this.hideError()
+                },
+                reloadImgs: function() {
+                    this.images = getImages(this.initialSpot.id, "image").map(x => x.url)
+                    this.imgIndex = null
+                    this.schemas = getImages(this.initialSpot.id, "schema").map(x => x.url)
+                    this.schIndex = null
                 },
                 remove: function() {
                     this.hideError()
@@ -434,21 +562,159 @@
                 // end of editor
                 all_categories:all_categories,
 
-                options: [getRiver(this.spot.river.id)],
+                options: [getRiver(this.initialSpot.river.id)],
+
+                // imgs
+                imgIndex: null,
+                schIndex: null,
             }
         }
     });
+
 </script>
 <!--End of spot editor component-->
 
-<!--Ya maps component-->
-<div id="ya-map-location-editor-template" style="display:none">
-    <div id="map" style="width: 600px; height: 400px"></div>
+<!--Image list component-->
+<div id="img-upload-template" style="display:none">
+    <div>
+        <template>
+            <div class="example-drag">
+                <div class="upload" style="margin-top:15px;">
+                    <ul v-if="files.length">
+                        <li v-for="(file, index) in files" :key="file.id">
+                            <span>{{file.name}}</span> -
+                            <span>{{file.size}}</span> -
+                            <span v-if="file.error">{{file.error}}</span>
+                            <span v-else-if="file.success">success</span>
+                            <span v-else-if="file.active">active</span>
+                            <span v-else-if="file.active">active</span>
+                            <span v-else></span>
+                        </li>
+                    </ul>
+
+                    <div class="example-btn">
+                        <file-upload
+                                class="btn btn-primary"
+                                :post-action="uploadPath"
+                                extensions="gif,jpg,jpeg,png"
+                                accept="image/png,image/gif,image/jpeg"
+                                :multiple="true"
+                                :drop="true"
+                                :drop-directory="true"
+                                v-model="files"
+                                :ref="type">
+                            <i class="fa fa-plus"></i>
+                            Выбрать изображения
+                        </file-upload>
+                        <button type="button" class="btn btn-success" v-if="!$refs[type] || !$refs[type].active"
+                                @click.prevent="$refs[type].active = true">
+                            <i class="fa fa-arrow-up" aria-hidden="true"></i>
+                            Начать загрузку
+                        </button>
+                        <button type="button" class="btn btn-danger" v-else
+                                @click.prevent="$refs[type].active = false">
+                            <i class="fa fa-stop" aria-hidden="true"></i>
+                            Остановить загрузку
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
+        <table>
+            <tr>
+                <td></td>
+                <td>Ссылка на источник</td>
+                <td></td>
+            </tr>
+            <tr v-for="image in images">
+                <td><img :class="imageClass(image)" :src="image.preview_url"/></td>
+                <td>
+                    <div v-if="image.source=='wwmap'">Загружено пользователем</div>
+                    <a v-else target="_blank" :href="image.report_url">{{image.report_title}}</a>
+                </td>
+                <td>
+                    <button v-if="image.enabled==false" v-on:click="setImgEnabled(true, image.id)">Показывать</button>
+                    <button v-if="image.enabled==true" v-on:click="setImgEnabled(false, image.id)">Не показывать
+                    </button>
+                    <button v-if="image.source=='wwmap'" v-on:click="removeImage(image.id)">Удалить</button>
+                </td>
+            </tr>
+        </table>
+    </div>
 </div>
 <script type="text/javascript">
-    Vue.component('ya-map-location-editor', {
-        template: document.getElementById('ya-map-location-editor-template').innerHTML,
-        props: ['spot'],
+    Vue.component('img-upload', {
+        template: document.getElementById('img-upload-template').innerHTML,
+        props: ['spot', 'type'],
+        components: {
+          FileUpload: VueUploadComponent
+        },
+        updated: function() {
+            if(this.$refs.upload && this.$refs.upload.value.length && this.$refs.upload.uploaded) {
+                if (this.imagesOutOfDate) {
+                    setTimeout(() => {
+                        this.refresh()
+                    }, 700);
+                    this.imagesOutOfDate = false
+                } else {
+                    this.imagesOutOfDate = true
+                }
+            }
+        },
+        data:function() {
+            return {
+                images: getImages(this.spot.id, this.type),
+                imagesOutOfDate: true,
+                files: [],
+                uploadPath: apiBase + "/spot/" + this.spot.id +"/img?type=" + this.type,
+                removeImage: function(imgId) {
+                    this.images = removeImage(this.spot.id, imgId, this.type);
+                },
+                setImgEnabled: function(enabled, imgId) {
+                    this.images = setImageEnabled(this.spot.id, imgId, enabled);
+                },
+                refresh:function() {
+                        this.images = getImages(this.spot.id, this.type)
+                },
+                imageClass:function(image) {
+                    if(image.enabled==false) {
+                        return "wwmap-img-disabled"
+                    }
+                    return ""
+                }
+            }
+        },
+    });
+
+</script>
+<!--End of image list component-->
+
+<!--Ya maps component-->
+<div id="ya-map-location-template" style="display:none">
+    <div id="map" :style="mapDivStyle()"></div>
+</div>
+<!--End of Ya maps component-->
+<script type="text/javascript">
+    Vue.component('ya-map-location', {
+        template: document.getElementById('ya-map-location-template').innerHTML,
+        props: {
+            spot: Object,
+            width: {
+                type: String,
+                default: "600px",
+            },
+            height: {
+                type: String,
+                default: "400px",
+            },
+            editable: {
+                type: Boolean,
+                default: false,
+            },
+        },
+        updated: function() {
+            this.doUpdate()
+        },
         created: function() {
             var component = this
             ymaps.ready(function() {
@@ -475,51 +741,83 @@
                         'google#satellite',
                     ])
                 );
-
-                var skip = 0
-                if (component.spot && component.spot.id) {
-                    skip = component.spot.id
-                }
-                var objectManager = new ymaps.RemoteObjectManager(apiBase + '/ymaps-tile-ww?bbox=%b&zoom=%z&skip=' + skip, {
-                    clusterHasBalloon: false,
-                    geoObjectOpenBalloonOnClick: false,
-                    geoObjectStrokeWidth: 3,
-                    splitRequests: true,
-                    clusterHasBalloon: false,
-                });
-                myMap.geoObjects.add(objectManager);
-
-                var label = new ymaps.GeoObject({
-                        geometry: {
-                            type: "Point",
-                            coordinates: component.spot.point
-                        },
-                        properties: {
-                            hintContent: component.spot.title,
-                        }
-                    }, {
-                        preset: 'islands#blueIcon',
-                        draggable: true
-                    })
-
-                myMap.geoObjects.add(label)
-                label.events.add('dragend', function (e) {
-                    component.spot.point = label.geometry.getCoordinates()
-                });
-
-                myMap.events.add('click', function (e) {
-                    p = e.get('coords')
-                    label.geometry.setCoordinates(p)
-                    component.spot.point = p
-                });
-                component.label = label
                 component.map = myMap
+
+
+                component.addObjectManager()
+                component.addLabel()
+
 
             })
         },
+        data: function() {
+            return {
+                mapDivStyle: function() {
+                    return 'width: ' + this.width + '; height: ' + this.height + ';'
+                },
+                doUpdate: function() {
+                    if (this.map) {
+                        this.map.setCenter(this.spot.point)
+
+                        this.map.geoObjects.remove(this.label)
+                        this.addLabel()
+
+                        this.map.geoObjects.remove(this.objectManager)
+                        this.addObjectManager()
+                    }
+                },
+                objectManagerUrlTemplate: function() {
+                    var skip = 0
+                    if (this.spot && this.spot.id) {
+                        skip = this.spot.id
+                    }
+                    return apiBase + '/ymaps-tile-ww?bbox=%b&zoom=%z&skip=' + skip
+                },
+                addObjectManager:function() {
+                        var objectManager = new ymaps.RemoteObjectManager(this.objectManagerUrlTemplate(), {
+                        clusterHasBalloon: false,
+                        geoObjectOpenBalloonOnClick: false,
+                        geoObjectStrokeWidth: 3,
+                        splitRequests: true,
+                        clusterHasBalloon: false,
+                    });
+                    this.map.geoObjects.add(objectManager);
+                    this.objectManager = objectManager
+                },
+                addLabel: function() {
+                    var component = this
+                    var label = new ymaps.GeoObject({
+                        geometry: {
+                            type: "Point",
+                            coordinates: this.spot.point
+                        },
+                        properties: {
+                            hintContent: this.spot.title,
+                        }
+                    }, {
+                        preset: 'islands#blueIcon',
+                        draggable: this.editable,
+                    })
+                    label.events.add('dragend', function (e) {
+                        component.spot.point = label.geometry.getCoordinates()
+                    });
+
+                    if (this.editable) {
+                        this.map.events.add('click', function (e) {
+                            p = e.get('coords')
+                            label.geometry.setCoordinates(p)
+                            component.spot.point = p
+                        });
+                    }
+
+                    this.map.geoObjects.add(label)
+                    this.label = label
+                },
+            }
+        },
     });
+
 </script>
-<!--End of Ya maps component-->
 
 
 <!--river editor component-->
@@ -530,19 +828,24 @@
                 {{errMsg}}
             </div>
         </transition>
-        <ask id="del-river" title="Точно?" msg="Совсем удалить? Все пороги будут также удалены! Да, совсем! Восстановить будет никак нельзя!" :okfn="function() { remove(); }"></ask>
+        <ask id="del-river" title="Точно?"
+             msg="Совсем удалить? Все пороги будут также удалены! Да, совсем! Восстановить будет никак нельзя!"
+             :okfn="function() { remove(); }"></ask>
 
         <div v-if="canEdit()" class="btn-toolbar">
             <div v-if="river.id" class="btn-group mr-2" role="group">
                 <button type="button" class="btn btn-primary" v-on:click="add_spot()">Добавить препятствие</button>
             </div>
             <div class="btn-group mr-2" role="group" aria-label="First group">
-                <button type="button" class="btn btn-info" v-on:click="editMode=!editMode; hideError();">{{getEditModeButtonTitle()}}</button>
+                <button type="button" class="btn btn-info" v-on:click="editMode=!editMode; hideError();">
+                    {{getEditModeButtonTitle()}}
+                </button>
                 <button type="button" class="btn btn-success" v-on:click="save()">Сохранить</button>
                 <button type="button" class="btn btn-secondary" v-on:click="reload()">Отменить</button>
             </div>
             <div class="btn-group">
-                <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#del-river">Удалить</button>
+                <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#del-river">Удалить
+                </button>
             </div>
         </div>
 
@@ -578,6 +881,54 @@
                 </ul>
             </dd>
         </dl>
+        <div v-if="canEdit() && river.id && !editMode">
+            <template>
+                <div class="example-drag">
+                    <div class="upload">
+                        <ul v-if="files.length">
+                            <li v-for="(file, index) in files" :key="file.id">
+                                <span>{{file.name}}</span> -
+                                <span>{{file.size}}</span> -
+                                <span v-if="file.error">{{file.error}}</span>
+                                <span v-else-if="file.success">success</span>
+                                <span v-else-if="file.active">active</span>
+                                <span v-else-if="file.active">active</span>
+                                <span v-else></span>
+                            </li>
+                        </ul>
+
+                        <div v-show="$refs.upload && $refs.upload.dropActive" class="drop-active">
+                            <h3>Drop files to upload</h3>
+                        </div>
+
+                        <div class="example-btn">
+                            <file-upload
+                                    class="btn btn-primary"
+                                    :post-action="uploadPath"
+                                    extensions="gpx"
+                                    :multiple="false"
+                                    :drop="false"
+                                    :drop-directory="false"
+                                    v-model="files"
+                                    ref="uploadGpx">
+                                <i class="fa fa-plus"></i>
+                                Выберите GPX-файл с точками препятствий.
+                            </file-upload>
+                            <button type="button" class="btn btn-success" v-if="!$refs.uploadGpx || !$refs.uploadGpx.active"
+                                    @click.prevent="$refs.uploadGpx.active = true">
+                                <i class="fa fa-arrow-up" aria-hidden="true"></i>
+                                Начать загрузку
+                            </button>
+                            <button type="button" class="btn btn-danger" v-else
+                                    @click.prevent="$refs.uploadGpx.active = false">
+                                <i class="fa fa-stop" aria-hidden="true"></i>
+                                Stop Upload
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
     </div>
 </div>
 
@@ -585,6 +936,21 @@
     Vue.component('river-editor', {
         props: ['river', 'reports'],
         template: document.getElementById('river-editor-template').innerHTML,
+        components: {
+          FileUpload: VueUploadComponent
+        },
+        updated: function() {
+            if(this.$refs.uploadGpx && this.$refs.uploadGpx.value.length && this.$refs.uploadGpx.uploaded) {
+                if (this.imagesOutOfDate) {
+                    setTimeout(() => {
+                        this.refresh()
+                    }, 700);
+                    this.imagesOutOfDate = false
+                } else {
+                    this.imagesOutOfDate = true
+                }
+            }
+        },
         data:function() {
             return {
                 // for editor
@@ -626,6 +992,8 @@
                 },
                 // end of editor
 
+                files: [],
+                uploadPath: apiBase + "/river/" + this.river.id +"/gpx",
                 add_spot: function() {
                     app.spoteditorstate.visible = false
                     app.rivereditorstate.visible = false;
@@ -646,6 +1014,7 @@
             }
         }
     });
+
 </script>
 <!--End of river editor component-->
 
@@ -698,6 +1067,7 @@
             }
         }
     });
+
 </script>
 <!--End of region editor component-->
 
@@ -721,6 +1091,7 @@
             }
         }
     });
+
 </script>
 <!--End of auth component-->
 
@@ -751,11 +1122,14 @@
         template: document.getElementById('ask-template').innerHTML,
         props: ['id', 'msg', 'title', 'okfn'],
     });
+
 </script>
 <!--End of modal dialog component-->
 
 <script type="text/javascript">
     Vue.component('v-select', VueSelect.VueSelect)
+    Vue.component('gallery', VueGallery)
+    Vue.component('file-upload', VueUploadComponent)
     var app = new Vue({
         el: '#wwmap',
         data: {
@@ -775,6 +1149,7 @@
           },
         }
     })
+
 </script>
 
 </body>

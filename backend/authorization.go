@@ -19,7 +19,7 @@ type UserInfoDto struct {
 }
 
 func (this *UserInfoHandler) GetUserInfo(w http.ResponseWriter, r *http.Request) {
-	CorsHeaders(w, "GET, OPTIONS")
+	CorsHeaders(w, GET, OPTIONS)
 	err := this.CreateMissingUser(r)
 	if err != nil {
 		onPassportErr(err, w, "Can not create user")

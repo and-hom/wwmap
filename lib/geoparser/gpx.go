@@ -49,7 +49,7 @@ func (this GpxParser) GetTracksAndPoints() ([]Track, []EventPoint, error) {
 		points = append(points, EventPoint{
 			Title:wpt.Name,
 			Time:JSONTime(wpt.Time()),
-			Type:POST,
+			Type:POST_,
 			Content : wpt.Desc,
 			Point:Point{
 				Lat:wpt.Lat,

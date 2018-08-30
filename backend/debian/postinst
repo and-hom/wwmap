@@ -1,4 +1,6 @@
 #!/bin/sh
 
 mkdir -p /var/lib/wwmap/backend
-chown wwmap:wwmap /var/lib/wwmap/backend
+mkdir -p /var/lib/wwmap/backend/images/full
+mkdir -p /var/lib/wwmap/backend/images/preview
+chown -R wwmap:wwmap /var/lib/wwmap/backend
