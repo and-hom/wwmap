@@ -377,13 +377,12 @@
                     </div>
                 </b-tab>
                 <b-tab title="Схемы">
-                    <img-list :spot="spot" type="schema"></img-list>
+                    <img-upload :spot="spot" type="schema"></img-upload>
                 </b-tab>
                 <b-tab title="Фото">
-                    <img-list :spot="spot" type="photo"></img-list>
+                    <img-upload :spot="spot" type="photo"></img-upload>
                 </b-tab>
                 <b-tab title="Видео" disabled>
-                    <img-list :spot="spot" type="schema"></img-list>
                 </b-tab>
             </b-tabs>
         </div>
@@ -556,11 +555,11 @@
 <!--End of spot editor component-->
 
 <!--Image list component-->
-<div id="img-list-template" style="display:none">
+<div id="img-upload-template" style="display:none">
     <div>
         <template>
             <div class="example-drag">
-                <div class="upload">
+                <div class="upload" style="margin-top:15px;">
                     <ul v-if="files.length">
                         <li v-for="(file, index) in files" :key="file.id">
                             <span>{{file.name}}</span> -
@@ -572,18 +571,6 @@
                             <span v-else></span>
                         </li>
                     </ul>
-                    <ul v-else>
-                        <td colspan="7">
-                            <div class="text-center p-5">
-                                <h4>Drop files anywhere to upload<br/>or</h4>
-                                <label for="file" class="btn btn-lg btn-primary">Select Files</label>
-                            </div>
-                        </td>
-                    </ul>
-
-                    <div v-show="$refs.upload && $refs.upload.dropActive" class="drop-active">
-                        <h3>Drop files to upload</h3>
-                    </div>
 
                     <div class="example-btn">
                         <file-upload
@@ -595,19 +582,19 @@
                                 :drop="true"
                                 :drop-directory="true"
                                 v-model="files"
-                                ref="upload">
+                                :ref="type">
                             <i class="fa fa-plus"></i>
-                            Select files
+                            Выбрать изображения
                         </file-upload>
-                        <button type="button" class="btn btn-success" v-if="!$refs.upload || !$refs.upload.active"
-                                @click.prevent="$refs.upload.active = true">
+                        <button type="button" class="btn btn-success" v-if="!$refs[type] || !$refs[type].active"
+                                @click.prevent="$refs[type].active = true">
                             <i class="fa fa-arrow-up" aria-hidden="true"></i>
-                            Start Upload
+                            Начать загрузку
                         </button>
                         <button type="button" class="btn btn-danger" v-else
-                                @click.prevent="$refs.upload.active = false">
+                                @click.prevent="$refs[type].active = false">
                             <i class="fa fa-stop" aria-hidden="true"></i>
-                            Stop Upload
+                            Остановить загрузку
                         </button>
                     </div>
                 </div>
@@ -636,8 +623,8 @@
     </div>
 </div>
 <script type="text/javascript">
-    Vue.component('img-list', {
-        template: document.getElementById('img-list-template').innerHTML,
+    Vue.component('img-upload', {
+        template: document.getElementById('img-upload-template').innerHTML,
         props: ['spot', 'type'],
         components: {
           FileUpload: VueUploadComponent

@@ -142,3 +142,7 @@ ul {
     height: 200px;
     display: inline-block;
 }
+
+.file-uploads {
+    margin-top:8px;
+}
