@@ -189,7 +189,7 @@ func (this KmlParser) GetTracksAndPoints() ([]Track, []EventPoint, error) {
 				points = append(points, EventPoint{
 					Title: placemark.Name,
 					Content: placemark.Description,
-					Type: POST,
+					Type: POST_,
 					Time: JSONTime(time.Now()),
 					Point: point.toPointSwappingLatLon(),
 				})

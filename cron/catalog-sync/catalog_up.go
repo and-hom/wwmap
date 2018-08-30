@@ -27,7 +27,7 @@ func (this *App) DoWriteCatalog() {
 		}
 		if !exists {
 			log.Debug("Not exists - create")
-			imgs, err := this.ImgDao.List(point.Id, 1)
+			imgs, err := this.ImgDao.List(point.Id, 1, dao.IMAGE_TYPE_IMAGE, true)
 			if err != nil {
 				this.Fatalf(err, "Can not get images for ww point %d", point.Id)
 			}
@@ -52,7 +52,7 @@ func (this *App) createCatalogEntry(p *dao.WhiteWaterPointWithPath, imgId int) {
 		this.Fatalf(err, "Can not create directories")
 	}
 	catalogConnector := this.getCachedCatalogConnector()
-	imgs, err := this.ImgDao.List(p.Id, MAX_ATTACHED_IMGS)
+	imgs, err := this.ImgDao.List(p.Id, MAX_ATTACHED_IMGS, dao.IMAGE_TYPE_IMAGE, true)
 	if err != nil {
 		this.Fatalf(err, "Can not get attached images for %d", p.Id)
 	}

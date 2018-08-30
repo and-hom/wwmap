@@ -18,7 +18,7 @@ type RouteHandler struct {
 }
 
 func (this *RouteHandler) EditRoute(w http.ResponseWriter, r *http.Request) {
-	CorsHeaders(w, "POST, GET, OPTIONS, PUT, DELETE")
+	CorsHeaders(w, POST, GET, OPTIONS, PUT, DELETE)
 	err := r.ParseForm()
 	if err != nil {
 		OnError(w, err, "Can not parse form", http.StatusBadRequest)
@@ -48,7 +48,7 @@ func (this *RouteHandler) EditRoute(w http.ResponseWriter, r *http.Request) {
 }
 
 func (this *RouteHandler) DelRoute(w http.ResponseWriter, r *http.Request) {
-	CorsHeaders(w, "POST, GET, OPTIONS, PUT, DELETE")
+	CorsHeaders(w, POST, GET, OPTIONS, PUT, DELETE)
 
 	pathParams := mux.Vars(r)
 	id, err := strconv.ParseInt(pathParams["id"], 10, 64)
@@ -93,7 +93,7 @@ func (this *RouteHandler) writeRouteToResponse(id int64, w http.ResponseWriter) 
 }
 
 func (this *RouteHandler) RouteEditorPageHandler(w http.ResponseWriter, req *http.Request) {
-	CorsHeaders(w, "GET, OPTIONS")
+	CorsHeaders(w, GET, OPTIONS)
 
 	id, err := strconv.ParseInt(req.FormValue("id"), 10, 64)
 	if err != nil {
@@ -123,7 +123,7 @@ func (this *RouteHandler) RouteEditorPageHandler(w http.ResponseWriter, req *htt
 }
 
 func (this *RouteHandler) GetVisibleRoutes(w http.ResponseWriter, req *http.Request) {
-	CorsHeaders(w, "GET")
+	CorsHeaders(w, GET)
 
 	bbox, err := this.bboxFormValue(w, req)
 	if err != nil {
@@ -149,7 +149,7 @@ func (this *RouteHandler) GetVisibleRoutes(w http.ResponseWriter, req *http.Requ
 }
 
 func (this *RouteHandler) SingleRouteTileHandler(w http.ResponseWriter, req *http.Request) {
-	CorsHeaders(w, "GET, OPTIONS")
+	CorsHeaders(w, GET, OPTIONS)
 
 	callback := req.FormValue("callback")
 	id, err := strconv.ParseInt(req.FormValue("id"), 10, 64)

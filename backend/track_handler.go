@@ -85,7 +85,7 @@ func (this *TrackHandler) UploadTrack(w http.ResponseWriter, r *http.Request) {
 }
 
 func (this *TrackHandler) TrackPointsToClickHandler(w http.ResponseWriter, req *http.Request) {
-	CorsHeaders(w, "GET, OPTIONS")
+	CorsHeaders(w, GET, OPTIONS)
 
 	callback := req.FormValue("callback")
 	pathParams := mux.Vars(req)
@@ -153,7 +153,7 @@ func (this *TrackHandler) TrackPointsToClickHandler(w http.ResponseWriter, req *
 }
 
 func (this *TrackHandler) EditTrack(w http.ResponseWriter, r *http.Request) {
-	CorsHeaders(w, "POST, GET, OPTIONS, PUT, DELETE")
+	CorsHeaders(w, POST, GET, OPTIONS, PUT, DELETE)
 	err := r.ParseForm()
 	if err != nil {
 		OnError(w, err, "Can not parse form", http.StatusBadRequest)
@@ -183,7 +183,7 @@ func (this *TrackHandler) EditTrack(w http.ResponseWriter, r *http.Request) {
 }
 
 func (this *TrackHandler) DelTrack(w http.ResponseWriter, r *http.Request) {
-	CorsHeaders(w, "POST, GET, OPTIONS, PUT, DELETE")
+	CorsHeaders(w, POST, GET, OPTIONS, PUT, DELETE)
 
 	pathParams := mux.Vars(r)
 	id, err := strconv.ParseInt(pathParams["id"], 10, 64)

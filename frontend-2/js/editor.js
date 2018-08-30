@@ -55,7 +55,7 @@ function saveSpot(spot) {
 }
 
 function removeSpot(id) {
-    return doDeleteJsonSync(apiBase + "/spot/" + id, true)
+    return doDeleteSync(apiBase + "/spot/" + id, true)
 }
 
 function getAllRegions() {
@@ -72,5 +72,22 @@ function saveRiver(river) {
 }
 
 function removeRiver(id) {
-    return doDeleteJsonSync(apiBase + "/river/" + id, true)
+    return doDeleteSync(apiBase + "/river/" + id, true)
+}
+
+function getImages(id, _type) {
+    var imgs = doGetJsonSync(apiBase + "/spot/" + id + "/img?type=" + _type)
+    if (imgs) {
+        return imgs
+    } else {
+        return []
+    }
+}
+
+function removeImage(spotId, id, _type) {
+    return doDeleteWithJsonRespSync(apiBase + "/spot/" + spotId + "/img/" + id + "?type=" + _type, true)
+}
+
+function setImageEnabled(spotId, id, enabled) {
+    return doPostJsonSync(apiBase + "/spot/" + spotId + "/img/" + id + "/enabled", enabled, true)
 }

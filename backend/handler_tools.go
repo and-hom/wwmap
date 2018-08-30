@@ -29,8 +29,20 @@ func (this *Handler) JsonStr(f interface{}, _default string) string {
 	return string(bytes)
 }
 
+
+func (this *Handler) JsonAnswer(w http.ResponseWriter, f interface{}) {
+	bytes, err := json.Marshal(f)
+	if err != nil {
+		OnError500(w, err, fmt.Sprintf("Can not serialize object %v", f))
+		return
+	}
+
+	w.Header().Add("Content-Type", "application/json")
+	w.Write(bytes)
+}
+
 func (this *Handler) CorsGetOptionsStub(w http.ResponseWriter, r *http.Request) {
-	CorsHeaders(w, "POST, GET, OPTIONS, PUT, DELETE")
+	CorsHeaders(w, POST, GET, OPTIONS, PUT, DELETE)
 	// for cors only
 }
 

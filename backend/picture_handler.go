@@ -13,7 +13,7 @@ type PictureHandler struct {
 }
 
 func (this *PictureHandler) PictureMetadataHandler(w http.ResponseWriter, r *http.Request) {
-	CorsHeaders(w, "POST")
+	CorsHeaders(w, POST)
 
 	requestBody := r.Body
 	defer requestBody.Close()

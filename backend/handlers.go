@@ -13,7 +13,7 @@ type Handler struct {
 }
 
 func (this *Handler) TileHandler(w http.ResponseWriter, req *http.Request) {
-	CorsHeaders(w, "GET, OPTIONS")
+	CorsHeaders(w, GET, OPTIONS)
 
 	callback, bbox, err := this.tileParams(w, req)
 	if err != nil {

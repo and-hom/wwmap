@@ -22,10 +22,10 @@ type EventPointType string;
 const (
 	PHOTO EventPointType = "photo"
 	VIDEO EventPointType = "video"
-	POST EventPointType = "post"
+	POST_ EventPointType = "post"
 )
 
-var EventPointAvailableTypes []EventPointType = []EventPointType{PHOTO, VIDEO, POST}
+var EventPointAvailableTypes []EventPointType = []EventPointType{PHOTO, VIDEO, POST_}
 
 func ParseEventPointType(s string) (EventPointType, error) {
 	for _, t := range EventPointAvailableTypes {
@@ -238,17 +238,47 @@ type VoyageReport struct {
 	Tags          []string `json:"-"`
 }
 
+type ImageType string;
+
+const (
+	IMAGE_TYPE_IMAGE ImageType = "image"
+	IMAGE_TYPE_SCHEMA ImageType = "schema"
+)
+
 type Img struct {
-	Id              int64
-	WwId            int64
-	ReportId        int64
-	Source          string
-	RemoteId        string
-	RawUrl          string
-	Url             string
-	PreviewUrl      string
-	DatePublished   time.Time
-	LabelsForSearch []string
+	Id              int64 `json:"id"`
+	WwId            int64 `json:"ww_id"`
+	ReportId        int64 `json:"report_id"`
+	Source          string `json:"source"`
+	RemoteId        string `json:"remote_id"`
+	RawUrl          string `json:"-"`
+	Url             string `json:"url"`
+	PreviewUrl      string `json:"preview_url"`
+	DatePublished   time.Time `json:"date_published"`
+	LabelsForSearch []string `json:"-"`
+	Enabled         bool `json:"enabled"`
+	Type            ImageType `json:"type"`
+}
+
+func GetImgType(_type string) ImageType {
+	if t, f := checkType(_type, IMAGE_TYPE_IMAGE); f {
+		return t
+	}
+	if t, f := checkType(_type, IMAGE_TYPE_SCHEMA); f {
+		return t
+	}
+	return IMAGE_TYPE_IMAGE
+}
+
+func checkType(val string, _type ImageType) (ImageType, bool) {
+	if val == string(_type) {
+		return _type, true
+	}
+	return IMAGE_TYPE_IMAGE, false
+}
+
+func (this Img) IdStr() string {
+	return fmt.Sprintf("%d", this.Id)
 }
 
 type WWPassport struct {
@@ -288,7 +318,7 @@ func Join(separator string, roles ...Role) string {
 type UserInfo struct {
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
-	Login  string `json:"login"`
+	Login     string `json:"login"`
 }
 
 type User struct {

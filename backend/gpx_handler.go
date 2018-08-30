@@ -9,12 +9,13 @@ import (
 	"regexp"
 	"strings"
 	. "github.com/and-hom/wwmap/lib/http"
+	"github.com/and-hom/wwmap/lib/model"
 )
 
 type GpxHandler struct{ Handler };
 
 func (this *GpxHandler) DownloadGpx(w http.ResponseWriter, req *http.Request) {
-	CorsHeaders(w, "GET")
+	CorsHeaders(w, GET)
 	pathParams := mux.Vars(req)
 
 	id, err := strconv.ParseInt(pathParams["id"], 10, 64)
@@ -23,7 +24,7 @@ func (this *GpxHandler) DownloadGpx(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	transliterate := req.FormValue("tr")!=""
+	transliterate := req.FormValue("tr") != ""
 
 	whitewaterPoints, err := this.whiteWaterDao.ListByRiver(id)
 	if err != nil {
@@ -39,11 +40,14 @@ func (this *GpxHandler) DownloadGpx(w http.ResponseWriter, req *http.Request) {
 			Lon: whitewaterPoint.Point.Lon,
 			Cmt: whitewaterPoint.Comment,
 		}
+		categoryString := catStr(whitewaterPoint.Category, transliterate)
+
+		titleString := whitewaterPoint.Title
 		if transliterate {
-			waypoints[i].Name = cyrillicToTranslit(whitewaterPoint.Title)
-		} else {
-			waypoints[i].Name = whitewaterPoint.Title
+			titleString = cyrillicToTranslit(whitewaterPoint.Title)
 		}
+
+		waypoints[i].Name = categoryString + titleString
 	}
 	if len(whitewaterPoints) == 0 {
 		OnError(w, nil, fmt.Sprintf("No whitewater points found for river with id %d", id), http.StatusNotFound)
@@ -58,6 +62,23 @@ func (this *GpxHandler) DownloadGpx(w http.ResponseWriter, req *http.Request) {
 
 	xmlBytes := gpxData.ToXML()
 	w.Write(xmlBytes)
+}
+
+func catStr(category model.SportCategory, translit bool) string {
+	if category.Category == -1 {
+		if translit {
+			return "(Stop!)"
+		} else {
+			return "(Непроход)"
+		}
+	}
+	if category.Category == 0 {
+		return ""
+	}
+	if category.Sub == "" {
+		return "(" + category.Serialize() + ")"
+	}
+	return "(" + category.Serialize() + ")"
 }
 
 var translitCharMap = map[string]string{

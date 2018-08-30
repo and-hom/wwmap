@@ -78,3 +78,67 @@
 .v-select .dropdown-menu .active > a {
   color: #fff;
 }
+
+.spot-editor-panel .row {
+    padding-top: 10px;
+}
+.spot-editor-panel textarea {
+    width: 100%;
+}
+
+
+.spot-display .row {
+    padding-top: 10px;
+}
+.spot-display dd {
+    display: inline;
+}
+.spot-display dt {
+    display: inline;
+}
+
+.wwmap-upload-drag label.btn {
+  margin-bottom: 0;
+  margin-right: 1rem;
+}
+.wwmap-upload-drag .drop-active {
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  position: fixed;
+  z-index: 9999;
+  opacity: .6;
+  text-align: center;
+  background: #000;
+}
+.wwmap-upload-drag .drop-active h3 {
+  margin: -.5em 0 0;
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  -webkit-transform: translateY(-50%);
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);
+  font-size: 40px;
+  color: #fff;
+  padding: 0;
+}
+
+.wwmap-img-disabled {
+    opacity: 0.3;
+}
+
+.wwmap-gallery-cell {
+    background-size:     cover;
+    background-repeat:   no-repeat;
+    background-position: center center;
+    width: 300px;
+    height: 200px;
+    display: inline-block;
+}
+
+.file-uploads {
+    margin-top:8px;
+}
