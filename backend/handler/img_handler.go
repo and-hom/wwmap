@@ -1,9 +1,10 @@
-package main
+package handler
 
 import (
 	"github.com/and-hom/wwmap/lib/img_storage"
 	"net/http"
 	. "github.com/and-hom/wwmap/lib/http"
+	. "github.com/and-hom/wwmap/lib/handler"
 	"github.com/gorilla/mux"
 	"strconv"
 	"time"
@@ -29,18 +30,18 @@ const (
 )
 
 type ImgHandler struct {
-	Handler
-	imgStorage        img_storage.ImgStorage
-	previewImgStorage img_storage.ImgStorage
-	imgUrlBase        string
-	imgUrlPreviewBase string
+	App
+	ImgStorage        img_storage.ImgStorage
+	PreviewImgStorage img_storage.ImgStorage
+	ImgUrlBase        string
+	ImgUrlPreviewBase string
 };
 
 func (this *ImgHandler) Init(r *mux.Router) {
-	this.Register(r, "/spot/{spotId}/img", HandlerFunctions{get: this.GetImages, post:this.Upload, put:this.Upload})
-	this.Register(r, "/spot/{spotId}/img/{imgId}", HandlerFunctions{get:this.GetImage, delete: this.Delete})
-	this.Register(r, "/spot/{spotId}/img/{imgId}/preview", HandlerFunctions{get: this.GetImagePreview})
-	this.Register(r, "/spot/{spotId}/img/{imgId}/enabled", HandlerFunctions{post:this.SetEnabled})
+	this.Register(r, "/spot/{spotId}/img", HandlerFunctions{Get: this.GetImages, Post:this.Upload, Put:this.Upload})
+	this.Register(r, "/spot/{spotId}/img/{imgId}", HandlerFunctions{Get:this.GetImage, Delete: this.Delete})
+	this.Register(r, "/spot/{spotId}/img/{imgId}/preview", HandlerFunctions{Get: this.GetImagePreview})
+	this.Register(r, "/spot/{spotId}/img/{imgId}/enabled", HandlerFunctions{Post:this.SetEnabled})
 }
 
 func (this *ImgHandler) GetImages(w http.ResponseWriter, req *http.Request) {
@@ -56,7 +57,7 @@ func (this *ImgHandler) GetImages(w http.ResponseWriter, req *http.Request) {
 
 func (this *ImgHandler) GetImage(w http.ResponseWriter, req *http.Request) {
 	pathParams := mux.Vars(req)
-	r, err := this.imgStorage.Read(pathParams["imgId"])
+	r, err := this.ImgStorage.Read(pathParams["imgId"])
 	if err != nil {
 		OnError500(w, err, "Can not get image")
 		return
@@ -67,7 +68,7 @@ func (this *ImgHandler) GetImage(w http.ResponseWriter, req *http.Request) {
 
 func (this *ImgHandler) GetImagePreview(w http.ResponseWriter, req *http.Request) {
 	pathParams := mux.Vars(req)
-	r, err := this.previewImgStorage.Read(pathParams["imgId"])
+	r, err := this.PreviewImgStorage.Read(pathParams["imgId"])
 	if err != nil {
 		OnError500(w, err, "Can not get image")
 		return
@@ -88,7 +89,7 @@ func (this *ImgHandler) Upload(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	img, err := this.imgDao.InsertLocal(spotId, getImgType(req), SOURCE, this.imgUrlBase, this.imgUrlPreviewBase, time.Now())
+	img, err := this.ImgDao.InsertLocal(spotId, getImgType(req), SOURCE, this.ImgUrlBase, this.ImgUrlPreviewBase, time.Now())
 	if err != nil {
 		OnError500(w, err, "Can not insert")
 		return
@@ -120,10 +121,10 @@ func (this *ImgHandler) Upload(w http.ResponseWriter, req *http.Request) {
 		OnError500(w, err, "Can not store preview")
 		return
 	}
-	this.previewImgStorage.Store(img.IdStr(), &b)
+	this.PreviewImgStorage.Store(img.IdStr(), &b)
 
 	f.Seek(0, 0)
-	err = this.imgStorage.Store(img.IdStr(), f)
+	err = this.ImgStorage.Store(img.IdStr(), f)
 	if err != nil {
 		OnError500(w, err, "Can not store image")
 		return
@@ -158,14 +159,14 @@ func (this *ImgHandler) Delete(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err = this.imgDao.Remove(imgId)
+	err = this.ImgDao.Remove(imgId)
 	if err != nil {
 		OnError500(w, err, "Can not delete image from db")
 		return
 	}
 
-	imgRemoveErr := this.imgStorage.Remove(imgIdStr)
-	previewRemoveErr := this.previewImgStorage.Remove(imgIdStr)
+	imgRemoveErr := this.ImgStorage.Remove(imgIdStr)
+	previewRemoveErr := this.PreviewImgStorage.Remove(imgIdStr)
 	if imgRemoveErr != nil {
 		logrus.Errorf("Can not delete image data: ", imgRemoveErr)
 	}
@@ -198,7 +199,7 @@ func (this *ImgHandler) SetEnabled(w http.ResponseWriter, req *http.Request) {
 	enabled := false
 	json.Unmarshal(bodyBytes, &enabled)
 
-	err = this.imgDao.SetEnabled(imgId, enabled)
+	err = this.ImgDao.SetEnabled(imgId, enabled)
 	if err != nil {
 		OnError500(w, err, "Can not set image enables/disabled")
 		return
@@ -208,15 +209,15 @@ func (this *ImgHandler) SetEnabled(w http.ResponseWriter, req *http.Request) {
 }
 
 func (this *ImgHandler) listImagesForSpot(w http.ResponseWriter, spotId int64, _type dao.ImageType) {
-	imgs, err := this.imgDao.List(spotId, 16384, _type, false)
+	imgs, err := this.ImgDao.List(spotId, 16384, _type, false)
 	if err != nil {
 		OnError500(w, err, "Can not list images")
 		return
 	}
 	for i := 0; i < len(imgs); i++ {
 		if imgs[i].Source == SOURCE {
-			imgs[i].Url = fmt.Sprintf(this.imgUrlBase, imgs[i].Id)
-			imgs[i].PreviewUrl = fmt.Sprintf(this.imgUrlPreviewBase, imgs[i].Id)
+			imgs[i].Url = fmt.Sprintf(this.ImgUrlBase, imgs[i].Id)
+			imgs[i].PreviewUrl = fmt.Sprintf(this.ImgUrlPreviewBase, imgs[i].Id)
 		}
 	}
 

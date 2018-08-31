@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	"github.com/gorilla/mux"
@@ -10,10 +10,11 @@ import (
 	. "github.com/and-hom/wwmap/lib/dao"
 	. "github.com/and-hom/wwmap/lib/geo"
 	. "github.com/and-hom/wwmap/lib/http"
+	. "github.com/and-hom/wwmap/lib/handler"
 )
 
 type PointHandler struct {
-	Handler
+	App
 }
 
 func (this *PointHandler) GetPoint(w http.ResponseWriter, r *http.Request) {
@@ -30,7 +31,7 @@ func (this *PointHandler) GetPoint(w http.ResponseWriter, r *http.Request) {
 
 func (this *PointHandler) writePointToResponse(id int64, w http.ResponseWriter) {
 	eventPoint := EventPoint{}
-	found, err := this.storage.FindEventPoint(id, &eventPoint)
+	found, err := this.Storage.FindEventPoint(id, &eventPoint)
 	if err != nil {
 		OnError500(w, err, "Can not find")
 		return
@@ -54,7 +55,7 @@ func (this *PointHandler) DelPoint(w http.ResponseWriter, r *http.Request) {
 		OnError(w, err, "Can not parse id", http.StatusBadRequest)
 		return
 	}
-	err = this.storage.DeleteEventPoint(id)
+	err = this.Storage.DeleteEventPoint(id)
 	if err != nil {
 		OnError500(w, err, "Can not delete")
 		return
@@ -83,7 +84,7 @@ func (this *PointHandler) EditPoint(w http.ResponseWriter, r *http.Request) {
 	}
 	eventPoint.Id = id
 
-	err = this.storage.UpdateEventPoint(eventPoint)
+	err = this.Storage.UpdateEventPoint(eventPoint)
 	if err != nil {
 		OnError500(w, err, "Can not edit point	")
 		return
@@ -104,7 +105,7 @@ func (this *PointHandler) AddPoint(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := this.storage.AddEventPoint(routeId, eventPoint)
+	id, err := this.Storage.AddEventPoint(routeId, eventPoint)
 
 	if err != nil {
 		OnError500(w, err, "Can not insert")

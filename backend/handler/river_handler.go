@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	"net/http"
@@ -6,19 +6,20 @@ import (
 	"strconv"
 	. "github.com/and-hom/wwmap/lib/geo"
 	. "github.com/and-hom/wwmap/lib/http"
+	. "github.com/and-hom/wwmap/lib/handler"
 	"github.com/and-hom/wwmap/lib/dao"
 	"strings"
 	"github.com/gorilla/mux"
 )
 
 type RiverHandler struct {
-	Handler
-	resourceBase string
+	App
+	ResourceBase string
 }
 
 func (this *RiverHandler) Init(r *mux.Router) {
-	this.Register(r, "/nearest-rivers", HandlerFunctions{get: this.GetNearestRivers})
-	this.Register(r, "/visible-rivers", HandlerFunctions{get: this.GetVisibleRivers})
+	this.Register(r, "/nearest-rivers", HandlerFunctions{Get: this.GetNearestRivers})
+	this.Register(r, "/visible-rivers", HandlerFunctions{Get: this.GetVisibleRivers})
 }
 
 const MAX_REPORTS_PER_SOURCE = 5
@@ -37,7 +38,7 @@ func (this *RiverHandler) GetNearestRivers(w http.ResponseWriter, r *http.Reques
 		return
 	}
 	point := Point{Lat:lat, Lon:lon}
-	rivers, err := this.riverDao.NearestRivers(point, 5)
+	rivers, err := this.RiverDao.NearestRivers(point, 5)
 	if err != nil {
 		OnError500(w, err, "Can not select rivers")
 		return
@@ -65,7 +66,7 @@ func (this *RiverHandler) GetVisibleRivers(w http.ResponseWriter, req *http.Requ
 		return
 	}
 
-	rivers, err := this.riverDao.ListRiversWithBounds(bbox, 30)
+	rivers, err := this.RiverDao.ListRiversWithBounds(bbox, 30)
 	if err != nil {
 		OnError500(w, err, "Can not select rivers")
 		return
@@ -76,7 +77,7 @@ func (this *RiverHandler) GetVisibleRivers(w http.ResponseWriter, req *http.Requ
 		river := &rivers[i]
 		river.Bounds = river.Bounds.WithMargins(0.05)
 
-		reports, err := this.voyageReportDao.List(river.Id, MAX_REPORTS_PER_SOURCE)
+		reports, err := this.VoyageReportDao.List(river.Id, MAX_REPORTS_PER_SOURCE)
 		if err != nil {
 			OnError500(w, err, fmt.Sprintf("Can not select reports for river %d", river.Id))
 			return
@@ -89,7 +90,7 @@ func (this *RiverHandler) GetVisibleRivers(w http.ResponseWriter, req *http.Requ
 				Title:report.Title,
 				Author:report.Author,
 				Year:report.DateOfTrip.Year(),
-				SourceLogoUrl:this.resourceBase + "/img/report_sources/" + strings.ToLower(report.Source) + ".png",
+				SourceLogoUrl:this.ResourceBase + "/img/report_sources/" + strings.ToLower(report.Source) + ".png",
 			}
 		}
 

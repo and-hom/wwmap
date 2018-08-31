@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	"net/http"
@@ -8,22 +8,23 @@ import (
 	. "github.com/and-hom/wwmap/lib/dao"
 	. "github.com/and-hom/wwmap/lib/geo"
 	. "github.com/and-hom/wwmap/lib/http"
+	. "github.com/and-hom/wwmap/lib/handler"
 	"math"
 	"strconv"
 	"github.com/gorilla/mux"
+	"github.com/and-hom/wwmap/backend/clustering"
+	"github.com/and-hom/wwmap/backend/ymaps"
 )
 
-const PREVIEWS_COUNT int = 20
-
 type WhiteWaterHandler struct {
-	Handler
-	resourceBase string
-	clusterMaker ClusterMaker
+	App
+	ResourceBase string
+	ClusterMaker clustering.ClusterMaker
 }
 
 func (this *WhiteWaterHandler) Init(r *mux.Router) {
-	this.Register(r, "/ymaps-tile-ww", HandlerFunctions{get:this.TileWhiteWaterHandler})
-	this.Register(r, "/whitewater", HandlerFunctions{post: this.InsertWhiteWaterPoints, put:this.InsertWhiteWaterPoints})
+	this.Register(r, "/ymaps-tile-ww", HandlerFunctions{Get:this.TileWhiteWaterHandler})
+	this.Register(r, "/whitewater", HandlerFunctions{Post: this.InsertWhiteWaterPoints, Put:this.InsertWhiteWaterPoints})
 }
 
 func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req *http.Request) {
@@ -44,13 +45,13 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 		}
 	}
 
-	rivers, err := this.riverDao.ListRiversWithBounds(bbox, math.MaxInt32)
+	rivers, err := this.RiverDao.ListRiversWithBounds(bbox, math.MaxInt32)
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not read whitewater points for bbox %s", bbox.String()))
 		return
 	}
 
-	features, err := whiteWaterPointsToYmaps(this.clusterMaker, rivers, bbox, zoom, this.resourceBase, skip)
+	features, err := ymaps.WhiteWaterPointsToYmaps(this.ClusterMaker, rivers, bbox, zoom, this.ResourceBase, skip)
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not cluster: %s", bbox.String()))
 		return
@@ -83,7 +84,7 @@ func (this *WhiteWaterHandler) InsertWhiteWaterPoints(w http.ResponseWriter, r *
 		return
 	}
 
-	err = this.whiteWaterDao.InsertWhiteWaterPoints(wwPoints...)
+	err = this.WhiteWaterDao.InsertWhiteWaterPoints(wwPoints...)
 
 	if err != nil {
 		OnError500(w, err, "Can not insert")

@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	"github.com/gorilla/mux"
@@ -9,13 +9,14 @@ import (
 	"regexp"
 	"strings"
 	. "github.com/and-hom/wwmap/lib/http"
+	. "github.com/and-hom/wwmap/lib/handler"
 	"github.com/and-hom/wwmap/lib/model"
 )
 
-type GpxHandler struct{ Handler };
+type GpxHandler struct { App };
 
 func (this *GpxHandler) Init(r *mux.Router) {
-	this.Register(r, "/gpx/{id}", HandlerFunctions{get: this.DownloadGpx})
+	this.Register(r, "/gpx/{id}", HandlerFunctions{Get: this.DownloadGpx})
 }
 
 func (this *GpxHandler) DownloadGpx(w http.ResponseWriter, req *http.Request) {
@@ -29,7 +30,7 @@ func (this *GpxHandler) DownloadGpx(w http.ResponseWriter, req *http.Request) {
 
 	transliterate := req.FormValue("tr") != ""
 
-	whitewaterPoints, err := this.whiteWaterDao.ListByRiver(id)
+	whitewaterPoints, err := this.WhiteWaterDao.ListByRiver(id)
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not read whitewater points for river %s", id))
 		return

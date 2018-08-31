@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	"net/http"
@@ -6,10 +6,12 @@ import (
 	"os"
 	"io"
 	. "github.com/and-hom/wwmap/lib/http"
+	. "github.com/and-hom/wwmap/lib/handler"
+	"github.com/and-hom/wwmap/backend/imgproc"
 )
 
 type PictureHandler struct {
-	Handler
+	App
 }
 
 func (this *PictureHandler) PictureMetadataHandler(w http.ResponseWriter, r *http.Request) {
@@ -50,7 +52,7 @@ func (this *PictureHandler) PictureMetadataHandler(w http.ResponseWriter, r *htt
 		return
 	}
 
-	imgData, err := GetImgProperties(tmpFile)
+	imgData, err := imgproc.GetImgProperties(tmpFile)
 	if err != nil {
 		OnError500(w, err, "Can not get img properties")
 		return

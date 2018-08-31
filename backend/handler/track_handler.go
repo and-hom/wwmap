@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	log "github.com/Sirupsen/logrus"
@@ -11,10 +11,11 @@ import (
 	. "github.com/and-hom/wwmap/lib/dao"
 	. "github.com/and-hom/wwmap/lib/geo"
 	. "github.com/and-hom/wwmap/lib/http"
+	. "github.com/and-hom/wwmap/lib/handler"
 )
 
 type TrackHandler struct {
-	Handler
+	App
 }
 
 func (this *TrackHandler) UploadTrack(w http.ResponseWriter, r *http.Request) {
@@ -34,7 +35,7 @@ func (this *TrackHandler) UploadTrack(w http.ResponseWriter, r *http.Request) {
 	route := Route{
 		Title: title,
 	}
-	routeId, err := this.storage.AddRoute(route)
+	routeId, err := this.Storage.AddRoute(route)
 	if err != nil {
 		OnError500(w, err, "Can not create route")
 		return
@@ -56,12 +57,12 @@ func (this *TrackHandler) UploadTrack(w http.ResponseWriter, r *http.Request) {
 		OnError500(w, err, "Bad geo data symantics")
 		return
 	}
-	err = this.storage.AddTracks(routeId, tracks...)
+	err = this.Storage.AddTracks(routeId, tracks...)
 	if err != nil {
 		OnError500(w, err, "Can not insert tracks")
 		return
 	}
-	err = this.storage.AddEventPoints(routeId, points...)
+	err = this.Storage.AddEventPoints(routeId, points...)
 	if err != nil {
 		OnError500(w, err, "Can not insert tracks")
 		return
@@ -114,7 +115,7 @@ func (this *TrackHandler) TrackPointsToClickHandler(w http.ResponseWriter, req *
 		return
 	}
 
-	tracks := this.storage.FindTrackAsList(id)
+	tracks := this.Storage.FindTrackAsList(id)
 	var t Track
 	if len(tracks) > 0 {
 		t = tracks[0]
@@ -174,7 +175,7 @@ func (this *TrackHandler) EditTrack(w http.ResponseWriter, r *http.Request) {
 	}
 	track.Id = id
 
-	err = this.storage.UpdateTrack(track)
+	err = this.Storage.UpdateTrack(track)
 	if err != nil {
 		OnError500(w, err, "Can not edit track	")
 		return
@@ -192,7 +193,7 @@ func (this *TrackHandler) DelTrack(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = this.storage.DeleteTrack(id)
+	err = this.Storage.DeleteTrack(id)
 	if err != nil {
 		OnError500(w, err, "Can not remove track")
 		return
@@ -201,7 +202,7 @@ func (this *TrackHandler) DelTrack(w http.ResponseWriter, r *http.Request) {
 
 func (this *TrackHandler) writeTrackToResponse(id int64, w http.ResponseWriter) {
 	track := Track{}
-	found, err := this.storage.FindTrack(id, &track)
+	found, err := this.Storage.FindTrack(id, &track)
 	if err != nil {
 		OnError500(w, err, "Can not find")
 		return

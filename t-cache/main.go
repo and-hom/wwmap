@@ -7,6 +7,7 @@ import (
 	"os"
 	"github.com/and-hom/wwmap/lib/config"
 	. "github.com/and-hom/wwmap/lib/http"
+	. "github.com/and-hom/wwmap/lib/handler"
 	"io"
 	"math/rand"
 	"text/template"
@@ -94,7 +95,8 @@ func (this *PathLock) Unlock() {
 	this.mutex.Unlock()
 }
 
-type Handler struct {
+type DataHandler struct {
+	Handler
 	baseDir     string
 	urlMapping  map[string]Mapping
 	client      *http.Client
@@ -102,7 +104,11 @@ type Handler struct {
 	defaultData []byte
 }
 
-func (this *Handler) generateDefaultImg() {
+func (this *DataHandler) Init(r *mux.Router) {
+	this.Register(r, "/{type}/{z}/{x}/{y}.png", HandlerFunctions{Get:this.tile, Head: this.tile})
+}
+
+func (this *DataHandler) generateDefaultImg() {
 	log.Info("Generate empty png for missing tiles")
 	img := image.NewRGBA(image.Rect(0, 0, 1, 1))
 	img.Set(0, 0, color.RGBA{0, 0, 0, 0})
@@ -111,7 +117,7 @@ func (this *Handler) generateDefaultImg() {
 	this.defaultData = buf.Bytes()
 }
 
-func (this *Handler) fetchUrlToTmpFile(w http.ResponseWriter, url string) (string, error) {
+func (this *DataHandler) fetchUrlToTmpFile(w http.ResponseWriter, url string) (string, error) {
 	log.Info("Fetch ", url)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -156,7 +162,7 @@ func (this *Handler) fetchUrlToTmpFile(w http.ResponseWriter, url string) (strin
 	return f.Name(), nil
 }
 
-func (this *Handler) fetch(w http.ResponseWriter, pos Pos) error {
+func (this *DataHandler) fetch(w http.ResponseWriter, pos Pos) error {
 	path := this.cachePath(pos)
 
 	pathLock := PathLock{key:path, mutexByUrl:&this.mutexByUrl}
@@ -198,9 +204,7 @@ func (this *Handler) fetch(w http.ResponseWriter, pos Pos) error {
 	return nil
 }
 
-func (this *Handler) tile(w http.ResponseWriter, req *http.Request) {
-	CorsHeaders(w, GET, HEAD)
-
+func (this *DataHandler) tile(w http.ResponseWriter, req *http.Request) {
 	pathParams := mux.Vars(req)
 
 	x, err := strconv.ParseInt(pathParams["x"], 10, 32)
@@ -269,7 +273,7 @@ func (this *Handler) tile(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func (this *Handler) cachePath(pos Pos) string {
+func (this *DataHandler) cachePath(pos Pos) string {
 	return fmt.Sprintf("%s/%s/%d/%d/%d.png", this.baseDir, pos.t, pos.z, pos.x, pos.y)
 }
 
@@ -311,7 +315,7 @@ func main() {
 
 	configuration := config.Load("").TileCache
 
-	handler := Handler{
+	handler := DataHandler{
 		baseDir:configuration.BaseDir,
 		urlMapping: typeCdnMapping(configuration),
 		client: &http.Client{
@@ -320,7 +324,7 @@ func main() {
 	}
 
 	r := mux.NewRouter()
-	r.HandleFunc("/{type}/{z}/{x}/{y}.png", handler.tile).Methods("GET", "HEAD")
+	handler.Init(r)
 
 	log.Infof("Starting tiles server on %v+", configuration.BindTo)
 

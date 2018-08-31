@@ -1,8 +1,9 @@
-package main
+package handler
 
 import (
 	"net/http"
 	. "github.com/and-hom/wwmap/lib/http"
+	. "github.com/and-hom/wwmap/lib/handler"
 	"github.com/and-hom/wwmap/lib/dao"
 	"encoding/json"
 	"github.com/and-hom/wwmap/backend/passport"
@@ -10,7 +11,7 @@ import (
 )
 
 type UserInfoHandler struct {
-	Handler
+	App
 }
 
 type UserInfoDto struct {
@@ -20,8 +21,8 @@ type UserInfoDto struct {
 }
 
 func (this *UserInfoHandler) Init(r *mux.Router) {
-	this.Register(r, "/user-info", HandlerFunctions{get: this.GetUserInfo})
-	this.Register(r, "/auth-test", HandlerFunctions{get: this.TestAuth})
+	this.Register(r, "/user-info", HandlerFunctions{Get: this.GetUserInfo})
+	this.Register(r, "/auth-test", HandlerFunctions{Get: this.TestAuth})
 }
 
 func (this *UserInfoHandler) GetUserInfo(w http.ResponseWriter, r *http.Request) {
@@ -32,13 +33,13 @@ func (this *UserInfoHandler) GetUserInfo(w http.ResponseWriter, r *http.Request)
 	}
 
 	token := GetOauthToken(r)
-	info, err := this.yandexPassport.ResolveUserInfo(token)
+	info, err := this.YandexPassport.ResolveUserInfo(token)
 	if err != nil {
 		onPassportErr(err, w, "Can not do request to Yandex Passport")
 		return
 	}
 
-	role, err := this.userDao.GetRole(info.Id)
+	role, err := this.UserDao.GetRole(info.Id)
 	if err != nil {
 		onPassportErr(err, w, "Can not get role for user")
 		return

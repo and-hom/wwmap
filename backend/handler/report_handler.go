@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	"net/http"
@@ -6,15 +6,16 @@ import (
 	"strconv"
 	. "github.com/and-hom/wwmap/lib/dao"
 	. "github.com/and-hom/wwmap/lib/http"
+	. "github.com/and-hom/wwmap/lib/handler"
 	"github.com/gorilla/mux"
 )
 
 type ReportHandler struct {
-	Handler
+	App
 }
 
 func (this *ReportHandler) Init(r *mux.Router) {
-	this.Register(r, "/report", HandlerFunctions{post:this.AddReport, put:this.AddReport})
+	this.Register(r, "/report", HandlerFunctions{Post:this.AddReport, Put:this.AddReport})
 }
 
 func (this *ReportHandler) AddReport(w http.ResponseWriter, r *http.Request) {
@@ -25,7 +26,7 @@ func (this *ReportHandler) AddReport(w http.ResponseWriter, r *http.Request) {
 		OnError(w, err, fmt.Sprintf("Can not parse object id: %s", objectIdStr), 400)
 		return
 	}
-	err = this.reportDao.AddReport(Report{
+	err = this.ReportDao.AddReport(Report{
 		ObjectId: objectId,
 		Comment: comment,
 	})

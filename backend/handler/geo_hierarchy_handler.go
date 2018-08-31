@@ -1,8 +1,9 @@
-package main
+package handler
 
 import (
 	"net/http"
 	. "github.com/and-hom/wwmap/lib/http"
+	. "github.com/and-hom/wwmap/lib/handler"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"strconv"
@@ -18,26 +19,26 @@ import (
 )
 
 type GeoHierarchyHandler struct {
-	Handler
+	App
 	regions map[int64]dao.Region
 }
 
 func (this *GeoHierarchyHandler) Init(r *mux.Router) {
-	this.Register(r, "/country", HandlerFunctions{get: this.ListCountries, })
-	this.Register(r, "/country/{countryId}/region", HandlerFunctions{get:this.ListRegions})
-	this.Register(r, "/country/{countryId}/region/{regionId}/river", HandlerFunctions{get:this.ListRegionRivers})
-	this.Register(r, "/country/{countryId}/river", HandlerFunctions{get:this.ListCountryRivers})
+	this.Register(r, "/country", HandlerFunctions{Get: this.ListCountries, })
+	this.Register(r, "/country/{countryId}/region", HandlerFunctions{Get:this.ListRegions})
+	this.Register(r, "/country/{countryId}/region/{regionId}/river", HandlerFunctions{Get:this.ListRegionRivers})
+	this.Register(r, "/country/{countryId}/river", HandlerFunctions{Get:this.ListCountryRivers})
 
-	this.Register(r, "/region", HandlerFunctions{get:this.ListAllRegions})
-	this.Register(r, "/region/{regionId}", HandlerFunctions{get:this.GetRegion})
+	this.Register(r, "/region", HandlerFunctions{Get:this.ListAllRegions})
+	this.Register(r, "/region/{regionId}", HandlerFunctions{Get:this.GetRegion})
 
-	this.Register(r, "/river/{riverId}", HandlerFunctions{get:this.GetRiver, put:this.SaveRiver, post:this.SaveRiver, delete:this.RemoveRiver})
-	this.Register(r, "/river", HandlerFunctions{get:this.FilterRivers})
-	this.Register(r, "/river/{riverId}/reports", HandlerFunctions{get:this.ListRiverReports})
-	this.Register(r, "/river/{riverId}/spots", HandlerFunctions{get:this.ListSpots})
-	this.Register(r, "/river/{riverId}/gpx", HandlerFunctions{post:this.UploadGpx, put:this.UploadGpx})
+	this.Register(r, "/river/{riverId}", HandlerFunctions{Get:this.GetRiver, Put:this.SaveRiver, Post:this.SaveRiver, Delete:this.RemoveRiver})
+	this.Register(r, "/river", HandlerFunctions{Get:this.FilterRivers})
+	this.Register(r, "/river/{riverId}/reports", HandlerFunctions{Get:this.ListRiverReports})
+	this.Register(r, "/river/{riverId}/spots", HandlerFunctions{Get:this.ListSpots})
+	this.Register(r, "/river/{riverId}/gpx", HandlerFunctions{Post:this.UploadGpx, Put:this.UploadGpx})
 
-	this.Register(r, "/spot/{spotId}", HandlerFunctions{get:this.GetSpot, post:this.SaveSpot, put:this.SaveSpot, delete:this.RemoveSpot})
+	this.Register(r, "/spot/{spotId}", HandlerFunctions{Get:this.GetSpot, Post:this.SaveSpot, Put:this.SaveSpot, Delete:this.RemoveSpot})
 }
 
 type RiverDto struct {
@@ -57,7 +58,7 @@ func (this *GeoHierarchyHandler) getRegion(id int64) dao.Region {
 		return region
 	} else {
 		log.Debugf("Region id=%d not found in cache. Select.", id)
-		region, err := this.regionDao.Get(id)
+		region, err := this.RegionDao.Get(id)
 		if err != nil {
 			log.Errorf("Can not get region by id :", id, err)
 			return dao.Region{Id:0, CountryId:0, Title:"-"}
@@ -68,7 +69,7 @@ func (this *GeoHierarchyHandler) getRegion(id int64) dao.Region {
 }
 
 func (this *GeoHierarchyHandler) ListCountries(w http.ResponseWriter, r *http.Request) {
-	countries, err := this.countryDao.List()
+	countries, err := this.CountryDao.List()
 	if err != nil {
 		OnError500(w, err, "Can not list countries")
 		return
@@ -84,7 +85,7 @@ func (this *GeoHierarchyHandler) ListRegions(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	regions, err := this.regionDao.List(countryId)
+	regions, err := this.RegionDao.List(countryId)
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not list regions of country %d", countryId))
 		return
@@ -93,7 +94,7 @@ func (this *GeoHierarchyHandler) ListRegions(w http.ResponseWriter, r *http.Requ
 }
 
 func (this *GeoHierarchyHandler) ListAllRegions(w http.ResponseWriter, r *http.Request) {
-	regions, err := this.regionDao.ListAllWithCountry()
+	regions, err := this.RegionDao.ListAllWithCountry()
 	if err != nil {
 		OnError500(w, err, "Can not list regions")
 		return
@@ -113,7 +114,7 @@ func (this *GeoHierarchyHandler) GetRegion(w http.ResponseWriter, r *http.Reques
 }
 
 func (this *GeoHierarchyHandler) writeRegion(regionId int64, w http.ResponseWriter) {
-	region, err := this.regionDao.Get(regionId)
+	region, err := this.RegionDao.Get(regionId)
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not get region %d", regionId))
 		return
@@ -129,7 +130,7 @@ func (this *GeoHierarchyHandler) ListCountryRivers(w http.ResponseWriter, r *htt
 		return
 	}
 
-	rivers, err := this.riverDao.ListByCountry(countryId)
+	rivers, err := this.RiverDao.ListByCountry(countryId)
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not list rivers of country %d", countryId))
 		return
@@ -145,7 +146,7 @@ func (this *GeoHierarchyHandler) ListRegionRivers(w http.ResponseWriter, r *http
 		return
 	}
 
-	rivers, err := this.riverDao.ListByRegion(regionId)
+	rivers, err := this.RiverDao.ListByRegion(regionId)
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not list rivers of region %d", regionId))
 		return
@@ -174,7 +175,7 @@ func (this *GeoHierarchyHandler) ListRiverReports(w http.ResponseWriter, r *http
 		}
 	}
 
-	voyageReports, err := this.voyageReportDao.List(riverId, int(groupLimit))
+	voyageReports, err := this.VoyageReportDao.List(riverId, int(groupLimit))
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not list reports of river %d", riverId))
 		return
@@ -190,7 +191,7 @@ func (this *GeoHierarchyHandler) ListSpots(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	voyageReports, err := this.whiteWaterDao.ListByRiver(riverId)
+	voyageReports, err := this.WhiteWaterDao.ListByRiver(riverId)
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not list spots of river %d", riverId))
 		return
@@ -231,7 +232,7 @@ func (this *GeoHierarchyHandler) UploadGpx(w http.ResponseWriter, req *http.Requ
 		spot.Point = geo.Point{Lat:wpt.Lat, Lon:wpt.Lon}
 		spot.ShortDesc = wpt.Desc
 		spot.Category = model.SportCategory{Category:model.UNDEFINED_CATEGORY}
-		_, err = this.whiteWaterDao.InsertWhiteWaterPointFull(spot)
+		_, err = this.WhiteWaterDao.InsertWhiteWaterPointFull(spot)
 		if err != nil {
 			OnError500(w, err, "Can not insert spot")
 			return
@@ -278,10 +279,10 @@ func (this *GeoHierarchyHandler) SaveRiver(w http.ResponseWriter, r *http.Reques
 
 	var id int64
 	if river.Id > 0 {
-		err = this.riverDao.Save(riverForDb)
+		err = this.RiverDao.Save(riverForDb)
 		id = river.Id
 	} else {
-		id, err = this.riverDao.Insert(riverForDb)
+		id, err = this.RiverDao.Insert(riverForDb)
 	}
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not save river %s", string(bodyBytes)))
@@ -303,7 +304,7 @@ func (this *GeoHierarchyHandler) RemoveRiver(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	err = this.riverDao.Remove(riverId)
+	err = this.RiverDao.Remove(riverId)
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not remove river by id: %d", riverId))
 		return
@@ -311,13 +312,13 @@ func (this *GeoHierarchyHandler) RemoveRiver(w http.ResponseWriter, r *http.Requ
 }
 
 func (this *GeoHierarchyHandler) writeRiver(riverId int64, w http.ResponseWriter) {
-	river, err := this.riverDao.Find(riverId)
+	river, err := this.RiverDao.Find(riverId)
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not get river %d", riverId))
 		return
 	}
 
-	region, err := this.regionDao.Get(river.RegionId)
+	region, err := this.RegionDao.Get(river.RegionId)
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not get region for river %d", riverId))
 		return
@@ -337,7 +338,7 @@ func (this *GeoHierarchyHandler) FilterRivers(w http.ResponseWriter, r *http.Req
 
 	query := util.FirstOr(r.URL.Query()["q"], "")
 
-	rivers, err := this.riverDao.ListByFirstLetters(query, limit)
+	rivers, err := this.RiverDao.ListByFirstLetters(query, limit)
 	if err != nil {
 		OnError500(w, err, "Can not fetch rivers for query" + query)
 		return
@@ -391,10 +392,10 @@ func (this *GeoHierarchyHandler) SaveSpot(w http.ResponseWriter, r *http.Request
 
 	var id int64
 	if spot.Id > 0 {
-		err = this.whiteWaterDao.UpdateWhiteWaterPointsFull(spot)
+		err = this.WhiteWaterDao.UpdateWhiteWaterPointsFull(spot)
 		id = spot.Id
 	} else {
-		id, err = this.whiteWaterDao.InsertWhiteWaterPointFull(spot)
+		id, err = this.WhiteWaterDao.InsertWhiteWaterPointFull(spot)
 	}
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not save spot %d", string(bodyBytes)))
@@ -416,7 +417,7 @@ func (this *GeoHierarchyHandler) RemoveSpot(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	err = this.whiteWaterDao.Remove(spotId)
+	err = this.WhiteWaterDao.Remove(spotId)
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not remove spot by id: %d", spotId))
 		return
@@ -424,7 +425,7 @@ func (this *GeoHierarchyHandler) RemoveSpot(w http.ResponseWriter, r *http.Reque
 }
 
 func (this *GeoHierarchyHandler) writeSpot(spotId int64, w http.ResponseWriter) {
-	spot, err := this.whiteWaterDao.FindFull(spotId)
+	spot, err := this.WhiteWaterDao.FindFull(spotId)
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not get spot %d", spotId))
 		return

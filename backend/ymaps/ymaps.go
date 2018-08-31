@@ -1,4 +1,4 @@
-package main
+package ymaps
 
 import (
 	. "github.com/and-hom/wwmap/lib/dao"
@@ -7,6 +7,7 @@ import (
 	"math"
 	"github.com/and-hom/wwmap/lib/model"
 	"math/rand"
+	"github.com/and-hom/wwmap/backend/clustering"
 )
 
 const MAX_CLUSTERS int64 = 8192
@@ -19,7 +20,7 @@ func toYmapsPreset(epType EventPointType) string {
 		return "islands#blueVegetationIcon";
 	case VIDEO:
 		return "islands#blueVideoIcon";
-	case POST:
+	case POST_:
 		return "islands#blueBookIcon";
 	}
 	return "islands#blueDotIcon";
@@ -60,7 +61,7 @@ func routeToYmaps(route Route) []Feature {
 	return result
 }
 
-func tracksToYmaps(tracks []Track) []Feature {
+func TracksToYmaps(tracks []Track) []Feature {
 	tLen := len(tracks)
 
 	result := make([]Feature, tLen)
@@ -75,7 +76,7 @@ func tracksToYmaps(tracks []Track) []Feature {
 	return result
 }
 
-func pointsToYmaps(points []EventPoint) []Feature {
+func PointsToYmaps(points []EventPoint) []Feature {
 	pLength := len(points)
 
 	result := make([]Feature, pLength)
@@ -213,7 +214,7 @@ func categoryClusterIcon(category int) string {
 	}
 }
 
-func mkCluster(Id ClusterId, points []WhiteWaterPointWithRiverTitle) Feature {
+func mkCluster(Id clustering.ClusterId, points []WhiteWaterPointWithRiverTitle) Feature {
 	bounds := ClusterGeom(points)
 	iconText := points[0].RiverTitle
 
@@ -233,7 +234,7 @@ func mkCluster(Id ClusterId, points []WhiteWaterPointWithRiverTitle) Feature {
 	}
 }
 
-func whiteWaterPointsToYmaps(clusterMaker ClusterMaker, rivers []RiverTitle, bbox Bbox, zoom int, resourcesBase string, skipId int64) ([]Feature, error) {
+func WhiteWaterPointsToYmaps(clusterMaker clustering.ClusterMaker, rivers []RiverTitle, bbox Bbox, zoom int, resourcesBase string, skipId int64) ([]Feature, error) {
 	result := make([]Feature, 0)
 	for _,river := range rivers {
 		riverClusters, err := clusterMaker.Get(river.Id, zoom, bbox)
@@ -248,8 +249,8 @@ func whiteWaterPointsToYmaps(clusterMaker ClusterMaker, rivers []RiverTitle, bbo
 				if wwp.Id != skipId {
 					result = append(result, mkFeature(wwp, true, resourcesBase))
 				}
-			case Cluster:
-				result = append(result, mkCluster(id, obj.(Cluster).Points))
+			case clustering.Cluster:
+				result = append(result, mkCluster(id, obj.(clustering.Cluster).Points))
 			}
 		}
 	}

@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	log "github.com/Sirupsen/logrus"
@@ -11,11 +11,25 @@ import (
 	"github.com/and-hom/wwmap/lib/geo"
 	"github.com/and-hom/wwmap/lib/model"
 	. "github.com/and-hom/wwmap/lib/http"
+	. "github.com/and-hom/wwmap/lib/handler"
+	"github.com/and-hom/wwmap/backend/ymaps"
 )
 
 type RouteHandler struct {
-	Handler
+	App
 }
+
+type RouteEditorPage struct {
+	Id          int64 `json:"id,omitempty"`
+	Title       string `json:"title"`
+	Type        TrackType `json:"type"`
+	Description string `json:"description"`
+	Bounds      geo.Bbox `json:"bounds"`
+	Tracks      []Track `json:"tracks,omitempty"`
+	EventPoints []EventPoint `json:"points,omitempty"`
+	Category    model.SportCategory `json:"category"`
+}
+
 
 func (this *RouteHandler) EditRoute(w http.ResponseWriter, r *http.Request) {
 	CorsHeaders(w, POST, GET, OPTIONS, PUT, DELETE)
@@ -39,7 +53,7 @@ func (this *RouteHandler) EditRoute(w http.ResponseWriter, r *http.Request) {
 	}
 	route.Id = id
 
-	err = this.storage.UpdateRoute(route)
+	err = this.Storage.UpdateRoute(route)
 	if err != nil {
 		OnError500(w, err, "Can not edit route")
 		return
@@ -57,17 +71,17 @@ func (this *RouteHandler) DelRoute(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = this.storage.DeleteTracksForRoute(id)
+	err = this.Storage.DeleteTracksForRoute(id)
 	if err != nil {
 		OnError500(w, err, "Can not remove tracks")
 		return
 	}
-	err = this.storage.DeleteEventPointsForRoute(id)
+	err = this.Storage.DeleteEventPointsForRoute(id)
 	if err != nil {
 		OnError500(w, err, "Can not remove points")
 		return
 	}
-	err = this.storage.DeleteRoute(id)
+	err = this.Storage.DeleteRoute(id)
 	if err != nil {
 		OnError500(w, err, "Can not remove route")
 		return
@@ -76,7 +90,7 @@ func (this *RouteHandler) DelRoute(w http.ResponseWriter, r *http.Request) {
 
 func (this *RouteHandler) writeRouteToResponse(id int64, w http.ResponseWriter) {
 	route := Route{}
-	found, err := this.storage.FindRoute(id, &route)
+	found, err := this.Storage.FindRoute(id, &route)
 	if err != nil {
 		OnError500(w, err, "Can not find")
 		return
@@ -101,10 +115,10 @@ func (this *RouteHandler) RouteEditorPageHandler(w http.ResponseWriter, req *htt
 		return
 	}
 	route := Route{}
-	found, err := this.storage.FindRoute(id, &route)
+	found, err := this.Storage.FindRoute(id, &route)
 	if found {
-		tracks := this.storage.FindTracksForRoute(route.Id)
-		points := this.storage.FindEventPointsForRoute(route.Id)
+		tracks := this.Storage.FindTracksForRoute(route.Id)
+		points := this.Storage.FindEventPointsForRoute(route.Id)
 		bytes, err := json.Marshal(RouteEditorPage{
 			Title:route.Title,
 			Bounds: Bounds(tracks, points),
@@ -130,7 +144,7 @@ func (this *RouteHandler) GetVisibleRoutes(w http.ResponseWriter, req *http.Requ
 		return
 	}
 
-	routes := this.storage.ListRoutes(bbox)
+	routes := this.Storage.ListRoutes(bbox)
 	log.Infof("Found %d", len(routes))
 
 	routeInfos := make([]RouteEditorPage, len(routes))
@@ -139,8 +153,8 @@ func (this *RouteHandler) GetVisibleRoutes(w http.ResponseWriter, req *http.Requ
 		routeInfos[i] = RouteEditorPage{
 			Id:route.Id,
 			Title:route.Title,
-			Tracks:this.storage.FindTracksForRoute(route.Id),
-			EventPoints:this.storage.FindEventPointsForRoute(route.Id),
+			Tracks:this.Storage.FindTracksForRoute(route.Id),
+			EventPoints:this.Storage.FindEventPointsForRoute(route.Id),
 			Category: route.Category,
 		}
 	}
@@ -157,10 +171,10 @@ func (this *RouteHandler) SingleRouteTileHandler(w http.ResponseWriter, req *htt
 		OnError(w, err, "Can not parse id", http.StatusBadRequest)
 		return
 	}
-	tracks := this.storage.FindTracksForRoute(id)
-	points := this.storage.FindEventPointsForRoute(id)
+	tracks := this.Storage.FindTracksForRoute(id)
+	points := this.Storage.FindEventPointsForRoute(id)
 
-	featureCollection := geo.MkFeatureCollection(append(pointsToYmaps(points), tracksToYmaps(tracks)...))
+	featureCollection := geo.MkFeatureCollection(append(ymaps.PointsToYmaps(points), ymaps.TracksToYmaps(tracks)...))
 	log.Infof("Found %d", len(featureCollection.Features))
 
 	w.Write(this.JsonpAnswer(callback, featureCollection, "{}"))
