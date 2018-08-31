@@ -113,6 +113,12 @@ type RegionDao interface {
 	ListAllWithCountry() ([]RegionWithCountry, error)
 }
 
+type RefererDao interface{
+	Put(host string, siteRef SiteRef) error
+	List(ttl time.Duration) ([]SiteRef, error)
+	RemoveOlderThen(ttl time.Duration) error
+}
+
 type PostgresStorage struct {
 	db *sql.DB
 }

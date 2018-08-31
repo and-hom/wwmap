@@ -176,5 +176,8 @@ func (this *Handler) collectReferer(r *http.Request) {
 		return
 	}
 
-	this.refererStorage.Put(refererUrl)
+	err = this.refererStorage.Put(refererUrl)
+	if err!=nil {
+		log.Error("Can not store referer ", err)
+	}
 }

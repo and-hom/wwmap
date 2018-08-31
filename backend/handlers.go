@@ -32,7 +32,11 @@ func (this *Handler) RefSites(w http.ResponseWriter, req *http.Request) {
 	CorsHeaders(w, "GET, OPTIONS")
 	JsonResponse(w)
 
-	refs := this.refererStorage.List()
+	refs, err := this.refererStorage.List()
+	if err != nil {
+		OnError500(w, err, "Can not list referers")
+		return
+	}
 	bytes, err := json.Marshal(refs)
 	if err != nil {
 		OnError500(w, err, "Can not marshal json")

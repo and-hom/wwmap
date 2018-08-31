@@ -69,7 +69,7 @@ func main() {
 		countryDao: countryDao,
 		regionDao: regionDao,
 		yandexPassport: yandexPassport,
-		refererStorage: referer.CreateDummyReferrerStorage(),
+		refererStorage: referer.CreateDbReferrerStorage(storage),
 	}
 
 	handler := Handler{app}
