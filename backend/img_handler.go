@@ -83,6 +83,10 @@ func (this *ImgHandler) Upload(w http.ResponseWriter, req *http.Request) {
 		OnError(w, err, "Can not parse id", http.StatusBadRequest)
 		return
 	}
+	if spotId<=0 {
+		OnError(w, err, "Can not upload image for non existing spot", http.StatusBadRequest)
+		return
+	}
 
 	img, err := this.imgDao.InsertLocal(spotId, getImgType(req), SOURCE, this.imgUrlBase, this.imgUrlPreviewBase, time.Now())
 	if err != nil {

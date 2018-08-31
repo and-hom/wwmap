@@ -121,10 +121,10 @@
                         <div class="col-10"><textarea rows="10" cols="120" v-model="spot.hw_description"></textarea></div>
                     </div>
                 </b-tab>
-                <b-tab title="Схемы">
+                <b-tab title="Схемы" :disabled="spot.id>0 ? false : true">
                     <img-upload :spot="spot" type="schema"></img-upload>
                 </b-tab>
-                <b-tab title="Фото">
+                <b-tab title="Фото" :disabled="spot.id>0 ? false : true">
                     <img-upload :spot="spot" type="photo"></img-upload>
                 </b-tab>
                 <b-tab title="Видео" disabled>
