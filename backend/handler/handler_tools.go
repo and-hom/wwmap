@@ -141,7 +141,7 @@ func (this *App) collectReferer(r *http.Request) {
 		log.Warnf("Invalid referer: %s", referer)
 		return
 	}
-	if refererUrl.Hostname() == "localhost" {
+	if refererUrl.Hostname() == "localhost" || refererUrl.Hostname() == "wwmap.ru" {
 		return
 	}
 
