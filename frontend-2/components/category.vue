@@ -1,4 +1,4 @@
-<templatg>
+<template>
     <div style="display:inline">{{ categoryString() }}</div>
 </template>
 
