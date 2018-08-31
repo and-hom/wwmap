@@ -30,6 +30,7 @@ override_dh_auto_install:
 	install -D -m 0644 ../frontend-2/img/*.png $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend-2/img/
 	install -D -m 0644 img/report_sources/*.png $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend-2/img/report_sources/
 	install -D -m 0644 ../frontend-2/components/*.vue $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend-2/components/
+	install -D -m 0644 ../frontend-2/favicon.ico $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend-2/
 
 	install -D -m 0644 nginx.conf $$(pwd)/debian/wwmap-frontend/etc/nginx/sites-available/wwmap-frontend
 
