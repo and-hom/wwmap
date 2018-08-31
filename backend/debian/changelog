@@ -1,4 +1,17 @@
-wwmap-backend (0.0.18) UNRELEASED; urgency=medium
+wwmap-backend (0.0.19) unstable; urgency=medium
+
+  * #76 Image and schema gallery
+  * #82 Save use last and first name and login
+  * #83 Upload GPX file for river
+  * #86 Store and display referer sites
+  * #87 Author field added to report. Parse author of report for tlib.ru
+  * #88 Refactoring: url mapping in separate handlers, not in main
+  * #90 Transliteration fix
+  * #95 Block image upload tabs for new not saved spots
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Fri, 31 Aug 2018 18:01:44 +0300
+
+wwmap-backend (0.0.18) unstable; urgency=medium
 
   * #71 Add and remove rivers and spots, editor improvements
   * #71 Permissions for editor
