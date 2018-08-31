@@ -1,3 +1,13 @@
+wwmap-frontend (0.0.16) unstable; urgency=medium
+
+  * #72 Favicon added to editor site
+  * #76 Image and schema gallery in editor
+  * #79 Load vue.js components from separate files
+  * #86 Show map referer sites list
+  * #95 Block image upload tabs for new unsaved spots
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Fri, 31 Aug 2018 18:17:00 +0300
+
 wwmap-frontend (0.0.15) unstable; urgency=medium
 
   * js warnings fix

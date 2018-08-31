@@ -1,3 +1,11 @@
+wwmap-cron (0.0.6) unstable; urgency=medium
+
+  * #76 Image type added (image or schema)
+  * #86 Clean old referer sites info
+  * #87 Author field added to report. Parse author of report for tlib.ru
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Fri, 31 Aug 2018 18:14:44 +0300
+
 wwmap-cron (0.0.5) unstable; urgency=medium
 
   * Fix #73 backup new tables

@@ -1,3 +1,11 @@
+wwmap-db (0.0.9) unstable; urgency=medium
+
+  * #76 Image and schema gallery
+  * #86 Store and display referer sites
+  * #87 Author field added to report. Parse author of report for tlib.ru
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Fri, 31 Aug 2018 18:11:42 +0300
+
 wwmap-db (0.0.8) unstable; urgency=medium
 
   * #71 Added more fields to white_water_rapid
