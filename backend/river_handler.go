@@ -8,6 +8,7 @@ import (
 	. "github.com/and-hom/wwmap/lib/http"
 	"github.com/and-hom/wwmap/lib/dao"
 	"strings"
+	"github.com/gorilla/mux"
 )
 
 type RiverHandler struct {
@@ -15,10 +16,14 @@ type RiverHandler struct {
 	resourceBase string
 }
 
+func (this *RiverHandler) Init(r *mux.Router) {
+	this.Register(r, "/nearest-rivers", HandlerFunctions{get: this.GetNearestRivers})
+	this.Register(r, "/visible-rivers", HandlerFunctions{get: this.GetVisibleRivers})
+}
+
 const MAX_REPORTS_PER_SOURCE = 5
 
 func (this *RiverHandler) GetNearestRivers(w http.ResponseWriter, r *http.Request) {
-	CorsHeaders(w, GET)
 	lat_s := r.FormValue("lat")
 	lat, err := strconv.ParseFloat(lat_s, 64)
 	if err != nil {
@@ -55,8 +60,6 @@ type RiverWithReports struct {
 }
 
 func (this *RiverHandler) GetVisibleRivers(w http.ResponseWriter, req *http.Request) {
-	CorsHeaders(w, GET)
-
 	bbox, err := this.bboxFormValue(w, req)
 	if err != nil {
 		return

@@ -22,6 +22,24 @@ type GeoHierarchyHandler struct {
 	regions map[int64]dao.Region
 }
 
+func (this *GeoHierarchyHandler) Init(r *mux.Router) {
+	this.Register(r, "/country", HandlerFunctions{get: this.ListCountries, })
+	this.Register(r, "/country/{countryId}/region", HandlerFunctions{get:this.ListRegions})
+	this.Register(r, "/country/{countryId}/region/{regionId}/river", HandlerFunctions{get:this.ListRegionRivers})
+	this.Register(r, "/country/{countryId}/river", HandlerFunctions{get:this.ListCountryRivers})
+
+	this.Register(r, "/region", HandlerFunctions{get:this.ListAllRegions})
+	this.Register(r, "/region/{regionId}", HandlerFunctions{get:this.GetRegion})
+
+	this.Register(r, "/river/{riverId}", HandlerFunctions{get:this.GetRiver, put:this.SaveRiver, post:this.SaveRiver, delete:this.RemoveRiver})
+	this.Register(r, "/river", HandlerFunctions{get:this.FilterRivers})
+	this.Register(r, "/river/{riverId}/reports", HandlerFunctions{get:this.ListRiverReports})
+	this.Register(r, "/river/{riverId}/spots", HandlerFunctions{get:this.ListSpots})
+	this.Register(r, "/river/{riverId}/gpx", HandlerFunctions{post:this.UploadGpx, put:this.UploadGpx})
+
+	this.Register(r, "/spot/{spotId}", HandlerFunctions{get:this.GetSpot, post:this.SaveSpot, put:this.SaveSpot, delete:this.RemoveSpot})
+}
+
 type RiverDto struct {
 	Id      int64 `json:"id"`
 	Title   string `json:"title"`
@@ -50,8 +68,6 @@ func (this *GeoHierarchyHandler) getRegion(id int64) dao.Region {
 }
 
 func (this *GeoHierarchyHandler) ListCountries(w http.ResponseWriter, r *http.Request) {
-	CorsHeaders(w, GET, OPTIONS, POST, DELETE)
-
 	countries, err := this.countryDao.List()
 	if err != nil {
 		OnError500(w, err, "Can not list countries")
@@ -61,8 +77,6 @@ func (this *GeoHierarchyHandler) ListCountries(w http.ResponseWriter, r *http.Re
 }
 
 func (this *GeoHierarchyHandler) ListRegions(w http.ResponseWriter, r *http.Request) {
-	CorsHeaders(w, GET, OPTIONS, POST, DELETE)
-
 	pathParams := mux.Vars(r)
 	countryId, err := strconv.ParseInt(pathParams["countryId"], 10, 64)
 	if err != nil {
@@ -79,8 +93,6 @@ func (this *GeoHierarchyHandler) ListRegions(w http.ResponseWriter, r *http.Requ
 }
 
 func (this *GeoHierarchyHandler) ListAllRegions(w http.ResponseWriter, r *http.Request) {
-	CorsHeaders(w, GET, OPTIONS, POST, DELETE)
-
 	regions, err := this.regionDao.ListAllWithCountry()
 	if err != nil {
 		OnError500(w, err, "Can not list regions")
@@ -90,8 +102,6 @@ func (this *GeoHierarchyHandler) ListAllRegions(w http.ResponseWriter, r *http.R
 }
 
 func (this *GeoHierarchyHandler) GetRegion(w http.ResponseWriter, r *http.Request) {
-	CorsHeaders(w, GET, OPTIONS, POST, DELETE)
-
 	pathParams := mux.Vars(r)
 	riverId, err := strconv.ParseInt(pathParams["regionId"], 10, 64)
 	if err != nil {
@@ -112,8 +122,6 @@ func (this *GeoHierarchyHandler) writeRegion(regionId int64, w http.ResponseWrit
 }
 
 func (this *GeoHierarchyHandler) ListCountryRivers(w http.ResponseWriter, r *http.Request) {
-	CorsHeaders(w, GET, OPTIONS, POST, DELETE)
-
 	pathParams := mux.Vars(r)
 	countryId, err := strconv.ParseInt(pathParams["countryId"], 10, 64)
 	if err != nil {
@@ -130,8 +138,6 @@ func (this *GeoHierarchyHandler) ListCountryRivers(w http.ResponseWriter, r *htt
 }
 
 func (this *GeoHierarchyHandler) ListRegionRivers(w http.ResponseWriter, r *http.Request) {
-	CorsHeaders(w, GET, OPTIONS, POST, DELETE)
-
 	pathParams := mux.Vars(r)
 	regionId, err := strconv.ParseInt(pathParams["regionId"], 10, 64)
 	if err != nil {
@@ -150,8 +156,6 @@ func (this *GeoHierarchyHandler) ListRegionRivers(w http.ResponseWriter, r *http
 const DEFAULT_REPORT_GROUP_LIMIT int = 20
 
 func (this *GeoHierarchyHandler) ListRiverReports(w http.ResponseWriter, r *http.Request) {
-	CorsHeaders(w, GET, OPTIONS, POST, DELETE)
-
 	pathParams := mux.Vars(r)
 	riverId, err := strconv.ParseInt(pathParams["riverId"], 10, 64)
 	if err != nil {
@@ -179,8 +183,6 @@ func (this *GeoHierarchyHandler) ListRiverReports(w http.ResponseWriter, r *http
 }
 
 func (this *GeoHierarchyHandler) ListSpots(w http.ResponseWriter, r *http.Request) {
-	CorsHeaders(w, GET, OPTIONS, POST, DELETE)
-
 	pathParams := mux.Vars(r)
 	riverId, err := strconv.ParseInt(pathParams["riverId"], 10, 64)
 	if err != nil {
@@ -197,8 +199,6 @@ func (this *GeoHierarchyHandler) ListSpots(w http.ResponseWriter, r *http.Reques
 }
 
 func (this *GeoHierarchyHandler) UploadGpx(w http.ResponseWriter, req *http.Request) {
-	CorsHeaders(w, POST, PUT)
-
 	pathParams := mux.Vars(req)
 	riverId, err := strconv.ParseInt(pathParams["riverId"], 10, 64)
 	if err != nil {
@@ -232,7 +232,7 @@ func (this *GeoHierarchyHandler) UploadGpx(w http.ResponseWriter, req *http.Requ
 		spot.ShortDesc = wpt.Desc
 		spot.Category = model.SportCategory{Category:model.UNDEFINED_CATEGORY}
 		_, err = this.whiteWaterDao.InsertWhiteWaterPointFull(spot)
-		if err!=nil {
+		if err != nil {
 			OnError500(w, err, "Can not insert spot")
 			return
 		}
@@ -240,8 +240,6 @@ func (this *GeoHierarchyHandler) UploadGpx(w http.ResponseWriter, req *http.Requ
 }
 
 func (this *GeoHierarchyHandler) GetRiver(w http.ResponseWriter, r *http.Request) {
-	CorsHeaders(w, GET, OPTIONS, POST, DELETE)
-
 	pathParams := mux.Vars(r)
 	riverId, err := strconv.ParseInt(pathParams["riverId"], 10, 64)
 	if err != nil {
@@ -253,7 +251,6 @@ func (this *GeoHierarchyHandler) GetRiver(w http.ResponseWriter, r *http.Request
 }
 
 func (this *GeoHierarchyHandler) SaveRiver(w http.ResponseWriter, r *http.Request) {
-	CorsHeaders(w, GET, OPTIONS, POST, DELETE)
 	if !this.CheckRoleAllowedAndMakeResponse(w, r, dao.ADMIN) {
 		return
 	}
@@ -295,7 +292,6 @@ func (this *GeoHierarchyHandler) SaveRiver(w http.ResponseWriter, r *http.Reques
 }
 
 func (this *GeoHierarchyHandler) RemoveRiver(w http.ResponseWriter, r *http.Request) {
-	CorsHeaders(w, GET, OPTIONS, POST, DELETE)
 	if !this.CheckRoleAllowedAndMakeResponse(w, r, dao.ADMIN) {
 		return
 	}
@@ -337,8 +333,6 @@ func (this *GeoHierarchyHandler) writeRiver(riverId int64, w http.ResponseWriter
 }
 
 func (this *GeoHierarchyHandler) FilterRivers(w http.ResponseWriter, r *http.Request) {
-	CorsHeaders(w, GET, OPTIONS)
-
 	limit := 20
 
 	query := util.FirstOr(r.URL.Query()["q"], "")
@@ -363,8 +357,6 @@ func (this *GeoHierarchyHandler) FilterRivers(w http.ResponseWriter, r *http.Req
 }
 
 func (this *GeoHierarchyHandler) GetSpot(w http.ResponseWriter, r *http.Request) {
-	CorsHeaders(w, GET, OPTIONS, POST, DELETE)
-
 	pathParams := mux.Vars(r)
 	spotId, err := strconv.ParseInt(pathParams["spotId"], 10, 64)
 	if err != nil {
@@ -376,7 +368,6 @@ func (this *GeoHierarchyHandler) GetSpot(w http.ResponseWriter, r *http.Request)
 }
 
 func (this *GeoHierarchyHandler) SaveSpot(w http.ResponseWriter, r *http.Request) {
-	CorsHeaders(w, GET, OPTIONS, POST, DELETE)
 	if !this.CheckRoleAllowedAndMakeResponse(w, r, dao.ADMIN) {
 		return
 	}
@@ -414,7 +405,6 @@ func (this *GeoHierarchyHandler) SaveSpot(w http.ResponseWriter, r *http.Request
 }
 
 func (this *GeoHierarchyHandler) RemoveSpot(w http.ResponseWriter, r *http.Request) {
-	CorsHeaders(w, GET, OPTIONS, POST, DELETE)
 	if !this.CheckRoleAllowedAndMakeResponse(w, r, dao.ADMIN) {
 		return
 	}

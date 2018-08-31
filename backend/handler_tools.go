@@ -41,8 +41,8 @@ func (this *Handler) JsonAnswer(w http.ResponseWriter, f interface{}) {
 	w.Write(bytes)
 }
 
-func (this *Handler) CorsGetOptionsStub(w http.ResponseWriter, r *http.Request) {
-	CorsHeaders(w, POST, GET, OPTIONS, PUT, DELETE)
+func (this *Handler) CorOptionsStub(w http.ResponseWriter, r *http.Request, corsMethods []string) {
+	CorsHeaders(w, corsMethods...)
 	// for cors only
 }
 

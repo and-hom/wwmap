@@ -6,6 +6,7 @@ import (
 	"github.com/and-hom/wwmap/lib/dao"
 	"encoding/json"
 	"github.com/and-hom/wwmap/backend/passport"
+	"github.com/gorilla/mux"
 )
 
 type UserInfoHandler struct {
@@ -18,8 +19,12 @@ type UserInfoDto struct {
 	Roles     []dao.Role `json:"roles"`
 }
 
+func (this *UserInfoHandler) Init(r *mux.Router) {
+	this.Register(r, "/user-info", HandlerFunctions{get: this.GetUserInfo})
+	this.Register(r, "/auth-test", HandlerFunctions{get: this.TestAuth})
+}
+
 func (this *UserInfoHandler) GetUserInfo(w http.ResponseWriter, r *http.Request) {
-	CorsHeaders(w, GET, OPTIONS)
 	err := this.CreateMissingUser(r)
 	if err != nil {
 		onPassportErr(err, w, "Can not create user")

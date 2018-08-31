@@ -10,6 +10,7 @@ import (
 	. "github.com/and-hom/wwmap/lib/http"
 	"math"
 	"strconv"
+	"github.com/gorilla/mux"
 )
 
 const PREVIEWS_COUNT int = 20
@@ -20,8 +21,12 @@ type WhiteWaterHandler struct {
 	clusterMaker ClusterMaker
 }
 
+func (this *WhiteWaterHandler) Init(r *mux.Router) {
+	this.Register(r, "/ymaps-tile-ww", HandlerFunctions{get:this.TileWhiteWaterHandler})
+	this.Register(r, "/whitewater", HandlerFunctions{post: this.InsertWhiteWaterPoints, put:this.InsertWhiteWaterPoints})
+}
+
 func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req *http.Request) {
-	CorsHeaders(w, GET, OPTIONS)
 	this.collectReferer(req)
 
 	callback, bbox, zoom, err := this.tileParamsZ(w, req)
@@ -56,7 +61,6 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 }
 
 func (this *WhiteWaterHandler) InsertWhiteWaterPoints(w http.ResponseWriter, r *http.Request) {
-	CorsHeaders(w, POST, GET, OPTIONS, PUT, DELETE)
 	found, err := this.CheckRoleAllowed(r, ADMIN)
 	if err != nil {
 		onPassportErr(err, w, "Can not do request to Yandex Passport")

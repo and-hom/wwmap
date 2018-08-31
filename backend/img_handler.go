@@ -36,9 +36,14 @@ type ImgHandler struct {
 	imgUrlPreviewBase string
 };
 
-func (this *ImgHandler) GetImages(w http.ResponseWriter, req *http.Request) {
-	CorsHeaders(w, GET, POST, PUT, DELETE)
+func (this *ImgHandler) Init(r *mux.Router) {
+	this.Register(r, "/spot/{spotId}/img", HandlerFunctions{get: this.GetImages, post:this.Upload, put:this.Upload})
+	this.Register(r, "/spot/{spotId}/img/{imgId}", HandlerFunctions{get:this.GetImage, delete: this.Delete})
+	this.Register(r, "/spot/{spotId}/img/{imgId}/preview", HandlerFunctions{get: this.GetImagePreview})
+	this.Register(r, "/spot/{spotId}/img/{imgId}/enabled", HandlerFunctions{post:this.SetEnabled})
+}
 
+func (this *ImgHandler) GetImages(w http.ResponseWriter, req *http.Request) {
 	pathParams := mux.Vars(req)
 	spotId, err := strconv.ParseInt(pathParams["spotId"], 10, 64)
 	if err != nil {
@@ -50,7 +55,6 @@ func (this *ImgHandler) GetImages(w http.ResponseWriter, req *http.Request) {
 }
 
 func (this *ImgHandler) GetImage(w http.ResponseWriter, req *http.Request) {
-	CorsHeaders(w, GET, POST, PUT, DELETE)
 	pathParams := mux.Vars(req)
 	r, err := this.imgStorage.Read(pathParams["imgId"])
 	if err != nil {
@@ -62,7 +66,6 @@ func (this *ImgHandler) GetImage(w http.ResponseWriter, req *http.Request) {
 }
 
 func (this *ImgHandler) GetImagePreview(w http.ResponseWriter, req *http.Request) {
-	CorsHeaders(w, GET, POST, PUT, DELETE)
 	pathParams := mux.Vars(req)
 	r, err := this.previewImgStorage.Read(pathParams["imgId"])
 	if err != nil {
@@ -74,8 +77,6 @@ func (this *ImgHandler) GetImagePreview(w http.ResponseWriter, req *http.Request
 }
 
 func (this *ImgHandler) Upload(w http.ResponseWriter, req *http.Request) {
-	CorsHeaders(w, GET, POST, PUT, DELETE)
-
 	pathParams := mux.Vars(req)
 	spotId, err := strconv.ParseInt(pathParams["spotId"], 10, 64)
 	if err != nil {
@@ -140,8 +141,6 @@ func previewRect(r image.Rectangle) image.Rectangle {
 }
 
 func (this *ImgHandler) Delete(w http.ResponseWriter, req *http.Request) {
-	CorsHeaders(w, GET, POST, PUT, DELETE)
-
 	pathParams := mux.Vars(req)
 	spotId, err := strconv.ParseInt(pathParams["spotId"], 10, 64)
 	if err != nil {
@@ -173,10 +172,7 @@ func (this *ImgHandler) Delete(w http.ResponseWriter, req *http.Request) {
 	this.listImagesForSpot(w, spotId, getImgType(req))
 }
 
-
 func (this *ImgHandler) SetEnabled(w http.ResponseWriter, req *http.Request) {
-	CorsHeaders(w, GET, POST, PUT, DELETE)
-
 	pathParams := mux.Vars(req)
 	spotId, err := strconv.ParseInt(pathParams["spotId"], 10, 64)
 	if err != nil {

@@ -14,8 +14,11 @@ import (
 
 type GpxHandler struct{ Handler };
 
+func (this *GpxHandler) Init(r *mux.Router) {
+	this.Register(r, "/gpx/{id}", HandlerFunctions{get: this.DownloadGpx})
+}
+
 func (this *GpxHandler) DownloadGpx(w http.ResponseWriter, req *http.Request) {
-	CorsHeaders(w, GET)
 	pathParams := mux.Vars(req)
 
 	id, err := strconv.ParseInt(pathParams["id"], 10, 64)
