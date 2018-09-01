@@ -9,11 +9,12 @@
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/bootstrap.min.css">
 
-    <script type="text/javascript" src="js/bootstrap.min.js"></script>
     <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script type="text/javascript" src="js/bootstrap.min.js"></script>
     <script type="text/javascript" src="js/api.js"></script>
     <script type="text/javascript" src="js/auth.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script type="text/javascript" src="js/showdown.min.js"></script>
 </head>
 <body>
 
@@ -42,6 +43,14 @@
                 </ul>
             </div>
         </div>
+        <div class="row">
+            <div class="col-12" style="padding-top:30px;">
+                <a href="#integration-guide" data-toggle="collapse"><h2>Как встоить карту в свой сайт</h2></a>
+
+                <div id="integration-guide" class="collapse" v-html="integrationGuide">
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -52,6 +61,20 @@
 
     var app = new Vue({
         el: '#ref-sites',
+        computed: {
+                integrationGuide:function () {
+                    var converter = new showdown.Converter();
+                    var xhr = sendRequest('INTEGRATION_ru.md', 'GET', false)
+                    if (xhr && xhr.status == 200) {
+                        return converter.makeHtml(xhr.response);
+                    }
+                    var xhr = sendRequest('../INTEGRATION_ru.md', 'GET', false)
+                    if (xhr && xhr.status == 200) {
+                        return converter.makeHtml(xhr.response);
+                    }
+                    return '<span style="color:red">Can not load</span>'
+                 },
+        },
         data: {
           refs: getRefs(),
         }
