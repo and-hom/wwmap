@@ -16,7 +16,7 @@
                 <button type="button" class="btn btn-secondary" v-if="editMode" v-on:click="editMode=!editMode; reload()">Отменить</button>
             </div>
             <div class="btn-group">
-                <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#del-spot">Удалить
+                <button type="button" class="btn btn-danger" v-if="spot.id>0" data-toggle="modal" data-target="#del-spot">Удалить
                 </button>
             </div>
         </div>
