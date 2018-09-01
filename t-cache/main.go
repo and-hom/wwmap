@@ -276,7 +276,7 @@ func (this *DataHandler) tile(w http.ResponseWriter, req *http.Request) {
 func (this *DataHandler) cachePath(pos Pos) string {
 	return fmt.Sprintf("%s/%s/%d/%d/%d.png", this.baseDir, pos.t, pos.z, pos.x, pos.y)
 }
-
+h oru
 func typeCdnMapping(configuration config.TileCache) map[string]Mapping {
 	typeCdnMapping := make(map[string]Mapping)
 	funcMap := template.FuncMap{

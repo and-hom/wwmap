@@ -12,6 +12,7 @@ override_dh_auto_install:
 	install -D -m 0644 img/*.png $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/img/
 	install -D -m 0644 css/* $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/css/
 	install -D -m 0644 js/* $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/js/
+	install -D -m 0644 robots.txt $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/
 
 	install -D -m 0644 nginx.conf $$(pwd)/debian/wwmap-frontend/etc/nginx/sites-available/wwmap-frontend
 
