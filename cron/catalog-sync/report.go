@@ -5,36 +5,34 @@ import (
 	"strings"
 	log "github.com/Sirupsen/logrus"
 	"io"
-	"github.com/and-hom/wwmap/cron/catalog-sync/huskytm"
 	"time"
 	"github.com/and-hom/wwmap/cron/catalog-sync/common"
 	"html/template"
 	"github.com/and-hom/wwmap/lib/mail"
-	"github.com/and-hom/wwmap/cron/catalog-sync/tlib"
+	"github.com/and-hom/wwmap/cron/catalog-sync/bindata"
 )
 
-func (this *App) DoSyncReports() {
-	huskytmReportProvider, err := huskytm.GetReportProvider(this.Configuration.Login, this.Configuration.Password)
-	if err != nil {
-		this.Fatalf(err, "Can not connect to source")
-	}
-	defer huskytmReportProvider.Close()
-	this.doSyncReports(huskytm.SOURCE, &huskytmReportProvider)
+const COMMON_TIME_FORMAT string = "2006-01-02T15:04:05"
 
-	tlibReportProvider, err := tlib.GetReportProvider()
-	if err != nil {
-		this.Fatalf(err, "Can not connect to source")
+func (this *App) DoSyncReports() {
+	for _, rpf := range this.reportProviders {
+		err := rpf.Do(func(rp common.ReportProvider) error {
+			this.doSyncReports(&rp)
+			return nil
+		})
+		if err != nil {
+			this.Fatalf(err, "Can not access to source")
+		}
 	}
-	defer tlibReportProvider.Close()
-	this.doSyncReports(tlib.SOURCE, &tlibReportProvider)
 }
 
-func (this *App) doSyncReports(source string, reportProvider *common.ReportProvider) {
+func (this *App) doSyncReports(reportProvider *common.ReportProvider) {
+	source := (*reportProvider).SourceId()
 	lastId, err := this.VoyageReportDao.GetLastId(source)
 	if err != nil {
 		this.Fatalf(err, "Can not connect get last report id")
 	}
-	log.Infof("Get and store reports from %s since %s", source, lastId.(time.Time).Format(huskytm.TIME_FORMAT))
+	log.Infof("Get and store reports from %s since %s", source, lastId.(time.Time).Format(COMMON_TIME_FORMAT))
 
 	reports, next, err := (*reportProvider).ReportsSince(lastId.(time.Time))
 	if err != nil {
@@ -170,12 +168,7 @@ func (this *App) Fatalf(err error, pattern string, args ...interface{}) {
 }
 
 func (this *App) Report(err error) {
-	templateData, err := emailTemplateBytes()
-	if err != nil {
-		log.Fatal("Can not load email template:\t", err)
-	}
-
-	tmpl, err := template.New("report-email").Parse(string(templateData))
+	tmpl, err := template.New("report-email").Parse(string(bindata.MustAsset("email-template")))
 	if err != nil {
 		log.Fatal("Can not compile email template:\t", err)
 	}

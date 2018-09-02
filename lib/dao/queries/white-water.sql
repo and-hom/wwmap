@@ -48,7 +48,22 @@ SELECT
     link,
     river_id,
     river.title as river_title,
-    CASE WHEN region.fake THEN NULL ELSE region.title END AS region_title, country.title as country_title
+
+    lw_category,
+    lw_description,
+    mw_category,
+    mw_description,
+    hw_category,
+    hw_description,
+
+    orient,
+    approach,
+    safety,
+
+    preview,
+
+    CASE WHEN region.fake THEN NULL ELSE region.title END AS region_title,
+    country.title as country_title
 FROM white_water_rapid 
 INNER JOIN river ON white_water_rapid.river_id=river.id
 INNER JOIN region ON river.region_id=region.id

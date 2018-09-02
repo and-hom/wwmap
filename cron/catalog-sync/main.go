@@ -6,6 +6,7 @@ import (
 	"github.com/and-hom/wwmap/lib/config"
 	"github.com/and-hom/wwmap/lib/dao"
 	"github.com/and-hom/wwmap/cron/catalog-sync/common"
+	"github.com/and-hom/wwmap/cron/catalog-sync/tlib"
 )
 
 type App struct {
@@ -19,6 +20,7 @@ type App struct {
 
 	stat             *ImportExportReport
 	catalogConnector common.CatalogConnector
+	reportProviders  []common.WithReportProvider
 }
 
 func CreateApp() App {
@@ -33,15 +35,20 @@ func CreateApp() App {
 		Configuration:configuration.Sync,
 		Notifications:configuration.Notifications,
 		stat: &ImportExportReport{},
+		reportProviders:[]common.WithReportProvider{
+			common.WithReportProvider(func() (common.ReportProvider, error) {
+				return huskytm.GetReportProvider(configuration.Sync.Login, configuration.Sync.Password)
+			}),
+			common.WithReportProvider(tlib.GetReportProvider),
+		},
 	}
 }
 
 func main() {
 	log.Infof("Starting wwmap")
 	app := CreateApp()
-	app.DoSyncReports()
-	//app.DoReadCatalog()
-	//app.DoWriteCatalog()
+	//app.DoSyncReports()
+	app.DoWriteCatalog()
 }
 
 func (this App) getCachedCatalogConnector() common.CatalogConnector {

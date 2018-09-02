@@ -89,6 +89,10 @@ type HuskytmReportProvider struct {
 	imgExprs               []ImgSearcher
 }
 
+func (this *HuskytmReportProvider) SourceId() string {
+	return SOURCE
+}
+
 func (this *HuskytmReportProvider) Close() error {
 	return nil
 }

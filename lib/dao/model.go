@@ -203,7 +203,7 @@ type WhiteWaterPointWithRiverTitle struct {
 }
 
 type WhiteWaterPointWithPath struct {
-	WhiteWaterPoint
+	WhiteWaterPointFull
 	Path []string
 }
 

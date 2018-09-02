@@ -4,11 +4,12 @@ import (
 	"github.com/and-hom/wwmap/lib/dao"
 	wp "github.com/and-hom/go-wordpress"
 	"github.com/and-hom/wwmap/cron/catalog-sync/common"
+	"github.com/and-hom/wwmap/cron/catalog-sync/bindata"
 	"fmt"
 	"net/http"
+	"html/template"
 	log "github.com/Sirupsen/logrus"
-	"strconv"
-	"strings"
+	"bytes"
 )
 
 const ROOT_PAGE = 1739
@@ -26,43 +27,23 @@ func GetCatalogConnector(login, password string) (common.CatalogConnector, error
 	if r.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("Connection failed. Code: %d Body: %s", r.StatusCode, string(b))
 	}
+	spotPageTemplate, e := template.New("spot").Parse(string(bindata.MustAsset("spot-page-template.htm")))
+	if e != nil {
+		return nil, fmt.Errorf("Can not compile template: %s", e.Error())
+	}
 	return &HuskytmCatalogConnector{
 		client:client,
 		me:u.ID,
 		pageIdsCache:make(map[string]int),
+		spotPageTemplate: spotPageTemplate,
 	}, nil
 }
 
-type Position struct {
-	Address string `json:"address,omitempty"`
-	Lat     float64 `json:"lat,omitempty"`
-	Lng     float64 `json:"lng,omitempty"`
-}
-
-type Meta struct {
-	ShortDesc           string `json:"short_desc,omitempty"`
-	LowWaterCategory    string `json:"l_w_category,omitempty"`
-	MediumWaterCategory string `json:"m_w_category,omitempty"`
-	HighWaterCategory   string `json:"h_w_category,omitempty"`
-	//Latitude            float64 `json:"latitude,omitempty"`
-	//Longitude           float64 `json:"longitude,omitempty"`
-	PhotoIds            string `json:"photo_ids,omitempty"`
-	Position            Position`json:"position,omitempty"`
-}
-
-type StoreMetaWrapper struct {
-	Fields Meta `json:"fields,omitempty"`
-}
-
-// Fucking ACF Rest api plugin has different fields name for store and get custom fields.
-type ReadMetaWrapper struct {
-	Fields Meta `json:"acf,omitempty"`
-}
-
 type HuskytmCatalogConnector struct {
-	client       *wp.Client
-	me           int
-	pageIdsCache map[string]int
+	client           *wp.Client
+	me               int
+	pageIdsCache     map[string]int
+	spotPageTemplate *template.Template
 }
 
 func (this *HuskytmCatalogConnector) Close() error {
@@ -99,63 +80,39 @@ func (this *HuskytmCatalogConnector) Exists(key []string) (bool, error) {
 	return true, nil
 }
 
-func (this *HuskytmCatalogConnector) Create(wwPoint dao.WhiteWaterPoint, parent int, imgs []dao.Img) error {
+func (this *HuskytmCatalogConnector) Create(wwPoint dao.WhiteWaterPointFull, parent int, _ []dao.Img) error {
+	htmlBuf := bytes.Buffer{}
+	err := this.spotPageTemplate.Execute(&htmlBuf, map[string]interface{}{
+		"spot": wwPoint,
+	})
+	if err!=nil {
+		log.Errorf("Can not process template", err)
+		return err
+	}
 	page := wp.Page{
-		Title:wp.Title{Raw:wwPoint.Title},
-		Author:this.me,
-		Parent:parent,
-		Template:"page-templates/page_ww_passport.php",
-		Status:"publish",
+		Title:  wp.Title{Raw:wwPoint.Title},
+		Author:        this.me,
+		Parent:        parent,
+		Status:        "publish",
+		Content:wp.Content{Raw:htmlBuf.String()},
 	}
-	if len(imgs) > 0 {
-		imgId, err := strconv.ParseInt(imgs[0].RemoteId, 10, 32)
-		if err != nil {
-			log.Errorf("Can not parse img remote id %s", imgs[0].RemoteId)
-			return err
-		}
-		page.FeaturedMedia = int(imgId)
-	}
-	fmt.Println("page is ", page)
-	created, r, b, err := this.client.Pages().Create(&page)
+	fmt.Printf(page.Content.Raw)
+
+	_, r, b, err := this.client.Pages().Create(&page)
 	if err != nil {
 		log.Errorf("Connection failed. Code: %d Body: %s", r.StatusCode, string(b))
 		return err
 	}
-	metaFields := StoreMetaWrapper{
-		Fields:Meta{
-			ShortDesc:wwPoint.ShortDesc,
-			Position: Position{
-				Address:"",
-				Lat:wwPoint.Point.Lat,
-				Lng:wwPoint.Point.Lon,
-			},
-			MediumWaterCategory:wwPoint.Category.String(),
-			PhotoIds:"",
-		},
-	}
 
-	ids := make([]string, len(imgs))
-	for i := 0; i < len(imgs); i++ {
-		ids[i] = imgs[i].RemoteId
-	}
-	metaFields.Fields.PhotoIds = strings.Join(ids, ",")
-	resp, body, err := this.client.CustomPostJson(fmt.Sprintf("%s/pages/%d", CUSTOM_FIELDS_API_BASE, created.ID), metaFields)
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("Can not store meta fields. Code: %d Body: %s", resp.StatusCode, string(body))
-	}
-	if err != nil {
-		log.Errorf("Can not store meta fields. Code: %d Body: %s", resp.StatusCode, string(body))
-		return err
-	}
 	return nil
 }
 
 func (this *HuskytmCatalogConnector) CreatePage(title string, parent int) (int, error) {
 	p, r, b, err := this.client.Pages().Create(&wp.Page{
-		Title:wp.Title{Raw:title},
-		Author:this.me,
-		Parent:parent,
-		Status:"publish",
+		Title:        wp.Title{Raw:title},
+		Author:        this.me,
+		Parent:        parent,
+		Status:        "publish",
 	})
 	if err != nil {
 		log.Errorf("Connection failed. Code: %d Body: %s", r.StatusCode, string(b))

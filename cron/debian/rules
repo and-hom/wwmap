@@ -10,7 +10,11 @@ build-notifier:
 	cd notifier; $(HOME)/.go/bin/go-bindata email-template; GOPATH="$(HOME)/.go" go build
 
 build-catalog-sync:
-	cd catalog-sync; $(HOME)/.go/bin/go-bindata email-template; GOPATH="$(HOME)/.go" go build
+	TEMPLATE_FILES='email-template spot-page-template.htm'
+	cd catalog-sync; \
+	mkdir -p bindata; \
+	$(HOME)/.go/bin/go-bindata -pkg bindata -o bindata/bindata.go $(TEMPLATE_FILES); \
+	GOPATH="$(HOME)/.go" go build
 
 build-db-clean:
 	cd db-clean; GOPATH="$(HOME)/.go" go build

@@ -47,6 +47,10 @@ type TlibReportsProvider struct {
 	client http.Client
 }
 
+func (this *TlibReportsProvider) SourceId() string {
+	return SOURCE
+}
+
 type ViewState struct {
 	ViewState       string
 	EventValidation string

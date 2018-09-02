@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"github.com/and-hom/wwmap/cron/catalog-sync/huskytm"
 	log "github.com/Sirupsen/logrus"
+	"github.com/and-hom/wwmap/cron/catalog-sync/common"
 )
 
 const MAX_ATTACHED_IMGS = 300
@@ -12,13 +13,23 @@ const MAX_ATTACHED_IMGS = 300
 func (this *App) DoWriteCatalog() {
 	log.Info("Create missing ww passports")
 	catalogConnector := this.getCachedCatalogConnector()
+	this.doWriteCatalog(catalogConnector)
+}
 
+func min(x, y int) int {
+	if x < y {
+		return x
+	}
+	return y
+}
+
+func (this *App) doWriteCatalog(catalogConnector common.CatalogConnector) {
 	wwpts, err := this.WhiteWaterDao.ListWithPath()
 	if err != nil {
 		this.Fatalf(err, "Can not connect list ww points")
 	}
 
-	for i := 0; i < len(wwpts); i++ {
+	for i := 0; i < min(len(wwpts), 1); i++ {
 		point := &wwpts[i]
 		log.Debug("Write point ", point.Title)
 		exists, err := catalogConnector.Exists(point.Path)
@@ -56,7 +67,7 @@ func (this *App) createCatalogEntry(p *dao.WhiteWaterPointWithPath, imgId int) {
 	if err != nil {
 		this.Fatalf(err, "Can not get attached images for %d", p.Id)
 	}
-	err = catalogConnector.Create(p.WhiteWaterPoint, parent_id, imgs)
+	err = catalogConnector.Create(p.WhiteWaterPointFull, parent_id, imgs)
 	if err != nil {
 		this.Fatalf(err, "Can not create passport")
 	}

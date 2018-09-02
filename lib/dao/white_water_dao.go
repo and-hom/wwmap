@@ -48,7 +48,7 @@ type whiteWaterStorage struct {
 }
 
 func (this whiteWaterStorage) ListWithPath() ([]WhiteWaterPointWithPath, error) {
-	return this.listWithPath("");
+	return this.listWithPath(this.listWithPathQuery);
 }
 
 func (this whiteWaterStorage) ListByBbox(bbox geo.Bbox) ([]WhiteWaterPointWithRiverTitle, error) {
@@ -76,62 +76,7 @@ func (this whiteWaterStorage) Find(id int64) (WhiteWaterPointWithRiverTitle, err
 
 func (this whiteWaterStorage) FindFull(id int64) (WhiteWaterPointFull, error) {
 	result, found, err := this.doFindAndReturn(this.byIdFullQuery, func(rows *sql.Rows) (interface{}, error) {
-		wwp := WhiteWaterPointFull{}
-
-		pointString := ""
-		categoryString := ""
-		lwCategoryString := ""
-		mwCategoryString := ""
-		hwCategoryString := ""
-		lastAutoOrdering := pq.NullTime{}
-
-		err := rows.Scan(&wwp.Id, &wwp.Title, &pointString, &categoryString, &wwp.ShortDesc, &wwp.Link,
-			&wwp.River.Id, &wwp.River.Title,
-			&lwCategoryString, &wwp.LowWaterDescription, &mwCategoryString, &wwp.MediumWaterDescription, &hwCategoryString, &wwp.HighWaterDescription,
-			&wwp.Orient, &wwp.Approach, &wwp.Safety, &wwp.Preview,
-			&wwp.OrderIndex, &wwp.AutomaticOrdering, &lastAutoOrdering)
-
-		err = json.Unmarshal(categoryStrBytes(categoryString), &wwp.Category)
-		if err != nil {
-			log.Errorf("Can not parse category %s for white water object %d: %v", categoryString, id, err)
-			return WhiteWaterPoint{}, err
-		}
-
-		err = json.Unmarshal(categoryStrBytes(lwCategoryString), &wwp.LowWaterCategory)
-		if err != nil {
-			log.Errorf("Can not parse low water category %s for white water object %d: %v", lwCategoryString, id, err)
-			return WhiteWaterPoint{}, err
-		}
-
-		err = json.Unmarshal(categoryStrBytes(mwCategoryString), &wwp.MediumWaterCategory)
-		if err != nil {
-			log.Errorf("Can not parse medium water category %s for white water object %d: %v", mwCategoryString, id, err)
-			return WhiteWaterPoint{}, err
-		}
-
-		err = json.Unmarshal(categoryStrBytes(hwCategoryString), &wwp.HighWaterCategory)
-		if err != nil {
-			log.Errorf("Can not parse high water category %s for white water object %d: %v", hwCategoryString, id, err)
-			return WhiteWaterPoint{}, err
-		}
-
-		var pgPoint PgPoint
-		err = json.Unmarshal([]byte(pointString), &pgPoint)
-		if err != nil {
-			log.Errorf("Can not parse point %s for white water object %d: %v", pointString, id, err)
-			return WhiteWaterPoint{}, err
-		}
-		wwp.Point = pgPoint.Coordinates
-
-		wwp.RiverId = wwp.River.Id
-
-		if lastAutoOrdering.Valid {
-			wwp.LastAutomaticOrdering = lastAutoOrdering.Time
-		} else {
-			wwp.LastAutomaticOrdering = util.ZeroDateUTC()
-		}
-
-		return wwp, err
+		return scanWwPointFull(rows)
 	}, id)
 	if err != nil {
 		return WhiteWaterPointFull{}, err
@@ -222,20 +167,19 @@ func (this whiteWaterStorage) listWithPath(query string, vars ...interface{}) ([
 	result, err := this.doFindList(query,
 		func(rows *sql.Rows) (WhiteWaterPointWithPath, error) {
 
-			riverTitle := ""
 			regionTitle := sql.NullString{}
 			countryTitle := ""
 
-			wwPoint, err := scanWwPoint(rows, &riverTitle, &regionTitle, &countryTitle)
+			wwPoint, err := scanWwPointFull(rows, &regionTitle, &countryTitle)
 			if err != nil {
 				return WhiteWaterPointWithPath{}, err
 			}
 
 			path := []string{}
 			if regionTitle.String == "" {
-				path = []string{countryTitle, riverTitle, wwPoint.Title}
+				path = []string{countryTitle, wwPoint.River.Title, wwPoint.Title}
 			} else {
-				path = []string{countryTitle, regionTitle.String, riverTitle, wwPoint.Title}
+				path = []string{countryTitle, regionTitle.String, wwPoint.River.Title, wwPoint.Title}
 			}
 
 			whiteWaterPoint := WhiteWaterPointWithPath{
@@ -248,6 +192,71 @@ func (this whiteWaterStorage) listWithPath(query string, vars ...interface{}) ([
 		return []WhiteWaterPointWithPath{}, err
 	}
 	return result.([]WhiteWaterPointWithPath), nil
+}
+
+func scanWwPointFull(rows *sql.Rows, additionalVars ...interface{}) (WhiteWaterPointFull, error) {
+	wwp := WhiteWaterPointFull{}
+
+	pointString := ""
+	categoryString :=   ""
+	lwCategoryString := ""
+	mwCategoryString := ""
+	hwCategoryString := ""
+	lastAutoOrdering := pq.NullTime{}
+
+	fields := append([]interface{}{&wwp.Id, &wwp.Title, &pointString, &categoryString, &wwp.ShortDesc, &wwp.Link,
+		&wwp.River.Id, &wwp.River.Title,
+		&lwCategoryString, &wwp.LowWaterDescription, &mwCategoryString, &wwp.MediumWaterDescription, &hwCategoryString, &wwp.HighWaterDescription,
+		&wwp.Orient, &wwp.Approach, &wwp.Safety, &wwp.Preview,
+		&wwp.OrderIndex, &wwp.AutomaticOrdering, &lastAutoOrdering}, additionalVars...)
+
+	err := rows.Scan(fields...)
+	log.Error(err)
+	if err!=nil {
+		return WhiteWaterPointFull{}, err
+	}
+
+	err = json.Unmarshal(categoryStrBytes(categoryString), &wwp.Category)
+	if err != nil {
+		log.Errorf("Can not parse category %s for white water object %d: %v", categoryString, wwp.Id, err)
+		return WhiteWaterPointFull{}, err
+	}
+
+	err = json.Unmarshal(categoryStrBytes(lwCategoryString), &wwp.LowWaterCategory)
+	if err != nil {
+		log.Errorf("Can not parse low water category %s for white water object %d: %v", lwCategoryString, wwp.Id, err)
+		return WhiteWaterPointFull{}, err
+	}
+
+	err = json.Unmarshal(categoryStrBytes(mwCategoryString), &wwp.MediumWaterCategory)
+	if err != nil {
+		log.Errorf("Can not parse medium water category %s for white water object %d: %v", mwCategoryString, wwp.Id, err)
+		return WhiteWaterPointFull{}, err
+	}
+
+	err = json.Unmarshal(categoryStrBytes(hwCategoryString), &wwp.HighWaterCategory)
+	if err != nil {
+		log.Errorf("Can not parse high water category %s for white water object %d: %v", hwCategoryString, wwp.Id, err)
+		return WhiteWaterPointFull{}, err
+	}
+
+	var pgPoint PgPoint
+	err = json.Unmarshal([]byte(pointString), &pgPoint)
+	if err != nil {
+		log.Errorf("Can not parse point %s for white water object %d: %v", pointString, wwp.Id, err)
+		return WhiteWaterPointFull{}, err
+	}
+	wwp.Point = pgPoint.Coordinates
+
+	wwp.RiverId = wwp.River.Id
+
+	if lastAutoOrdering.Valid {
+		wwp.LastAutomaticOrdering = lastAutoOrdering.Time
+	} else {
+		wwp.LastAutomaticOrdering = util.ZeroDateUTC()
+	}
+
+	return wwp, err
 }
 
 func scanWwPoint(rows *sql.Rows, additionalVars ...interface{}) (WhiteWaterPoint, error) {
