@@ -1,2 +1,3 @@
 User-agent: *
 Allow: /map.htm
+sitemap: https://wwmap.ru/sitemap.xml
