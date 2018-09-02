@@ -38,7 +38,7 @@
 </head>
 <body>
 
-<div id="wwmap">
+<div id="vue-app">
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <ul class="navbar-nav mr-auto">
             <li class="nav-item active">
@@ -54,7 +54,7 @@
         <auth/>
     </nav>
 
-    <div class="container-fluid" style="margin-top: 20px;">
+    <div class="container-fluid" style="margin-top: 20px;" v-if="userInfo!=null">
         <div class="row">
             <div class="col-3" id="left-menu">
                 <ul>
@@ -104,7 +104,7 @@
     Vue.component('spot-editor', httpVueLoader('components/spot-editor.vue'))
 
     var app = new Vue({
-        el: '#wwmap',
+        el: '#vue-app',
         data: {
           countries: getCountries(),
           regions: getAllRegions(),
@@ -120,6 +120,7 @@
             "visible": false,
             "editMode": false,
           },
+          userInfo: getAuthorizedUserInfoOrNull(),
         }
     })
 

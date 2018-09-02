@@ -14,26 +14,27 @@
     <script type="text/javascript" src="js/api.js"></script>
     <script type="text/javascript" src="js/auth.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/http-vue-loader"></script>
     <script type="text/javascript" src="js/showdown.min.js"></script>
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <ul class="navbar-nav mr-auto">
-        <li class="nav-item">
-            <a class="nav-link" href="editor.htm">Редактор</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="map.htm">Карта</a>
-        </li>
-        <li class="nav-item active">
-            <a class="nav-link" href="#">Сайты</a>
-        </li>
-    </ul>
-    <auth/>
-</nav>
+<div id="vue-app">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item" v-if="userInfo!=null">
+                <a class="nav-link" href="editor.htm">Редактор</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="map.htm">Карта</a>
+            </li>
+            <li class="nav-item active">
+                <a class="nav-link" href="#">Сайты</a>
+            </li>
+        </ul>
+        <auth></auth>
+    </nav>
 
-<div id="ref-sites">
     <div class="container-fluid">
         <div class="row">
             <div class="col-12" id="left-menu">
@@ -59,8 +60,10 @@
         return doGetJsonSync(apiBase + "/ref-sites")
     }
 
+    Vue.component('auth', httpVueLoader('components/auth.vue'))
+
     var app = new Vue({
-        el: '#ref-sites',
+        el: '#vue-app',
         computed: {
                 integrationGuide:function () {
                     var converter = new showdown.Converter();
@@ -76,7 +79,8 @@
                  },
         },
         data: {
-          refs: getRefs(),
+            refs: getRefs(),
+            userInfo: getAuthorizedUserInfoOrNull(),
         }
     })
 
