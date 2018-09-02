@@ -36,6 +36,7 @@ func (this *GeoHierarchyHandler) Init(r *mux.Router) {
 	this.Register(r, "/river", HandlerFunctions{Get:this.FilterRivers})
 	this.Register(r, "/river/{riverId}/reports", HandlerFunctions{Get:this.ListRiverReports})
 	this.Register(r, "/river/{riverId}/spots", HandlerFunctions{Get:this.ListSpots})
+	this.Register(r, "/river/{riverId}/center", HandlerFunctions{Get:this.GetRiverCenter})
 	this.Register(r, "/river/{riverId}/gpx", HandlerFunctions{Post:this.UploadGpx, Put:this.UploadGpx})
 
 	this.Register(r, "/spot/{spotId}", HandlerFunctions{Get:this.GetSpot, Post:this.SaveSpot, Put:this.SaveSpot, Delete:this.RemoveSpot})
@@ -197,6 +198,22 @@ func (this *GeoHierarchyHandler) ListSpots(w http.ResponseWriter, r *http.Reques
 		return
 	}
 	this.JsonAnswer(w, voyageReports)
+}
+
+
+func (this *GeoHierarchyHandler) GetRiverCenter(w http.ResponseWriter, r *http.Request) {
+	pathParams := mux.Vars(r)
+	riverId, err := strconv.ParseInt(pathParams["riverId"], 10, 64)
+	if err != nil {
+		OnError(w, err, "Can not parse id", http.StatusBadRequest)
+		return
+	}
+	centroid, err := this.WhiteWaterDao.GetGeomCenterByRiver(riverId)
+	if err != nil {
+		OnError500(w, err, fmt.Sprintf("Can not get centroid of river %d", riverId))
+		return
+	}
+	this.JsonAnswer(w, centroid)
 }
 
 func (this *GeoHierarchyHandler) UploadGpx(w http.ResponseWriter, req *http.Request) {

@@ -121,3 +121,8 @@ UPDATE white_water_rapid SET title=$2,category=$3, point=ST_GeomFromGeoJSON($4),
 
 --@delete
 DELETE FROM white_water_rapid WHERE id=$1
+
+--@geom-center-by-river
+SELECT center FROM (
+    SELECT ST_AsGeoJSON(ST_Centroid(ST_Collect(point))) center FROM white_water_rapid WHERE river_id=$1
+) sq WHERE center IS NOT NULL

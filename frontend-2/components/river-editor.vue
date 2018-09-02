@@ -176,10 +176,11 @@
 
                     app.spoteditorstate.visible = true;
                     app.spoteditorstate.editMode = true;
+                    console.log(this.river)
                     app.spoteditorstate.spot={
                         id: 0,
                         river: this.river,
-                        point:[0.0, 0.0, ],
+                        point:getRiverCenter(this.river.id),
                     }
                 },
 

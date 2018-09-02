@@ -67,6 +67,10 @@ function getRiver(riverId) {
     return doGetJsonSync(apiBase + "/river/" + riverId)
 }
 
+function getRiverCenter(riverId) {
+    return doGetJsonSync(apiBase + "/river/" + riverId + "/center")
+}
+
 function saveRiver(river) {
     return doPostJsonSync(apiBase + "/river/" + river.id, river, true)
 }
