@@ -101,7 +101,8 @@ SELECT
 
     preview,
     order_index,
-    auto_ordering
+    auto_ordering,
+    last_auto_ordering
 FROM white_water_rapid
 INNER JOIN river ON white_water_rapid.river_id=river.id
     WHERE white_water_rapid.id=$1

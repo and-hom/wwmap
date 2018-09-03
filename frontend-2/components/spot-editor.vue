@@ -203,6 +203,13 @@
                             <div><strong>К.с. нв/св/вв:</strong>&nbsp;<category :category="spot.lw_category"></category>/<category :category="spot.mw_category"></category>/<category :category="spot.hw_category"></category></div>
                             <div><strong>К.с. по классификатору:</strong>&nbsp;<category :category="spot.category"></category></div>
                         </div>
+
+                        <br/>
+                        <br/>
+                        <div style="font-size:60%;">Эти параметры предназначены для определения порядка следования порогов.</div>
+                        <div><strong>Порядок следования:</strong> {{ spot.order_index }}</div>
+                        <div><strong>Автоматическое упорядочивание:</strong> <span v-if="spot.automatic_ordering">Да</span><span v-else>Нет</span></div>
+                        <div><strong>В последний раз автоматическое упорядочивание срабатывало:</strong> {{ spot.last_automatic_ordering }}</div>
                     </div>
                 </div>
             </div>

@@ -9,6 +9,8 @@ import (
 	"strings"
 	"github.com/and-hom/wwmap/lib/dao/queries"
 	"fmt"
+	"github.com/lib/pq"
+	"github.com/and-hom/wwmap/lib/util"
 )
 
 func NewWhiteWaterPostgresDao(postgresStorage PostgresStorage) WhiteWaterDao {
@@ -79,11 +81,13 @@ func (this whiteWaterStorage) FindFull(id int64) (WhiteWaterPointFull, error) {
 		lwCategoryString := ""
 		mwCategoryString := ""
 		hwCategoryString := ""
+		lastAutoOrdering := pq.NullTime{}
 
 		err := rows.Scan(&wwp.Id, &wwp.Title, &pointString, &categoryString, &wwp.ShortDesc, &wwp.Link,
 			&wwp.River.Id, &wwp.River.Title,
 			&lwCategoryString, &wwp.LowWaterDescription, &mwCategoryString, &wwp.MediumWaterDescription, &hwCategoryString, &wwp.HighWaterDescription,
-			&wwp.Orient, &wwp.Approach, &wwp.Safety, &wwp.Preview, &wwp.OrderIndex, &wwp.AutomaticOrdering)
+			&wwp.Orient, &wwp.Approach, &wwp.Safety, &wwp.Preview,
+			&wwp.OrderIndex, &wwp.AutomaticOrdering, &lastAutoOrdering)
 
 		err = json.Unmarshal(categoryStrBytes(categoryString), &wwp.Category)
 		if err != nil {
@@ -118,6 +122,12 @@ func (this whiteWaterStorage) FindFull(id int64) (WhiteWaterPointFull, error) {
 		wwp.Point = pgPoint.Coordinates
 
 		wwp.RiverId = wwp.River.Id
+
+		if lastAutoOrdering.Valid {
+			wwp.LastAutomaticOrdering = lastAutoOrdering.Time
+		} else {
+			wwp.LastAutomaticOrdering = util.ZeroDateUTC()
+		}
 
 		return wwp, err
 	}, id)
