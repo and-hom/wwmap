@@ -89,7 +89,7 @@
                                         <transition name="fade">
                                             <div v-if="!spot.automatic_ordering"><label for="auto-order" style="display:block;"><strong>Индекс препятствия</strong><br/>
                                             <div style="font-size: 60%; font-color: grey;">Чем меньше, тем выше по течению (раньше)</div></label>
-                                            <input v-model="spot.order_index" type="text"></input></div>
+                                            <input v-model="spot.order_index" type="number"></input></div>
                                         </transition>
                                     </div>
                                 </div>
