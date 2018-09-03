@@ -190,6 +190,9 @@ type WhiteWaterPointFull struct {
 
 	Preview                string `json:"preview"`
 	River                  IdTitle `json:"river"`
+
+	OrderIndex	       int `json:"order_index,string"`
+	AutomaticOrdering      bool `json:"automatic_ordering"`
 }
 
 type WhiteWaterPointWithRiverTitle struct {

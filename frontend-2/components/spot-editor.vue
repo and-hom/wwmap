@@ -50,36 +50,48 @@
                                         </template>
                                     </v-select>
                                 </div>
-                                <div class="short-div">
-                                    <strong>Категория сложности: </strong><a target="_blank"
-                                                                             href="https://huskytm.ru/rules2018-2019/#categories_tab"><img
-                                        src="img/question_16.png"></a>
-                                    <dl style="padding-left:40px;">
-                                        <dt>По классификатору</dt>
-                                        <dd>
-                                            <select v-model="spot.category">
-                                                <option v-for="cat in all_categories" v-bind:value="cat.id">{{cat.title}}</option>
-                                            </select>
-                                        </dd>
-                                        <dt>Низкий уровень воды</dt>
-                                        <dd>
-                                            <select v-model="spot.lw_category">
-                                                <option v-for="cat in all_categories" v-bind:value="cat.id">{{cat.title}}</option>
-                                            </select>
-                                        </dd>
-                                        <dt>Средний уровень воды</dt>
-                                        <dd>
-                                            <select v-model="spot.mw_category">
-                                                <option v-for="cat in all_categories" v-bind:value="cat.id">{{cat.title}}</option>
-                                            </select>
-                                        </dd>
-                                        <dt>Высокий уровень воды</dt>
-                                        <dd>
-                                            <select v-model="spot.hw_category">
-                                                <option v-for="cat in all_categories" v-bind:value="cat.id">{{cat.title}}</option>
-                                            </select>
-                                        </dd>
-                                    </dl>
+                                <div class='row' style="margin-left:0px">
+                                    <div class="col-7">
+                                        <strong>Категория сложности: </strong><a target="_blank"
+                                                                                 href="https://huskytm.ru/rules2018-2019/#categories_tab"><img
+                                            src="img/question_16.png"></a>
+                                        <dl style="padding-left:40px;">
+                                            <dt>По классификатору</dt>
+                                            <dd>
+                                                <select v-model="spot.category">
+                                                    <option v-for="cat in all_categories" v-bind:value="cat.id">{{cat.title}}</option>
+                                                </select>
+                                            </dd>
+                                            <dt>Низкий уровень воды</dt>
+                                            <dd>
+                                                <select v-model="spot.lw_category">
+                                                    <option v-for="cat in all_categories" v-bind:value="cat.id">{{cat.title}}</option>
+                                                </select>
+                                            </dd>
+                                            <dt>Средний уровень воды</dt>
+                                            <dd>
+                                                <select v-model="spot.mw_category">
+                                                    <option v-for="cat in all_categories" v-bind:value="cat.id">{{cat.title}}</option>
+                                                </select>
+                                            </dd>
+                                            <dt>Высокий уровень воды</dt>
+                                            <dd>
+                                                <select v-model="spot.hw_category">
+                                                    <option v-for="cat in all_categories" v-bind:value="cat.id">{{cat.title}}</option>
+                                                </select>
+                                            </dd>
+                                        </dl>
+                                    </div>
+                                    <div class="col-5">
+                                        <strong>Порядок следования:</strong><a href="#"><img src="img/question_16.png"></a>
+                                        <div><label for="auto-order">Автоматически</label>
+                                        <input id="auto-order" type="checkbox" v-model="spot.automatic_ordering"></input></div>
+                                        <transition name="fade">
+                                            <div v-if="!spot.automatic_ordering"><label for="auto-order" style="display:block;"><strong>Индекс препятствия</strong><br/>
+                                            <div style="font-size: 60%; font-color: grey;">Чем меньше, тем выше по течению (раньше)</div></label>
+                                            <input v-model="spot.order_index" type="text"></input></div>
+                                        </transition>
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-6">
@@ -249,13 +261,12 @@
                 this.$refs.locationView.doUpdate()
             }
         },
-        computed: {
-                spot:function () { return this.initialSpot },
-                images: function () {return getImages(this.initialSpot.id, "image").map(x => x.url)},
-                schemas: function () {return getImages(this.initialSpot.id, "schema").map(x => x.url)},
-        },
         data:function() {
             return {
+                spot: this.initialSpot,
+                images: getImages(this.initialSpot.id, "image").map(x => x.url),
+                schemas: getImages(this.initialSpot.id, "schema").map(x => x.url),
+
                 // for editor
                 userInfo: getAuthorizedUserInfoOrNull(),
                 map: null,

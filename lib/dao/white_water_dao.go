@@ -83,7 +83,7 @@ func (this whiteWaterStorage) FindFull(id int64) (WhiteWaterPointFull, error) {
 		err := rows.Scan(&wwp.Id, &wwp.Title, &pointString, &categoryString, &wwp.ShortDesc, &wwp.Link,
 			&wwp.River.Id, &wwp.River.Title,
 			&lwCategoryString, &wwp.LowWaterDescription, &mwCategoryString, &wwp.MediumWaterDescription, &hwCategoryString, &wwp.HighWaterDescription,
-			&wwp.Orient, &wwp.Approach, &wwp.Safety, &wwp.Preview)
+			&wwp.Orient, &wwp.Approach, &wwp.Safety, &wwp.Preview, &wwp.OrderIndex, &wwp.AutomaticOrdering)
 
 		err = json.Unmarshal(categoryStrBytes(categoryString), &wwp.Category)
 		if err != nil {
@@ -179,7 +179,7 @@ func paramsFull(wwp WhiteWaterPointFull) ([]interface{}, error) {
 
 	return []interface{}{wwp.Title, string(cat), string(pointBytes), wwp.ShortDesc, wwp.Link, nullIf0(wwp.River.Id),
 		string(lwCat), wwp.LowWaterDescription, string(mwCat), wwp.MediumWaterDescription, string(hwCat), wwp.HighWaterDescription,
-		wwp.Orient, wwp.Approach, wwp.Safety, wwp.Preview}, nil
+		wwp.Orient, wwp.Approach, wwp.Safety, wwp.Preview, wwp.OrderIndex, wwp.AutomaticOrdering}, nil
 }
 
 func (this whiteWaterStorage) list(query string, vars ...interface{}) ([]WhiteWaterPointWithRiverTitle, error) {

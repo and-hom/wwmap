@@ -180,6 +180,8 @@
                         id: 0,
                         river: this.river,
                         point:[0.0, 0.0, ],
+                        order_index: "0",
+                        automatic_ordering: true,
                     }
                 },
 
