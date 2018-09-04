@@ -1,3 +1,7 @@
+--@by-id
+SELECT id, report_id, white_water_rapid_id,source,remote_id,url,preview_url,date_published, enabled, "type"
+FROM image WHERE id=$1
+
 --@list
 SELECT id, report_id, white_water_rapid_id,source,remote_id,url,preview_url,date_published, enabled, "type"
 FROM image WHERE white_water_rapid_id=$1 AND "type"=$2 AND (NOT $3 OR enabled) ORDER BY id DESC LIMIT $4

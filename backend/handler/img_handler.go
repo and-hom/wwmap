@@ -23,7 +23,7 @@ import (
 	"io/ioutil"
 )
 
-const SOURCE string = "wwmap"
+const IMG_SOURCE_WWMAP string = "wwmap"
 const (
 	PREVIEW_MAX_HEIGHT = 150
 	PREVIEW_MAX_WIDTH = 150
@@ -42,6 +42,7 @@ func (this *ImgHandler) Init(r *mux.Router) {
 	this.Register(r, "/spot/{spotId}/img/{imgId}", HandlerFunctions{Get:this.GetImage, Delete: this.Delete})
 	this.Register(r, "/spot/{spotId}/img/{imgId}/preview", HandlerFunctions{Get: this.GetImagePreview})
 	this.Register(r, "/spot/{spotId}/img/{imgId}/enabled", HandlerFunctions{Post:this.SetEnabled})
+	this.Register(r, "/spot/{spotId}/preview", HandlerFunctions{Post:this.SetPreview, Delete:this.DropPreview})
 }
 
 func (this *ImgHandler) GetImages(w http.ResponseWriter, req *http.Request) {
@@ -78,6 +79,10 @@ func (this *ImgHandler) GetImagePreview(w http.ResponseWriter, req *http.Request
 }
 
 func (this *ImgHandler) Upload(w http.ResponseWriter, req *http.Request) {
+	if !this.CheckRoleAllowedAndMakeResponse(w, req, dao.ADMIN) {
+		return
+	}
+
 	pathParams := mux.Vars(req)
 	spotId, err := strconv.ParseInt(pathParams["spotId"], 10, 64)
 	if err != nil {
@@ -89,7 +94,7 @@ func (this *ImgHandler) Upload(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	img, err := this.ImgDao.InsertLocal(spotId, getImgType(req), SOURCE, this.ImgUrlBase, this.ImgUrlPreviewBase, time.Now())
+	img, err := this.ImgDao.InsertLocal(spotId, getImgType(req), IMG_SOURCE_WWMAP, this.ImgUrlBase, this.ImgUrlPreviewBase, time.Now())
 	if err != nil {
 		OnError500(w, err, "Can not insert")
 		return
@@ -146,6 +151,10 @@ func previewRect(r image.Rectangle) image.Rectangle {
 }
 
 func (this *ImgHandler) Delete(w http.ResponseWriter, req *http.Request) {
+	if !this.CheckRoleAllowedAndMakeResponse(w, req, dao.ADMIN) {
+		return
+	}
+
 	pathParams := mux.Vars(req)
 	spotId, err := strconv.ParseInt(pathParams["spotId"], 10, 64)
 	if err != nil {
@@ -178,6 +187,10 @@ func (this *ImgHandler) Delete(w http.ResponseWriter, req *http.Request) {
 }
 
 func (this *ImgHandler) SetEnabled(w http.ResponseWriter, req *http.Request) {
+	if !this.CheckRoleAllowedAndMakeResponse(w, req, dao.ADMIN) {
+		return
+	}
+
 	pathParams := mux.Vars(req)
 	spotId, err := strconv.ParseInt(pathParams["spotId"], 10, 64)
 	if err != nil {
@@ -208,6 +221,70 @@ func (this *ImgHandler) SetEnabled(w http.ResponseWriter, req *http.Request) {
 	this.listImagesForSpot(w, spotId, getImgType(req))
 }
 
+func (this *ImgHandler) SetPreview(w http.ResponseWriter, req *http.Request) {
+	if !this.CheckRoleAllowedAndMakeResponse(w, req, dao.ADMIN) {
+		return
+	}
+
+	pathParams := mux.Vars(req)
+	spotId, err := strconv.ParseInt(pathParams["spotId"], 10, 64)
+	if err != nil {
+		OnError(w, err, "Can not parse id", http.StatusBadRequest)
+		return
+	}
+
+	bodyBytes, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		OnError500(w, err, "Can not read body")
+		return
+	}
+	imgId := int64(0)
+	json.Unmarshal(bodyBytes, &imgId)
+
+	img,found, err := this.ImgDao.Find(imgId)
+	if err != nil {
+		OnError500(w, err, fmt.Sprintf("Can not find image id=%d", imgId))
+		return
+	}
+	if !found {
+		OnError(w, nil, fmt.Sprintf("Image id=%d does not exist", imgId), http.StatusBadRequest)
+		return
+	}
+
+	previewUrl := img.PreviewUrl
+	if img.Source == IMG_SOURCE_WWMAP {
+		previewUrl = fmt.Sprintf(this.ImgUrlBase, img.Id)
+	}
+
+	err = this.WhiteWaterDao.SetPreview(spotId, previewUrl)
+	if err != nil {
+		OnError500(w, err, fmt.Sprintf("Can not set preview for spot %d", spotId))
+		return
+	}
+
+	this.listImagesForSpot(w, spotId, getImgType(req))
+}
+
+func (this *ImgHandler) DropPreview(w http.ResponseWriter, req *http.Request) {
+	if !this.CheckRoleAllowedAndMakeResponse(w, req, dao.ADMIN) {
+		return
+	}
+
+	pathParams := mux.Vars(req)
+	spotId, err := strconv.ParseInt(pathParams["spotId"], 10, 64)
+	if err != nil {
+		OnError(w, err, "Can not parse id", http.StatusBadRequest)
+		return
+	}
+
+
+	err = this.WhiteWaterDao.SetPreview(spotId, "")
+	if err != nil {
+		OnError500(w, err, fmt.Sprintf("Can not set preview for spot %d", spotId))
+		return
+	}
+}
+
 func (this *ImgHandler) listImagesForSpot(w http.ResponseWriter, spotId int64, _type dao.ImageType) {
 	imgs, err := this.ImgDao.List(spotId, 16384, _type, false)
 	if err != nil {
@@ -215,7 +292,7 @@ func (this *ImgHandler) listImagesForSpot(w http.ResponseWriter, spotId int64, _
 		return
 	}
 	for i := 0; i < len(imgs); i++ {
-		if imgs[i].Source == SOURCE {
+		if imgs[i].Source == IMG_SOURCE_WWMAP {
 			imgs[i].Url = fmt.Sprintf(this.ImgUrlBase, imgs[i].Id)
 			imgs[i].PreviewUrl = fmt.Sprintf(this.ImgUrlPreviewBase, imgs[i].Id)
 		}

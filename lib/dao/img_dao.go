@@ -12,6 +12,7 @@ import (
 type imgStorage struct {
 	PostgresStorage
 	upsertQuery      string
+	findQuery        string
 	listQuery        string
 	insertLocalQuery string
 	deleteQuery      string
@@ -22,6 +23,7 @@ func NewImgPostgresDao(postgresStorage PostgresStorage) ImgDao {
 	return imgStorage{
 		PostgresStorage: postgresStorage,
 		upsertQuery : queries.SqlQuery("img", "upsert"),
+		findQuery : queries.SqlQuery("img", "by-id"),
 		listQuery : queries.SqlQuery("img", "list"),
 		insertLocalQuery : queries.SqlQuery("img", "insert-local"),
 		deleteQuery : queries.SqlQuery("img", "delete"),
@@ -49,28 +51,35 @@ func (this imgStorage) Upsert(imgs ...Img) ([]Img, error) {
 	return result, nil
 }
 
+func imgMapper(rows *sql.Rows) (Img, error) {
+	img := Img{}
+	err := rows.Scan(&img.Id, &img.ReportId, &img.WwId, &img.Source, &img.RemoteId, &img.Url, &img.PreviewUrl,
+		&img.DatePublished, &img.Enabled, &img.Type)
+	if err != nil {
+		return img, err
+	}
+	return img, nil
+}
+
 func (this imgStorage) List(wwId int64, limit int, _type ImageType, enabledOnly bool) ([]Img, error) {
-	result, err := this.doFindList(this.listQuery, func(rows *sql.Rows) (Img, error) {
-		img := Img{}
-		err := rows.Scan(&img.Id, &img.ReportId, &img.WwId, &img.Source, &img.RemoteId, &img.Url, &img.PreviewUrl,
-			&img.DatePublished, &img.Enabled, &img.Type)
-		if err != nil {
-			return img, err
-		}
-		return img, nil
-	}, wwId, _type, enabledOnly, limit)
+	result, err := this.doFindList(this.listQuery,imgMapper , wwId, _type, enabledOnly, limit)
 	if err != nil {
 		return []Img{}, err
 	}
 	return result.([]Img), nil
 }
 
+func (this imgStorage) Find(id int64) (Img, bool, error) {
+	result, found, err := this.doFindAndReturn(this.findQuery, imgMapper, id)
+	if err != nil {
+		return Img{}, found, err
+	}
+	return result.(Img), found, nil
+}
+
 func (this imgStorage) InsertLocal(wwId int64, _type ImageType, source string, urlBase string, previewUrlBase string, datePublished time.Time) (Img, error) {
 	params := []interface{}{wwId, _type, source, datePublished}
-	vals, err := this.updateReturningColumns(this.insertLocalQuery,
-		func(entity interface{}) ([]interface{}, error) {
-			return entity.([]interface{}), nil
-		}, params)
+	vals, err := this.updateReturningColumns(this.insertLocalQuery, arrayMapper, params)
 	if err != nil {
 		return Img{}, err
 	}
@@ -102,9 +111,7 @@ func (this imgStorage) Remove(id int64) error {
 }
 
 func (this imgStorage) SetEnabled(id int64, enabled bool) error{
-	return this.performUpdates(this.setEnabledQuery, func(entity interface{}) ([]interface{}, error) {
-		return entity.([]interface{}), nil
-	}, []interface{}{enabled, id})
+	return this.performUpdates(this.setEnabledQuery, arrayMapper, []interface{}{enabled, id})
 }
 
 func (this imgStorage) toInterface(imgs ...Img) []interface{} {

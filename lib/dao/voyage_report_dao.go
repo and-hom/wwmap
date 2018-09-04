@@ -78,10 +78,7 @@ func (this voyageReportStorage) ForEach(source string, callback func(report *Voy
 }
 
 func (this voyageReportStorage) AssociateWithRiver(voyageReportId, riverId int64) error {
-	return this.performUpdates(this.upsertRiverLinkQuery,
-		func(entity interface{}) ([]interface{}, error) {
-			return entity.([]interface{}), nil
-		}, []interface{}{voyageReportId, riverId})
+	return this.performUpdates(this.upsertRiverLinkQuery, arrayMapper, []interface{}{voyageReportId, riverId})
 }
 
 func (this voyageReportStorage) List(riverId int64, limitByGroup int) ([]VoyageReport, error) {

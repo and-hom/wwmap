@@ -134,10 +134,10 @@
                     </div>
                 </b-tab>
                 <b-tab title="Схемы" :disabled="spot.id>0 ? false : true">
-                    <img-upload :spot="spot" type="schema"></img-upload>
+                    <img-upload :spot="spot" type="schema" :auth="true"></img-upload>
                 </b-tab>
                 <b-tab title="Фото" :disabled="spot.id>0 ? false : true">
-                    <img-upload :spot="spot" type="photo"></img-upload>
+                    <img-upload :spot="spot" type="photo" :auth="true"></img-upload>
                 </b-tab>
                 <b-tab title="Видео" disabled>
                 </b-tab>
@@ -268,12 +268,13 @@
                 this.$refs.locationView.doUpdate()
             }
         },
+        computed: {
+                spot:function () { return this.initialSpot },
+                images: function () {return getImages(this.initialSpot.id, "image").map(x => x.url)},
+                schemas: function () {return getImages(this.initialSpot.id, "schema").map(x => x.url)},
+        },
         data:function() {
             return {
-                spot: this.initialSpot,
-                images: getImages(this.initialSpot.id, "image").map(x => x.url),
-                schemas: getImages(this.initialSpot.id, "schema").map(x => x.url),
-
                 // for editor
                 userInfo: getAuthorizedUserInfoOrNull(),
                 map: null,

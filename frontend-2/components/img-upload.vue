@@ -19,6 +19,7 @@
                         <file-upload
                                 class="btn btn-primary"
                                 :post-action="uploadPath"
+                                :headers="headers"
                                 extensions="gif,jpg,jpeg,png"
                                 accept="image/png,image/gif,image/jpeg"
                                 :multiple="true"
@@ -57,9 +58,9 @@
                 </td>
                 <td>
                     <button v-if="image.enabled==false" v-on:click="setImgEnabled(true, image.id)">Показывать</button>
-                    <button v-if="image.enabled==true" v-on:click="setImgEnabled(false, image.id)">Не показывать
-                    </button>
+                    <button v-if="image.enabled==true" v-on:click="setImgEnabled(false, image.id)">Не показывать</button>
                     <button v-if="image.source=='wwmap'" v-on:click="removeImage(image.id)">Удалить</button>
+                    <button v-if="image.enabled==true" v-on:click="setSpotPreview(image.id)">Сделать главным изображением</button>
                 </td>
             </tr>
         </table>
@@ -68,12 +69,12 @@
 
 <script>
     module.exports = {
-        props: ['spot', 'type'],
+        props: ['spot', 'type', 'auth'],
         components: {
           FileUpload: VueUploadComponent
         },
         updated: function() {
-            if(this.$refs.upload && this.$refs.upload.value.length && this.$refs.upload.uploaded) {
+            if(this.$refs[this.type] && this.$refs[this.type].value.length && this.$refs[this.type].uploaded) {
                 if (this.imagesOutOfDate) {
                     setTimeout(() => {
                         this.refresh()
@@ -83,6 +84,16 @@
                     this.imagesOutOfDate = true
                 }
             }
+        },
+        computed: {
+            headers:function(){
+                if (this.auth) {
+                    return {
+                        Authorization: "Token " + getToken(),
+                    }
+                }
+                return {}
+            },
         },
         data:function() {
             return {
@@ -96,6 +107,9 @@
                 setImgEnabled: function(enabled, imgId) {
                     this.images = setImageEnabled(this.spot.id, imgId, enabled);
                 },
+                setSpotPreview: function(imgId) {
+                    this.images = setSpotPreview(this.spot.id, imgId);
+                },
                 refresh:function() {
                         this.images = getImages(this.spot.id, this.type)
                 },
@@ -104,7 +118,7 @@
                         return "wwmap-img-disabled"
                     }
                     return ""
-                }
+                },
             }
         },
     }

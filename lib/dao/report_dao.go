@@ -23,10 +23,7 @@ type reportStorage struct {
 }
 
 func (this reportStorage) AddReport(report Report) error {
-	_, err := this.updateReturningId(this.insertQuery,
-		func(entity interface{}) ([]interface{}, error) {
-			return entity.([]interface{}), nil
-		}, []interface{}{report.ObjectId, report.Comment})
+	_, err := this.updateReturningId(this.insertQuery, arrayMapper, []interface{}{report.ObjectId, report.Comment})
 	return err;
 }
 

@@ -29,9 +29,7 @@ func (this userStorage) CreateIfNotExists(user User) error {
 	if err != nil {
 		return err
 	}
-	return this.performUpdates(this.createQuery, func(entity interface{}) ([]interface{}, error) {
-		return entity.([]interface{}), nil
-	}, []interface{}{user.YandexId, user.Role, string(userInfo)})
+	return this.performUpdates(this.createQuery, arrayMapper, []interface{}{user.YandexId, user.Role, string(userInfo)})
 }
 
 func (this userStorage) List() ([]User, error) {

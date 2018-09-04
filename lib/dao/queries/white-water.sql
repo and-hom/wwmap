@@ -142,6 +142,9 @@ UPDATE white_water_rapid SET title=$2,category=$3, point=ST_GeomFromGeoJSON($4),
     order_index=CASE WHEN $19 THEN order_index ELSE $18 END, auto_ordering=$19
     WHERE id=$1
 
+--@set-preview
+UPDATE white_water_rapid SET preview=$2 WHERE id=$1
+
 --@delete
 DELETE FROM white_water_rapid WHERE id=$1
 

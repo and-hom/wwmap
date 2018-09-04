@@ -95,3 +95,7 @@ function removeImage(spotId, id, _type) {
 function setImageEnabled(spotId, id, enabled) {
     return doPostJsonSync(backendApiBase + "/spot/" + spotId + "/img/" + id + "/enabled", enabled, true)
 }
+
+function setSpotPreview(spotId, id) {
+    return doPostJsonSync(apiBase + "/spot/" + spotId + "/preview", id, true)
+}

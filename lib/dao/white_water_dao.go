@@ -27,6 +27,7 @@ func NewWhiteWaterPostgresDao(postgresStorage PostgresStorage) WhiteWaterDao {
 		byIdFullQuery: queries.SqlQuery("white-water", "by-id-full"),
 		updateFullQuery: queries.SqlQuery("white-water", "update-full"),
 		deleteQuery: queries.SqlQuery("white-water", "delete"),
+		setPreviewQuery: queries.SqlQuery("white-water", "set-preview"),
 		geomCenterByRiverQuery: queries.SqlQuery("white-water", "geom-center-by-river"),
 	}
 }
@@ -44,6 +45,7 @@ type whiteWaterStorage struct {
 	byIdFullQuery            string
 	updateFullQuery          string
 	deleteQuery              string
+	setPreviewQuery              string
 	geomCenterByRiverQuery   string
 }
 
@@ -211,8 +213,8 @@ func scanWwPointFull(rows *sql.Rows, additionalVars ...interface{}) (WhiteWaterP
 		&wwp.OrderIndex, &wwp.AutomaticOrdering, &lastAutoOrdering}, additionalVars...)
 
 	err := rows.Scan(fields...)
-	log.Error(err)
 	if err!=nil {
+		log.Errorf("Can not read from db: %v", err)
 		return WhiteWaterPointFull{}, err
 	}
 
@@ -342,6 +344,10 @@ func (this whiteWaterStorage) update(query string, whiteWaterPoints ...WhiteWate
 func (this whiteWaterStorage) Remove(id int64) error {
 	log.Infof("Remove spot %d", id)
 	return this.performUpdates(this.deleteQuery, idMapper, id)
+}
+
+func (this whiteWaterStorage) SetPreview(id int64, url string) error {
+	return this.performUpdates(this.setPreviewQuery, arrayMapper, []interface{}{id, url})
 }
 
 func (this whiteWaterStorage) GetGeomCenterByRiver(riverId int64) (geo.Point, error) {

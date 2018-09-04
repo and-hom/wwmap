@@ -64,6 +64,7 @@ type WhiteWaterDao interface {
 	ListByRiverAndTitle(riverId int64, title string) ([]WhiteWaterPointWithRiverTitle, error)
 	GetGeomCenterByRiver(riverId int64) (Point, error)
 	Remove(id int64) error
+	SetPreview(id int64, url string) error
 }
 
 type ReportDao interface {
@@ -89,6 +90,7 @@ type VoyageReportDao interface {
 type ImgDao interface {
 	InsertLocal(wwId int64, _type ImageType, source string, urlBase string, previewUrlBase string, datePublished time.Time) (Img, error)
 	Upsert(img ...Img) ([]Img, error)
+	Find(id int64) (Img, bool, error)
 	List(wwId int64, limit int, _type ImageType, enabledOnly bool) ([]Img, error)
 	Remove(id int64) error
 	SetEnabled(id int64, enabled bool) error
@@ -476,19 +478,22 @@ func (this *PostgresStorage)doFind(query string, callback func(rows *sql.Rows) e
 	return false, nil
 }
 
-func (this *PostgresStorage)doFindAndReturn(query string, callback func(rows *sql.Rows) (interface{}, error), args ...interface{}) (interface{}, bool, error) {
+func (this *PostgresStorage)doFindAndReturn(query string, callback interface{}, args ...interface{}) (interface{}, bool, error) {
 	rows, err := this.db.Query(query, args...)
 	if err != nil {
 		return nil, false, err
 	}
 	defer rows.Close()
 
+	funcValue := reflect.ValueOf(callback)
+
 	for rows.Next() {
-		obj, err := callback(rows)
-		if err != nil {
-			return nil, false, err
+		val := funcValue.Call([]reflect.Value{reflect.ValueOf(rows)})
+		if val[1].Interface() == nil {
+			return val[0].Interface(), true, nil
+		} else {
+			return nil,false, val[1].Interface().(error)
 		}
-		return obj, true, nil
 	}
 	return nil, false, nil
 }
