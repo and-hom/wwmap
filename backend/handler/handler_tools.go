@@ -101,9 +101,9 @@ func (this *App) CheckRoleAllowedAndMakeResponse(w http.ResponseWriter, r *http.
 	if !allowed {
 		msg := ""
 		if len(allowedRoles) == 1 {
-			fmt.Sprintf("Sorry! You haven't role %s", allowedRoles[0])
+			msg = fmt.Sprintf("Sorry! You haven't role %s", allowedRoles[0])
 		} else {
-			fmt.Sprintf("Sorry! You haven't any of following roles: %s", dao.Join(", ", allowedRoles...))
+			msg = fmt.Sprintf("Sorry! You haven't any of following roles: %s", dao.Join(", ", allowedRoles...))
 		}
 		OnError(w, nil, msg, http.StatusUnauthorized)
 		return false

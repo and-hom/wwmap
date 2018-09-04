@@ -14,8 +14,8 @@ function sendRequest(url , _type, auth) {
     }
 }
 
-function doGetJsonSync(url) {
-    var xhr = sendRequest(url, "GET", false)
+function doGetJsonSync(url, auth) {
+    var xhr = sendRequest(url, "GET", auth)
     if (xhr && xhr.status == 200) {
         return JSON.parse(xhr.response)
     }

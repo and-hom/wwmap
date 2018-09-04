@@ -8,6 +8,8 @@ import (
 	"encoding/json"
 	"github.com/and-hom/wwmap/backend/passport"
 	"github.com/gorilla/mux"
+	"strconv"
+	"io/ioutil"
 )
 
 type UserInfoHandler struct {
@@ -23,6 +25,8 @@ type UserInfoDto struct {
 func (this *UserInfoHandler) Init(r *mux.Router) {
 	this.Register(r, "/user-info", HandlerFunctions{Get: this.GetUserInfo})
 	this.Register(r, "/auth-test", HandlerFunctions{Get: this.TestAuth})
+	this.Register(r, "/user", HandlerFunctions{Get: this.ListUsers})
+	this.Register(r, "/user/{userId}/role", HandlerFunctions{Post: this.SetRole})
 }
 
 func (this *UserInfoHandler) GetUserInfo(w http.ResponseWriter, r *http.Request) {
@@ -57,6 +61,65 @@ func (this *UserInfoHandler) GetUserInfo(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	w.Write(bytes)
+}
+
+func (this *UserInfoHandler) ListUsers(w http.ResponseWriter, r *http.Request) {
+	if !this.CheckRoleAllowedAndMakeResponse(w, r, dao.ADMIN) {
+		return
+	}
+
+	users, err := this.UserDao.List()
+	if err != nil {
+		OnError500(w, err, "Can not list users")
+		return
+	}
+
+	this.JsonAnswer(w, users)
+}
+
+func (this *UserInfoHandler) SetRole(w http.ResponseWriter, r *http.Request) {
+	if !this.CheckRoleAllowedAndMakeResponse(w, r, dao.ADMIN) {
+		return
+	}
+
+	pathParams := mux.Vars(r)
+	userId, err := strconv.ParseInt(pathParams["userId"], 10, 64)
+	if err != nil {
+		OnError(w, err, "Can not parse id", http.StatusBadRequest)
+		return
+	}
+
+	bodyBytes, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		OnError500(w, err, "Can not read body")
+		return
+	}
+	roleStr := ""
+	json.Unmarshal(bodyBytes, &roleStr)
+	if err != nil {
+		OnError500(w, err, "Can not unmarshall role: " + string(bodyBytes))
+		return
+	}
+
+
+
+	if roleStr != string(dao.ADMIN) && roleStr!= string(dao.USER) {
+		OnError(w, err, "Can not set role " + roleStr, http.StatusBadRequest)
+		return
+	}
+	err = this.UserDao.SetRole(userId, dao.Role(roleStr))
+	if err != nil {
+		OnError500(w, err, "Can not set role")
+		return
+	}
+
+	users, err := this.UserDao.List()
+	if err != nil {
+		OnError500(w, err, "Can not list users")
+		return
+	}
+
+	this.JsonAnswer(w, users)
 }
 
 func (this *UserInfoHandler) TestAuth(w http.ResponseWriter, r *http.Request) {

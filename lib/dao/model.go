@@ -191,7 +191,7 @@ type WhiteWaterPointFull struct {
 	Preview                string `json:"preview"`
 	River                  IdTitle `json:"river"`
 
-	OrderIndex	       int `json:"order_index,string"`
+	OrderIndex             int `json:"order_index,string"`
 	AutomaticOrdering      bool `json:"automatic_ordering"`
 	LastAutomaticOrdering  time.Time `json:"last_automatic_ordering"`
 }
@@ -326,10 +326,10 @@ type UserInfo struct {
 }
 
 type User struct {
-	Id       int64
-	YandexId int64
-	Role     Role
-	Info     UserInfo
+	Id       int64 `json:"id"`
+	YandexId int64 `json:"yandex_id"`
+	Role     Role `json:"role"`
+	Info     UserInfo `json:"info"`
 }
 
 type Country struct {

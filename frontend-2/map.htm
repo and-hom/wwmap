@@ -40,6 +40,9 @@
             <li class="nav-item">
                 <a class="nav-link" href="refs.htm">Сайты</a>
             </li>
+            <li class="nav-item" v-if="admin">
+                <a class="nav-link" href="users.htm">Польователи</a>
+            </li>
         </ul>
         <auth></auth>
     </nav>
@@ -69,6 +72,10 @@
         el: '#vue-app',
         data: {
                 userInfo: getAuthorizedUserInfoOrNull(),
+                admin: function() {
+                    userInfo = getAuthorizedUserInfoOrNull()
+                    return userInfo && userInfo.roles && userInfo.roles.indexOf("ADMIN") > -1;
+                },
         }
     })
   });

@@ -101,6 +101,8 @@ type WwPassportDao interface {
 type UserDao interface {
 	CreateIfNotExists(User) error
 	GetRole(yandexId int64) (Role, error)
+	List() ([]User, error)
+	SetRole(userId int64, role Role) error
 }
 
 type CountryDao interface {
@@ -726,4 +728,8 @@ type PgPolygon struct {
 
 func idMapper(_id interface{}) ([]interface{}, error) {
 	return []interface{}{_id}, nil;
+}
+
+func arrayMapper(arr interface{}) ([]interface{}, error) {
+	return arr.([]interface{}), nil;
 }

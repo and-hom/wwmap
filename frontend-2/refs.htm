@@ -31,6 +31,9 @@
             <li class="nav-item active">
                 <a class="nav-link" href="#">Сайты</a>
             </li>
+            <li class="nav-item" v-if="admin">
+                <a class="nav-link" href="users.htm">Польователи</a>
+            </li>
         </ul>
         <auth></auth>
     </nav>
@@ -81,6 +84,10 @@
         data: {
             refs: getRefs(),
             userInfo: getAuthorizedUserInfoOrNull(),
+            admin: function() {
+                userInfo = getAuthorizedUserInfoOrNull()
+                return userInfo && userInfo.roles && userInfo.roles.indexOf("ADMIN") > -1;
+            },
         }
     })
 
