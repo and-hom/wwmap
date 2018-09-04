@@ -248,6 +248,8 @@ const (
 	IMAGE_TYPE_SCHEMA ImageType = "schema"
 )
 
+const IMG_SOURCE_WWMAP string = "wwmap"
+
 type Img struct {
 	Id              int64 `json:"id"`
 	WwId            int64 `json:"ww_id"`

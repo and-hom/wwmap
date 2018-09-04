@@ -10,17 +10,20 @@ import (
 )
 
 type App struct {
-	VoyageReportDao  dao.VoyageReportDao
-	WhiteWaterDao    dao.WhiteWaterDao
-	RiverDao         dao.RiverDao
-	ImgDao           dao.ImgDao
-	WwPassportDao    dao.WwPassportDao
-	Configuration    config.WordpressSync
-	Notifications    config.Notifications
+	VoyageReportDao   dao.VoyageReportDao
+	WhiteWaterDao     dao.WhiteWaterDao
+	RiverDao          dao.RiverDao
+	ImgDao            dao.ImgDao
+	WwPassportDao     dao.WwPassportDao
+	Configuration     config.WordpressSync
+	Notifications     config.Notifications
 
-	stat             *ImportExportReport
-	catalogConnector common.CatalogConnector
-	reportProviders  []common.WithReportProvider
+	ImgUrlBase        string
+	ImgUrlPreviewBase string
+
+	stat              *ImportExportReport
+	catalogConnector  common.CatalogConnector
+	reportProviders   []common.WithReportProvider
 }
 
 func CreateApp() App {
@@ -41,6 +44,8 @@ func CreateApp() App {
 			}),
 			common.WithReportProvider(tlib.GetReportProvider),
 		},
+		ImgUrlBase:configuration.ImgStorage.Full.UrlBase,
+		ImgUrlPreviewBase:configuration.ImgStorage.Preview.UrlBase,
 	}
 }
 

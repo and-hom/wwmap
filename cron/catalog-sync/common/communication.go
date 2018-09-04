@@ -34,5 +34,5 @@ type CatalogConnector interface {
 	Exists(key []string) (bool, error)
 	CreatePage(title string, parent int) (int, error)
 	GetId(title string, parent int) (int, error)
-	Create(passport dao.WhiteWaterPointFull, parent int, imgs []dao.Img) error
+	Create(passport dao.WhiteWaterPointFull, parent int, mainImage dao.Img, imgs []dao.Img) error
 }

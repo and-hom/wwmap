@@ -6,9 +6,12 @@ import (
 	"github.com/and-hom/wwmap/cron/catalog-sync/huskytm"
 	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/cron/catalog-sync/common"
+	"time"
+	"fmt"
 )
 
 const MAX_ATTACHED_IMGS = 300
+const MISSING_IMAGE = "https://wwmap.ru/editor/img/no-photo.png"
 
 func (this *App) DoWriteCatalog() {
 	log.Info("Create missing ww passports")
@@ -63,13 +66,46 @@ func (this *App) createCatalogEntry(p *dao.WhiteWaterPointWithPath, imgId int) {
 		this.Fatalf(err, "Can not create directories")
 	}
 	catalogConnector := this.getCachedCatalogConnector()
+
 	imgs, err := this.ImgDao.List(p.Id, MAX_ATTACHED_IMGS, dao.IMAGE_TYPE_IMAGE, true)
 	if err != nil {
 		this.Fatalf(err, "Can not get attached images for %d", p.Id)
 	}
-	err = catalogConnector.Create(p.WhiteWaterPointFull, parent_id, imgs)
+
+	mainImg, found, err := this.ImgDao.GetMainForSpot(p.Id)
+	if err != nil {
+		this.Fatalf(err, "Can not get main image for %d", p.Id)
+	}
+	if !found {
+		if len(imgs) > 0 {
+			mainImg = imgs[0]
+		} else {
+			mainImg = dao.Img{
+				Id:0,
+				Source:dao.IMG_SOURCE_WWMAP,
+				Type:dao.IMAGE_TYPE_IMAGE,
+				MainImage:true,
+				Enabled:true,
+				WwId:p.Id,
+				DatePublished:time.Now(),
+				PreviewUrl: MISSING_IMAGE,
+				Url: MISSING_IMAGE,
+			}
+		}
+	} else {
+		this.processForWeb(&mainImg)
+	}
+
+	err = catalogConnector.Create(p.WhiteWaterPointFull, parent_id, mainImg, imgs)
 	if err != nil {
 		this.Fatalf(err, "Can not create passport")
+	}
+}
+
+func (this *App) processForWeb(img *dao.Img) {
+	if img.Source == dao.IMG_SOURCE_WWMAP {
+		img.Url = fmt.Sprintf(this.ImgUrlBase, img.Id)
+		img.PreviewUrl = fmt.Sprintf(this.ImgUrlPreviewBase, img.Id)
 	}
 }
 

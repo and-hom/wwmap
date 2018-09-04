@@ -85,7 +85,7 @@ func (this imgStorage) Find(id int64) (Img, bool, error) {
 
 func (this imgStorage) GetMainForSpot(spotId int64) (Img, bool, error) {
 	result, found, err := this.doFindAndReturn(this.getMainForSpotQuery, imgMapper, spotId)
-	if err != nil {
+	if err != nil || !found {
 		return Img{}, found, err
 	}
 	return result.(Img), found, nil

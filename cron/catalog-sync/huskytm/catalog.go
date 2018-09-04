@@ -80,10 +80,11 @@ func (this *HuskytmCatalogConnector) Exists(key []string) (bool, error) {
 	return true, nil
 }
 
-func (this *HuskytmCatalogConnector) Create(wwPoint dao.WhiteWaterPointFull, parent int, _ []dao.Img) error {
+func (this *HuskytmCatalogConnector) Create(wwPoint dao.WhiteWaterPointFull, parent int, mainImage dao.Img, images []dao.Img) error {
 	htmlBuf := bytes.Buffer{}
 	err := this.spotPageTemplate.Execute(&htmlBuf, map[string]interface{}{
 		"spot": wwPoint,
+		"img": mainImage,
 	})
 	if err!=nil {
 		log.Errorf("Can not process template", err)

@@ -23,7 +23,6 @@ import (
 	"io/ioutil"
 )
 
-const IMG_SOURCE_WWMAP string = "wwmap"
 const (
 	PREVIEW_MAX_HEIGHT = 150
 	PREVIEW_MAX_WIDTH = 150
@@ -94,7 +93,7 @@ func (this *ImgHandler) Upload(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	img, err := this.ImgDao.InsertLocal(spotId, getImgType(req), IMG_SOURCE_WWMAP, this.ImgUrlBase, this.ImgUrlPreviewBase, time.Now())
+	img, err := this.ImgDao.InsertLocal(spotId, getImgType(req), dao.IMG_SOURCE_WWMAP, this.ImgUrlBase, this.ImgUrlPreviewBase, time.Now())
 	if err != nil {
 		OnError500(w, err, "Can not insert")
 		return
@@ -317,7 +316,7 @@ func (this *ImgHandler) listImagesForSpot(w http.ResponseWriter, spotId int64, _
 }
 
 func (this *ImgHandler) processForWeb(img *dao.Img) {
-	if img.Source == IMG_SOURCE_WWMAP {
+	if img.Source == dao.IMG_SOURCE_WWMAP {
 		img.Url = fmt.Sprintf(this.ImgUrlBase, img.Id)
 		img.PreviewUrl = fmt.Sprintf(this.ImgUrlPreviewBase, img.Id)
 	}
