@@ -1,4 +1,4 @@
-const apiBase = "http://localhost:7007";
+const backendApiBase = "http://localhost:7007";
 
 function sendRequest(url , _type, auth) {
     var xhr = new XMLHttpRequest();

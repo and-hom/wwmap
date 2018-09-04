@@ -250,7 +250,7 @@
                 loading(true);
                 var component = this
                 fetch(
-                  `${apiBase}/river?q=${search}`
+                  `${backendApiBase}/river?q=${search}`
                 ).then(res => {
                     res.json().then(function(json){
                         component.options = json
@@ -279,7 +279,7 @@
                 map: null,
                 label: null,
                 canEdit: function(){
-                 return this.userInfo!=null && this.userInfo.roles.includes("ADMIN")
+                 return this.userInfo!=null && (this.userInfo.roles.includes("EDITOR") || this.userInfo.roles.includes("ADMIN"))
                 },
                 editMode: app.spoteditorstate.editMode,
                 errMsg:null,

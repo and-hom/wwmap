@@ -19,64 +19,64 @@ var all_categories = [
 ]
 
 function getCountries() {
-    return doGetJsonSync(apiBase + "/country")
+    return doGetJsonSync(backendApiBase + "/country")
 }
 
 function getRegions(countryId) {
-    return doGetJsonSync(apiBase + "/country/" + countryId + "/region")
+    return doGetJsonSync(backendApiBase + "/country/" + countryId + "/region")
 }
 
 function getRegion(regionId) {
-    return doGetJsonSync(apiBase + "/region/" + regionId)
+    return doGetJsonSync(backendApiBase + "/region/" + regionId)
 }
 
 function getRiversByCountry(countryId) {
-    return doGetJsonSync(apiBase + "/country/" + countryId + "/river")
+    return doGetJsonSync(backendApiBase + "/country/" + countryId + "/river")
 }
 
 function getRiversByRegion(countryId, regionId) {
-    return doGetJsonSync(apiBase + "/country/" + countryId + "/region/" + regionId + "/river")
+    return doGetJsonSync(backendApiBase + "/country/" + countryId + "/region/" + regionId + "/river")
 }
 
 function getReports(riverId) {
-    return doGetJsonSync(apiBase + "/river/" + riverId + "/reports")
+    return doGetJsonSync(backendApiBase + "/river/" + riverId + "/reports")
 }
 
 function getSpots(riverId) {
-    return doGetJsonSync(apiBase + "/river/" + riverId + "/spots")
+    return doGetJsonSync(backendApiBase + "/river/" + riverId + "/spots")
 }
 
 function getSpot(spotId) {
-    return doGetJsonSync(apiBase + "/spot/" + spotId)
+    return doGetJsonSync(backendApiBase + "/spot/" + spotId)
 }
 
 function saveSpot(spot) {
-    return doPostJsonSync(apiBase + "/spot/" + spot.id, spot, true)
+    return doPostJsonSync(backendApiBase + "/spot/" + spot.id, spot, true)
 }
 
 function removeSpot(id) {
-    return doDeleteSync(apiBase + "/spot/" + id, true)
+    return doDeleteSync(backendApiBase + "/spot/" + id, true)
 }
 
 function getAllRegions() {
-    return doGetJsonSync(apiBase + "/region")
+    return doGetJsonSync(backendApiBase + "/region")
 }
 
 
 function getRiver(riverId) {
-    return doGetJsonSync(apiBase + "/river/" + riverId)
+    return doGetJsonSync(backendApiBase + "/river/" + riverId)
 }
 
 function saveRiver(river) {
-    return doPostJsonSync(apiBase + "/river/" + river.id, river, true)
+    return doPostJsonSync(backendApiBase + "/river/" + river.id, river, true)
 }
 
 function removeRiver(id) {
-    return doDeleteSync(apiBase + "/river/" + id, true)
+    return doDeleteSync(backendApiBase + "/river/" + id, true)
 }
 
 function getImages(id, _type) {
-    var imgs = doGetJsonSync(apiBase + "/spot/" + id + "/img?type=" + _type)
+    var imgs = doGetJsonSync(backendApiBase + "/spot/" + id + "/img?type=" + _type)
     if (imgs) {
         return imgs
     } else {
@@ -85,9 +85,9 @@ function getImages(id, _type) {
 }
 
 function removeImage(spotId, id, _type) {
-    return doDeleteWithJsonRespSync(apiBase + "/spot/" + spotId + "/img/" + id + "?type=" + _type, true)
+    return doDeleteWithJsonRespSync(backendApiBase + "/spot/" + spotId + "/img/" + id + "?type=" + _type, true)
 }
 
 function setImageEnabled(spotId, id, enabled) {
-    return doPostJsonSync(apiBase + "/spot/" + spotId + "/img/" + id + "/enabled", enabled, true)
+    return doPostJsonSync(backendApiBase + "/spot/" + spotId + "/img/" + id + "/enabled", enabled, true)
 }

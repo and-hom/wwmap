@@ -252,7 +252,7 @@ func (this *GeoHierarchyHandler) GetRiver(w http.ResponseWriter, r *http.Request
 }
 
 func (this *GeoHierarchyHandler) SaveRiver(w http.ResponseWriter, r *http.Request) {
-	if !this.CheckRoleAllowedAndMakeResponse(w, r, dao.ADMIN) {
+	if !this.CheckRoleAllowedAndMakeResponse(w, r, dao.ADMIN, dao.EDITOR) {
 		return
 	}
 
@@ -293,7 +293,7 @@ func (this *GeoHierarchyHandler) SaveRiver(w http.ResponseWriter, r *http.Reques
 }
 
 func (this *GeoHierarchyHandler) RemoveRiver(w http.ResponseWriter, r *http.Request) {
-	if !this.CheckRoleAllowedAndMakeResponse(w, r, dao.ADMIN) {
+	if !this.CheckRoleAllowedAndMakeResponse(w, r, dao.ADMIN, dao.EDITOR) {
 		return
 	}
 
@@ -369,7 +369,7 @@ func (this *GeoHierarchyHandler) GetSpot(w http.ResponseWriter, r *http.Request)
 }
 
 func (this *GeoHierarchyHandler) SaveSpot(w http.ResponseWriter, r *http.Request) {
-	if !this.CheckRoleAllowedAndMakeResponse(w, r, dao.ADMIN) {
+	if !this.CheckRoleAllowedAndMakeResponse(w, r, dao.ADMIN, dao.EDITOR) {
 		return
 	}
 
@@ -406,7 +406,7 @@ func (this *GeoHierarchyHandler) SaveSpot(w http.ResponseWriter, r *http.Request
 }
 
 func (this *GeoHierarchyHandler) RemoveSpot(w http.ResponseWriter, r *http.Request) {
-	if !this.CheckRoleAllowedAndMakeResponse(w, r, dao.ADMIN) {
+	if !this.CheckRoleAllowedAndMakeResponse(w, r, dao.ADMIN, dao.EDITOR) {
 		return
 	}
 

@@ -16,7 +16,7 @@
                 // for editor
                 userInfo: getAuthorizedUserInfoOrNull(),
                 canEdit: function(){
-                 return this.userInfo!=null && this.userInfo.roles.includes("ADMIN")
+                 return this.userInfo!=null && (this.userInfo.roles.includes("EDITOR") || this.userInfo.roles.includes("ADMIN"))
                 },
 
                 getEditModeButtonTitle: function() {

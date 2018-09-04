@@ -298,9 +298,12 @@ type WWPassport struct {
 
 type Role string
 
-const ADMIN Role = "ADMIN"
-const USER Role = "USER"
-const ANONYMOUS Role = "ANON"
+const (
+	ADMIN Role = "ADMIN"
+	EDITOR Role = "EDITOR"
+	USER Role = "USER"
+	ANONYMOUS Role = "ANON"
+)
 
 func Join(separator string, roles ...Role) string {
 	if len(roles) == 1 {

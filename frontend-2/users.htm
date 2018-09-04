@@ -33,13 +33,13 @@
                 <a class="nav-link" href="refs.htm">Сайты</a>
             </li>
             <li class="#" v-if="admin">
-                <a class="nav-link" href="#">Польователи</a>
+                <a class="nav-link" href="#">Пользователи</a>
             </li>
         </ul>
         <auth></auth>
     </nav>
 
-    <ask-role id="ask-role" :roles="['ADMIN', 'USER']" :okfn="function(userId, role) { setRole(userId, role) }"></ask-role>
+    <ask-role id="ask-role" :roles="['ADMIN', 'EDITOR', 'USER']" :okfn="function(userId, role) { setRole(userId, role) }"></ask-role>
 
     <div class="container-fluid">
         <div class="row">
@@ -98,7 +98,7 @@
     Vue.component('ask-role', httpVueLoader('components/ask-role.vue'))
 
     function getUsers() {
-        return doGetJsonSync(apiBase + "/user", true)
+        return doGetJsonSync(backendApiBase + "/user", true)
     }
 
     var app = new Vue({
@@ -106,7 +106,7 @@
 
         data: {
             users: getUsers(),
-            availableRoles: ["ADMIN", "USER"],
+            availableRoles: ["ADMIN","EDITOR", "USER"],
             userInfo: getAuthorizedUserInfoOrNull(),
             admin: function() {
                 userInfo = getAuthorizedUserInfoOrNull()
@@ -116,7 +116,7 @@
                 return "role-" + user.role.toLowerCase()
             },
             setRole: function(userId, role) {
-                this.users = doPostJsonSync(apiBase + '/user/' + userId + '/role', role, true)
+                this.users = doPostJsonSync(backendApiBase + '/user/' + userId + '/role', role, true)
             },
             roleChangeText:function(user) {
                 return 'Сменить роль для ' + user.info.login + '. Текущая роль - ' + user.role

@@ -52,7 +52,7 @@ function extractToken() {
 
 function getUserInfo(token) {
     var xhr = new XMLHttpRequest();
-    xhr.open('GET', apiBase + '/user-info?token=' + token, false);
+    xhr.open('GET', backendApiBase + '/user-info?token=' + token, false);
     xhr.send();
     if (xhr.status == 200) {
         return JSON.parse(xhr.response)

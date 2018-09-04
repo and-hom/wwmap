@@ -89,7 +89,7 @@
                 images: getImages(this.spot.id, this.type),
                 imagesOutOfDate: true,
                 files: [],
-                uploadPath: apiBase + "/spot/" + this.spot.id +"/img?type=" + this.type,
+                uploadPath: backendApiBase + "/spot/" + this.spot.id +"/img?type=" + this.type,
                 removeImage: function(imgId) {
                     this.images = removeImage(this.spot.id, imgId, this.type);
                 },

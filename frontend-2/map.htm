@@ -21,6 +21,7 @@
     <script type="text/javascript" src="https://wwmap.ru/js/config.js"></script>
     <script type="text/javascript" src="https://wwmap.ru/js/map.v2.js"></script>
 
+    <script type="text/javascript" src="js/api.js"></script>
     <script type="text/javascript" src="js/auth.js"></script>
 
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
@@ -40,8 +41,8 @@
             <li class="nav-item">
                 <a class="nav-link" href="refs.htm">Сайты</a>
             </li>
-            <li class="nav-item" v-if="admin">
-                <a class="nav-link" href="users.htm">Польователи</a>
+            <li class="nav-item" v-if="admin()">
+                <a class="nav-link" href="users.htm">Пользователи</a>
             </li>
         </ul>
         <auth></auth>

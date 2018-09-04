@@ -103,7 +103,7 @@ func (this *UserInfoHandler) SetRole(w http.ResponseWriter, r *http.Request) {
 
 
 
-	if roleStr != string(dao.ADMIN) && roleStr!= string(dao.USER) {
+	if roleStr != string(dao.ADMIN) && roleStr!= string(dao.EDITOR) && roleStr!= string(dao.USER) {
 		OnError(w, err, "Can not set role " + roleStr, http.StatusBadRequest)
 		return
 	}

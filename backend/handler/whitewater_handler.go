@@ -62,10 +62,9 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 }
 
 func (this *WhiteWaterHandler) InsertWhiteWaterPoints(w http.ResponseWriter, r *http.Request) {
-	if !this.CheckRoleAllowedAndMakeResponse(w, r, ADMIN) {
+	if !this.CheckRoleAllowedAndMakeResponse(w, r, ADMIN, EDITOR) {
 		return
 	}
-
 
 	err := r.ParseForm()
 	if err != nil {

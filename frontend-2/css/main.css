@@ -6,6 +6,10 @@ ul {
     color: red
 }
 
+.role-editor {
+    color: orange
+}
+
 .role-user {
     color: green
 }

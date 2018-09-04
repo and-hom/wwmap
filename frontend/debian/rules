@@ -35,5 +35,5 @@ override_dh_auto_install:
 
 	install -D -m 0644 nginx.conf $$(pwd)/debian/wwmap-frontend/etc/nginx/sites-available/wwmap-frontend
 
-	sed -i 's#apiBase = ".*"#apiBase = "https://wwmap.ru/editor-api"#g' \
+	sed -i 's#backendApiBase = ".*"#backendApiBase = "https://wwmap.ru/editor-api"#g' \
 	    $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend-2/js/api.js

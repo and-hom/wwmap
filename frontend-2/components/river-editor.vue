@@ -132,7 +132,7 @@
                 // for editor
                 userInfo: getAuthorizedUserInfoOrNull(),
                 canEdit: function(){
-                 return this.userInfo!=null && this.userInfo.roles.includes("ADMIN")
+                 return this.userInfo!=null && (this.userInfo.roles.includes("EDITOR") || this.userInfo.roles.includes("ADMIN"))
                 },
                 editMode: app.rivereditorstate.editMode,
                 errMsg:null,
@@ -169,7 +169,7 @@
                 // end of editor
 
                 files: [],
-                uploadPath: apiBase + "/river/" + this.river.id +"/gpx",
+                uploadPath: backendApiBase + "/river/" + this.river.id +"/gpx",
                 add_spot: function() {
                     app.spoteditorstate.visible = false
                     app.rivereditorstate.visible = false;
