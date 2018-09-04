@@ -70,7 +70,7 @@ FROM white_water_rapid
 INNER JOIN river ON white_water_rapid.river_id=river.id
 INNER JOIN region ON river.region_id=region.id
 INNER JOIN country ON region.country_id=country.id
-ORDER BY order_index ASC
+ORDER BY river_id,order_index ASC
 
 --@insert
 INSERT INTO white_water_rapid(title,category,point,short_description, link, river_id)
