@@ -27,6 +27,7 @@ func NewWhiteWaterPostgresDao(postgresStorage PostgresStorage) WhiteWaterDao {
 		byIdFullQuery: queries.SqlQuery("white-water", "by-id-full"),
 		updateFullQuery: queries.SqlQuery("white-water", "update-full"),
 		deleteQuery: queries.SqlQuery("white-water", "delete"),
+		geomCenterByRiverQuery: queries.SqlQuery("white-water", "geom-center-by-river"),
 	}
 }
 
@@ -43,6 +44,7 @@ type whiteWaterStorage struct {
 	byIdFullQuery            string
 	updateFullQuery          string
 	deleteQuery              string
+	geomCenterByRiverQuery   string
 }
 
 func (this whiteWaterStorage) ListWithPath() ([]WhiteWaterPointWithPath, error) {
@@ -331,5 +333,29 @@ func (this whiteWaterStorage) update(query string, whiteWaterPoints ...WhiteWate
 func (this whiteWaterStorage) Remove(id int64) error {
 	log.Infof("Remove spot %d", id)
 	return this.performUpdates(this.deleteQuery, idMapper, id)
+}
+
+func (this whiteWaterStorage) GetGeomCenterByRiver(riverId int64) (geo.Point, error) {
+	p, found, err := this.doFindAndReturn(this.geomCenterByRiverQuery, func(rows *sql.Rows) (interface{}, error) {
+		pointString := ""
+		err := rows.Scan(&pointString)
+		if err != nil {
+			return geo.Point{}, err
+		}
+		var pgPoint PgPoint
+		err = json.Unmarshal([]byte(pointString), &pgPoint)
+		if err != nil {
+			log.Errorf("Can not parse centroid point %s for river %d: %v", pointString, riverId, err)
+			return geo.Point{}, err
+		}
+		return pgPoint.Coordinates, nil
+	}, riverId)
+	if err != nil {
+		return geo.Point{}, err
+	}
+	if !found {
+		return geo.Point{0, 0}, nil
+	}
+	return p.(geo.Point), nil
 }
 

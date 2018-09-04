@@ -62,6 +62,7 @@ type WhiteWaterDao interface {
 	ListByBbox(bbox Bbox) ([]WhiteWaterPointWithRiverTitle, error)
 	ListByRiver(riverId int64) ([]WhiteWaterPointWithRiverTitle, error)
 	ListByRiverAndTitle(riverId int64, title string) ([]WhiteWaterPointWithRiverTitle, error)
+	GetGeomCenterByRiver(riverId int64) (Point, error)
 	Remove(id int64) error
 }
 
