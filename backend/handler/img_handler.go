@@ -78,7 +78,7 @@ func (this *ImgHandler) GetImagePreview(w http.ResponseWriter, req *http.Request
 }
 
 func (this *ImgHandler) Upload(w http.ResponseWriter, req *http.Request) {
-	if !this.CheckRoleAllowedAndMakeResponse(w, req, dao.ADMIN) {
+	if !this.CheckRoleAllowedAndMakeResponse(w, req, dao.ADMIN, dao.EDITOR) {
 		return
 	}
 
@@ -150,7 +150,7 @@ func previewRect(r image.Rectangle) image.Rectangle {
 }
 
 func (this *ImgHandler) Delete(w http.ResponseWriter, req *http.Request) {
-	if !this.CheckRoleAllowedAndMakeResponse(w, req, dao.ADMIN) {
+	if !this.CheckRoleAllowedAndMakeResponse(w, req, dao.ADMIN, dao.EDITOR) {
 		return
 	}
 
@@ -186,7 +186,7 @@ func (this *ImgHandler) Delete(w http.ResponseWriter, req *http.Request) {
 }
 
 func (this *ImgHandler) SetEnabled(w http.ResponseWriter, req *http.Request) {
-	if !this.CheckRoleAllowedAndMakeResponse(w, req, dao.ADMIN) {
+	if !this.CheckRoleAllowedAndMakeResponse(w, req, dao.ADMIN, dao.EDITOR) {
 		return
 	}
 
@@ -221,7 +221,7 @@ func (this *ImgHandler) SetEnabled(w http.ResponseWriter, req *http.Request) {
 }
 
 func (this *ImgHandler) SetPreview(w http.ResponseWriter, req *http.Request) {
-	if !this.CheckRoleAllowedAndMakeResponse(w, req, dao.ADMIN) {
+	if !this.CheckRoleAllowedAndMakeResponse(w, req, dao.ADMIN, dao.EDITOR) {
 		return
 	}
 
@@ -260,7 +260,7 @@ func (this *ImgHandler) SetPreview(w http.ResponseWriter, req *http.Request) {
 }
 
 func (this *ImgHandler) DropPreview(w http.ResponseWriter, req *http.Request) {
-	if !this.CheckRoleAllowedAndMakeResponse(w, req, dao.ADMIN) {
+	if !this.CheckRoleAllowedAndMakeResponse(w, req, dao.ADMIN, dao.EDITOR) {
 		return
 	}
 

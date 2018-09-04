@@ -97,7 +97,7 @@ function setImageEnabled(spotId, id, enabled) {
 }
 
 function getSpotMainImageUrl(spotId) {
-    img =  doGetJsonSync(apiBase + "/spot/" + spotId + "/preview")
+    img =  doGetJsonSync(backendApiBase + "/spot/" + spotId + "/preview")
     if (img) {
         return img.url
     }
@@ -105,9 +105,9 @@ function getSpotMainImageUrl(spotId) {
 }
 
 function setSpotPreview(spotId, imgId) {
-    return doPostJsonSync(apiBase + "/spot/" + spotId + "/preview", imgId, true)
+    return doPostJsonSync(backendApiBase + "/spot/" + spotId + "/preview", imgId, true)
 }
 
 function dropSpotPreview(spotId) {
-    return doDeleteSync(apiBase + "/spot/" + spotId + "/preview", true)
+    return doDeleteSync(backendApiBase + "/spot/" + spotId + "/preview", true)
 }
