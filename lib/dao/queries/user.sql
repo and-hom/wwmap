@@ -7,4 +7,4 @@ SELECT "role" FROM "user" WHERE yandex_id=$1
 --@set-role
 UPDATE "user" SET "role"=$2 WHERE id=$1
 --@list
-SELECT id,yandex_id,"role",info FROM "user"
+SELECT id,yandex_id,"role",info FROM "user" ORDER BY id ASC
