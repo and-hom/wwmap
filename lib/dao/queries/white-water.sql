@@ -60,8 +60,6 @@ SELECT
     approach,
     safety,
 
-    preview,
-
     CASE WHEN region.fake THEN NULL ELSE region.title END AS region_title,
     country.title as country_title
 FROM white_water_rapid 
@@ -114,7 +112,6 @@ SELECT
     approach,
     safety,
 
-    preview,
     order_index,
     auto_ordering,
     last_auto_ordering
@@ -128,9 +125,9 @@ INSERT INTO white_water_rapid(title,category, point, short_description, link, ri
     mw_category, mw_description,
     hw_category, hw_description,
     orient, approach, safety,
-    preview,
     order_index, auto_ordering)
-    VALUES ($1,$2,ST_GeomFromGeoJSON($3),$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18) RETURNING id
+    VALUES ($1,$2,ST_GeomFromGeoJSON($3),$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,
+    $17,$18) RETURNING id
     
 --@update-full
 UPDATE white_water_rapid SET title=$2,category=$3, point=ST_GeomFromGeoJSON($4), short_description=$5, link=$6, river_id=$7,
@@ -138,12 +135,9 @@ UPDATE white_water_rapid SET title=$2,category=$3, point=ST_GeomFromGeoJSON($4),
     mw_category=$10, mw_description=$11,
     hw_category=$12, hw_description=$13,
     orient=$14, approach=$15, safety=$16,
-    preview=$17,
-    order_index=CASE WHEN $19 THEN order_index ELSE $18 END, auto_ordering=$19
+    order_index=CASE WHEN $18 THEN order_index ELSE $17 END, auto_ordering=$18
     WHERE id=$1
 
---@set-preview
-UPDATE white_water_rapid SET preview=$2 WHERE id=$1
 
 --@delete
 DELETE FROM white_water_rapid WHERE id=$1

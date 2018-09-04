@@ -64,7 +64,6 @@ type WhiteWaterDao interface {
 	ListByRiverAndTitle(riverId int64, title string) ([]WhiteWaterPointWithRiverTitle, error)
 	GetGeomCenterByRiver(riverId int64) (Point, error)
 	Remove(id int64) error
-	SetPreview(id int64, url string) error
 }
 
 type ReportDao interface {
@@ -94,6 +93,9 @@ type ImgDao interface {
 	List(wwId int64, limit int, _type ImageType, enabledOnly bool) ([]Img, error)
 	Remove(id int64) error
 	SetEnabled(id int64, enabled bool) error
+	SetMain(spotId int64, id int64) error
+	DropMainForSpot(spotId int64) error
+	GetMainForSpot(spotId int64) (Img, bool, error)
 }
 
 type WwPassportDao interface {

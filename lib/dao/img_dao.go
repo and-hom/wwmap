@@ -11,12 +11,15 @@ import (
 
 type imgStorage struct {
 	PostgresStorage
-	upsertQuery      string
-	findQuery        string
-	listQuery        string
-	insertLocalQuery string
-	deleteQuery      string
+	upsertQuery          string
+	findQuery            string
+	listQuery            string
+	insertLocalQuery     string
+	deleteQuery          string
 	setEnabledQuery      string
+	getMainForSpotQuery  string
+	setMainQuery         string
+	dropMainForSpotQuery string
 }
 
 func NewImgPostgresDao(postgresStorage PostgresStorage) ImgDao {
@@ -28,6 +31,9 @@ func NewImgPostgresDao(postgresStorage PostgresStorage) ImgDao {
 		insertLocalQuery : queries.SqlQuery("img", "insert-local"),
 		deleteQuery : queries.SqlQuery("img", "delete"),
 		setEnabledQuery : queries.SqlQuery("img", "set-enabled"),
+		getMainForSpotQuery: queries.SqlQuery("img", "get-main"),
+		setMainQuery: queries.SqlQuery("img", "set-main"),
+		dropMainForSpotQuery: queries.SqlQuery("img", "drop-main-for-spot"),
 	}
 }
 
@@ -54,7 +60,7 @@ func (this imgStorage) Upsert(imgs ...Img) ([]Img, error) {
 func imgMapper(rows *sql.Rows) (Img, error) {
 	img := Img{}
 	err := rows.Scan(&img.Id, &img.ReportId, &img.WwId, &img.Source, &img.RemoteId, &img.Url, &img.PreviewUrl,
-		&img.DatePublished, &img.Enabled, &img.Type)
+		&img.DatePublished, &img.Enabled, &img.Type, &img.MainImage)
 	if err != nil {
 		return img, err
 	}
@@ -62,7 +68,7 @@ func imgMapper(rows *sql.Rows) (Img, error) {
 }
 
 func (this imgStorage) List(wwId int64, limit int, _type ImageType, enabledOnly bool) ([]Img, error) {
-	result, err := this.doFindList(this.listQuery,imgMapper , wwId, _type, enabledOnly, limit)
+	result, err := this.doFindList(this.listQuery, imgMapper, wwId, _type, enabledOnly, limit)
 	if err != nil {
 		return []Img{}, err
 	}
@@ -71,6 +77,14 @@ func (this imgStorage) List(wwId int64, limit int, _type ImageType, enabledOnly 
 
 func (this imgStorage) Find(id int64) (Img, bool, error) {
 	result, found, err := this.doFindAndReturn(this.findQuery, imgMapper, id)
+	if err != nil {
+		return Img{}, found, err
+	}
+	return result.(Img), found, nil
+}
+
+func (this imgStorage) GetMainForSpot(spotId int64) (Img, bool, error) {
+	result, found, err := this.doFindAndReturn(this.getMainForSpotQuery, imgMapper, spotId)
 	if err != nil {
 		return Img{}, found, err
 	}
@@ -110,7 +124,7 @@ func (this imgStorage) Remove(id int64) error {
 	return this.performUpdates(this.deleteQuery, idMapper, id)
 }
 
-func (this imgStorage) SetEnabled(id int64, enabled bool) error{
+func (this imgStorage) SetEnabled(id int64, enabled bool) error {
 	return this.performUpdates(this.setEnabledQuery, arrayMapper, []interface{}{enabled, id})
 }
 
@@ -120,4 +134,12 @@ func (this imgStorage) toInterface(imgs ...Img) []interface{} {
 		imgs_i[i] = imgs[i]
 	}
 	return imgs_i
+}
+
+func (this imgStorage) SetMain(spotId int64, id int64) error {
+	return this.performUpdates(this.setMainQuery, arrayMapper, []interface{}{spotId, id})
+}
+
+func (this imgStorage) DropMainForSpot(spotId int64) error {
+	return this.performUpdates(this.dropMainForSpotQuery, idMapper, spotId)
 }

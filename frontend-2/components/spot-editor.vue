@@ -9,8 +9,8 @@
 
         <div v-if="canEdit()" class="btn-toolbar">
             <div class="btn-group mr-2" role="group" aria-label="First group">
-                <button type="button" class="btn btn-info" v-on:click="editMode=!editMode; hideError();">
-                    {{getEditModeButtonTitle()}}
+                <button type="button" class="btn btn-info" v-if="!editMode" v-on:click="editMode=true; hideError();">
+                    Редактирование
                 </button>
                 <button type="button" class="btn btn-success" v-if="editMode" v-on:click="save()">Сохранить</button>
                 <button type="button" class="btn btn-secondary" v-if="editMode" v-on:click="editMode=!editMode; reload()">Отменить</button>
@@ -134,10 +134,10 @@
                     </div>
                 </b-tab>
                 <b-tab title="Схемы" :disabled="spot.id>0 ? false : true">
-                    <img-upload :spot="spot" type="schema" :auth="true"></img-upload>
+                    <img-upload :spot="spot" type="schema" :auth="true" :main-image-id="spot.main_image_id"></img-upload>
                 </b-tab>
                 <b-tab title="Фото" :disabled="spot.id>0 ? false : true">
-                    <img-upload :spot="spot" type="photo" :auth="true"></img-upload>
+                    <img-upload :spot="spot" type="photo" :auth="true" :main-image-id="spot.main_image_id"></img-upload>
                 </b-tab>
                 <b-tab title="Видео" disabled>
                 </b-tab>
@@ -159,7 +159,7 @@
                         </div>
                     </div>
                     <div class="col-5">
-                        <img v-if="spot.preview" :src="spot.preview" style="width:100%"/>
+                        <img v-if="spotMainUrl" :src="spotMainUrl" style="width:100%"/>
                         <img v-else src="img/no-photo.png" style="width:100%"/>
                     </div>
                 </div>
@@ -266,12 +266,29 @@
                 this.$refs.locationEdit.doUpdate()
             } else {
                 this.$refs.locationView.doUpdate()
+                if (this.previousSpotId != this.initialSpot.id) {
+                    this.previousSpotId = this.initialSpot.id
+                    this.spotMainUrl = getSpotMainImageUrl(this.initialSpot.id)
+                }
             }
+            // end of hack
         },
         computed: {
                 spot:function () { return this.initialSpot },
                 images: function () {return getImages(this.initialSpot.id, "image").map(x => x.url)},
                 schemas: function () {return getImages(this.initialSpot.id, "schema").map(x => x.url)},
+                spotMainUrl: {
+                    get:function() {
+                        if (!this.spotMainUrlCached) {
+                            this.spotMainUrlCached = getSpotMainImageUrl(this.initialSpot.id)
+                        }
+                        return this.spotMainUrlCached
+                    },
+
+                    set:function(newVal) {
+                        this.spotMainUrlCached = newVal
+                    },
+                },
         },
         data:function() {
             return {
@@ -290,6 +307,7 @@
                     if (updated) {
                         this.spot = updated
                         this.editMode=false
+                        this.reloadMainImg()
                         this.reloadImgs()
                         this.hideError()
                     } else {
@@ -298,8 +316,12 @@
                 },
                 reload:function() {
                     this.spot = getSpot(this.spot.id)
+                    this.reloadMainImg()
                     this.reloadImgs()
                     this.hideError()
+                },
+                reloadMainImg: function() {
+                    this.spotMainUrl = getSpotMainImageUrl(this.spot.id)
                 },
                 reloadImgs: function() {
                     this.images = getImages(this.initialSpot.id, "image").map(x => x.url)
@@ -319,9 +341,6 @@
                 hideError: function(errMsg) {
                     this.errMsg = null
                 },
-                getEditModeButtonTitle: function() {
-                    return this.editMode ? 'Просмотр' : 'Редактирование';
-                },
                 // end of editor
                 all_categories:all_categories,
 
@@ -330,6 +349,9 @@
                 // imgs
                 imgIndex: null,
                 schIndex: null,
+
+                spotMainUrlCached: null,
+                previousSpotId: this.initialSpot.id,
             }
         }
     }

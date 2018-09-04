@@ -60,7 +60,7 @@
                     <button v-if="image.enabled==false" v-on:click="setImgEnabled(true, image.id)">Показывать</button>
                     <button v-if="image.enabled==true" v-on:click="setImgEnabled(false, image.id)">Не показывать</button>
                     <button v-if="image.source=='wwmap'" v-on:click="removeImage(image.id)">Удалить</button>
-                    <button v-if="image.enabled==true" v-on:click="setSpotPreview(image.id)">Сделать главным изображением</button>
+                    <button v-if="!image.main_image" v-on:click="setSpotPreview(image.id)">Сделать главным изображением</button>
                 </td>
             </tr>
         </table>
@@ -69,7 +69,7 @@
 
 <script>
     module.exports = {
-        props: ['spot', 'type', 'auth'],
+        props: ['spot', 'type', 'auth', 'mainImageId'],
         components: {
           FileUpload: VueUploadComponent
         },
@@ -106,12 +106,13 @@
                 },
                 setImgEnabled: function(enabled, imgId) {
                     this.images = setImageEnabled(this.spot.id, imgId, enabled);
+                    this.mainImageId = imgId
                 },
                 setSpotPreview: function(imgId) {
                     this.images = setSpotPreview(this.spot.id, imgId);
                 },
                 refresh:function() {
-                        this.images = getImages(this.spot.id, this.type)
+                    this.images = getImages(this.spot.id, this.type)
                 },
                 imageClass:function(image) {
                     if(image.enabled==false) {

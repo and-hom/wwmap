@@ -42,7 +42,7 @@ func (this *ImgHandler) Init(r *mux.Router) {
 	this.Register(r, "/spot/{spotId}/img/{imgId}", HandlerFunctions{Get:this.GetImage, Delete: this.Delete})
 	this.Register(r, "/spot/{spotId}/img/{imgId}/preview", HandlerFunctions{Get: this.GetImagePreview})
 	this.Register(r, "/spot/{spotId}/img/{imgId}/enabled", HandlerFunctions{Post:this.SetEnabled})
-	this.Register(r, "/spot/{spotId}/preview", HandlerFunctions{Post:this.SetPreview, Delete:this.DropPreview})
+	this.Register(r, "/spot/{spotId}/preview", HandlerFunctions{Get: this.GetPreview, Post:this.SetPreview, Delete:this.DropPreview})
 }
 
 func (this *ImgHandler) GetImages(w http.ResponseWriter, req *http.Request) {
@@ -251,12 +251,7 @@ func (this *ImgHandler) SetPreview(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	previewUrl := img.PreviewUrl
-	if img.Source == IMG_SOURCE_WWMAP {
-		previewUrl = fmt.Sprintf(this.ImgUrlBase, img.Id)
-	}
-
-	err = this.WhiteWaterDao.SetPreview(spotId, previewUrl)
+	err = this.ImgDao.SetMain(spotId, img.Id)
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not set preview for spot %d", spotId))
 		return
@@ -278,11 +273,34 @@ func (this *ImgHandler) DropPreview(w http.ResponseWriter, req *http.Request) {
 	}
 
 
-	err = this.WhiteWaterDao.SetPreview(spotId, "")
+	err = this.ImgDao.DropMainForSpot(spotId)
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not set preview for spot %d", spotId))
 		return
 	}
+}
+
+func (this *ImgHandler) GetPreview(w http.ResponseWriter, req *http.Request) {
+	pathParams := mux.Vars(req)
+	spotId, err := strconv.ParseInt(pathParams["spotId"], 10, 64)
+	if err != nil {
+		OnError(w, err, "Can not parse id", http.StatusBadRequest)
+		return
+	}
+
+
+	img, found, err := this.ImgDao.GetMainForSpot(spotId)
+	if err != nil {
+		OnError500(w, err, fmt.Sprintf("Can not set preview for spot %d", spotId))
+		return
+	}
+	if !found {
+		OnError(w, nil, "No main image set for spot", http.StatusNotFound)
+		return
+	}
+
+	this.processForWeb(&img)
+	this.JsonAnswer(w, img)
 }
 
 func (this *ImgHandler) listImagesForSpot(w http.ResponseWriter, spotId int64, _type dao.ImageType) {
@@ -292,13 +310,17 @@ func (this *ImgHandler) listImagesForSpot(w http.ResponseWriter, spotId int64, _
 		return
 	}
 	for i := 0; i < len(imgs); i++ {
-		if imgs[i].Source == IMG_SOURCE_WWMAP {
-			imgs[i].Url = fmt.Sprintf(this.ImgUrlBase, imgs[i].Id)
-			imgs[i].PreviewUrl = fmt.Sprintf(this.ImgUrlPreviewBase, imgs[i].Id)
-		}
+		this.processForWeb(&imgs[i])
 	}
 
 	this.JsonAnswer(w, imgs)
+}
+
+func (this *ImgHandler) processForWeb(img *dao.Img) {
+	if img.Source == IMG_SOURCE_WWMAP {
+		img.Url = fmt.Sprintf(this.ImgUrlBase, img.Id)
+		img.PreviewUrl = fmt.Sprintf(this.ImgUrlPreviewBase, img.Id)
+	}
 }
 
 func getImgType(req *http.Request) dao.ImageType {

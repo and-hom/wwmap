@@ -27,7 +27,6 @@ func NewWhiteWaterPostgresDao(postgresStorage PostgresStorage) WhiteWaterDao {
 		byIdFullQuery: queries.SqlQuery("white-water", "by-id-full"),
 		updateFullQuery: queries.SqlQuery("white-water", "update-full"),
 		deleteQuery: queries.SqlQuery("white-water", "delete"),
-		setPreviewQuery: queries.SqlQuery("white-water", "set-preview"),
 		geomCenterByRiverQuery: queries.SqlQuery("white-water", "geom-center-by-river"),
 	}
 }
@@ -45,7 +44,6 @@ type whiteWaterStorage struct {
 	byIdFullQuery            string
 	updateFullQuery          string
 	deleteQuery              string
-	setPreviewQuery              string
 	geomCenterByRiverQuery   string
 }
 
@@ -138,7 +136,7 @@ func paramsFull(wwp WhiteWaterPointFull) ([]interface{}, error) {
 
 	return []interface{}{wwp.Title, string(cat), string(pointBytes), wwp.ShortDesc, wwp.Link, nullIf0(wwp.River.Id),
 		string(lwCat), wwp.LowWaterDescription, string(mwCat), wwp.MediumWaterDescription, string(hwCat), wwp.HighWaterDescription,
-		wwp.Orient, wwp.Approach, wwp.Safety, wwp.Preview, wwp.OrderIndex, wwp.AutomaticOrdering}, nil
+		wwp.Orient, wwp.Approach, wwp.Safety, wwp.OrderIndex, wwp.AutomaticOrdering}, nil
 }
 
 func (this whiteWaterStorage) list(query string, vars ...interface{}) ([]WhiteWaterPointWithRiverTitle, error) {
@@ -209,7 +207,7 @@ func scanWwPointFull(rows *sql.Rows, additionalVars ...interface{}) (WhiteWaterP
 	fields := append([]interface{}{&wwp.Id, &wwp.Title, &pointString, &categoryString, &wwp.ShortDesc, &wwp.Link,
 		&wwp.River.Id, &wwp.River.Title,
 		&lwCategoryString, &wwp.LowWaterDescription, &mwCategoryString, &wwp.MediumWaterDescription, &hwCategoryString, &wwp.HighWaterDescription,
-		&wwp.Orient, &wwp.Approach, &wwp.Safety, &wwp.Preview,
+		&wwp.Orient, &wwp.Approach, &wwp.Safety,
 		&wwp.OrderIndex, &wwp.AutomaticOrdering, &lastAutoOrdering}, additionalVars...)
 
 	err := rows.Scan(fields...)
@@ -344,10 +342,6 @@ func (this whiteWaterStorage) update(query string, whiteWaterPoints ...WhiteWate
 func (this whiteWaterStorage) Remove(id int64) error {
 	log.Infof("Remove spot %d", id)
 	return this.performUpdates(this.deleteQuery, idMapper, id)
-}
-
-func (this whiteWaterStorage) SetPreview(id int64, url string) error {
-	return this.performUpdates(this.setPreviewQuery, arrayMapper, []interface{}{id, url})
 }
 
 func (this whiteWaterStorage) GetGeomCenterByRiver(riverId int64) (geo.Point, error) {

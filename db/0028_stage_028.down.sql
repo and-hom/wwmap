@@ -1,0 +1,2 @@
+ALTER TABLE image DROP COLUMN main_image;
+ALTER TABLE white_water_rapid ADD COLUMN preview CHARACTER VARYING(512);

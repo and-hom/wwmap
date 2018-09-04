@@ -1,0 +1,2 @@
+ALTER TABLE white_water_rapid DROP COLUMN preview;
+ALTER TABLE image ADD COLUMN main_image BOOL NOT NULL DEFAULT FALSE;

@@ -188,7 +188,6 @@ type WhiteWaterPointFull struct {
 	Approach               string `json:"approach"`
 	Safety                 string `json:"safety"`
 
-	Preview                string `json:"preview"`
 	River                  IdTitle `json:"river"`
 
 	OrderIndex             int `json:"order_index,string"`
@@ -262,6 +261,7 @@ type Img struct {
 	LabelsForSearch []string `json:"-"`
 	Enabled         bool `json:"enabled"`
 	Type            ImageType `json:"type"`
+	MainImage       bool        `json:"main_image"`
 }
 
 func GetImgType(_type string) ImageType {
