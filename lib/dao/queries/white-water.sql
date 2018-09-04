@@ -60,6 +60,10 @@ SELECT
     approach,
     safety,
 
+    order_index,
+    auto_ordering,
+    last_auto_ordering,
+
     CASE WHEN region.fake THEN NULL ELSE region.title END AS region_title,
     country.title as country_title
 FROM white_water_rapid 
