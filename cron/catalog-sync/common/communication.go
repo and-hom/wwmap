@@ -26,13 +26,20 @@ func (this WithReportProvider) Do(payload func(ReportProvider) error) error {
 	return payload(provider)
 }
 
+type LinkOnPage struct {
+	Url   string
+	Title string
+}
+
 type CatalogConnector interface {
 	io.Closer
 	PassportEntriesSince(key string) ([]dao.WWPassport, error)
 	GetImages(key string) ([]dao.Img, error)
 
-	Exists(key []string) (bool, error)
-	CreatePage(title string, parent int) (int, error)
-	GetId(title string, parent int) (int, error)
-	Create(passport dao.WhiteWaterPointFull, parent int, mainImage dao.Img, imgs []dao.Img) error
+	CreateEmptyPageIfNotExistsAndReturnId(parent int, pageId int, title string) (int, string, bool, error)
+	WriteSpotPage(pageId int, spot dao.WhiteWaterPointFull, river dao.RiverTitle, region dao.Region, country dao.Country, mainImg dao.Img, imgs []dao.Img, rootPageLink, countryPageLink, regionPageLink, riverPageLink string) error
+	WriteRiverPage(pageId int, river dao.RiverTitle, region dao.Region, country dao.Country, links []LinkOnPage, rootPageLink, countryPageLink, regionPageLink string) error
+	WriteRegionPage(pageId int, region dao.Region, country dao.Country, links []LinkOnPage, rootPageLink, countryPageLink string) error
+	WriteCountryPage(pageId int, country dao.Country, regionLinks, riverLinks []LinkOnPage, rootPageLink string) error
+	WriteRootPage(pageId int, countryLinks []LinkOnPage) error
 }

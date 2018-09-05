@@ -16,7 +16,7 @@ import (
 func NewWhiteWaterPostgresDao(postgresStorage PostgresStorage) WhiteWaterDao {
 	return whiteWaterStorage{
 		PostgresStorage:postgresStorage,
-		PropsManager:PropertyManager{table:queries.SqlQuery("white-water", "table"), dao:&postgresStorage},
+		PropsManager:PropertyManagerImpl{table:queries.SqlQuery("white-water", "table"), dao:&postgresStorage},
 		listByBoxQuery: queries.SqlQuery("white-water", "by-box"),
 		listByRiverQuery: queries.SqlQuery("white-water", "by-river"),
 		listByRiverFullQuery: queries.SqlQuery("white-water", "by-river-full"),
@@ -173,15 +173,7 @@ func (this whiteWaterStorage) list(query string, vars ...interface{}) ([]WhiteWa
 
 
 func (this whiteWaterStorage) listFull(query string, vars ...interface{}) ([]WhiteWaterPointFull, error) {
-	result, err := this.doFindList(query,
-		func(rows *sql.Rows) (WhiteWaterPointFull, error) {
-			wwPoint, err := scanWwPointFull(rows)
-			if err != nil {
-				return WhiteWaterPointFull{}, err
-			}
-
-			return wwPoint, nil
-		}, vars...)
+	result, err := this.doFindList(query, scanWwPointFull, vars...)
 	if (err != nil ) {
 		return []WhiteWaterPointFull{}, err
 	}

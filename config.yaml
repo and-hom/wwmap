@@ -46,3 +46,4 @@ backup:
 sync:
   login: "wwmap"
   password: ""
+  root-page-id: 1739

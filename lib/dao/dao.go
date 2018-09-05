@@ -685,12 +685,17 @@ func (this *PostgresStorage) performUpdates(query string, mapper func(entity int
 	return tx.Commit()
 }
 
-type PropertyManager struct {
+type PropertyManager interface {
+	GetIntProperty(name string, id int64) (int, error)
+	SetIntProperty(name string, id int64, value int) error
+}
+
+type PropertyManagerImpl struct {
 	dao   *PostgresStorage
 	table string
 }
 
-func (this PropertyManager) GetIntProperty(name string, id int64) (int, error) {
+func (this PropertyManagerImpl) GetIntProperty(name string, id int64) (int, error) {
 	i, found, err := this.dao.doFindAndReturn(
 		"WITH txt_val AS (SELECT (props->>'" + name + "') val FROM " + this.table + " WHERE id=$1) SELECT val::INT FROM txt_val WHERE val IS NOT NULL",
 		func(rows *sql.Rows) (int, error) {
@@ -707,7 +712,7 @@ func (this PropertyManager) GetIntProperty(name string, id int64) (int, error) {
 	return i.(int), nil
 }
 
-func (this PropertyManager) SetIntProperty(name string, id int64, value int) error {
+func (this PropertyManagerImpl) SetIntProperty(name string, id int64, value int) error {
 	return this.dao.performUpdates("UPDATE " + this.table + " SET props=jsonb_set(props, '{" + name + "}', $2::text::jsonb, true) WHERE id=$1",
 		arrayMapper, []interface{}{id, value})
 }

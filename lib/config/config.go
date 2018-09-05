@@ -38,17 +38,18 @@ type TileCache struct {
 }
 
 type WordpressSync struct {
-	Login    string `yaml:"login"`
-	Password string `yaml:"password"`
+	Login      string `yaml:"login"`
+	Password   string `yaml:"password"`
+	RootPageId int `yaml:"root-page-id"`
 }
 
 type ImgStorageParams struct {
-	Dir string `yaml:"dir"`
+	Dir     string `yaml:"dir"`
 	UrlBase string `yaml:"url-base"`
 }
 
 type ImgStorage struct {
-	Full ImgStorageParams `yaml:"full"`
+	Full    ImgStorageParams `yaml:"full"`
 	Preview ImgStorageParams `yaml:"preview"`
 }
 
@@ -60,7 +61,7 @@ type Configuration struct {
 	Content              Content `yaml:"content"`
 	TileCache            TileCache `yaml:"tile-cache"`
 	Sync                 WordpressSync `yaml:"sync"`
-	ImgStorage	     ImgStorage `yaml:"img-storage"`
+	ImgStorage           ImgStorage `yaml:"img-storage"`
 }
 
 func loadConf(filename string) (Configuration, error) {

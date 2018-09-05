@@ -12,8 +12,6 @@ import (
 	"bytes"
 )
 
-const ROOT_PAGE = 1739
-
 func GetCatalogConnector(login, password string) (common.CatalogConnector, error) {
 	client := wp.NewClient(&wp.Options{
 		BaseAPIURL: API_BASE, // example: `http://192.168.99.100:32777/wp-json/wp/v2`
@@ -31,22 +29,154 @@ func GetCatalogConnector(login, password string) (common.CatalogConnector, error
 	if e != nil {
 		return nil, fmt.Errorf("Can not compile template: %s", e.Error())
 	}
+	riverPageTemplate, e := template.New("river").Parse(string(bindata.MustAsset("river-page-template.htm")))
+	if e != nil {
+		return nil, fmt.Errorf("Can not compile template: %s", e.Error())
+	}
+	regionPageTemplate, e := template.New("region").Parse(string(bindata.MustAsset("region-page-template.htm")))
+	if e != nil {
+		return nil, fmt.Errorf("Can not compile template: %s", e.Error())
+	}
+	countryPageTemplate, e := template.New("country").Parse(string(bindata.MustAsset("country-page-template.htm")))
+	if e != nil {
+		return nil, fmt.Errorf("Can not compile template: %s", e.Error())
+	}
+	rootPageTemplate, e := template.New("root").Parse(string(bindata.MustAsset("root-page-template.htm")))
+	if e != nil {
+		return nil, fmt.Errorf("Can not compile template: %s", e.Error())
+	}
 	return &HuskytmCatalogConnector{
 		client:client,
 		me:u.ID,
 		pageIdsCache:make(map[string]int),
 		spotPageTemplate: spotPageTemplate,
+		riverPageTemplate : riverPageTemplate,
+		regionPageTemplate: regionPageTemplate,
+		countryPageTemplate: countryPageTemplate,
+		rootPageTemplate: rootPageTemplate,
 	}, nil
 }
 
 type HuskytmCatalogConnector struct {
-	client           *wp.Client
-	me               int
-	pageIdsCache     map[string]int
-	spotPageTemplate *template.Template
+	client              *wp.Client
+	me                  int
+	pageIdsCache        map[string]int
+	spotPageTemplate    *template.Template
+	riverPageTemplate   *template.Template
+	regionPageTemplate  *template.Template
+	countryPageTemplate *template.Template
+	rootPageTemplate *template.Template
 }
 
 func (this *HuskytmCatalogConnector) Close() error {
+	return nil
+}
+
+func (this *HuskytmCatalogConnector) CreateEmptyPageIfNotExistsAndReturnId(parent int, pageId int, title string) (int, string, bool, error) {
+	log.Infof("Check page for id=%d", pageId)
+	if pageId <= 0 {
+		id, link, err := this.createPage(parent, title)
+		created := err == nil
+		return id, link, created, err
+	}
+	p, r, _, err := this.client.Pages().Get(pageId, emptyMap())
+	if r.StatusCode == http.StatusNotFound || p.Status == "trash" {
+		id, link, err := this.createPage(parent, title)
+		created := err == nil
+		return id, link, created, err
+	} else if err != nil {
+		return 0, "", false, err
+	}
+	return p.ID, p.Link, false, nil
+}
+
+func (this *HuskytmCatalogConnector) createPage(parent int, title string) (int, string, error) {
+	p, r, b, err := this.client.Pages().Create(&wp.Page{
+		Title:        wp.Title{Raw:title},
+		Author:        this.me,
+		Parent:        parent,
+		Status:        "publish",
+	})
+	if err != nil {
+		log.Errorf("Connection failed. Code: %d Body: %s", r.StatusCode, string(b))
+		return 0, "", err
+	}
+	return p.ID, p.Link, nil
+}
+
+func (this *HuskytmCatalogConnector) WriteSpotPage(pageId int, spot dao.WhiteWaterPointFull,
+river dao.RiverTitle, region dao.Region, country dao.Country,
+mainImg dao.Img, imgs []dao.Img,
+rootPageLink, countryPageLink, regionPageLink, riverPageLink string) error {
+	return this.writePage(pageId, this.spotPageTemplate, spot.Title, map[string]interface{}{
+		"rootPage": rootPageLink,
+		"country": country,
+		"countryPage": countryPageLink,
+		"region": region,
+		"regionPage": regionPageLink,
+		"river": river,
+		"riverPage": riverPageLink,
+		"spot": spot,
+		"mainImage": mainImg,
+		"images": imgs,
+	})
+}
+func (this *HuskytmCatalogConnector) WriteRiverPage(pageId int, river dao.RiverTitle, region dao.Region, country dao.Country, links []common.LinkOnPage,
+rootPageLink, countryPageLink, regionPageLink string) error {
+	return this.writePage(pageId, this.riverPageTemplate, river.Title, map[string]interface{}{
+		"rootPage": rootPageLink,
+		"country": country,
+		"countryPage": countryPageLink,
+		"region": region,
+		"regionPage": regionPageLink,
+		"river": river,
+		"links": links,
+	})
+}
+func (this *HuskytmCatalogConnector) WriteRegionPage(pageId int, region dao.Region, country dao.Country, links []common.LinkOnPage,
+rootPageLink, countryPageLink string) error {
+	return this.writePage(pageId, this.regionPageTemplate, region.Title, map[string]interface{}{
+		"rootPage": rootPageLink,
+		"country": country,
+		"countryPage": countryPageLink,
+		"region": region,
+		"links": links,
+	})
+}
+func (this *HuskytmCatalogConnector) WriteCountryPage(pageId int, country dao.Country, regionLinks, riverLinks []common.LinkOnPage, rootPageLink string) error {
+	return this.writePage(pageId, this.countryPageTemplate, country.Title, map[string]interface{}{
+		"rootPage": rootPageLink,
+		"country": country,
+		"regionLinks": regionLinks,
+		"riverLinks": riverLinks,
+	})
+}
+func (this *HuskytmCatalogConnector) WriteRootPage(pageId int, countryLinks []common.LinkOnPage) error {
+	return this.writePage(pageId, this.rootPageTemplate, "Каталог водных препятствий", map[string]interface{}{
+		"links": countryLinks,
+	})
+}
+
+func (this *HuskytmCatalogConnector) writePage(pageId int, tmpl *template.Template, title string, data interface{}) error {
+	log.Infof("Write page %d for %s", pageId, title)
+	htmlBuf := bytes.Buffer{}
+	err := tmpl.Execute(&htmlBuf, data)
+	if err != nil {
+		log.Errorf("Can not process template", err)
+		return err
+	}
+	page := wp.Page{
+		Title:  wp.Title{Raw:title},
+		Author:        this.me,
+		Content:wp.Content{Raw:htmlBuf.String()},
+	}
+
+	_, r, b, err := this.client.Pages().Update(pageId, &page)
+	if err != nil {
+		log.Errorf("Connection failed. Code: %d Body: %s", r.StatusCode, string(b))
+		return err
+	}
+
 	return nil
 }
 
@@ -58,54 +188,6 @@ func (this *HuskytmCatalogConnector) GetPassport(key string) (dao.WhiteWaterPoin
 }
 func (this *HuskytmCatalogConnector) GetImages(key string) ([]dao.Img, error) {
 	return []dao.Img{}, nil
-}
-
-func (this *HuskytmCatalogConnector) Exists(key []string) (bool, error) {
-	log.Debug("Check exists ", key)
-	parentId := ROOT_PAGE
-	for i := 0; i < len(key); i++ {
-		id, err := this.GetId(key[i], parentId)
-		if err != nil {
-			switch err.(type) {
-			default:
-				return false, err
-			case PageNotFoundError:
-				log.Debug("Not exists ", key[i])
-				return false, nil
-			}
-		}
-		log.Debug("Exists ", key[i])
-		parentId = id
-	}
-	return true, nil
-}
-
-func (this *HuskytmCatalogConnector) Create(wwPoint dao.WhiteWaterPointFull, parent int, mainImage dao.Img, images []dao.Img) error {
-	htmlBuf := bytes.Buffer{}
-	err := this.spotPageTemplate.Execute(&htmlBuf, map[string]interface{}{
-		"spot": wwPoint,
-		"img": mainImage,
-	})
-	if err!=nil {
-		log.Errorf("Can not process template", err)
-		return err
-	}
-	page := wp.Page{
-		Title:  wp.Title{Raw:wwPoint.Title},
-		Author:        this.me,
-		Parent:        parent,
-		Status:        "publish",
-		Content:wp.Content{Raw:htmlBuf.String()},
-	}
-	fmt.Printf(page.Content.Raw)
-
-	_, r, b, err := this.client.Pages().Create(&page)
-	if err != nil {
-		log.Errorf("Connection failed. Code: %d Body: %s", r.StatusCode, string(b))
-		return err
-	}
-
-	return nil
 }
 
 func (this *HuskytmCatalogConnector) CreatePage(title string, parent int) (int, error) {

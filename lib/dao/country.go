@@ -8,7 +8,7 @@ import (
 func NewCountryPostgresDao(postgresStorage PostgresStorage) CountryDao {
 	return countryStorage{
 		PostgresStorage: postgresStorage,
-		PropsManager: PropertyManager{table:queries.SqlQuery("country", "table"), dao:&postgresStorage},
+		PropsManager: PropertyManagerImpl{table:queries.SqlQuery("country", "table"), dao:&postgresStorage},
 		listQuery: queries.SqlQuery("country", "list"),
 	}
 }

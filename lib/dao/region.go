@@ -9,7 +9,7 @@ import (
 func NewRegionPostgresDao(postgresStorage PostgresStorage) RegionDao {
 	return regionStorage{
 		PostgresStorage: postgresStorage,
-		PropsManager:PropertyManager{table:queries.SqlQuery("region", "table"), dao:&postgresStorage},
+		PropsManager:PropertyManagerImpl{table:queries.SqlQuery("region", "table"), dao:&postgresStorage},
 		listQuery:queries.SqlQuery("region", "list-real"),
 		listAllWithCountryQuery:queries.SqlQuery("region", "list-all-with-country"),
 		getByIdQuery:queries.SqlQuery("region", "get-by-id"),

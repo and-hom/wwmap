@@ -10,10 +10,12 @@ import (
 )
 
 type App struct {
-	VoyageReportDao   dao.VoyageReportDao
-	WhiteWaterDao     dao.WhiteWaterDao
+	CountryDao        dao.CountryDao
+	RegionDao         dao.RegionDao
 	RiverDao          dao.RiverDao
+	WhiteWaterDao     dao.WhiteWaterDao
 	ImgDao            dao.ImgDao
+	VoyageReportDao   dao.VoyageReportDao
 	WwPassportDao     dao.WwPassportDao
 	Configuration     config.WordpressSync
 	Notifications     config.Notifications
@@ -31,6 +33,8 @@ func CreateApp() App {
 	pgStorage := dao.NewPostgresStorage(configuration.DbConnString)
 	return App{
 		VoyageReportDao:dao.NewVoyageReportPostgresDao(pgStorage),
+		CountryDao:dao.NewCountryPostgresDao(pgStorage),
+		RegionDao:dao.NewRegionPostgresDao(pgStorage),
 		RiverDao:dao.NewRiverPostgresDao(pgStorage),
 		WhiteWaterDao:dao.NewWhiteWaterPostgresDao(pgStorage),
 		ImgDao:dao.NewImgPostgresDao(pgStorage),

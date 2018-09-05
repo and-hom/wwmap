@@ -13,7 +13,7 @@ import (
 func NewRiverPostgresDao(postgresStorage PostgresStorage) RiverDao {
 	return riverStorage{
 		PostgresStorage: postgresStorage,
-		PropsManager:PropertyManager{table:queries.SqlQuery("river", "table"), dao:&postgresStorage},
+		PropsManager:PropertyManagerImpl{table:queries.SqlQuery("river", "table"), dao:&postgresStorage},
 		findByTagsQuery: queries.SqlQuery("river", "find-by-tags"),
 		nearestQuery: queries.SqlQuery("river", "nearest"),
 		insideBoundsQuery: queries.SqlQuery("river", "inside-bounds"),
