@@ -1,0 +1,4 @@
+ALTER TABLE country ADD COLUMN props JSONB NOT NULL DEFAULT '{}'::jsonb;
+ALTER TABLE region ADD COLUMN props JSONB NOT NULL DEFAULT '{}'::jsonb;
+ALTER TABLE river ADD COLUMN props JSONB NOT NULL DEFAULT '{}'::jsonb;
+ALTER TABLE white_water_rapid ADD COLUMN props JSONB NOT NULL DEFAULT '{}'::jsonb;

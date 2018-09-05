@@ -1,5 +1,8 @@
+--@table
+region
 --@list-real
 SELECT id, country_id, title FROM region WHERE country_id=$1 AND not fake
+    ORDER BY CASE title WHEN '-' THEN NULL ELSE title END ASC
 --@get-by-id
 SELECT id, country_id, title FROM region WHERE id=$1
 --@list-all-with-country

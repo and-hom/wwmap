@@ -8,24 +8,30 @@ import (
 func NewCountryPostgresDao(postgresStorage PostgresStorage) CountryDao {
 	return countryStorage{
 		PostgresStorage: postgresStorage,
-		listQuery:queries.SqlQuery("country","list"),
+		PropsManager: PropertyManager{table:queries.SqlQuery("country", "table"), dao:&postgresStorage},
+		listQuery: queries.SqlQuery("country", "list"),
 	}
 }
 
 type countryStorage struct {
 	PostgresStorage
-	listQuery   string
+	PropsManager PropertyManager
+	listQuery    string
 }
 
 func (this countryStorage) List() ([]Country, error) {
-	lst, err := this.doFindList(this.listQuery, func(rows *sql.Rows) (Country,error){
+	lst, err := this.doFindList(this.listQuery, func(rows *sql.Rows) (Country, error) {
 		result := Country{}
 		err := rows.Scan(&result.Id, &result.Title)
 		return result, err
 	})
-	if err!=nil {
+	if err != nil {
 		return []Country{}, nil
 	}
 	return lst.([]Country), nil
+}
+
+func (this countryStorage) Props() PropertyManager {
+	return this.PropsManager
 }
 

@@ -13,6 +13,7 @@ import (
 func NewRiverPostgresDao(postgresStorage PostgresStorage) RiverDao {
 	return riverStorage{
 		PostgresStorage: postgresStorage,
+		PropsManager:PropertyManager{table:queries.SqlQuery("river", "table"), dao:&postgresStorage},
 		findByTagsQuery: queries.SqlQuery("river", "find-by-tags"),
 		nearestQuery: queries.SqlQuery("river", "nearest"),
 		insideBoundsQuery: queries.SqlQuery("river", "inside-bounds"),
@@ -31,6 +32,7 @@ func NewRiverPostgresDao(postgresStorage PostgresStorage) RiverDao {
 
 type riverStorage struct {
 	PostgresStorage
+	PropsManager     PropertyManager
 	findByTagsQuery          string
 	nearestQuery             string
 	insideBoundsQuery        string
@@ -182,4 +184,8 @@ func (this riverStorage) Remove(id int64) error {
 		}
 	}
 	return tx.Commit()
+}
+
+func (this riverStorage) Props() PropertyManager {
+	return this.PropsManager
 }

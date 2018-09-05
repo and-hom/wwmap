@@ -16,8 +16,10 @@ import (
 func NewWhiteWaterPostgresDao(postgresStorage PostgresStorage) WhiteWaterDao {
 	return whiteWaterStorage{
 		PostgresStorage:postgresStorage,
+		PropsManager:PropertyManager{table:queries.SqlQuery("white-water", "table"), dao:&postgresStorage},
 		listByBoxQuery: queries.SqlQuery("white-water", "by-box"),
 		listByRiverQuery: queries.SqlQuery("white-water", "by-river"),
+		listByRiverFullQuery: queries.SqlQuery("white-water", "by-river-full"),
 		listByRiverAndTitleQuery: queries.SqlQuery("white-water", "by-river-and-title"),
 		listWithPathQuery: queries.SqlQuery("white-water", "with-path"),
 		insertQuery: queries.SqlQuery("white-water", "insert"),
@@ -33,8 +35,10 @@ func NewWhiteWaterPostgresDao(postgresStorage PostgresStorage) WhiteWaterDao {
 
 type whiteWaterStorage struct {
 	PostgresStorage
+	PropsManager     PropertyManager
 	listByBoxQuery           string
 	listByRiverQuery         string
+	listByRiverFullQuery         string
 	listByRiverAndTitleQuery string
 	listWithPathQuery        string
 	insertQuery              string
@@ -57,6 +61,10 @@ func (this whiteWaterStorage) ListByBbox(bbox geo.Bbox) ([]WhiteWaterPointWithRi
 
 func (this whiteWaterStorage) ListByRiver(id int64) ([]WhiteWaterPointWithRiverTitle, error) {
 	return this.list(this.listByRiverQuery, id)
+}
+
+func (this whiteWaterStorage) ListByRiverFull(id int64) ([]WhiteWaterPointFull, error) {
+	return this.listFull(this.listByRiverFullQuery, id)
 }
 
 func (this whiteWaterStorage) ListByRiverAndTitle(riverId int64, title string) ([]WhiteWaterPointWithRiverTitle, error) {
@@ -161,6 +169,23 @@ func (this whiteWaterStorage) list(query string, vars ...interface{}) ([]WhiteWa
 		return []WhiteWaterPointWithRiverTitle{}, err
 	}
 	return result.([]WhiteWaterPointWithRiverTitle), nil
+}
+
+
+func (this whiteWaterStorage) listFull(query string, vars ...interface{}) ([]WhiteWaterPointFull, error) {
+	result, err := this.doFindList(query,
+		func(rows *sql.Rows) (WhiteWaterPointFull, error) {
+			wwPoint, err := scanWwPointFull(rows)
+			if err != nil {
+				return WhiteWaterPointFull{}, err
+			}
+
+			return wwPoint, nil
+		}, vars...)
+	if (err != nil ) {
+		return []WhiteWaterPointFull{}, err
+	}
+	return result.([]WhiteWaterPointFull), nil
 }
 
 func (this whiteWaterStorage) listWithPath(query string, vars ...interface{}) ([]WhiteWaterPointWithPath, error) {
@@ -366,5 +391,9 @@ func (this whiteWaterStorage) GetGeomCenterByRiver(riverId int64) (geo.Point, er
 		return geo.Point{0, 0}, nil
 	}
 	return p.(geo.Point), nil
+}
+
+func (this whiteWaterStorage) Props() PropertyManager {
+	return this.PropsManager
 }
 

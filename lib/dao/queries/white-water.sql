@@ -1,3 +1,5 @@
+--@table
+white_water_rapid
 --@by-box
 SELECT 
     white_water_rapid.id AS id,
@@ -22,6 +24,35 @@ SELECT
     river_id,
     river.title as river_title
 FROM white_water_rapid  LEFT OUTER JOIN river ON white_water_rapid.river_id=river.id 
+WHERE river_id=$1
+ORDER BY order_index ASC
+
+--@by-river-full
+SELECT
+    white_water_rapid.id AS id,
+    white_water_rapid.title AS title,
+    ST_AsGeoJSON(point) as point,
+    category,
+    short_description,
+    link,
+    river_id,
+    river.title as river_title,
+
+    lw_category,
+    lw_description,
+    mw_category,
+    mw_description,
+    hw_category,
+    hw_description,
+
+    orient,
+    approach,
+    safety,
+
+    order_index,
+    auto_ordering,
+    last_auto_ordering
+FROM white_water_rapid  LEFT OUTER JOIN river ON white_water_rapid.river_id=river.id
 WHERE river_id=$1
 ORDER BY order_index ASC
 

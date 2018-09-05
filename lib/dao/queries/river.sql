@@ -1,3 +1,5 @@
+--@table
+river
 --@find-by-tags
 SELECT id,region_id,title,NULL, NULL FROM (
 		SELECT id,region_id, title, CASE aliases WHEN '[]' THEN NULL ELSE jsonb_array_elements_text(aliases) END AS alias FROM river) sq
@@ -20,10 +22,12 @@ SELECT id,region_id,title,NULL,river.aliases AS aliases FROM river WHERE id=$1
 --@by-region
 SELECT river.id, region_id, river.title, NULL, river.aliases
     FROM river INNER JOIN region ON river.region_id=region.id WHERE region.id=$1
+    ORDER BY CASE river.title WHEN '-' THEN NULL ELSE river.title END ASC
 
 --@by-country
 SELECT river.id as id, region_id, river.title as title, NULL, river.aliases as aliases
     FROM river INNER JOIN region ON river.region_id=region.id WHERE region.fake AND region.country_id=$1
+    ORDER BY CASE river.title WHEN '-' THEN NULL ELSE river.title END ASC
 
 --@by-first-letters
 SELECT id, region_id, title, NULL, aliases FROM river WHERE title ilike $1||'%' LIMIT $2

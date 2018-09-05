@@ -9,6 +9,7 @@ import (
 func NewRegionPostgresDao(postgresStorage PostgresStorage) RegionDao {
 	return regionStorage{
 		PostgresStorage: postgresStorage,
+		PropsManager:PropertyManager{table:queries.SqlQuery("region", "table"), dao:&postgresStorage},
 		listQuery:queries.SqlQuery("region", "list-real"),
 		listAllWithCountryQuery:queries.SqlQuery("region", "list-all-with-country"),
 		getByIdQuery:queries.SqlQuery("region", "get-by-id"),
@@ -17,6 +18,7 @@ func NewRegionPostgresDao(postgresStorage PostgresStorage) RegionDao {
 
 type regionStorage struct {
 	PostgresStorage
+	PropsManager     PropertyManager
 	getByIdQuery string
 	listQuery    string
 	listAllWithCountryQuery    string
@@ -55,9 +57,15 @@ func (this regionStorage) ListAllWithCountry() ([]RegionWithCountry, error) {
 	return lst.([]RegionWithCountry), nil
 }
 
+
+func (this regionStorage) Props() PropertyManager {
+	return this.PropsManager
+}
+
 func scanFuncI(rows *sql.Rows) (interface{}, error) {
 	return scanFunc(rows)
 }
+
 func scanFunc(rows *sql.Rows) (Region, error) {
 	result := Region{}
 	err := rows.Scan(&result.Id, &result.CountryId, &result.Title)

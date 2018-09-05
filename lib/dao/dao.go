@@ -39,6 +39,7 @@ type Storage interface {
 }
 
 type RiverDao interface {
+	HasProperties
 	NearestRivers(point Point, limit int) ([]RiverTitle, error)
 	Find(id int64) (RiverTitle, error)
 	ListRiversWithBounds(bbox Bbox, limit int) ([]RiverTitle, error)
@@ -52,6 +53,7 @@ type RiverDao interface {
 }
 
 type WhiteWaterDao interface {
+	HasProperties
 	InsertWhiteWaterPoints(whiteWaterPoints ...WhiteWaterPoint) error
 	InsertWhiteWaterPointFull(whiteWaterPoints WhiteWaterPointFull) (int64, error)
 	UpdateWhiteWaterPoints(whiteWaterPoints ...WhiteWaterPoint) error
@@ -61,6 +63,7 @@ type WhiteWaterDao interface {
 	ListWithPath() ([]WhiteWaterPointWithPath, error)
 	ListByBbox(bbox Bbox) ([]WhiteWaterPointWithRiverTitle, error)
 	ListByRiver(riverId int64) ([]WhiteWaterPointWithRiverTitle, error)
+	ListByRiverFull(riverId int64) ([]WhiteWaterPointFull, error)
 	ListByRiverAndTitle(riverId int64, title string) ([]WhiteWaterPointWithRiverTitle, error)
 	GetGeomCenterByRiver(riverId int64) (Point, error)
 	Remove(id int64) error
@@ -110,17 +113,23 @@ type UserDao interface {
 	SetRole(userId int64, role Role) error
 }
 
+type HasProperties interface {
+	Props() PropertyManager
+}
+
 type CountryDao interface {
+	HasProperties
 	List() ([]Country, error)
 }
 
 type RegionDao interface {
+	HasProperties
 	Get(id int64) (Region, error)
 	List(countryId int64) ([]Region, error)
 	ListAllWithCountry() ([]RegionWithCountry, error)
 }
 
-type RefererDao interface{
+type RefererDao interface {
 	Put(host string, siteRef SiteRef) error
 	List(ttl time.Duration) ([]SiteRef, error)
 	RemoveOlderThen(ttl time.Duration) error
@@ -463,7 +472,7 @@ func getOrElse(val sql.NullInt64, _default int64) int64 {
 }
 
 // Deprecated. Use doFindAndReturn
-func (this *PostgresStorage)doFind(query string, callback func(rows *sql.Rows) error, args ...interface{}) (bool, error) {
+func (this *PostgresStorage) doFind(query string, callback func(rows *sql.Rows) error, args ...interface{}) (bool, error) {
 	rows, err := this.db.Query(query, args...)
 	if err != nil {
 		return false, err
@@ -480,7 +489,7 @@ func (this *PostgresStorage)doFind(query string, callback func(rows *sql.Rows) e
 	return false, nil
 }
 
-func (this *PostgresStorage)doFindAndReturn(query string, callback interface{}, args ...interface{}) (interface{}, bool, error) {
+func (this *PostgresStorage) doFindAndReturn(query string, callback interface{}, args ...interface{}) (interface{}, bool, error) {
 	rows, err := this.db.Query(query, args...)
 	if err != nil {
 		return nil, false, err
@@ -494,13 +503,13 @@ func (this *PostgresStorage)doFindAndReturn(query string, callback interface{}, 
 		if val[1].Interface() == nil {
 			return val[0].Interface(), true, nil
 		} else {
-			return nil,false, val[1].Interface().(error)
+			return nil, false, val[1].Interface().(error)
 		}
 	}
 	return nil, false, nil
 }
 
-func (this *PostgresStorage)doFindList(query string, callback interface{}, args ...interface{}) (interface{}, error) {
+func (this *PostgresStorage) doFindList(query string, callback interface{}, args ...interface{}) (interface{}, error) {
 	rows, err := this.db.Query(query, args...)
 	if err != nil {
 		return []interface{}{}, err
@@ -525,7 +534,7 @@ func (this *PostgresStorage)doFindList(query string, callback interface{}, args 
 	return result.Interface(), lastErr
 }
 
-func (this *PostgresStorage)forEach(query string, callback interface{}, args ...interface{}) error {
+func (this *PostgresStorage) forEach(query string, callback interface{}, args ...interface{}) error {
 	rows, err := this.db.Query(query, args...)
 	if err != nil {
 		return err
@@ -588,7 +597,7 @@ func (this *PostgresStorage) updateReturningId(query string, mapper func(entity 
 		return []int64{}, err
 	}
 	result := make([]int64, len(rows))
-	for i,row := range rows {
+	for i, row := range rows {
 		result[i] = *row[0].(*int64)
 	}
 	return result, nil
@@ -675,6 +684,34 @@ func (this *PostgresStorage) performUpdates(query string, mapper func(entity int
 	}
 	return tx.Commit()
 }
+
+type PropertyManager struct {
+	dao   *PostgresStorage
+	table string
+}
+
+func (this PropertyManager) GetIntProperty(name string, id int64) (int, error) {
+	i, found, err := this.dao.doFindAndReturn(
+		"WITH txt_val AS (SELECT (props->>'" + name + "') val FROM " + this.table + " WHERE id=$1) SELECT val::INT FROM txt_val WHERE val IS NOT NULL",
+		func(rows *sql.Rows) (int, error) {
+			i := 0
+			err := rows.Scan(&i)
+			return i, err
+		}, id)
+	if err != nil {
+		return 0, err
+	}
+	if !found {
+		return 0, nil
+	}
+	return i.(int), nil
+}
+
+func (this PropertyManager) SetIntProperty(name string, id int64, value int) error {
+	return this.dao.performUpdates("UPDATE " + this.table + " SET props=jsonb_set(props, '{" + name + "}', $2::text::jsonb, true) WHERE id=$1",
+		arrayMapper, []interface{}{id, value})
+}
+
 
 func (this *PostgresStorage) Begin() (TxHolder, error) {
 	tx, err := this.db.Begin()
