@@ -1,5 +1,6 @@
 <template>
     <div>
+        <div style="display:none;" :id="initialSpot.id"></div>
         <transition name="fade">
             <div class="alert alert-danger" role="alert" v-if="errMsg">
                 {{errMsg}}
@@ -259,24 +260,30 @@
                 });
             },
         },
+        beforeUpdate: function() {
+        },
+        created: function() {
+            this.resetToInitialIfRequired()
+        },
         updated: function() {
-            // It's an ugly hack. I really do not know, why child's update lifecycle handler method is not called on spot changed
-            // Maybe computed properties are not allowed in v-bind ?
-            if (this.editMode) {
-                this.$refs.locationEdit.doUpdate()
-            } else {
-                this.$refs.locationView.doUpdate()
-                if (this.previousSpotId != this.initialSpot.id) {
-                    this.previousSpotId = this.initialSpot.id
-                    this.spotMainUrl = getSpotMainImageUrl(this.initialSpot.id)
+            shouldRefreshChildren = this.shouldReInit()
+            this.resetToInitialIfRequired()
+
+            if (shouldRefreshChildren) {
+                // It's an ugly hack. I really do not know, why child's update lifecycle handler method is not called on spot changed
+                // Maybe computed properties are not allowed in v-bind ?
+
+                if (this.editMode) {
+                    this.$refs.locationEdit.spot = this.spot
+                    this.$refs.locationEdit.doUpdate()
+                } else {
+                    this.$refs.locationView.spot = this.spot
+                    this.$refs.locationView.doUpdate()
                 }
+                // end of hack
             }
-            // end of hack
         },
         computed: {
-                spot:function () { return this.initialSpot },
-                images: function () {return getImages(this.initialSpot.id, "image").map(x => x.url)},
-                schemas: function () {return getImages(this.initialSpot.id, "schema").map(x => x.url)},
                 spotMainUrl: {
                     get:function() {
                         if (!this.spotMainUrlCached) {
@@ -349,6 +356,22 @@
                 // imgs
                 imgIndex: null,
                 schIndex: null,
+
+                spot: null,
+                images: [],
+                schemas: [],
+                shouldReInit:function(){
+                    return this.spot==null || this.previousSpotId != this.initialSpot.id && this.initialSpot.id > 0
+                },
+                resetToInitialIfRequired:function() {
+                    if (this.shouldReInit()) {
+                        this.previousSpotId = this.initialSpot.id
+                        this.spot = this.initialSpot
+                        this.spotMainUrl = getSpotMainImageUrl(this.initialSpot.id)
+                        this.images = getImages(this.initialSpot.id, "image").map(x => x.url)
+                        this.schemas = getImages(this.initialSpot.id, "schema").map(x => x.url)
+                    }
+                },
 
                 spotMainUrlCached: null,
                 previousSpotId: this.initialSpot.id,
