@@ -23,9 +23,6 @@ func NewRiverPostgresDao(postgresStorage PostgresStorage) RiverDao {
 		listByFirstLettersQuery:queries.SqlQuery("river", "by-first-letters"),
 		insertQuery:queries.SqlQuery("river", "insert"),
 		updateQuery:queries.SqlQuery("river", "update"),
-		fixLinkedWaterWaysQuery:queries.SqlQuery("river", "fix-linked-waterways"),
-		deleteLinkedWwptsQuery:queries.SqlQuery("river", "delete-linked-wwpts"),
-		deleteLinkedReportsQuery:queries.SqlQuery("river", "delete-linked-reports"),
 		deleteQuery:queries.SqlQuery("river", "delete"),
 	}
 }
@@ -42,9 +39,6 @@ type riverStorage struct {
 	listByFirstLettersQuery  string
 	insertQuery              string
 	updateQuery              string
-	fixLinkedWaterWaysQuery  string
-	deleteLinkedWwptsQuery   string
-	deleteLinkedReportsQuery string
 	deleteQuery              string
 }
 
@@ -169,21 +163,9 @@ func (this riverStorage) listRiverTitles(query string, queryParams ...interface{
 	return result.([]RiverTitle), nil
 }
 
-func (this riverStorage) Remove(id int64) error {
+func (this riverStorage) Remove(id int64, tx interface{}) error {
 	log.Infof("Remove river %d", id)
-	tx, err := this.Begin()
-	if err != nil {
-		return err
-	}
-	defer tx.Close();
-
-	for _, q := range []string{this.fixLinkedWaterWaysQuery, this.deleteLinkedWwptsQuery, this.deleteLinkedReportsQuery, this.deleteQuery} {
-		err = tx.performUpdates(q, idMapper, id)
-		if err != nil {
-			return err
-		}
-	}
-	return tx.Commit()
+	return this.performUpdatesWithinTxOptionally(tx, this.deleteQuery, idMapper, id)
 }
 
 func (this riverStorage) Props() PropertyManager {

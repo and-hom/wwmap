@@ -38,14 +38,5 @@ UPDATE river SET region_id=$2, title=$3, aliases=$4 WHERE id=$1
 --@insert
 INSERT INTO river(region_id, title, aliases) VALUES($1,$2,$3) RETURNING id
 
---@fix-linked-waterways
-UPDATE waterway SET river_id=NULL WHERE river_id=$1
-
---@delete-linked-wwpts
-DELETE FROM white_water_rapid WHERE river_id=$1
-
---@delete-linked-reports
-DELETE FROM voyage_report_river WHERE river_id=$1
-
 --@delete
 DELETE FROM river WHERE id=$1

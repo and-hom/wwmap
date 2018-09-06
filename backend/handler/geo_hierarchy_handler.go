@@ -16,11 +16,14 @@ import (
 	"github.com/ptrv/go-gpx"
 	"github.com/and-hom/wwmap/lib/geo"
 	"github.com/and-hom/wwmap/lib/model"
+	"github.com/and-hom/wwmap/lib/img_storage"
 )
 
 type GeoHierarchyHandler struct {
 	App
-	regions map[int64]dao.Region
+	ImgStorage        img_storage.ImgStorage
+	PreviewImgStorage img_storage.ImgStorage
+	regions           map[int64]dao.Region
 }
 
 func (this *GeoHierarchyHandler) Init(r *mux.Router) {
@@ -200,7 +203,6 @@ func (this *GeoHierarchyHandler) ListSpots(w http.ResponseWriter, r *http.Reques
 	this.JsonAnswer(w, voyageReports)
 }
 
-
 func (this *GeoHierarchyHandler) GetRiverCenter(w http.ResponseWriter, r *http.Request) {
 	pathParams := mux.Vars(r)
 	riverId, err := strconv.ParseInt(pathParams["riverId"], 10, 64)
@@ -321,7 +323,29 @@ func (this *GeoHierarchyHandler) RemoveRiver(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	err = this.RiverDao.Remove(riverId)
+	imgs,err := this.ImgDao.ListAllByRiver(riverId)
+	if err != nil {
+		OnError500(w, err, fmt.Sprintf("Can not get images for river: %d", riverId))
+		return
+	}
+	this.removeImageData(imgs)
+
+	err = this.Storage.WithinTx(func(tx interface{}) error {
+		err = this.ImgDao.RemoveByRiver(riverId, tx)
+		if err != nil {
+			return err
+		}
+		err := this.WhiteWaterDao.RemoveByRiver(riverId, tx)
+		if err != nil {
+			return err
+		}
+		err = this.VoyageReportDao.RemoveRiverLink(riverId, tx)
+		if err != nil {
+			return err
+		}
+		return this.RiverDao.Remove(riverId, tx)
+	})
+
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not remove river by id: %d", riverId))
 		return
@@ -428,16 +452,47 @@ func (this *GeoHierarchyHandler) RemoveSpot(w http.ResponseWriter, r *http.Reque
 	}
 
 	pathParams := mux.Vars(r)
-	spotId, err := strconv.ParseInt(pathParams["spotId"], 10, 64)
+	spotIdStr := pathParams["spotId"]
+	spotId, err := strconv.ParseInt(spotIdStr, 10, 64)
 	if err != nil {
 		OnError(w, err, "Can not parse id", http.StatusBadRequest)
 		return
 	}
 
-	err = this.WhiteWaterDao.Remove(spotId)
+	imgs, err := this.ImgDao.ListAllBySpot(spotId)
+	if err != nil {
+		OnError500(w, err, fmt.Sprintf("Can not list images for spot by id: %d", spotId))
+		return
+	}
+	this.removeImageData(imgs)
+
+	err = this.Storage.WithinTx(func(tx interface{}) error {
+		err := this.ImgDao.RemoveBySpot(spotId, tx)
+		if err != nil {
+			return err
+		}
+		return this.WhiteWaterDao.Remove(spotId, tx)
+	})
+
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not remove spot by id: %d", spotId))
 		return
+	}
+}
+
+func (this *GeoHierarchyHandler)removeImageData(imgs []dao.Img) {
+	for _, img := range imgs {
+		imgIdStr := fmt.Sprintf("%d", img.Id)
+
+		err := this.ImgStorage.Remove(imgIdStr)
+		if err != nil {
+			log.Errorf("Can not remove image for by id %d: %v", img.Id, err)
+		}
+
+		err = this.PreviewImgStorage.Remove(imgIdStr)
+		if err != nil {
+			log.Errorf("Can not remove preview for by id %d: %v", img.Id, err)
+		}
 	}
 }
 

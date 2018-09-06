@@ -36,10 +36,18 @@ type Storage interface {
 	FindEventPoint(id int64, eventPoint *EventPoint) (bool, error)
 	ListPoints(bbox Bbox) []EventPoint
 	FindEventPointsForRoute(routeId int64) []EventPoint
+
+	// Call payload function within transaction if supported by storage. Simply call payload function if not supported.
+	WithinTx(payload func(tx interface{}) error) error
+}
+
+type IdEntity interface {
+	Remove(id int64, tx interface{}) error
 }
 
 type RiverDao interface {
 	HasProperties
+	IdEntity
 	NearestRivers(point Point, limit int) ([]RiverTitle, error)
 	Find(id int64) (RiverTitle, error)
 	ListRiversWithBounds(bbox Bbox, limit int) ([]RiverTitle, error)
@@ -49,11 +57,11 @@ type RiverDao interface {
 	ListByFirstLetters(query string, limit int) ([]RiverTitle, error)
 	Insert(river RiverTitle) (int64, error)
 	Save(river ...RiverTitle) error
-	Remove(id int64) error
 }
 
 type WhiteWaterDao interface {
 	HasProperties
+	IdEntity
 	InsertWhiteWaterPoints(whiteWaterPoints ...WhiteWaterPoint) error
 	InsertWhiteWaterPointFull(whiteWaterPoints WhiteWaterPointFull) (int64, error)
 	UpdateWhiteWaterPoints(whiteWaterPoints ...WhiteWaterPoint) error
@@ -66,7 +74,7 @@ type WhiteWaterDao interface {
 	ListByRiverFull(riverId int64) ([]WhiteWaterPointFull, error)
 	ListByRiverAndTitle(riverId int64, title string) ([]WhiteWaterPointWithRiverTitle, error)
 	GetGeomCenterByRiver(riverId int64) (Point, error)
-	Remove(id int64) error
+	RemoveByRiver(id int64, tx interface{}) error
 }
 
 type ReportDao interface {
@@ -87,18 +95,23 @@ type VoyageReportDao interface {
 	AssociateWithRiver(voyageReportId, riverId int64) error
 	List(riverId int64, limitByGroup int) ([]VoyageReport, error)
 	ForEach(source string, callback func(report *VoyageReport) error) error
+	RemoveRiverLink(id int64, tx interface{}) error
 }
 
 type ImgDao interface {
+	IdEntity
 	InsertLocal(wwId int64, _type ImageType, source string, urlBase string, previewUrlBase string, datePublished time.Time) (Img, error)
 	Upsert(img ...Img) ([]Img, error)
 	Find(id int64) (Img, bool, error)
 	List(wwId int64, limit int, _type ImageType, enabledOnly bool) ([]Img, error)
-	Remove(id int64) error
+	ListAllBySpot(wwId int64) ([]Img, error)
+	ListAllByRiver(wwId int64) ([]Img, error)
 	SetEnabled(id int64, enabled bool) error
 	SetMain(spotId int64, id int64) error
 	DropMainForSpot(spotId int64) error
 	GetMainForSpot(spotId int64) (Img, bool, error)
+	RemoveBySpot(spotId int64, tx interface{}) error
+	RemoveByRiver(spotId int64, tx interface{}) error
 }
 
 type WwPassportDao interface {
@@ -655,34 +668,10 @@ func (this *PostgresStorage) updateReturningColumns(query string, mapper func(en
 }
 
 func (this *PostgresStorage) performUpdates(query string, mapper func(entity interface{}) ([]interface{}, error), values ...interface{}) error {
-	tx, err := this.db.Begin()
-	if err != nil {
-		return err
-	}
-
-	stmt, err := tx.Prepare(query)
-	if err != nil {
-		return err
-	}
-	for _, entity := range values {
-		values, err := mapper(entity)
-		if err != nil {
-			log.Errorf("Can not update %v", err)
-			return err
-		}
-		_, err = stmt.Exec(values...)
-		if err != nil {
-			log.Errorf("Can not update %v", err)
-			return err
-		}
-	}
-
-	log.Infof("Update completed. Commit.")
-	err = stmt.Close()
-	if err != nil {
-		return err
-	}
-	return tx.Commit()
+	return this.WithinTx(func(tx interface{}) error {
+		txHolder := tx.(PgTxHolder)
+		return (&txHolder).performUpdates(query, mapper, values...)
+	})
 }
 
 type PropertyManager interface {
@@ -715,58 +704,6 @@ func (this PropertyManagerImpl) GetIntProperty(name string, id int64) (int, erro
 func (this PropertyManagerImpl) SetIntProperty(name string, id int64, value int) error {
 	return this.dao.performUpdates("UPDATE " + this.table + " SET props=jsonb_set(props, '{" + name + "}', $2::text::jsonb, true) WHERE id=$1",
 		arrayMapper, []interface{}{id, value})
-}
-
-
-func (this *PostgresStorage) Begin() (TxHolder, error) {
-	tx, err := this.db.Begin()
-	if err != nil {
-		return TxHolder{}, err
-	}
-	return TxHolder{PostgresStorage:*this, tx:tx}, nil
-}
-
-type TxHolder struct {
-	PostgresStorage
-	tx       *sql.Tx
-	commited bool
-}
-
-func (this *TxHolder) Close() error {
-	if !this.commited {
-		return this.tx.Rollback()
-	}
-	return nil
-}
-
-func (this *TxHolder) Commit() error {
-	err := this.tx.Commit()
-	if err == nil {
-		this.commited = true
-	}
-	return err
-}
-
-func (this *TxHolder)performUpdates(query string, mapper func(entity interface{}) ([]interface{}, error), values ...interface{}) error {
-	stmt, err := this.tx.Prepare(query)
-	if err != nil {
-		return err
-	}
-	for _, entity := range values {
-		values, err := mapper(entity)
-		if err != nil {
-			log.Errorf("Can not update %v", err)
-			return err
-		}
-		_, err = stmt.Exec(values...)
-		if err != nil {
-			log.Errorf("Can not update %v", err)
-			return err
-		}
-	}
-
-	log.Infof("Update completed. Commit.")
-	return stmt.Close()
 }
 
 type PgPoint struct {

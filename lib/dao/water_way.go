@@ -14,6 +14,7 @@ func NewWaterWayPostgresDao(postgresStorage PostgresStorage) WaterWayDao {
 		insertQuery: queries.SqlQuery("water-way", "insert"),
 		updateQuery: queries.SqlQuery("water-way", "update"),
 		listQuery: queries.SqlQuery("water-way", "list"),
+		unlinkRiverQuery: queries.SqlQuery("water-way", "unlink-river"),
 	}
 }
 
@@ -22,6 +23,7 @@ type waterWayStorage struct {
 	insertQuery string
 	updateQuery string
 	listQuery   string
+	unlinkRiverQuery   string
 }
 
 func (this waterWayStorage) AddWaterWays(waterways ...WaterWay) error {
@@ -121,4 +123,9 @@ func (this waterWayStorage) ForEachWaterWay(transformer func(WaterWay) (WaterWay
 	}
 	tx.Commit()
 	return nil
+}
+
+
+func (this waterWayStorage) UnlinkRiver(id int64, tx interface{}) error {
+	return this.performUpdatesWithinTxOptionally(tx, this.unlinkRiverQuery, idMapper, id)
 }

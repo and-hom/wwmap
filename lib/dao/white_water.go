@@ -29,16 +29,17 @@ func NewWhiteWaterPostgresDao(postgresStorage PostgresStorage) WhiteWaterDao {
 		byIdFullQuery: queries.SqlQuery("white-water", "by-id-full"),
 		updateFullQuery: queries.SqlQuery("white-water", "update-full"),
 		deleteQuery: queries.SqlQuery("white-water", "delete"),
+		deleteForRiverQuery: queries.SqlQuery("white-water", "delete-for-river"),
 		geomCenterByRiverQuery: queries.SqlQuery("white-water", "geom-center-by-river"),
 	}
 }
 
 type whiteWaterStorage struct {
 	PostgresStorage
-	PropsManager     PropertyManager
+	PropsManager             PropertyManager
 	listByBoxQuery           string
 	listByRiverQuery         string
-	listByRiverFullQuery         string
+	listByRiverFullQuery     string
 	listByRiverAndTitleQuery string
 	listWithPathQuery        string
 	insertQuery              string
@@ -48,6 +49,7 @@ type whiteWaterStorage struct {
 	byIdFullQuery            string
 	updateFullQuery          string
 	deleteQuery              string
+	deleteForRiverQuery              string
 	geomCenterByRiverQuery   string
 }
 
@@ -100,6 +102,8 @@ func (this whiteWaterStorage) InsertWhiteWaterPointFull(whiteWaterPoint WhiteWat
 	if err != nil {
 		return -1, nil
 	}
+	fmt.Println(params[15])
+	fmt.Println(params[16])
 	return this.insertReturningId(this.insertFullQuery, params...)
 }
 
@@ -171,7 +175,6 @@ func (this whiteWaterStorage) list(query string, vars ...interface{}) ([]WhiteWa
 	return result.([]WhiteWaterPointWithRiverTitle), nil
 }
 
-
 func (this whiteWaterStorage) listFull(query string, vars ...interface{}) ([]WhiteWaterPointFull, error) {
 	result, err := this.doFindList(query, scanWwPointFull, vars...)
 	if (err != nil ) {
@@ -215,7 +218,7 @@ func scanWwPointFull(rows *sql.Rows, additionalVars ...interface{}) (WhiteWaterP
 	wwp := WhiteWaterPointFull{}
 
 	pointString := ""
-	categoryString :=   ""
+	categoryString := ""
 	lwCategoryString := ""
 	mwCategoryString := ""
 	hwCategoryString := ""
@@ -228,7 +231,7 @@ func scanWwPointFull(rows *sql.Rows, additionalVars ...interface{}) (WhiteWaterP
 		&wwp.OrderIndex, &wwp.AutomaticOrdering, &lastAutoOrdering}, additionalVars...)
 
 	err := rows.Scan(fields...)
-	if err!=nil {
+	if err != nil {
 		log.Errorf("Can not read from db: %v", err)
 		return WhiteWaterPointFull{}, err
 	}
@@ -356,9 +359,14 @@ func (this whiteWaterStorage) update(query string, whiteWaterPoints ...WhiteWate
 		}, vars...)
 }
 
-func (this whiteWaterStorage) Remove(id int64) error {
+func (this whiteWaterStorage) Remove(id int64, tx interface{}) error {
 	log.Infof("Remove spot %d", id)
-	return this.performUpdates(this.deleteQuery, idMapper, id)
+	return this.performUpdatesWithinTxOptionally(tx, this.deleteQuery, idMapper, id)
+}
+
+func (this whiteWaterStorage) RemoveByRiver(id int64, tx interface{}) error {
+	log.Infof("Remove spots by river id", id)
+	return this.performUpdatesWithinTxOptionally(tx, this.deleteForRiverQuery, idMapper, id)
 }
 
 func (this whiteWaterStorage) GetGeomCenterByRiver(riverId int64) (geo.Point, error) {

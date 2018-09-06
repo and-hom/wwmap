@@ -6,6 +6,14 @@ FROM image WHERE id=$1
 SELECT id, report_id, white_water_rapid_id,source,remote_id,url,preview_url,date_published, enabled, "type", main_image
 FROM image WHERE white_water_rapid_id=$1 AND "type"=$2 AND (NOT $3 OR enabled) ORDER BY id DESC LIMIT $4
 
+--@list-all-by-spot
+SELECT id, report_id, white_water_rapid_id,source,remote_id,url,preview_url,date_published, enabled, "type", main_image
+FROM image WHERE white_water_rapid_id=$1
+
+--@list-all-by-river
+SELECT id, report_id, white_water_rapid_id,source,remote_id,url,preview_url,date_published, enabled, "type", main_image
+FROM image WHERE white_water_rapid_id IN (SELECT id FROM white_water_rapid WHERE river_id=$1)
+
 --@upsert
 INSERT INTO image(report_id, white_water_rapid_id,source,remote_id,url,preview_url,date_published, "type")
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT(source, remote_id) DO UPDATE SET date_published=image.date_published RETURNING id
@@ -14,6 +22,12 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT(source, remote_id) DO UPDATE
 INSERT INTO image(id,report_id, white_water_rapid_id, "type", source,remote_id,url,preview_url,date_published)
 VALUES (nextval('id_gen'), 0, $1, $2, $3, CAST(currval('id_gen') AS CHARACTER VARYING),'','',$4)
 RETURNING id, enabled
+
+--@delete-by-spot
+DELETE FROM image WHERE white_water_rapid_id=$1
+
+--@delete-by-river
+DELETE FROM image WHERE white_water_rapid_id IN (SELECT id FROM white_water_rapid WHERE river_id=$1)
 
 --@delete
 DELETE FROM image WHERE id=$1

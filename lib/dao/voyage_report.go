@@ -6,6 +6,7 @@ import (
 	"github.com/lib/pq"
 	"encoding/json"
 	"github.com/and-hom/wwmap/lib/dao/queries"
+	log "github.com/Sirupsen/logrus"
 )
 
 func NewVoyageReportPostgresDao(postgresStorage PostgresStorage) VoyageReportDao {
@@ -15,6 +16,7 @@ func NewVoyageReportPostgresDao(postgresStorage PostgresStorage) VoyageReportDao
 		listQuery: queries.SqlQuery("voyage-report", "list"),
 		upsertRiverLinkQuery: queries.SqlQuery("voyage-report", "upsert-river-link"),
 		listAllQuery: queries.SqlQuery("voyage-report", "list-all"),
+		deleteRiverLinkQuery: queries.SqlQuery("voyage-report", "delete-river-link"),
 	}
 }
 
@@ -25,6 +27,7 @@ type voyageReportStorage struct {
 	listQuery            string
 	listAllQuery         string
 	upsertRiverLinkQuery string
+	deleteRiverLinkQuery string
 }
 
 func (this voyageReportStorage) UpsertVoyageReports(reports ...VoyageReport) ([]VoyageReport, error) {
@@ -88,6 +91,11 @@ func (this voyageReportStorage) List(riverId int64, limitByGroup int) ([]VoyageR
 		return []VoyageReport{}, err
 	}
 	return result.([]VoyageReport), nil
+}
+
+func (this voyageReportStorage) RemoveRiverLink(id int64, tx interface{}) error {
+	log.Infof("Remove spot %d", id)
+	return this.performUpdatesWithinTxOptionally(tx, this.deleteRiverLinkQuery, idMapper, id)
 }
 
 func readReportFromRows(rows *sql.Rows) (VoyageReport, error) {

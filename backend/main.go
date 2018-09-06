@@ -38,6 +38,13 @@ func main() {
 	clusterMaker := clustering.NewClusterMaker(whiteWaterDao, imgDao,
 		configuration.ClusterizationParams)
 
+	imgStorage := img_storage.BasicFsStorage{
+		BaseDir:configuration.ImgStorage.Full.Dir,
+	}
+	imgPreviewStorage := img_storage.BasicFsStorage{
+		BaseDir:configuration.ImgStorage.Preview.Dir,
+	}
+
 	app := handler.App{
 		Handler: Handler{},
 		Storage:&storage,
@@ -59,15 +66,15 @@ func main() {
 		&handler.WhiteWaterHandler{App:app, ResourceBase:configuration.Content.ResourceBase, ClusterMaker: clusterMaker},
 		&handler.ReportHandler{app},
 		&handler.UserInfoHandler{app},
-		&handler.GeoHierarchyHandler{App: app},
+		&handler.GeoHierarchyHandler{
+			App: app,
+			ImgStorage: imgStorage,
+			PreviewImgStorage: imgPreviewStorage,
+		},
 		&handler.ImgHandler{
 			App:app,
-			ImgStorage: img_storage.BasicFsStorage{
-				BaseDir:configuration.ImgStorage.Full.Dir,
-			},
-			PreviewImgStorage: img_storage.BasicFsStorage{
-				BaseDir:configuration.ImgStorage.Preview.Dir,
-			},
+			ImgStorage: imgStorage,
+			PreviewImgStorage: imgPreviewStorage,
 			ImgUrlBase:configuration.ImgStorage.Full.UrlBase,
 			ImgUrlPreviewBase:configuration.ImgStorage.Preview.UrlBase,
 		},

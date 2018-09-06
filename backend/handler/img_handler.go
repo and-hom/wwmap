@@ -167,7 +167,7 @@ func (this *ImgHandler) Delete(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err = this.ImgDao.Remove(imgId)
+	err = this.ImgDao.Remove(imgId, nil)
 	if err != nil {
 		OnError500(w, err, "Can not delete image from db")
 		return

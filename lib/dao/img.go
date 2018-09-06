@@ -14,12 +14,16 @@ type imgStorage struct {
 	upsertQuery          string
 	findQuery            string
 	listQuery            string
+	listAllBySpotQuery   string
+	listAllByRiverQuery   string
 	insertLocalQuery     string
 	deleteQuery          string
 	setEnabledQuery      string
 	getMainForSpotQuery  string
 	setMainQuery         string
 	dropMainForSpotQuery string
+	deleteForSpot string
+	deleteForRiver string
 }
 
 func NewImgPostgresDao(postgresStorage PostgresStorage) ImgDao {
@@ -28,12 +32,16 @@ func NewImgPostgresDao(postgresStorage PostgresStorage) ImgDao {
 		upsertQuery : queries.SqlQuery("img", "upsert"),
 		findQuery : queries.SqlQuery("img", "by-id"),
 		listQuery : queries.SqlQuery("img", "list"),
+		listAllBySpotQuery : queries.SqlQuery("img", "list-all-by-spot"),
+		listAllByRiverQuery : queries.SqlQuery("img", "list-all-by-river"),
 		insertLocalQuery : queries.SqlQuery("img", "insert-local"),
 		deleteQuery : queries.SqlQuery("img", "delete"),
 		setEnabledQuery : queries.SqlQuery("img", "set-enabled"),
 		getMainForSpotQuery: queries.SqlQuery("img", "get-main"),
 		setMainQuery: queries.SqlQuery("img", "set-main"),
 		dropMainForSpotQuery: queries.SqlQuery("img", "drop-main-for-spot"),
+		deleteForSpot: queries.SqlQuery("img", "delete-by-spot"),
+		deleteForRiver: queries.SqlQuery("img", "delete-by-river"),
 	}
 }
 
@@ -69,6 +77,22 @@ func imgMapper(rows *sql.Rows) (Img, error) {
 
 func (this imgStorage) List(wwId int64, limit int, _type ImageType, enabledOnly bool) ([]Img, error) {
 	result, err := this.doFindList(this.listQuery, imgMapper, wwId, _type, enabledOnly, limit)
+	if err != nil {
+		return []Img{}, err
+	}
+	return result.([]Img), nil
+}
+
+func (this imgStorage) ListAllBySpot(wwId int64) ([]Img, error) {
+	result, err := this.doFindList(this.listAllBySpotQuery, imgMapper, wwId)
+	if err != nil {
+		return []Img{}, err
+	}
+	return result.([]Img), nil
+}
+
+func (this imgStorage) ListAllByRiver(riverId int64) ([]Img, error) {
+	result, err := this.doFindList(this.listAllByRiverQuery, imgMapper, riverId)
 	if err != nil {
 		return []Img{}, err
 	}
@@ -119,9 +143,9 @@ func (this imgStorage) InsertLocal(wwId int64, _type ImageType, source string, u
 	return result, nil
 }
 
-func (this imgStorage) Remove(id int64) error {
+func (this imgStorage) Remove(id int64, tx interface{}) error {
 	log.Infof("Remove image %d", id)
-	return this.performUpdates(this.deleteQuery, idMapper, id)
+	return this.performUpdatesWithinTxOptionally(tx, this.deleteQuery, idMapper, id)
 }
 
 func (this imgStorage) SetEnabled(id int64, enabled bool) error {
@@ -142,4 +166,12 @@ func (this imgStorage) SetMain(spotId int64, id int64) error {
 
 func (this imgStorage) DropMainForSpot(spotId int64) error {
 	return this.performUpdates(this.dropMainForSpotQuery, idMapper, spotId)
+}
+
+func (this imgStorage) RemoveBySpot(spotId int64, tx interface{}) error {
+	return this.performUpdatesWithinTxOptionally(tx, this.deleteForSpot, idMapper, spotId)
+}
+
+func (this imgStorage) RemoveByRiver(riverId int64, tx interface{}) error {
+	return this.performUpdatesWithinTxOptionally(tx, this.deleteForRiver, idMapper, riverId)
 }

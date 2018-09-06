@@ -15,3 +15,5 @@ WHERE voyage_report_river.river_id = $1) sq WHERE r_num<=$2 ORDER BY source, dat
 SELECT id,title,remote_id,source,url,date_published,date_modified,date_of_trip, tags, author FROM voyage_report WHERE source=$1
 --@upsert-river-link
 INSERT INTO voyage_report_river(voyage_report_id, river_id) VALUES($1,$2) ON CONFLICT DO NOTHING
+--@delete-river-link
+DELETE FROM voyage_report_river WHERE river_id=$1
