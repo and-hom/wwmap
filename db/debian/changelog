@@ -1,3 +1,12 @@
+wwmap-db (0.0.10) unstable; urgency=medium
+
+  * Fix null "fake" on region
+  * #84 Spot ordering fields
+  * #101 Custom int fields on country, region, river and spot - for external ids on export
+  * #102 Set main image of spot
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Thu, 06 Sep 2018 17:51:08 +0300
+
 wwmap-db (0.0.9) unstable; urgency=medium
 
   * #76 Image and schema gallery

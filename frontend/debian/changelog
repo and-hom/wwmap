@@ -1,3 +1,17 @@
+wwmap-frontend (0.0.17) unstable; urgency=medium
+
+  * Do not show delete button for not created spot
+  * #84 Display ordering parameters on the UI
+  * #96 Google satellite version fixed
+  * #97 Display integration guide on sites page
+  * #99 On new spot show map center in the centroid of other spots of the river
+  * #100 Do not show editor page and menu item for non-authorized usesrs
+  * #102 Spot main picture selection
+  * #104 User roles in UI
+  * #112 UI bug fix: on new spot id was zero after creation
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Thu, 06 Sep 2018 17:46:48 +0300
+
 wwmap-frontend (0.0.16) unstable; urgency=medium
 
   * #72 Favicon added to editor site
