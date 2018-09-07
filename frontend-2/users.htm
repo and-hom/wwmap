@@ -32,7 +32,7 @@
             <li class="nav-item">
                 <a class="nav-link" href="refs.htm">Сайты</a>
             </li>
-            <li class="#" v-if="admin">
+            <li class="#" v-if="admin()">
                 <a class="nav-link" href="#">Пользователи</a>
             </li>
         </ul>
@@ -41,7 +41,7 @@
 
     <ask-role id="ask-role" :roles="['ADMIN', 'EDITOR', 'USER']" :okfn="function(userId, role) { setRole(userId, role) }"></ask-role>
 
-    <div class="container-fluid">
+    <div class="container-fluid" v-if="admin()">
         <div class="row">
             <div class="col-12">
                 <table class="table">

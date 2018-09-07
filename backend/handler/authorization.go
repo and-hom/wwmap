@@ -17,6 +17,7 @@ type UserInfoHandler struct {
 }
 
 type UserInfoDto struct {
+	Login     string `json:"login"`
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
 	Roles     []dao.Role `json:"roles"`
@@ -52,6 +53,7 @@ func (this *UserInfoHandler) GetUserInfo(w http.ResponseWriter, r *http.Request)
 	infoDto := UserInfoDto{
 		FirstName:info.FirstName,
 		LastName:info.LastName,
+		Login:info.Login,
 		Roles:[]dao.Role{role},
 	}
 
@@ -101,9 +103,7 @@ func (this *UserInfoHandler) SetRole(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-
-
-	if roleStr != string(dao.ADMIN) && roleStr!= string(dao.EDITOR) && roleStr!= string(dao.USER) {
+	if roleStr != string(dao.ADMIN) && roleStr != string(dao.EDITOR) && roleStr != string(dao.USER) {
 		OnError(w, err, "Can not set role " + roleStr, http.StatusBadRequest)
 		return
 	}
