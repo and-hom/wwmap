@@ -40,7 +40,7 @@
                     {{river.region.title}}
                 </div>
             </dd>
-            <dt>Алиасы:</dt>
+            <dt>Другие варианты названия для автоматического поиска отчётов:</dt>
             <dd>
                 <textarea v-if="editMode" v-bind:text-content="river.aliases"
                           v-on:input="river.aliases = parseAliases($event.target.value)"
@@ -49,7 +49,6 @@
                 <ul v-else>
                     <li v-for="alias in river.aliases">{{alias}}</li>
                 </ul>
-
             </dd>
             <dt>Отчёты:</dt>
             <dd>

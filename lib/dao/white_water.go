@@ -102,8 +102,6 @@ func (this whiteWaterStorage) InsertWhiteWaterPointFull(whiteWaterPoint WhiteWat
 	if err != nil {
 		return -1, nil
 	}
-	fmt.Println(params[15])
-	fmt.Println(params[16])
 	return this.insertReturningId(this.insertFullQuery, params...)
 }
 
@@ -145,10 +143,14 @@ func paramsFull(wwp WhiteWaterPointFull) ([]interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+	aliasesB, err := json.Marshal(wwp.Aliases)
+	if err != nil {
+		return nil, err
+	}
 
 	return []interface{}{wwp.Title, string(cat), string(pointBytes), wwp.ShortDesc, wwp.Link, nullIf0(wwp.River.Id),
 		string(lwCat), wwp.LowWaterDescription, string(mwCat), wwp.MediumWaterDescription, string(hwCat), wwp.HighWaterDescription,
-		wwp.Orient, wwp.Approach, wwp.Safety, wwp.OrderIndex, wwp.AutomaticOrdering}, nil
+		wwp.Orient, wwp.Approach, wwp.Safety, wwp.OrderIndex, wwp.AutomaticOrdering, string(aliasesB)}, nil
 }
 
 func (this whiteWaterStorage) list(query string, vars ...interface{}) ([]WhiteWaterPointWithRiverTitle, error) {
@@ -223,12 +225,13 @@ func scanWwPointFull(rows *sql.Rows, additionalVars ...interface{}) (WhiteWaterP
 	mwCategoryString := ""
 	hwCategoryString := ""
 	lastAutoOrdering := pq.NullTime{}
+	aliasesStr := ""
 
 	fields := append([]interface{}{&wwp.Id, &wwp.Title, &pointString, &categoryString, &wwp.ShortDesc, &wwp.Link,
 		&wwp.River.Id, &wwp.River.Title,
 		&lwCategoryString, &wwp.LowWaterDescription, &mwCategoryString, &wwp.MediumWaterDescription, &hwCategoryString, &wwp.HighWaterDescription,
 		&wwp.Orient, &wwp.Approach, &wwp.Safety,
-		&wwp.OrderIndex, &wwp.AutomaticOrdering, &lastAutoOrdering}, additionalVars...)
+		&wwp.OrderIndex, &wwp.AutomaticOrdering, &lastAutoOrdering, &aliasesStr}, additionalVars...)
 
 	err := rows.Scan(fields...)
 	if err != nil {
@@ -275,6 +278,8 @@ func scanWwPointFull(rows *sql.Rows, additionalVars ...interface{}) (WhiteWaterP
 	} else {
 		wwp.LastAutomaticOrdering = util.ZeroDateUTC()
 	}
+
+	err = json.Unmarshal([]byte(aliasesStr), &wwp.Aliases)
 
 	return wwp, err
 }

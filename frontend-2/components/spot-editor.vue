@@ -133,6 +133,13 @@
                         <div class="col-2"><strong>Описание для высокого уровня воды:</strong></div>
                         <div class="col-10"><textarea rows="10" cols="120" v-model="spot.hw_description"></textarea></div>
                     </div>
+                    <hr/>
+                    <div class="row">
+                        <div class="col-12"><strong>Другие варианты названия для поиска изображений:</strong><textarea v-if="editMode" v-bind:text-content="spot.aliases"
+                                                                      v-on:input="spot.aliases = parseAliases($event.target.value)"
+                                                                      rows="10" cols="120">{{ spot.aliases.join('\n') }}</textarea>
+                                                                      </div>
+                    </div>
                 </b-tab>
                 <b-tab title="Схемы" :disabled="spot.id>0 ? false : true">
                     <img-upload :spot="spot" type="schema" :auth="true" :main-image-id="spot.main_image_id"></img-upload>
@@ -204,15 +211,22 @@
                             <div><strong>К.с. нв/св/вв:</strong>&nbsp;<category :category="spot.lw_category"></category>/<category :category="spot.mw_category"></category>/<category :category="spot.hw_category"></category></div>
                             <div><strong>К.с. по классификатору:</strong>&nbsp;<category :category="spot.category"></category></div>
                         </div>
-
-                        <br/>
-                        <br/>
-                        <div style="font-size:60%;">Эти параметры предназначены для определения порядка следования порогов.</div>
-                        <div><strong>Порядок следования:</strong> {{ spot.order_index }}</div>
-                        <div><strong>Автоматическое упорядочивание:</strong> <span v-if="spot.automatic_ordering">Да</span><span v-else>Нет</span></div>
-                        <div><strong>В последний раз автоматическое упорядочивание срабатывало:</strong> {{ spot.last_automatic_ordering }}</div>
                     </div>
                 </div>
+                <div class="row">
+                    <div class="col-6">
+                        <strong>Другие варианты названия для поиска картинок роботом:</strong>
+                        <ul>
+                            <li v-for="alias in spot.aliases">{{alias}}</li>
+                        </ul>
+                    </div>
+                    <div class="col-6">
+                        <div style="font-size:60%;">Эти параметры предназначены для определения порядка следования порогов.</div>
+                        <div><strong>Порядок следования:</strong> {{ spot.order_index }}</div>
+                        <div><strong>Автоматическое упорядочивание:</strong>&nbsp;<span v-if="spot.automatic_ordering">Да</span><span v-else>Нет</span></div>
+                        <div><strong>В последний раз автоматическое упорядочивание срабатывало:</strong> {{ spot.last_automatic_ordering }}</div>
+                    </div>
+                <div>
             </div>
             <div v-if="schemas.length">
                 <h2>Схемы</h2>
@@ -375,6 +389,9 @@
 
                 spotMainUrlCached: null,
                 previousSpotId: this.initialSpot.id,
+                parseAliases:function(strVal) {
+                    return strVal.split('\n').map(function(x) {return x.trim()}).filter(function(x){return x.length>0})
+                },
             }
         }
     }

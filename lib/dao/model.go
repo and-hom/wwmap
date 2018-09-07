@@ -193,6 +193,8 @@ type WhiteWaterPointFull struct {
 	OrderIndex             int `json:"order_index,string"`
 	AutomaticOrdering      bool `json:"automatic_ordering"`
 	LastAutomaticOrdering  time.Time `json:"last_automatic_ordering"`
+
+	Aliases                []string `json:"aliases"`
 }
 
 type WhiteWaterPointWithRiverTitle struct {

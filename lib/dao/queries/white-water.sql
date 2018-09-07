@@ -51,7 +51,9 @@ SELECT
 
     order_index,
     auto_ordering,
-    last_auto_ordering
+    last_auto_ordering,
+
+    white_water_rapid.aliases
 FROM white_water_rapid  LEFT OUTER JOIN river ON white_water_rapid.river_id=river.id
 WHERE river_id=$1
 ORDER BY order_index ASC
@@ -149,7 +151,9 @@ SELECT
 
     order_index,
     auto_ordering,
-    last_auto_ordering
+    last_auto_ordering,
+
+    white_water_rapid.aliases
 FROM white_water_rapid
 INNER JOIN river ON white_water_rapid.river_id=river.id
     WHERE white_water_rapid.id=$1
@@ -160,9 +164,9 @@ INSERT INTO white_water_rapid(title,category, point, short_description, link, ri
     mw_category, mw_description,
     hw_category, hw_description,
     orient, approach, safety,
-    order_index, auto_ordering)
+    order_index, auto_ordering, aliases)
     VALUES ($1,$2,ST_GeomFromGeoJSON($3),$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,
-    $16,$17) RETURNING id
+    $16,$17,$18) RETURNING id
     
 --@update-full
 UPDATE white_water_rapid SET title=$2,category=$3, point=ST_GeomFromGeoJSON($4), short_description=$5, link=$6, river_id=$7,
@@ -170,7 +174,8 @@ UPDATE white_water_rapid SET title=$2,category=$3, point=ST_GeomFromGeoJSON($4),
     mw_category=$10, mw_description=$11,
     hw_category=$12, hw_description=$13,
     orient=$14, approach=$15, safety=$16,
-    order_index=CASE WHEN $18 THEN order_index ELSE $17 END, auto_ordering=$18
+    order_index=CASE WHEN $18 THEN order_index ELSE $17 END, auto_ordering=$18,
+    aliases=$19
     WHERE id=$1
 
 --@delete

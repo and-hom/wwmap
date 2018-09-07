@@ -1,0 +1,1 @@
+ALTER TABLE white_water_rapid DROP COLUMN aliases;
