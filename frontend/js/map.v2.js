@@ -16,7 +16,6 @@ class WWMap {
   loadRivers(bounds) {
     if (this.riverList) {
         $.get(apiBase + "/visible-rivers?bbox=" + bounds.join(','), (data) => {
-                    this.riverList.clear()
                     var dataObj = {
                         "rivers" : JSON.parse(data),
                         "apiUrl": apiBase + "/gpx"
@@ -255,8 +254,8 @@ function show_report_popup(id){
 }
 
 class RiverList {
-    constructor(div, templateDivId, fromTemplates) {
-        this.div = div
+    constructor(divId, templateDivId, fromTemplates) {
+        this.divId = divId
 
         if (fromTemplates) {
             loadFragment(MAP_FRAGMENTS_URL, templateDivId, (templateText) => {
@@ -270,12 +269,9 @@ class RiverList {
 
     update(rivers) {
         if (this.templateDiv) {
-            this.templateDiv.tmpl(rivers).appendTo(this.div)
+            var html = this.templateDiv.tmpl(rivers).html()
+            $('#' + this.divId).html(html)
         }
-    }
-
-    clear() {
-        this.div.html('')
     }
 }
 
@@ -297,7 +293,7 @@ function initWWMap(mapId, riversListId) {
     // riverList
     var riverList = null
     if (riversListId) {
-        riverList = new RiverList($('#' + riversListId), 'rivers_template', true)
+        riverList = new RiverList(riversListId, 'rivers_template', true)
     }
 
     // init and show map
