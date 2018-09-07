@@ -14,92 +14,6 @@ const MAX_CLUSTERS int64 = 8192
 const MAX_CLUSTER_ID int64 = int64(math.MaxInt32)
 const CLUSTER_CATEGORY_DEFINITING_POINTS_COUNT int = 3
 
-func toYmapsPreset(epType EventPointType) string {
-	switch epType {
-	case PHOTO:
-		return "islands#blueVegetationIcon";
-	case VIDEO:
-		return "islands#blueVideoIcon";
-	case POST_:
-		return "islands#blueBookIcon";
-	}
-	return "islands#blueDotIcon";
-}
-
-func routeToYmaps(route Route) []Feature {
-	pointCount := len(route.Points)
-	trackCount := len(route.Tracks)
-	featureCount := pointCount + trackCount
-	result := make([]Feature, featureCount)
-
-	var i = 0;
-	for ; i < pointCount; i++ {
-		point := route.Points[i]
-		result[i] = Feature{
-			Id:point.Id,
-			Geometry:NewGeoPoint(point.Point),
-			Type: FEATURE,
-			Properties:FeatureProperties{
-				HintContent: point.Title,
-				Id: point.Id,
-			},
-			Options:FeatureOptions{
-				Preset: toYmapsPreset(point.Type),
-				Id: point.Id,
-			},
-		}
-	}
-	for ; i < featureCount; i++ {
-		track := route.Tracks[i - pointCount]
-		result[i] = Feature{
-			Id:track.Id,
-			Geometry:NewLineString(track.Path),
-			Type: FEATURE,
-		}
-	}
-
-	return result
-}
-
-func TracksToYmaps(tracks []Track) []Feature {
-	tLen := len(tracks)
-
-	result := make([]Feature, tLen)
-	for i := 0; i < tLen; i++ {
-		track := tracks[i]
-		result[i] = Feature{
-			Id:track.Id,
-			Geometry:NewLineString(track.Path),
-			Type: FEATURE,
-		}
-	}
-	return result
-}
-
-func PointsToYmaps(points []EventPoint) []Feature {
-	pLength := len(points)
-
-	result := make([]Feature, pLength)
-	for i := 0; i < pLength; i++ {
-		point := points[i]
-		result[i] = Feature{
-			Id:point.Id,
-			Geometry:NewGeoPoint(point.Point),
-			Type: FEATURE,
-			Properties:FeatureProperties{
-				HintContent: point.Title,
-				Id: point.Id,
-			},
-			Options:FeatureOptions{
-				Preset: toYmapsPreset(point.Type),
-				Id: point.Id,
-			},
-		}
-	}
-
-	return result
-}
-
 func mkFeature(point WhiteWaterPointWithRiverTitle, withDescription bool, resourcesBase string) Feature {
 	var description = ""
 	if withDescription {
@@ -256,14 +170,6 @@ func WhiteWaterPointsToYmaps(clusterMaker clustering.ClusterMaker, rivers []Rive
 	}
 
 	return result, nil
-}
-
-func RoutesToYmaps(route []Route) FeatureCollection {
-	var features = []Feature{}
-	for i := 0; i < len(route); i++ {
-		features = append(features, routeToYmaps(route[i])...)
-	}
-	return MkFeatureCollection(features)
 }
 
 func min(x, y int) int {

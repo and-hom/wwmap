@@ -4,10 +4,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"net/http"
 	"fmt"
-	"io"
 	"os"
-	"errors"
-	. "github.com/and-hom/wwmap/lib/geoparser"
 	"github.com/and-hom/wwmap/lib/geo"
 	. "github.com/and-hom/wwmap/lib/http"
 	"strconv"
@@ -56,21 +53,6 @@ func (this *App) tileParamsZ(w http.ResponseWriter, req *http.Request) (string, 
 func (this *App) CloseAndRemove(f *os.File) {
 	f.Close()
 	os.Remove(f.Name())
-}
-
-func (this *App) geoParser(r io.ReadSeeker) (GeoParser, error) {
-	gpxParser, err := InitGpxParser(r)
-	if err == nil {
-		return gpxParser, nil
-	}
-	log.Warn(err)
-	r.Seek(0, 0)
-	kmlParser, err := InitKmlParser(r)
-	if err == nil {
-		return kmlParser, nil
-	}
-	log.Warn(err)
-	return nil, errors.New("Can not find valid parser for this format!")
 }
 
 func (this *App) CreateMissingUser(r *http.Request) error {
