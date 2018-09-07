@@ -1,3 +1,9 @@
+wwmap-frontend (0.0.18) unstable; urgency=medium
+
+  * Bug fixed in river list show
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Fri, 07 Sep 2018 10:20:03 +0300
+
 wwmap-frontend (0.0.17) unstable; urgency=medium
 
   * Do not show delete button for not created spot
