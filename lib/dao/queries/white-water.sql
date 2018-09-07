@@ -175,6 +175,7 @@ UPDATE white_water_rapid SET title=$2,category=$3, point=ST_GeomFromGeoJSON($4),
     hw_category=$12, hw_description=$13,
     orient=$14, approach=$15, safety=$16,
     order_index=CASE WHEN $18 THEN order_index ELSE $17 END, auto_ordering=$18,
+    last_auto_ordering=CASE ST_GeomFromGeoJSON($4) WHEN point THEN last_auto_ordering ELSE NULL END,
     aliases=$19
     WHERE id=$1
 
