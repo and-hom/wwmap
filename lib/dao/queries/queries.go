@@ -29,8 +29,10 @@ func read(r []byte, result *map[string]string) {
 			if key == "" {
 				log.Fatalf("Should use --@query-name construction before query: %s", line)
 			}
+			if contents.Len()>0 {
+				contents.WriteString(" ")
+			}
 			contents.WriteString(line)
-			contents.WriteString(" ")
 		}
 	}
 	if key != "" {
@@ -38,25 +40,48 @@ func read(r []byte, result *map[string]string) {
 	}
 }
 
-func SqlQuery(file string, name string) string {
-	b, err := Asset(file + ".sql")
-	if err != nil {
-		log.Fatalf("Can not find query %s in file %s: %s", name, file, err.Error())
-	}
-
+func getQueriesOfFile(file string) map[string]string {
 	queriesOfFile, foundInCache := cache[file]
 	if !foundInCache {
 		log.Debug("Not in cache: ", file)
 		queriesOfFile = make(map[string]string)
 		cache[file] = queriesOfFile
+
+		sqlFileBytes, err := Asset(file + ".sql")
+		if err != nil {
+			log.Fatalf("Can not load sql queries file %s: %s", file, err.Error())
+		}
+
+		read(sqlFileBytes, &queriesOfFile)
 	} else {
 		log.Debug("In cache: ", file)
 	}
+	return queriesOfFile
+}
 
-	read(b, &queriesOfFile)
+const SUB_QUERY_REPLACE = "\\@\\@(.*?)\\@\\@"
+
+var subQueryReplacer = regexp.MustCompile(SUB_QUERY_REPLACE)
+
+func sqlQuery(file string, name string, walkedIdsStack []string) string {
+	queriesOfFile := getQueriesOfFile(file)
 	query, found := queriesOfFile[name]
 	if !found {
 		log.Fatalf("Can not get sql query for key %s in file %s", name, file)
 	}
-	return query
+	query = strings.Replace(query, "\n", "", -1)
+	log.Info("\"" +query+"\"")
+	return subQueryReplacer.ReplaceAllStringFunc(query, func(src string) string {
+		queryId := subQueryReplacer.FindStringSubmatch(src)[1]
+		for i := 0; i < len(walkedIdsStack); i++ {
+			if walkedIdsStack[i] == queryId {
+				log.Fatalf("Can not replace placeholder %s to query: cyclic dependency detected. Replacement stack is: %v", src, walkedIdsStack)
+			}
+		}
+		return sqlQuery(file, queryId, append(walkedIdsStack, queryId))
+	})
+}
+
+func SqlQuery(file string, name string) string {
+	return sqlQuery(file, name, []string{name})
 }
