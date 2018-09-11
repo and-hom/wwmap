@@ -29,17 +29,17 @@ func NewRiverPostgresDao(postgresStorage PostgresStorage) RiverDao {
 
 type riverStorage struct {
 	PostgresStorage
-	PropsManager     PropertyManager
-	findByTagsQuery          string
-	nearestQuery             string
-	insideBoundsQuery        string
-	byIdQuery                string
-	listByCountryQuery       string
-	listByRegionQuery        string
-	listByFirstLettersQuery  string
-	insertQuery              string
-	updateQuery              string
-	deleteQuery              string
+	PropsManager            PropertyManager
+	findByTagsQuery         string
+	nearestQuery            string
+	insideBoundsQuery       string
+	byIdQuery               string
+	listByCountryQuery      string
+	listByRegionQuery       string
+	listByFirstLettersQuery string
+	insertQuery             string
+	updateQuery             string
+	deleteQuery             string
 }
 
 func (this riverStorage) FindTitles(titles []string) ([]RiverTitle, error) {
@@ -47,7 +47,7 @@ func (this riverStorage) FindTitles(titles []string) ([]RiverTitle, error) {
 }
 
 func (this riverStorage) NearestRivers(point geo.Point, limit int) ([]RiverTitle, error) {
-	pointBytes, err := json.Marshal(geo.NewGeoPoint(point))
+	pointBytes, err := json.Marshal(geo.NewPgGeoPoint(point))
 	if err != nil {
 		return []RiverTitle{}, err
 	}
@@ -55,7 +55,7 @@ func (this riverStorage) NearestRivers(point geo.Point, limit int) ([]RiverTitle
 }
 
 func (this riverStorage) ListRiversWithBounds(bbox geo.Bbox, limit int) ([]RiverTitle, error) {
-	return this.listRiverTitles(this.insideBoundsQuery, bbox.X1, bbox.Y1, bbox.X2, bbox.Y2, limit)
+	return this.listRiverTitles(this.insideBoundsQuery, bbox.Y1, bbox.X1, bbox.Y2, bbox.X2, limit)
 }
 
 func (this riverStorage) Find(id int64) (RiverTitle, error) {
@@ -105,6 +105,7 @@ func (this riverStorage) Save(rivers ...RiverTitle) error {
 }
 
 func (this riverStorage) listRiverTitles(query string, queryParams ...interface{}) ([]RiverTitle, error) {
+	log.Infof("%v", queryParams)
 	result, err := this.doFindList(query,
 		func(rows *sql.Rows) (RiverTitle, error) {
 			riverTitle := RiverTitle{}
@@ -124,31 +125,14 @@ func (this riverStorage) listRiverTitles(query string, queryParams ...interface{
 					if err != nil {
 						log.Warnf("Can not parse rect or point %s for white water object %d: %v", boundsStr.String, riverTitle.Id, err)
 					}
-					pgRect.Coordinates = [][]geo.Point{[]geo.Point{
-						{
-							Lat: pgPoint.Coordinates.Lat - 0.0001,
-							Lon: pgPoint.Coordinates.Lon - 0.0001,
-						},
-						{
-							Lat: pgPoint.Coordinates.Lat + 0.0001,
-							Lon: pgPoint.Coordinates.Lon - 0.0001,
-						},
-						{
-							Lat: pgPoint.Coordinates.Lat + 0.0001,
-							Lon: pgPoint.Coordinates.Lon + 0.0001,
-						},
-						{
-							Lat: pgPoint.Coordinates.Lat - 0.0001,
-							Lon: pgPoint.Coordinates.Lon + 0.0001,
-						},
-					}, }
+					pgRect.Coordinates = point2rect(pgPoint)
 				}
 
 				riverTitle.Bounds = geo.Bbox{
-					X1:pgRect.Coordinates[0][0].Lon,
-					Y1:pgRect.Coordinates[0][0].Lat,
-					X2:pgRect.Coordinates[0][2].Lon,
-					Y2:pgRect.Coordinates[0][2].Lat,
+					X1:pgRect.Coordinates[0][0].Lat,
+					Y1:pgRect.Coordinates[0][0].Lon,
+					X2:pgRect.Coordinates[0][2].Lat,
+					Y2:pgRect.Coordinates[0][2].Lon,
 				}
 			}
 
@@ -161,6 +145,28 @@ func (this riverStorage) listRiverTitles(query string, queryParams ...interface{
 		return []RiverTitle{}, err
 	}
 	return result.([]RiverTitle), nil
+}
+
+func point2rect(pgPoint PgPoint) [][]geo.Point {
+	p := pgPoint.GetPoint()
+	return [][]geo.Point{[]geo.Point{
+		{
+			Lat: p.Lat - 0.0001,
+			Lon: p.Lon - 0.0001,
+		},
+		{
+			Lat: p.Lat + 0.0001,
+			Lon: p.Lon - 0.0001,
+		},
+		{
+			Lat: p.Lat + 0.0001,
+			Lon: p.Lon + 0.0001,
+		},
+		{
+			Lat: p.Lat - 0.0001,
+			Lon: p.Lon + 0.0001,
+		},
+	}, }
 }
 
 func (this riverStorage) Remove(id int64, tx interface{}) error {

@@ -14,6 +14,13 @@ type Point struct {
 	Lon float64
 }
 
+func (this Point) Flip() Point {
+	return Point{
+		Lat:this.Lon,
+		Lon:this.Lat,
+	}
+}
+
 func (this Point) MarshalJSON() ([]byte, error) {
 	buffer := bytes.NewBufferString("[")
 	buffer.WriteString(fmt.Sprint(this.Lat))
@@ -50,11 +57,23 @@ type LineString struct {
 	Coordinates []Point `json:"coordinates"`
 }
 
+func (this LineString) GetPath() []Point {
+	return flip(this.Coordinates)
+}
+
 func NewLineString(points []Point) Geometry {
 	return LineString{
-		Coordinates:points,
+		Coordinates:flip(points),
 		Type:LINE_STRING,
 	}
+}
+
+func flip(points []Point) []Point {
+	result := make([]Point, len(points))
+	for i := 0; i < len(points); i++ {
+		result[i] = points[i].Flip()
+	}
+	return result
 }
 
 type YRectangle struct {
@@ -90,9 +109,17 @@ type geoPoint struct {
 	Coordinates Point `json:"coordinates"`
 }
 
-func NewGeoPoint(point Point) Geometry {
+func NewPgGeoPoint(point Point) Geometry {
 	return geoPoint{
-		Coordinates:point,
+		// flip coordinates for postGIS
+		Coordinates: point.Flip(),
+		Type:POINT,
+	}
+}
+
+func NewYmapsGeoPoint(point Point) Geometry {
+	return geoPoint{
+		Coordinates: point,
 		Type:POINT,
 	}
 }

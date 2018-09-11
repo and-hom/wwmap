@@ -43,7 +43,6 @@ type WhiteWaterDao interface {
 	UpdateWhiteWaterPointsFull(whiteWaterPoints ...WhiteWaterPointFull) error
 	Find(id int64) (WhiteWaterPointWithRiverTitle, error)
 	FindFull(id int64) (WhiteWaterPointFull, error)
-	ListWithPath() ([]WhiteWaterPointWithPath, error)
 	ListByBbox(bbox Bbox) ([]WhiteWaterPointWithRiverTitle, error)
 	ListByRiver(riverId int64) ([]WhiteWaterPointWithRiverTitle, error)
 	ListByRiverFull(riverId int64) ([]WhiteWaterPointFull, error)
@@ -384,6 +383,12 @@ func (this PropertyManagerImpl) SetIntProperty(name string, id int64, value int)
 type PgPoint struct {
 	Coordinates Point `json:"coordinates"`
 }
+
+func (this PgPoint) GetPoint() Point {
+	// flip coordinates for postGIS
+	return this.Coordinates.Flip()
+}
+
 type PgPolygon struct {
 	Coordinates [][]Point `json:"coordinates"`
 }

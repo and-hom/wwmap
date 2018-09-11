@@ -49,7 +49,7 @@ func mkFeature(point WhiteWaterPointWithRiverTitle, withDescription bool, resour
 	}
 	return Feature{
 		Id:point.Id,
-		Geometry:NewGeoPoint(point.Point),
+		Geometry:NewYmapsGeoPoint(point.Point),
 		Type: FEATURE,
 		Properties:properties,
 		Options:FeatureOptions{
@@ -135,7 +135,7 @@ func mkCluster(Id clustering.ClusterId, points []WhiteWaterPointWithRiverTitle) 
 	return Feature{
 		Id: MAX_CLUSTER_ID - rand.Int63n(MAX_CLUSTERS),
 		Type: CLUSTER,
-		Geometry:NewGeoPoint(bounds.Center()),
+		Geometry:NewYmapsGeoPoint(bounds.Center()),
 		Bbox: bounds.WithMargins(0.05),
 		Number: len(points),
 		Properties:FeatureProperties{

@@ -93,7 +93,7 @@ func (this waterWayStorage) ForEachWaterWay(transformer func(WaterWay) (WaterWay
 			log.Errorf("Can not parse path \"%s\": %v", path, err)
 			return err
 		}
-		waterWay.Path = path.Coordinates
+		waterWay.Path = path.GetPath()
 
 		waterWayNew, err := transformer(waterWay)
 		if err != nil {
