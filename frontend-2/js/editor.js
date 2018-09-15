@@ -69,7 +69,7 @@ function getRiver(riverId) {
 
 function getRiverCenter(riverId) {
     var center = doGetJsonSync(backendApiBase + "/river/" + riverId + "/center")
-    if center==null {
+    if (center==null) {
         return [0,0]
     }
     return center
