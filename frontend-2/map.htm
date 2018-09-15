@@ -44,6 +44,9 @@
             <li class="nav-item" v-if="admin()">
                 <a class="nav-link" href="users.htm">Пользователи</a>
             </li>
+            <li class="nav-item" v-if="userInfo!=null">
+                <a class="nav-link" href="docs.htm">Прочитай меня</a>
+            </li>
         </ul>
         <auth></auth>
     </nav>
