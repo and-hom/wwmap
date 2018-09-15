@@ -181,6 +181,7 @@
                         order_index: "0",
                         automatic_ordering: true,
                         point:getRiverCenter(this.river.id),
+                        aliases:[],
                     }
                 },
 
