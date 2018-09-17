@@ -44,7 +44,7 @@
             <li class="nav-item" v-if="admin()">
                 <a class="nav-link" href="users.htm">Пользователи</a>
             </li>
-            <li class="nav-item" v-if="userInfo!=null">
+            <li class="nav-item" v-if="canEdit()">
                 <a class="nav-link" href="docs.htm">Прочитай меня</a>
             </li>
         </ul>
@@ -79,6 +79,9 @@
                 admin: function() {
                     userInfo = getAuthorizedUserInfoOrNull()
                     return userInfo && userInfo.roles && userInfo.roles.indexOf("ADMIN") > -1;
+                },
+                canEdit: function(){
+                 return this.userInfo!=null && (this.userInfo.roles.includes("EDITOR") || this.userInfo.roles.includes("ADMIN"))
                 },
         }
     })

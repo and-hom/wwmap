@@ -35,7 +35,7 @@
             <li class="#" v-if="admin()">
                 <a class="nav-link" href="#">Пользователи</a>
             </li>
-            <li class="nav-item" v-if="userInfo!=null">
+            <li class="nav-item" v-if="canEdit()">
                 <a class="nav-link" href="docs.htm">Прочитай меня</a>
             </li>
         </ul>
@@ -123,6 +123,9 @@
             },
             roleChangeText:function(user) {
                 return 'Сменить роль для ' + user.info.login + '. Текущая роль - ' + user.role
+            },
+            canEdit: function(){
+                return this.userInfo!=null && (this.userInfo.roles.includes("EDITOR") || this.userInfo.roles.includes("ADMIN"))
             },
         }
     })
