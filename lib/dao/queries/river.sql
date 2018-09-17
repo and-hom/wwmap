@@ -17,10 +17,15 @@ WHERE exists(SELECT 1 FROM white_water_rapid WHERE white_water_rapid.river_id=ri
 GROUP BY river.id, river.title ORDER BY popularity DESC LIMIT $5
 
 --@by-id
-SELECT id,region_id,title,NULL,river.aliases AS aliases FROM river WHERE id=$1
+SELECT id,region_id,title,NULL,river.aliases AS aliases, description FROM river WHERE id=$1
 
 --@by-region
 SELECT river.id, region_id, river.title, NULL, river.aliases
+    FROM river INNER JOIN region ON river.region_id=region.id WHERE region.id=$1
+    ORDER BY CASE river.title WHEN '-' THEN NULL ELSE river.title END ASC
+
+--@by-region-full
+SELECT river.id, region_id, river.title, NULL, river.aliases, description
     FROM river INNER JOIN region ON river.region_id=region.id WHERE region.id=$1
     ORDER BY CASE river.title WHEN '-' THEN NULL ELSE river.title END ASC
 
@@ -29,14 +34,19 @@ SELECT river.id as id, region_id, river.title as title, NULL, river.aliases as a
     FROM river INNER JOIN region ON river.region_id=region.id WHERE region.fake AND region.country_id=$1
     ORDER BY CASE river.title WHEN '-' THEN NULL ELSE river.title END ASC
 
+--@by-country-full
+SELECT river.id as id, region_id, river.title as title, NULL, river.aliases as aliases, description
+    FROM river INNER JOIN region ON river.region_id=region.id WHERE region.fake AND region.country_id=$1
+    ORDER BY CASE river.title WHEN '-' THEN NULL ELSE river.title END ASC
+
 --@by-first-letters
 SELECT id, region_id, title, NULL, aliases FROM river WHERE title ilike $1||'%' LIMIT $2
 
 --@update
-UPDATE river SET region_id=$2, title=$3, aliases=$4 WHERE id=$1
+UPDATE river SET region_id=$2, title=$3, aliases=$4, description=$5 WHERE id=$1
 
 --@insert
-INSERT INTO river(region_id, title, aliases) VALUES($1,$2,$3) RETURNING id
+INSERT INTO river(region_id, title, aliases, description) VALUES($1,$2,$3,$4) RETURNING id
 
 --@delete
 DELETE FROM river WHERE id=$1

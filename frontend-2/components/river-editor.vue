@@ -11,11 +11,11 @@
 
         <div v-if="canEdit()" class="btn-toolbar">
             <div v-if="river.id" class="btn-group mr-2" role="group">
-                <button type="button" class="btn btn-primary" v-on:click="add_spot()">Добавить препятствие</button>
+                <button type="button" class="btn btn-primary" v-if="!editMode" v-on:click="add_spot()">Добавить препятствие</button>
             </div>
             <div class="btn-group mr-2" role="group" aria-label="First group">
-                <button type="button" class="btn btn-info" v-on:click="editMode=!editMode; hideError();">
-                    {{getEditModeButtonTitle()}}
+                <button type="button" class="btn btn-info" v-if="!editMode" v-on:click="editMode=true; hideError();">
+                    Редактирование
                 </button>
                 <button type="button" class="btn btn-success" v-if="editMode" v-on:click="save()">Сохранить</button>
                 <button type="button" class="btn btn-secondary" v-if="editMode" v-on:click="reload()">Отменить</button>
@@ -39,6 +39,16 @@
                 <div v-else style="padding-left:40px;">
                     {{river.region.title}}
                 </div>
+            </dd>
+            <dt>Описание:</dt>
+            <dd>
+                <textarea v-if="editMode" v-bind:text-content="river.aliases"
+                          rows="10" cols="120"
+                          style="resize: none; margin-left:40px;" v-model="river.description"></textarea>
+                <div v-else style="padding-left:40px;">
+                    {{river.description}}
+                </div>
+
             </dd>
             <dt>Другие варианты названия для автоматического поиска отчётов:</dt>
             <dd>
@@ -161,9 +171,6 @@
                 },
                 hideError: function(errMsg) {
                     this.errMsg = null
-                },
-                getEditModeButtonTitle: function() {
-                    return this.editMode ? 'Просмотр' : 'Редактирование';
                 },
                 // end of editor
 

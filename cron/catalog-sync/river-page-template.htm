@@ -1,5 +1,38 @@
-<a href="{{.rootPage}}">Каталог водных препятствий</a>/<a href="{{.countryPage}}">{{.country.Title}}</a>/<a href="{{.regionPage}}">{{.region.Title}}</a>
+<a href="{{.rootPage}}" style="font-size:80%;">Каталог водных препятствий</a><br/>&nbsp;&nbsp;<a
+        href="{{.countryPage}}" style="font-size:80%;">{{.country.Title}}</a><br/>&nbsp;&nbsp;&nbsp;&nbsp;<a
+        href="{{.regionPage}}" style="font-size:80%;">{{.region.Title}}</a>
 
-{{range .links}}
-    <a href="{{.Url}}">{{.Title}}</a>
-{{end}}
+<table style="border:0px;">
+    <tr>
+        <td colspan="2">
+            <h1>{{.river.Title}}</h1>
+            {{.river.Description}}
+        </td>
+        <td>
+            <img style="width:200px;" src="{{.mainImage.Url}}"/>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"><strong>Пороги</strong>&nbsp;&nbsp;<a
+                href="https://wwmap.ru/api/gpx/river/{{.River.Id}}">GPX</a>&nbsp;<a
+                href="{{.ApiBase}}/gpx/river/{{.river.Id}}?tr=true">GPX<sub>en</sub></a></td>
+        <td rowspan="{{ inc (len .links) }}">
+            Карта
+        </td>
+    </tr>
+    {{range .links}}
+    <tr>
+        <td colspan="2"><a
+                href="{{.Url}}">{{.Title}}&nbsp;({{.Category}})</a>
+        </td>
+    </tr>
+    {{end}}
+    <tr>
+        <td colspan="3"><strong>Отчёты</strong></td>
+    </tr>
+    {{range .reports}}
+    <tr>
+        <td colspan="3"><a href="{{.Url}}" target="_blank"><img src="{{.SourceLogo}}"/>&nbsp;{{.Title}}</a></td>
+    </tr>
+    {{end}}
+</table>

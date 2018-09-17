@@ -22,6 +22,7 @@ type App struct {
 
 	ImgUrlBase        string
 	ImgUrlPreviewBase string
+	ResourceBase      string
 
 	stat              *ImportExportReport
 	catalogConnector  common.CatalogConnector
@@ -52,14 +53,15 @@ func CreateApp() App {
 		},
 		ImgUrlBase:configuration.ImgStorage.Full.UrlBase,
 		ImgUrlPreviewBase:configuration.ImgStorage.Preview.UrlBase,
+		ResourceBase:configuration.Content.ResourceBase,
 	}
 }
 
 func main() {
 	log.Infof("Starting wwmap")
 	app := CreateApp()
-	app.DoSyncReports()
-	//app.DoWriteCatalog()
+	//app.DoSyncReports()
+	app.DoWriteCatalog()
 }
 
 func (this App) getCachedCatalogConnector() common.CatalogConnector {

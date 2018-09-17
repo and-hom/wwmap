@@ -1,7 +1,12 @@
-<a href="{{.rootPage}}">Каталог водных препятствий</a>
-{{range .regionLinks}}
-<a href="{{.Url}}">{{.Title}}</a>
-{{end}}
-{{range .riverLinks}}
-<a href="{{.Url}}">{{.Title}}</a>
-{{end}}
+<a href="{{.rootPage}}" style="font-size:80%;">Каталог водных препятствий</a>
+
+<ul style="list-style-type:none;">
+    {{range .regionLinks}}
+    <li><a href="{{.Url}}">{{.Title}}</a></li>
+    {{end}}
+</ul>
+<ul style="list-style-type:none;">
+    {{range .riverLinks}}
+    <li><a href="{{.Url}}">{{.Title}}</a></li>
+    {{end}}
+</ul>

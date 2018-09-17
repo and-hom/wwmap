@@ -4,12 +4,14 @@
 
 override_dh_auto_install:
 	install -d $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/img/report_sources
+	install -d $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/img/flags
 	install -d $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/js
 	install -d $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/css
 
 	install -D -m 0644 *.htm $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/
 	install -D -m 0644 img/report_sources/*.png $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/img/report_sources
 	install -D -m 0644 img/*.png $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/img/
+	install -D -m 0644 /img/flags/*.png $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/img/flags/
 	install -D -m 0644 css/* $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/css/
 	install -D -m 0644 js/* $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/js/
 

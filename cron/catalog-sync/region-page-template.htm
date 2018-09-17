@@ -1,5 +1,8 @@
-<a href="{{.rootPage}}">Каталог водных препятствий</a>/<a href="{{.countryPage}}">{{.country.Title}}</a>
+<a href="{{.rootPage}}" style="font-size:80%;">Каталог водных препятствий</a><br/>&nbsp;&nbsp;<a
+        href="{{.countryPage}}" style="font-size:80%;">{{.country.Title}}</a>
 
-{{range .links}}
-<a href="{{.Url}}">{{.Title}}</a>
-{{end}}
+<ul style="list-style-type:none;">
+    {{range .links}}
+    <li><a href="{{.Url}}">{{.Title}}</a></li>
+    {{end}}
+</ul>

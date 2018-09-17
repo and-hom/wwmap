@@ -193,11 +193,11 @@ func (this TlibReportsProvider) queryData(pageNum int, viewState ViewState, date
 			author = this.parseAuthor(reportUrl, pageContents)
 		}
 
-		descritionText := row.Find("td:nth-of-type(2)").Text()
+		descriptionText := row.Find("td:nth-of-type(2)").Text()
 
-		submatch := titleRe.FindStringSubmatch(descritionText)
+		submatch := titleRe.FindStringSubmatch(descriptionText)
 		if len(submatch) < 2 {
-			log.Fatalf("Illegal title: %s\n%s", descritionText, row.Text())
+			log.Fatalf("Illegal title: %s\n%s", descriptionText, row.Text())
 		}
 		title := submatch[1]
 		tags := make([]string, 0)
@@ -205,7 +205,7 @@ func (this TlibReportsProvider) queryData(pageNum int, viewState ViewState, date
 			tags = append(tags, river[2])
 		}
 
-		dateOfTrip, err := parseDateOfTrip(descritionText)
+		dateOfTrip, err := parseDateOfTrip(descriptionText)
 		if err != nil {
 			log.Error("Can not parse date of trip ", err)
 			dateOfTrip = zero

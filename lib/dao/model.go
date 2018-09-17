@@ -29,6 +29,11 @@ type RiverTitle struct {
 	Aliases  []string `json:"aliases"`
 }
 
+type River struct {
+	RiverTitle
+	Description string
+}
+
 type WaterWay struct {
 	Id      int64 `json:"id"`
 	OsmId   int64 `json:"osm_id"`
@@ -218,6 +223,7 @@ type User struct {
 type Country struct {
 	Id    int64 `json:"id,omitempty"`
 	Title string `json:"title"`
+	Code  string `json:"code"`
 }
 
 type Region struct {

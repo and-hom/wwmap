@@ -6,6 +6,8 @@ import (
 	"github.com/and-hom/wwmap/cron/catalog-sync/common"
 	"fmt"
 	"time"
+	"github.com/and-hom/wwmap/lib/util"
+	"strings"
 )
 
 const MAX_ATTACHED_IMGS = 300
@@ -60,7 +62,7 @@ func (this *App) DoWriteCatalog() {
 	}
 	_, rootPageLink := this.createBlankPageIfNotExists(DummyHasProperties{pageId:this.Configuration.RootPageId}, 0, "", 0)
 	countries = filterCountries(countries)
-	countryLinks := []common.LinkOnPage{}
+	countryLinks := []common.CountryLink{}
 	for _, country := range countries {
 		log.Infof("Upload country %s", country.Title)
 		regions, err := this.RegionDao.List(country.Id)
@@ -69,7 +71,7 @@ func (this *App) DoWriteCatalog() {
 		}
 		regions = filterRegions(regions)
 
-		rivers, err := this.RiverDao.ListByCountry(country.Id)
+		rivers, err := this.RiverDao.ListByCountryFull(country.Id)
 		if err != nil {
 			this.Fatalf(err, "Can not list rivers for country %d", country.Id)
 		}
@@ -85,7 +87,7 @@ func (this *App) DoWriteCatalog() {
 		countryRiverLinks := []common.LinkOnPage{}
 		for _, region := range regions {
 			log.Infof("Upload region %s/%s", country.Title, region.Title)
-			regionRivers, err := this.RiverDao.ListByRegion(region.Id)
+			regionRivers, err := this.RiverDao.ListByRegionFull(region.Id)
 			if err != nil {
 				this.Fatalf(err, "Can not list rivers for region %d", region.Id)
 			}
@@ -104,7 +106,7 @@ func (this *App) DoWriteCatalog() {
 					log.Infof("Skip river %s - no spots", river.Title)
 					continue
 				}
-				err := catalogConnector.WriteRiverPage(riverPageId, river, region, country, spotLinks, rootPageLink, countryPageLink, regionPageLink)
+				err := catalogConnector.WriteRiverPage(riverPageId, river, region, country, spotLinks, rootPageLink, countryPageLink, regionPageLink, noImage(0), this.reports(river.Id))
 				if err != nil {
 					this.Fatalf(err, "Can not write river page %d", river.Id)
 				}
@@ -123,7 +125,7 @@ func (this *App) DoWriteCatalog() {
 				log.Infof("Skip river %s - no spots", river.Title)
 				continue
 			}
-			err := catalogConnector.WriteRiverPage(riverPageId, river, fakeRegion, country, spotLinks, rootPageLink, countryPageLink, "")
+			err := catalogConnector.WriteRiverPage(riverPageId, river, fakeRegion, country, spotLinks, rootPageLink, countryPageLink, "", noImage(0), this.reports(river.Id))
 			if err != nil {
 				this.Fatalf(err, "Can not write river page %d", river.Id)
 			}
@@ -135,10 +137,30 @@ func (this *App) DoWriteCatalog() {
 			this.Fatalf(err, "Can not write country page %d", country.Id)
 		}
 
-		countryLinks = append(countryLinks, common.LinkOnPage{Title:country.Title, Url:countryPageLink})
+		countryLinks = append(countryLinks, common.CountryLink{
+			LinkOnPage:  common.LinkOnPage{Title:country.Title, Url:countryPageLink},
+			Code: country.Code,
+		})
 	}
 
 	catalogConnector.WriteRootPage(this.Configuration.RootPageId, countryLinks)
+}
+
+const MAX_REPORTS_PER_SOURCE = 15
+
+func (this *App) reports(riverId int64) []common.VoyageReportLink {
+	r, err := this.VoyageReportDao.List(riverId, MAX_REPORTS_PER_SOURCE)
+	if err != nil {
+		log.Fatalf("Can not read report links: %v", err)
+	}
+	result := make([]common.VoyageReportLink, len(r))
+	for i := 0; i < len(r); i++ {
+		result[i] = common.VoyageReportLink{
+			LinkOnPage:common.LinkOnPage{Title:r[i].Title, Url:r[i].Url},
+			SourceLogo:this.ResourceBase + "/img/report_sources/" + strings.ToLower(r[i].Source) + ".png",
+		}
+	}
+	return result
 }
 
 func (this *App) createBlankPageIfNotExists(dao dao.HasProperties, id int64, title string, parentId int) (int, string) {
@@ -161,19 +183,19 @@ func (this *App) createBlankPageIfNotExists(dao dao.HasProperties, id int64, tit
 	return childPageId, link
 }
 
-func (this *App) writeSpots(parentPageId int, river dao.RiverTitle, region dao.Region, country dao.Country, rootPageLink, countryPageLink, regionPageLink string) (int, string, []common.LinkOnPage, bool) {
+func (this *App) writeSpots(parentPageId int, river dao.River, region dao.Region, country dao.Country, rootPageLink, countryPageLink, regionPageLink string) (int, string, []common.SpotLink, bool) {
 	spots, err := this.WhiteWaterDao.ListByRiverFull(river.Id)
 	if err != nil {
 		this.Fatalf(err, "Can not list spots for river %d", river.Id)
 	}
 	if len(spots) == 0 {
-		return 0, "", []common.LinkOnPage{}, false
+		return 0, "", []common.SpotLink{}, false
 	}
 
 	catalogConnector := this.getCachedCatalogConnector()
 	riverPageId, riverPageLink := this.createBlankPageIfNotExists(this.RiverDao, river.Id, river.Title, parentPageId)
 
-	spotLinks := []common.LinkOnPage{}
+	spotLinks := []common.SpotLink{}
 	for _, spot := range spots {
 		log.Infof("Upload spot %s/%s", river.Title, spot.Title)
 		spotPageId, spotPageLink := this.createBlankPageIfNotExists(this.WhiteWaterDao, spot.Id, spot.Title, riverPageId)
@@ -186,9 +208,25 @@ func (this *App) writeSpots(parentPageId int, river dao.RiverTitle, region dao.R
 		if err != nil {
 			this.Fatalf(err, "Can not write spot page %d", spot.Id)
 		}
-		spotLinks = append(spotLinks, common.LinkOnPage{Title:spot.Title, Url:spotPageLink})
+		spotLinks = append(spotLinks, common.SpotLink{
+			LinkOnPage: common.LinkOnPage{
+				Title:spot.Title,
+				Url:spotPageLink,
+			},
+			Category:categoryStr(spot),
+		})
 	}
 	return riverPageId, riverPageLink, spotLinks, true
+}
+
+func categoryStr(spot dao.WhiteWaterPointFull) string {
+	if (!spot.HighWaterCategory.Undefined() || !spot.MediumWaterCategory.Undefined() || !spot.LowWaterCategory.Undefined()) {
+		return fmt.Sprintf("%s/%s/%s",
+			util.HumanReadableCategoryName(spot.LowWaterCategory, false),
+			util.HumanReadableCategoryName(spot.MediumWaterCategory, false),
+			util.HumanReadableCategoryName(spot.HighWaterCategory, false),)
+	}
+	return util.HumanReadableCategoryName(spot.Category, false)
 }
 
 func (this *App) mainImage(spot dao.WhiteWaterPointFull, imgs []dao.Img) dao.Img {
@@ -203,17 +241,7 @@ func (this *App) mainImage(spot dao.WhiteWaterPointFull, imgs []dao.Img) dao.Img
 	if len(imgs) > 0 {
 		return imgs[0]
 	} else {
-		return dao.Img{
-			Id:0,
-			Source:dao.IMG_SOURCE_WWMAP,
-			Type:dao.IMAGE_TYPE_IMAGE,
-			MainImage:true,
-			Enabled:true,
-			WwId:spot.Id,
-			DatePublished:time.Now(),
-			PreviewUrl: MISSING_IMAGE,
-			Url: MISSING_IMAGE,
-		}
+		return noImage(spot.Id)
 	}
 
 }
@@ -222,5 +250,18 @@ func (this *App) processForWeb(img *dao.Img) {
 	if img.Source == dao.IMG_SOURCE_WWMAP {
 		img.Url = fmt.Sprintf(this.ImgUrlBase, img.Id)
 		img.PreviewUrl = fmt.Sprintf(this.ImgUrlPreviewBase, img.Id)
+	}
+}
+func noImage(spotId int64) dao.Img {
+	return dao.Img{
+		Id:0,
+		Source:dao.IMG_SOURCE_WWMAP,
+		Type:dao.IMAGE_TYPE_IMAGE,
+		MainImage:true,
+		Enabled:true,
+		WwId:spotId,
+		DatePublished:time.Now(),
+		PreviewUrl: MISSING_IMAGE,
+		Url: MISSING_IMAGE,
 	}
 }

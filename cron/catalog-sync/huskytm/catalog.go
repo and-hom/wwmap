@@ -25,23 +25,29 @@ func GetCatalogConnector(login, password string) (common.CatalogConnector, error
 	if r.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("Connection failed. Code: %d Body: %s", r.StatusCode, string(b))
 	}
-	spotPageTemplate, e := template.New("spot").Parse(string(bindata.MustAsset("spot-page-template.htm")))
+	funcMap := template.FuncMap{
+		"inc": func(i int) int {
+			return i + 1
+		},
+	}
+
+	spotPageTemplate, e := template.New("spot").Funcs(funcMap).Parse(string(bindata.MustAsset("spot-page-template.htm")))
 	if e != nil {
 		return nil, fmt.Errorf("Can not compile template: %s", e.Error())
 	}
-	riverPageTemplate, e := template.New("river").Parse(string(bindata.MustAsset("river-page-template.htm")))
+	riverPageTemplate, e := template.New("river").Funcs(funcMap).Parse(string(bindata.MustAsset("river-page-template.htm")))
 	if e != nil {
 		return nil, fmt.Errorf("Can not compile template: %s", e.Error())
 	}
-	regionPageTemplate, e := template.New("region").Parse(string(bindata.MustAsset("region-page-template.htm")))
+	regionPageTemplate, e := template.New("region").Funcs(funcMap).Parse(string(bindata.MustAsset("region-page-template.htm")))
 	if e != nil {
 		return nil, fmt.Errorf("Can not compile template: %s", e.Error())
 	}
-	countryPageTemplate, e := template.New("country").Parse(string(bindata.MustAsset("country-page-template.htm")))
+	countryPageTemplate, e := template.New("country").Funcs(funcMap).Parse(string(bindata.MustAsset("country-page-template.htm")))
 	if e != nil {
 		return nil, fmt.Errorf("Can not compile template: %s", e.Error())
 	}
-	rootPageTemplate, e := template.New("root").Parse(string(bindata.MustAsset("root-page-template.htm")))
+	rootPageTemplate, e := template.New("root").Funcs(funcMap).Parse(string(bindata.MustAsset("root-page-template.htm")))
 	if e != nil {
 		return nil, fmt.Errorf("Can not compile template: %s", e.Error())
 	}
@@ -65,7 +71,7 @@ type HuskytmCatalogConnector struct {
 	riverPageTemplate   *template.Template
 	regionPageTemplate  *template.Template
 	countryPageTemplate *template.Template
-	rootPageTemplate *template.Template
+	rootPageTemplate    *template.Template
 }
 
 func (this *HuskytmCatalogConnector) Close() error {
@@ -105,7 +111,7 @@ func (this *HuskytmCatalogConnector) createPage(parent int, title string) (int, 
 }
 
 func (this *HuskytmCatalogConnector) WriteSpotPage(pageId int, spot dao.WhiteWaterPointFull,
-river dao.RiverTitle, region dao.Region, country dao.Country,
+river dao.River, region dao.Region, country dao.Country,
 mainImg dao.Img, imgs []dao.Img,
 rootPageLink, countryPageLink, regionPageLink, riverPageLink string) error {
 	return this.writePage(pageId, this.spotPageTemplate, spot.Title, map[string]interface{}{
@@ -121,8 +127,8 @@ rootPageLink, countryPageLink, regionPageLink, riverPageLink string) error {
 		"images": imgs,
 	})
 }
-func (this *HuskytmCatalogConnector) WriteRiverPage(pageId int, river dao.RiverTitle, region dao.Region, country dao.Country, links []common.LinkOnPage,
-rootPageLink, countryPageLink, regionPageLink string) error {
+func (this *HuskytmCatalogConnector) WriteRiverPage(pageId int, river dao.River, region dao.Region, country dao.Country, links []common.SpotLink,
+rootPageLink, countryPageLink, regionPageLink string, mainImg dao.Img, reports []common.VoyageReportLink) error {
 	return this.writePage(pageId, this.riverPageTemplate, river.Title, map[string]interface{}{
 		"rootPage": rootPageLink,
 		"country": country,
@@ -131,6 +137,8 @@ rootPageLink, countryPageLink, regionPageLink string) error {
 		"regionPage": regionPageLink,
 		"river": river,
 		"links": links,
+		"mainImage": mainImg,
+		"reports": reports,
 	})
 }
 func (this *HuskytmCatalogConnector) WriteRegionPage(pageId int, region dao.Region, country dao.Country, links []common.LinkOnPage,
@@ -151,7 +159,8 @@ func (this *HuskytmCatalogConnector) WriteCountryPage(pageId int, country dao.Co
 		"riverLinks": riverLinks,
 	})
 }
-func (this *HuskytmCatalogConnector) WriteRootPage(pageId int, countryLinks []common.LinkOnPage) error {
+
+func (this *HuskytmCatalogConnector) WriteRootPage(pageId int, countryLinks []common.CountryLink) error {
 	return this.writePage(pageId, this.rootPageTemplate, "Каталог водных препятствий", map[string]interface{}{
 		"links": countryLinks,
 	})

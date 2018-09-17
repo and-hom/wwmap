@@ -31,15 +31,30 @@ type LinkOnPage struct {
 	Title string
 }
 
+type SpotLink struct {
+	LinkOnPage
+	Category    string
+}
+
+type CountryLink struct {
+	LinkOnPage
+	Code string
+}
+
+type VoyageReportLink struct {
+	LinkOnPage
+	SourceLogo string
+}
+
 type CatalogConnector interface {
 	io.Closer
 	PassportEntriesSince(key string) ([]dao.WWPassport, error)
 	GetImages(key string) ([]dao.Img, error)
 
 	CreateEmptyPageIfNotExistsAndReturnId(parent int, pageId int, title string) (int, string, bool, error)
-	WriteSpotPage(pageId int, spot dao.WhiteWaterPointFull, river dao.RiverTitle, region dao.Region, country dao.Country, mainImg dao.Img, imgs []dao.Img, rootPageLink, countryPageLink, regionPageLink, riverPageLink string) error
-	WriteRiverPage(pageId int, river dao.RiverTitle, region dao.Region, country dao.Country, links []LinkOnPage, rootPageLink, countryPageLink, regionPageLink string) error
+	WriteSpotPage(pageId int, spot dao.WhiteWaterPointFull, river dao.River, region dao.Region, country dao.Country, mainImg dao.Img, imgs []dao.Img, rootPageLink, countryPageLink, regionPageLink, riverPageLink string) error
+	WriteRiverPage(pageId int, river dao.River, region dao.Region, country dao.Country, links []SpotLink, rootPageLink, countryPageLink, regionPageLink string, mainImg dao.Img, reports []VoyageReportLink) error
 	WriteRegionPage(pageId int, region dao.Region, country dao.Country, links []LinkOnPage, rootPageLink, countryPageLink string) error
 	WriteCountryPage(pageId int, country dao.Country, regionLinks, riverLinks []LinkOnPage, rootPageLink string) error
-	WriteRootPage(pageId int, countryLinks []LinkOnPage) error
+	WriteRootPage(pageId int, countryLinks []CountryLink) error
 }

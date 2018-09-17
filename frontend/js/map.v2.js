@@ -18,7 +18,7 @@ class WWMap {
         $.get(apiBase + "/visible-rivers?bbox=" + bounds.join(','), (data) => {
                     var dataObj = {
                         "rivers" : JSON.parse(data),
-                        "apiUrl": apiBase + "/gpx"
+                        "apiUrl": apiBase + "/gpx/river"
                     }
                     for (i in dataObj.rivers) {
                         if(dataObj.rivers[i].bounds) {

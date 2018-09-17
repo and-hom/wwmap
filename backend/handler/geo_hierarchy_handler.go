@@ -35,8 +35,8 @@ func (this *GeoHierarchyHandler) Init(r *mux.Router) {
 	this.Register(r, "/region", HandlerFunctions{Get:this.ListAllRegions})
 	this.Register(r, "/region/{regionId}", HandlerFunctions{Get:this.GetRegion})
 
-	this.Register(r, "/river/{riverId}", HandlerFunctions{Get:this.GetRiver, Put:this.SaveRiver, Post:this.SaveRiver, Delete:this.RemoveRiver})
 	this.Register(r, "/river", HandlerFunctions{Get:this.FilterRivers})
+	this.Register(r, "/river/{riverId}", HandlerFunctions{Get:this.GetRiver, Put:this.SaveRiver, Post:this.SaveRiver, Delete:this.RemoveRiver})
 	this.Register(r, "/river/{riverId}/reports", HandlerFunctions{Get:this.ListRiverReports})
 	this.Register(r, "/river/{riverId}/spots", HandlerFunctions{Get:this.ListSpots})
 	this.Register(r, "/river/{riverId}/center", HandlerFunctions{Get:this.GetRiverCenter})
@@ -46,10 +46,11 @@ func (this *GeoHierarchyHandler) Init(r *mux.Router) {
 }
 
 type RiverDto struct {
-	Id      int64 `json:"id"`
-	Title   string `json:"title"`
-	Aliases []string `json:"aliases"`
-	Region  dao.Region `json:"region"`
+	Id          int64 `json:"id"`
+	Title       string `json:"title"`
+	Aliases     []string `json:"aliases"`
+	Region      dao.Region `json:"region"`
+	Description string `json:"description,omitempty"`
 }
 
 func (this *GeoHierarchyHandler) getRegion(id int64) dao.Region {
@@ -287,13 +288,16 @@ func (this *GeoHierarchyHandler) SaveRiver(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	riverForDb := dao.RiverTitle{
-		IdTitle:dao.IdTitle{
-			Id:river.Id,
-			Title:river.Title,
+	riverForDb := dao.River{
+		RiverTitle: dao.RiverTitle{
+			IdTitle:dao.IdTitle{
+				Id:river.Id,
+				Title:river.Title,
+			},
+			RegionId:river.Region.Id,
+			Aliases:river.Aliases,
 		},
-		RegionId:river.Region.Id,
-		Aliases:river.Aliases,
+		Description:river.Description,
 	}
 
 	var id int64
@@ -323,7 +327,7 @@ func (this *GeoHierarchyHandler) RemoveRiver(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	imgs,err := this.ImgDao.ListAllByRiver(riverId)
+	imgs, err := this.ImgDao.ListAllByRiver(riverId)
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not get images for river: %d", riverId))
 		return
@@ -370,6 +374,7 @@ func (this *GeoHierarchyHandler) writeRiver(riverId int64, w http.ResponseWriter
 		Title:river.Title,
 		Aliases:river.Aliases,
 		Region:region,
+		Description:river.Description,
 	}
 	this.JsonAnswer(w, riverWithRegion)
 }

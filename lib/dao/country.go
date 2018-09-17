@@ -22,7 +22,7 @@ type countryStorage struct {
 func (this countryStorage) List() ([]Country, error) {
 	lst, err := this.doFindList(this.listQuery, func(rows *sql.Rows) (Country, error) {
 		result := Country{}
-		err := rows.Scan(&result.Id, &result.Title)
+		err := rows.Scan(&result.Id, &result.Title, &result.Code)
 		return result, err
 	})
 	if err != nil {

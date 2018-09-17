@@ -54,6 +54,7 @@ func (this *PgTxHolder) Commit() error {
 func (this *PgTxHolder) performUpdates(query string, mapper func(entity interface{}) ([]interface{}, error), values ...interface{}) error {
 	stmt, err := this.tx.Prepare(query)
 	if err != nil {
+		log.Errorf("Failed to prepare query %s: %v", query, err)
 		return err
 	}
 	for _, entity := range values {

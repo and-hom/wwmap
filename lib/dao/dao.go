@@ -24,14 +24,16 @@ type RiverDao interface {
 	HasProperties
 	IdEntity
 	NearestRivers(point Point, limit int) ([]RiverTitle, error)
-	Find(id int64) (RiverTitle, error)
+	Find(id int64) (River, error)
 	ListRiversWithBounds(bbox Bbox, limit int) ([]RiverTitle, error)
 	FindTitles(titles []string) ([]RiverTitle, error)
 	ListByCountry(countryId int64) ([]RiverTitle, error)
+	ListByCountryFull(countryId int64) ([]River, error)
 	ListByRegion(regionId int64) ([]RiverTitle, error)
+	ListByRegionFull(regionId int64) ([]River, error)
 	ListByFirstLetters(query string, limit int) ([]RiverTitle, error)
-	Insert(river RiverTitle) (int64, error)
-	Save(river ...RiverTitle) error
+	Insert(river River) (int64, error)
+	Save(river ...River) error
 }
 
 type WhiteWaterDao interface {

@@ -1,4 +1,8 @@
-<a href="{{.rootPage}}">Каталог водных препятствий</a>/<a href="{{.countryPage}}">{{.country.Title}}</a>/<a href="{{.regionPage}}">{{.region.Title}}</a>/<a href="{{.riverPage}}">{{.river.Title}}</a>
+<a href="{{.rootPage}}" style="font-size:80%;">Каталог водных препятствий</a><br/>&nbsp;&nbsp;<a
+        href="{{.countryPage}}" style="font-size:80%;">{{.country.Title}}</a><br/>&nbsp;&nbsp;&nbsp;&nbsp;<a
+        href="{{.regionPage}}" style="font-size:80%;">{{.region.Title}}</a><br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a
+        href="{{.riverPage}}" style="font-size:80%;">{{.river.Title}}</a>
+
 <table style="border:0px;">
     <tr>
         <td colspan="2">{{.spot.ShortDesc}}</td>
@@ -22,7 +26,8 @@
                 <strong>Координаты:</strong><br/><strong>Широта:</strong>&nbsp;{{.spot.Point.Lat}}
                 <br/><strong>Долгота:</strong>&nbsp;{{.spot.Point.Lon}}
                 <br/>
-                <div><strong>К.с. нв/св/вв:</strong>&nbsp;{{.spot.LowWaterCategory}}/{{.spot.MediumWaterCategory}}/{{.spot.HighWaterCategory}}</div>
+                <div><strong>К.с. нв/св/вв:</strong>&nbsp;{{.spot.LowWaterCategory}}/{{.spot.MediumWaterCategory}}/{{.spot.HighWaterCategory}}
+                </div>
                 <div><strong>К.с. по классификатору:</strong>&nbsp;{{.spot.Category}}</div>
             </div>
         </td>
