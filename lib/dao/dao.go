@@ -49,6 +49,9 @@ type WhiteWaterDao interface {
 	ListByRiverAndTitle(riverId int64, title string) ([]WhiteWaterPointWithRiverTitle, error)
 	GetGeomCenterByRiver(riverId int64) (Point, error)
 	RemoveByRiver(id int64, tx interface{}) error
+	AutoOrderingRiverIds() ([]int64, error)
+	DistanceFromBeginning(riverId int64, path []Point) (map[int64]int, error)
+	UpdateOrderIdx(idx map[int64]int) error
 }
 
 type ReportDao interface {
@@ -61,6 +64,7 @@ type WaterWayDao interface {
 	AddWaterWays(waterways ...WaterWay) error
 	UpdateWaterWay(waterway WaterWay) error
 	ForEachWaterWay(transformer func(WaterWay) (WaterWay, error), tmpTable string) error
+	DetectForRiver(riverId int64) ([]WaterWay, error)
 }
 
 type VoyageReportDao interface {

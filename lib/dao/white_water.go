@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"github.com/lib/pq"
 	"github.com/and-hom/wwmap/lib/util"
+	"time"
 )
 
 func NewWhiteWaterPostgresDao(postgresStorage PostgresStorage) WhiteWaterDao {
@@ -30,25 +31,31 @@ func NewWhiteWaterPostgresDao(postgresStorage PostgresStorage) WhiteWaterDao {
 		deleteQuery: queries.SqlQuery("white-water", "delete"),
 		deleteForRiverQuery: queries.SqlQuery("white-water", "delete-for-river"),
 		geomCenterByRiverQuery: queries.SqlQuery("white-water", "geom-center-by-river"),
+		autoOrderingRiverIdsQuery: queries.SqlQuery("white-water", "auto-ordering-river-ids"),
+		distanceFromBeginningQuery: queries.SqlQuery("white-water", "distance-from-beginning"),
+		updateOrderIdxQuery: queries.SqlQuery("white-water", "update-order-idx"),
 	}
 }
 
 type whiteWaterStorage struct {
 	PostgresStorage
-	PropsManager              PropertyManager
-	listByBoxQuery            string
-	listByRiverQuery          string
-	listByRiverFullQuery      string
-	listByRiverAndTitleQuery  string
-	insertQuery               string
-	insertFullQuery           string
-	updateQuery               string
-	byIdQuery                 string
-	byIdFullQuery             string
-	updateFullQuery           string
-	deleteQuery               string
-	deleteForRiverQuery       string
-	geomCenterByRiverQuery    string
+	PropsManager               PropertyManager
+	listByBoxQuery             string
+	listByRiverQuery           string
+	listByRiverFullQuery       string
+	listByRiverAndTitleQuery   string
+	insertQuery                string
+	insertFullQuery            string
+	updateQuery                string
+	byIdQuery                  string
+	byIdFullQuery              string
+	updateFullQuery            string
+	deleteQuery                string
+	deleteForRiverQuery        string
+	geomCenterByRiverQuery     string
+	autoOrderingRiverIdsQuery  string
+	distanceFromBeginningQuery string
+	updateOrderIdxQuery        string
 }
 
 func (this whiteWaterStorage) ListByBbox(bbox geo.Bbox) ([]WhiteWaterPointWithRiverTitle, error) {
@@ -141,8 +148,6 @@ func paramsFull(wwp WhiteWaterPointFull) ([]interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	fmt.Println(string(pointBytes))
 
 	return []interface{}{wwp.Title, string(cat), string(pointBytes), wwp.ShortDesc, wwp.Link, nullIf0(wwp.River.Id),
 		string(lwCat), wwp.LowWaterDescription, string(mwCat), wwp.MediumWaterDescription, string(hwCat), wwp.HighWaterDescription,
@@ -367,3 +372,49 @@ func (this whiteWaterStorage) Props() PropertyManager {
 	return this.PropsManager
 }
 
+func (this whiteWaterStorage) AutoOrderingRiverIds() ([]int64, error) {
+	r, err := this.doFindList(this.autoOrderingRiverIdsQuery, func(rows *sql.Rows) (int64, error) {
+		id := int64(0)
+		err := rows.Scan(&id)
+		return id, err
+	})
+	if err != nil {
+		return []int64{}, err
+	}
+	return r.([]int64), err
+}
+
+type idDistPair struct{ int64; int }
+
+func (this whiteWaterStorage) DistanceFromBeginning(riverId int64, path []geo.Point) (map[int64]int, error) {
+	result := make(map[int64]int)
+	pathB, err := json.Marshal(geo.NewLineString(path))
+	if err != nil {
+		return result, err
+	}
+	pairs, err := this.doFindList(this.distanceFromBeginningQuery, func(rows *sql.Rows) (idDistPair, error) {
+		wwpId := int64(0)
+		dist := 0
+		err := rows.Scan(&wwpId, &dist)
+		if err != nil {
+			result[wwpId] = dist
+		}
+		return idDistPair{wwpId, dist}, err
+	}, riverId, string(pathB))
+	if err != nil {
+		return result, err
+	}
+	for _, pair := range pairs.([]idDistPair) {
+		result[pair.int64] = pair.int
+	}
+	return result, nil
+}
+
+func (this whiteWaterStorage) UpdateOrderIdx(idx map[int64]int) error {
+	now := time.Now()
+	params := make([]interface{}, 0, len(idx))
+	for id, val := range idx {
+		params = append(params, []interface{}{id, val, now})
+	}
+	return this.performUpdates(this.updateOrderIdxQuery, arrayMapper, params...)
+}

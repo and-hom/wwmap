@@ -12,7 +12,7 @@ import (
 const MAX_MESSAGES int = 1000
 
 func main() {
-	log.Infof("Starting wwmap")
+	log.Infof("Starting wwmap notification sender")
 	configuration := config.Load("")
 	storage := NewPostgresStorage(configuration.DbConnString)
 	reportStorage := NewReportPostgresDao(storage)

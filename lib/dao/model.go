@@ -79,11 +79,6 @@ type WhiteWaterPointWithRiverTitle struct {
 	Images     []Img
 }
 
-type WhiteWaterPointWithPath struct {
-	WhiteWaterPointFull
-	Path []string
-}
-
 type PointRef struct {
 	Id       int64 `json:"id"`
 	ParentId int64 `json:"parent_id"`
