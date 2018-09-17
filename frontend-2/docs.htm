@@ -21,65 +21,41 @@
 <body>
 
 <div id="vue-app">
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <ul class="navbar-nav mr-auto">
-            <li class="nav-item" v-if="userInfo!=null">
-                <a class="nav-link" href="editor.htm">Редактор</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="map.htm">Карта</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="refs.htm">Сайты</a>
-            </li>
-            <li class="nav-item" v-if="admin()">
-                <a class="nav-link" href="users.htm">Пользователи</a>
-            </li>
-            <li class="nav-item active" v-if="userInfo!=null">
-                <a class="nav-link" href="#">Прочитай меня</a>
-            </li>
-        </ul>
-        <auth></auth>
-    </nav>
-
-
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-12">
-                <h2>Правила</h2>
-                <div style="padding-bottom:7px;font-size:120%;font-weight:bold;text-decoration: underline;color:#555555;">
-                    Привет. Теперь ты можешь редактировать каталог водных препятствий. Прочитай эти правила и
-                    соблюдай их в дальнейшем.
+    <page link="docs.htm">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <h2>Правила</h2>
+                    <div style="padding-bottom:7px;font-size:120%;font-weight:bold;text-decoration: underline;color:#555555;">
+                        Привет. Теперь ты можешь редактировать каталог водных препятствий. Прочитай эти правила и
+                        соблюдай их в дальнейшем.
+                    </div>
+                    <ol>
+                        <li>Тут нельзя размещать рекламу, запрещённые материалы и прочее разжигание</li>
+                        <li>Любые данные, которые ты сюда добавляешь должны быть максимально точными и объективными. Люди
+                            будут руководствоваться ими на сплаве.
+                        </li>
+                        <li>Всё, что ты сюда вносишь, становится общественным достоянием и размещается в том числе на <a
+                                href="refs.htm">сайтах-партнёрах</a>. Это касается точек, описаний и фотографий.
+                        </li>
+                        <li>Точка препятствия ставится в начале порога, например, на заходной шивере. Она не должна быть на
+                            берегу, в центре порога или на выходе из него.
+                        </li>
+                    </ol>
                 </div>
-                <ol>
-                    <li>Тут нельзя размещать рекламу, запрещённые материалы и прочее разжигание</li>
-                    <li>Любые данные, которые ты сюда добавляешь должны быть максимально точными и объективными. Люди
-                        будут руководствоваться ими на сплаве.
-                    </li>
-                    <li>Всё, что ты сюда вносишь, становится общественным достоянием и размещается в том числе на <a
-                            href="refs.htm">сайтах-партнёрах</a>. Это касается точек, описаний и фотографий.
-                    </li>
-                    <li>Точка препятствия ставится в начале порога, например, на заходной шивере. Она не должна быть на
-                        берегу, в центре порога или на выходе из него.
-                    </li>
-                </ol>
             </div>
         </div>
-    </div>
+    </page>
 </div>
 
 <script type="text/javascript">
     Vue.component('auth', httpVueLoader('components/auth.vue'))
+    Vue.component('page', httpVueLoader('components/page.vue'))
 
     var app = new Vue({
         el: '#vue-app',
 
         data: {
-            userInfo: getAuthorizedUserInfoOrNull(),
-            admin: function() {
-                userInfo = getAuthorizedUserInfoOrNull()
-                return userInfo && userInfo.roles && userInfo.roles.indexOf("ADMIN") > -1;
-            },
         }
     })
 </script>

@@ -21,84 +21,66 @@
 <body>
 
 <div id="vue-app">
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <ul class="navbar-nav mr-auto">
-            <li class="nav-item" v-if="userInfo!=null">
-                <a class="nav-link" href="editor.htm">Редактор</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="map.htm">Карта</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="refs.htm">Сайты</a>
-            </li>
-            <li class="#" v-if="admin()">
-                <a class="nav-link" href="#">Пользователи</a>
-            </li>
-            <li class="nav-item" v-if="canEdit()">
-                <a class="nav-link" href="docs.htm">Прочитай меня</a>
-            </li>
-        </ul>
-        <auth></auth>
-    </nav>
+    <page link="users.htm">
+        <ask-role id="ask-role" :roles="['ADMIN', 'EDITOR', 'USER']" :okfn="function(userId, role) { setRole(userId, role) }"></ask-role>
 
-    <ask-role id="ask-role" :roles="['ADMIN', 'EDITOR', 'USER']" :okfn="function(userId, role) { setRole(userId, role) }"></ask-role>
-
-    <div class="container-fluid" v-if="admin()">
-        <div class="row">
-            <div class="col-12">
-                <table class="table">
-                    <thead>
-                    <tr>
-                        <td>
-                            Id
-                        </td>
-                        <td>
-                            Логин
-                        </td>
-                        <td>
-                            Провайдер авторизации/Удалённый Id
-                        </td>
-                        <td>
-                            Имя
-                        </td>
-                        <td>
-                            Роли
-                        </td>
-                        <td></td>
-                    </tr>
-                    </thead>
-                    <tr v-for="user in users">
-                        <td>
-                            {{user.id}}
-                        </td>
-                        <td>
-                            {{user.info.login}}
-                        </td>
-                        <td>
-                            Yandex/{{user.yandex_id}}
-                        </td>
-                        <td>
-                            {{user.info.first_name}} {{user.info.last_name}}
-                        </td>
-                        <td :class="roleClass(user)">
-                            {{user.role}}
-                        </td>
-                        <td>
-                            <button class="btn btn-primary" data-toggle="modal" data-target="#ask-role"
-                                    :data-user-id="user.id" :data-current-role="user.role" :data-label="roleChangeText(user)">Сменить роль</button>
-                        </td>
-                    </tr>
-                </table>
+        <div class="container-fluid" v-if="admin()">
+            <div class="row">
+                <div class="col-12">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <td>
+                                Id
+                            </td>
+                            <td>
+                                Логин
+                            </td>
+                            <td>
+                                Провайдер авторизации/Удалённый Id
+                            </td>
+                            <td>
+                                Имя
+                            </td>
+                            <td>
+                                Роли
+                            </td>
+                            <td></td>
+                        </tr>
+                        </thead>
+                        <tr v-for="user in users">
+                            <td>
+                                {{user.id}}
+                            </td>
+                            <td>
+                                {{user.info.login}}
+                            </td>
+                            <td>
+                                Yandex/{{user.yandex_id}}
+                            </td>
+                            <td>
+                                {{user.info.first_name}} {{user.info.last_name}}
+                            </td>
+                            <td :class="roleClass(user)">
+                                {{user.role}}
+                            </td>
+                            <td>
+                                <button class="btn btn-primary" data-toggle="modal" data-target="#ask-role"
+                                        :data-user-id="user.id" :data-current-role="user.role" :data-label="roleChangeText(user)">Сменить роль</button>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
             </div>
         </div>
-    </div>
+    </page>
 </div>
 
 <script type="text/javascript">
 
     Vue.component('auth', httpVueLoader('components/auth.vue'))
     Vue.component('ask-role', httpVueLoader('components/ask-role.vue'))
+    Vue.component('page', httpVueLoader('components/page.vue'))
 
     function getUsers() {
         return doGetJsonSync(backendApiBase + "/user", true)
@@ -123,9 +105,6 @@
             },
             roleChangeText:function(user) {
                 return 'Сменить роль для ' + user.info.login + '. Текущая роль - ' + user.role
-            },
-            canEdit: function(){
-                return this.userInfo!=null && (this.userInfo.roles.includes("EDITOR") || this.userInfo.roles.includes("ADMIN"))
             },
         }
     })

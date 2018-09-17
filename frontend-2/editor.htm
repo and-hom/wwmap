@@ -39,56 +39,31 @@
 <body>
 
 <div id="vue-app">
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <ul class="navbar-nav mr-auto">
-            <li class="nav-item active" v-if="userInfo!=null">
-                <a class="nav-link" href="#">Редактор</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="map.htm">Карта</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="refs.htm">Сайты</a>
-            </li>
-            <li class="nav-item" v-if="admin()">
-                <a class="nav-link" href="users.htm">Пользователи</a>
-            </li>
-            <li class="nav-item" v-if="canEdit()">
-                <a class="nav-link" href="docs.htm">Прочитай меня</a>
-            </li>
-        </ul>
-        <auth/>
-    </nav>
-
-    <div class="container-fluid" style="margin-top: 20px;" v-if="userInfo!=null">
-        <div class="row">
-            <div class="col-3" id="left-menu">
-                <ul>
-                    <country v-bind:key="country.id" v-bind:country="country" v-for="country in countries"/>
-                </ul>
-            </div>
-            <div id="editor-pane" class="col-9" style="bgcolor:red;">
-                <div>
-                    <region-editor v-if="regioneditorstate.visible" v-bind:region="regioneditorstate.region"
-                                   v-bind:reports="regioneditorstate.reports"/>
+    <page link="editor.htm">
+        <div class="container-fluid" style="margin-top: 20px;" v-if="userInfo!=null">
+            <div class="row">
+                <div class="col-3" id="left-menu">
+                    <ul>
+                        <country v-bind:key="country.id" v-bind:country="country" v-for="country in countries"/>
+                    </ul>
                 </div>
-                <div>
-                    <river-editor v-if="rivereditorstate.visible" v-bind:river="rivereditorstate.river"
-                                  v-bind:reports="rivereditorstate.reports"/>
-                </div>
-                <div>
-                    <spot-editor v-if="spoteditorstate.visible" v-bind:initial-spot="spoteditorstate.spot"/>
+                <div id="editor-pane" class="col-9" style="bgcolor:red;">
+                    <div>
+                        <region-editor v-if="regioneditorstate.visible" v-bind:region="regioneditorstate.region"
+                                       v-bind:reports="regioneditorstate.reports"/>
+                    </div>
+                    <div>
+                        <river-editor v-if="rivereditorstate.visible" v-bind:river="rivereditorstate.river"
+                                      v-bind:reports="rivereditorstate.reports"/>
+                    </div>
+                    <div>
+                        <spot-editor v-if="spoteditorstate.visible" v-bind:initial-spot="spoteditorstate.spot"/>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    </page>
 </div>
-
-
-<script type="text/javascript">
-
-</script>
-
 
 <script type="text/javascript">
     Vue.component('v-select', VueSelect.VueSelect)
@@ -109,6 +84,8 @@
     Vue.component('river-editor', httpVueLoader('components/river-editor.vue'))
     Vue.component('spot-editor', httpVueLoader('components/spot-editor.vue'))
 
+    Vue.component('page', httpVueLoader('components/page.vue'))
+
     var app = new Vue({
         el: '#vue-app',
         data: {
@@ -127,13 +104,6 @@
             "editMode": false,
           },
           userInfo: getAuthorizedUserInfoOrNull(),
-          admin: function() {
-              userInfo = getAuthorizedUserInfoOrNull()
-              return userInfo && userInfo.roles && userInfo.roles.indexOf("ADMIN") > -1;
-          },
-          canEdit: function(){
-           return this.userInfo!=null && (this.userInfo.roles.includes("EDITOR") || this.userInfo.roles.includes("ADMIN"))
-          },
         }
     })
 

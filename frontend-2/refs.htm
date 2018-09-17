@@ -20,45 +20,26 @@
 <body>
 
 <div id="vue-app">
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <ul class="navbar-nav mr-auto">
-            <li class="nav-item" v-if="userInfo!=null">
-                <a class="nav-link" href="editor.htm">Редактор</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="map.htm">Карта</a>
-            </li>
-            <li class="nav-item active">
-                <a class="nav-link" href="#">Сайты</a>
-            </li>
-            <li class="nav-item" v-if="admin()">
-                <a class="nav-link" href="users.htm">Пользователи</a>
-            </li>
-            <li class="nav-item" v-if="canEdit()">
-                <a class="nav-link" href="docs.htm">Прочитай меня</a>
-            </li>
-        </ul>
-        <auth></auth>
-    </nav>
-
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-12" id="left-menu">
-                <h1>Сайты, на которых размещена карта</h1>
-                <ul>
-                    <li v-for="ref in refs"><a target="_blank" :href="ref.page">{{ ref.page }}</a></li>
-                </ul>
+    <page link="refs.htm">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12" id="left-menu">
+                    <h1>Сайты, на которых размещена карта</h1>
+                    <ul>
+                        <li v-for="ref in refs"><a target="_blank" :href="ref.page">{{ ref.page }}</a></li>
+                    </ul>
+                </div>
             </div>
-        </div>
-        <div class="row">
-            <div class="col-12" style="padding-top:30px;">
-                <a href="#integration-guide" data-toggle="collapse"><h2>Как встоить карту в свой сайт</h2></a>
+            <div class="row">
+                <div class="col-12" style="padding-top:30px;">
+                    <a href="#integration-guide" data-toggle="collapse"><h2>Как встоить карту в свой сайт</h2></a>
 
-                <div id="integration-guide" class="collapse" v-html="integrationGuide">
+                    <div id="integration-guide" class="collapse" v-html="integrationGuide">
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    </page>
 </div>
 
 <script type="text/javascript">
@@ -67,6 +48,7 @@
     }
 
     Vue.component('auth', httpVueLoader('components/auth.vue'))
+    Vue.component('page', httpVueLoader('components/page.vue'))
 
     var app = new Vue({
         el: '#vue-app',
@@ -86,14 +68,6 @@
         },
         data: {
             refs: getRefs(),
-            userInfo: getAuthorizedUserInfoOrNull(),
-            admin: function() {
-                userInfo = getAuthorizedUserInfoOrNull()
-                return userInfo && userInfo.roles && userInfo.roles.indexOf("ADMIN") > -1;
-            },
-            canEdit: function(){
-             return this.userInfo!=null && (this.userInfo.roles.includes("EDITOR") || this.userInfo.roles.includes("ADMIN"))
-            },
         }
     })
 

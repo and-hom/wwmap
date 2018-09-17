@@ -30,59 +30,33 @@
 <body>
 
 <div id="vue-app">
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <ul class="navbar-nav mr-auto">
-            <li class="nav-item" v-if="userInfo!=null">
-                <a class="nav-link" href="editor.htm">Редактор</a>
-            </li>
-            <li class="nav-item active">
-                <a class="nav-link" href="#">Карта</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="refs.htm">Сайты</a>
-            </li>
-            <li class="nav-item" v-if="admin()">
-                <a class="nav-link" href="users.htm">Пользователи</a>
-            </li>
-            <li class="nav-item" v-if="canEdit()">
-                <a class="nav-link" href="docs.htm">Прочитай меня</a>
-            </li>
-        </ul>
-        <auth></auth>
-    </nav>
-
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-8">
-                <div id="wwmap-container" style="width:100%; height: 700px; padding-bottom:17px;"></div>
+    <page link="map.htm">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-8">
+                    <div id="wwmap-container" style="width:100%; height: 700px; padding-bottom:17px;"></div>
+                </div>
+                <div class="col-4">
+                    <div id="wwmap-rivers" class="wwmap-river-menu"></div>
+                </div>
             </div>
-            <div class="col-4">
-                <div id="wwmap-rivers" class="wwmap-river-menu"></div>
+            <div class="row">
+                <div class="col-12">
+                </div>
             </div>
         </div>
-        <div class="row">
-            <div class="col-12">
-            </div>
-        </div>
-    </div>
+    </page>
 </div>
 <script type="text/javascript">
   $(document).ready(function() {
      initWWMap("wwmap-container", "wwmap-rivers");
 
      Vue.component('auth', httpVueLoader('components/auth.vue'))
+     Vue.component('page', httpVueLoader('components/page.vue'))
 
      var app = new Vue({
         el: '#vue-app',
         data: {
-                userInfo: getAuthorizedUserInfoOrNull(),
-                admin: function() {
-                    userInfo = getAuthorizedUserInfoOrNull()
-                    return userInfo && userInfo.roles && userInfo.roles.indexOf("ADMIN") > -1;
-                },
-                canEdit: function(){
-                 return this.userInfo!=null && (this.userInfo.roles.includes("EDITOR") || this.userInfo.roles.includes("ADMIN"))
-                },
         }
     })
   });
