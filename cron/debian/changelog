@@ -1,3 +1,10 @@
+wwmap-cron (0.0.7) unstable; urgency=medium
+
+  * Set log level in configuration
+  * #101 WW Catalog on huskytm.ru improvements and fixes
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Mon, 17 Sep 2018 22:26:46 +0300
+
 wwmap-cron (0.0.6) unstable; urgency=medium
 
   * #76 Image type added (image or schema)

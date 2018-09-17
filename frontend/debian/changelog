@@ -1,3 +1,15 @@
+wwmap-frontend (0.0.20) unstable; urgency=medium
+
+  * Show user login in auth component (for cases with same human-name on two accounts)
+  * #53 Aliases added to spot
+  * #93 Old entities and unused code removed
+  * #101 Country flag pictures added
+  * #119 Switch photo and schemas tabs on spot switch
+  * #120 Some readme
+  * #123 Site menu in component
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Mon, 17 Sep 2018 22:22:44 +0300
+
 wwmap-frontend (0.0.18) unstable; urgency=medium
 
   * Bug fixed in river list show
