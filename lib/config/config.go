@@ -62,6 +62,18 @@ type Configuration struct {
 	TileCache            TileCache `yaml:"tile-cache"`
 	Sync                 WordpressSync `yaml:"sync"`
 	ImgStorage           ImgStorage `yaml:"img-storage"`
+	LogLevel	     string `yaml:"log-level"`
+}
+
+func (this *Configuration) ChangeLogLevel() {
+	if this.LogLevel=="" {
+		return
+	}
+	level, err := log.ParseLevel(this.LogLevel)
+	if err!=nil {
+		log.Fatalf("Can not parse log level %s: %v", this.LogLevel, err)
+	}
+	log.SetLevel(level)
 }
 
 func loadConf(filename string) (Configuration, error) {

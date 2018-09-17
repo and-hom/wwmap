@@ -313,7 +313,9 @@ func typeCdnMapping(configuration config.TileCache) map[string]Mapping {
 func main() {
 	log.Infof("Starting wwmap")
 
-	configuration := config.Load("").TileCache
+	fullConfiguration := config.Load("")
+	fullConfiguration.ChangeLogLevel()
+	configuration := fullConfiguration.TileCache
 
 	handler := DataHandler{
 		baseDir:configuration.BaseDir,

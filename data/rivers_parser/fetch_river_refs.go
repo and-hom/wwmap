@@ -39,6 +39,8 @@ func load_point_refs(fname string, storage  dao.Storage, ids []int64) {
 
 func main() {
 	configuration := config.Load("")
+	configuration.ChangeLogLevel()
+
 	storage := dao.NewPostgresStorage(configuration.DbConnString)
 	waterWayDao := dao.NewWaterWayPostgresDao(storage)
 	fname := os.Args[1]

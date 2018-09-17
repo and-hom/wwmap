@@ -10,6 +10,7 @@ import (
 
 func main() {
 	configuration := config.Load("")
+	configuration.ChangeLogLevel()
 
 	r, err := os.Open(os.Args[1])
 	if err != nil {

@@ -11,6 +11,8 @@ import (
 func main() {
 	log.Infof("Starting wwmap")
 	configuration := config.Load("")
+	configuration.ChangeLogLevel()
+
 	storage := NewPostgresStorage(configuration.DbConnString)
 	waterWayStorage := NewWaterWayPostgresDao(storage)
 

@@ -30,6 +30,8 @@ type App struct {
 
 func CreateApp() App {
 	configuration := config.Load("")
+	configuration.ChangeLogLevel()
+
 	pgStorage := dao.NewPostgresStorage(configuration.DbConnString)
 	return App{
 		VoyageReportDao:dao.NewVoyageReportPostgresDao(pgStorage),

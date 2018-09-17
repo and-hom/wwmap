@@ -12,6 +12,8 @@ const REMOVE_TTL time.Duration = 180 * 24 * time.Hour
 func main() {
 	log.Infof("Starting wwmap")
 	configuration := config.Load("")
+	configuration.ChangeLogLevel()
+
 	storage := NewPostgresStorage(configuration.DbConnString)
 	refererDao := NewRefererPostgresDao(storage)
 	refererDao.RemoveOlderThen(REMOVE_TTL)
