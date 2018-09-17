@@ -18,7 +18,7 @@
                     <div class="example-btn">
                         <file-upload
                                 class="btn btn-primary"
-                                :post-action="uploadPath"
+                                :post-action="uploadPath()"
                                 :headers="headers"
                                 extensions="gif,jpg,jpeg,png"
                                 accept="image/png,image/gif,image/jpeg"
@@ -69,7 +69,7 @@
 
 <script>
     module.exports = {
-        props: ['spot', 'type', 'auth', 'mainImageId'],
+        props: ['spot', 'type', 'auth'],
         components: {
           FileUpload: VueUploadComponent
         },
@@ -100,13 +100,12 @@
                 images: getImages(this.spot.id, this.type),
                 imagesOutOfDate: true,
                 files: [],
-                uploadPath: backendApiBase + "/spot/" + this.spot.id +"/img?type=" + this.type,
+                uploadPath: function() { return backendApiBase + "/spot/" + this.spot.id +"/img?type=" + this.type },
                 removeImage: function(imgId) {
                     this.images = removeImage(this.spot.id, imgId, this.type);
                 },
                 setImgEnabled: function(enabled, imgId) {
                     this.images = setImageEnabled(this.spot.id, imgId, enabled);
-                    this.mainImageId = imgId
                 },
                 setSpotPreview: function(imgId) {
                     this.images = setSpotPreview(this.spot.id, imgId);

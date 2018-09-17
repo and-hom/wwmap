@@ -142,10 +142,10 @@
                     </div>
                 </b-tab>
                 <b-tab title="Схемы" :disabled="spot.id>0 ? false : true">
-                    <img-upload :spot="spot" type="schema" :auth="true" :main-image-id="spot.main_image_id"></img-upload>
+                    <img-upload ref="schemas" :spot="spot" type="schema" :auth="true"></img-upload>
                 </b-tab>
                 <b-tab title="Фото" :disabled="spot.id>0 ? false : true">
-                    <img-upload :spot="spot" type="photo" :auth="true" :main-image-id="spot.main_image_id"></img-upload>
+                    <img-upload ref="images" :spot="spot" type="photo" :auth="true"></img-upload>
                 </b-tab>
                 <b-tab title="Видео" disabled>
                 </b-tab>
@@ -290,6 +290,10 @@
                 if (this.editMode) {
                     this.$refs.locationEdit.spot = this.spot
                     this.$refs.locationEdit.doUpdate()
+                    this.$refs.schemas.spot = this.spot
+                    this.$refs.schemas.refresh()
+                    this.$refs.images.spot = this.spot
+                    this.$refs.images.refresh()
                 } else {
                     this.$refs.locationView.spot = this.spot
                     this.$refs.locationView.doUpdate()
