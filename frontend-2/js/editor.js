@@ -158,6 +158,69 @@ function nvlReturningId(region) {
     }
 }
 
+const COUNTRY_ACTIVE_ENTITY_LEVEL=1
+const REGION_ACTIVE_ENTITY_LEVEL=2
+const RIVER_ACTIVE_ENTITY_LEVEL=3
+const SPOT_ACTIVE_ENTITY_LEVEL=4
+
+function getActiveEntityLevel() {
+    var hash = window.location.hash
+    if (hash) {
+        hash = hash.substr(1)
+        var params = hash.split(',')
+        return params.length
+    }
+    return 0
+}
+
+function isActiveEntity(countryId, regionId, riverId, spotId) {
+    var hash = window.location.hash
+    if (hash) {
+        hash = hash.substr(1)
+        var params = hash.split(',')
+        if(!isEq(arguments, params, COUNTRY_ACTIVE_ENTITY_LEVEL)) {
+            return false
+        }
+        if(regionId && !isEq(arguments, params, REGION_ACTIVE_ENTITY_LEVEL)) {
+            return false
+        }
+        if (riverId && !isEq(arguments, params, RIVER_ACTIVE_ENTITY_LEVEL)) {
+            return false
+        }
+        if (spotId &&  !isEq(arguments, params, SPOT_ACTIVE_ENTITY_LEVEL)) {
+            return false
+        }
+        return true
+    }
+    return false
+}
+
+function getActiveId(level) {
+    var hash = window.location.hash
+    if (hash) {
+        hash = hash.substr(1)
+        var params = hash.split(',')
+        var pos = level - 1
+        return getFromEntityHash(params, pos)
+    }
+    return 0
+}
+
+function isEq(args, params, level) {
+    var pos = level - 1
+    return getFromEntityHash(params, pos) == args[pos]
+}
+
+function getFromEntityHash(params, pos) {
+    if (params && params.length > pos && params[pos]) {
+        var intVal = parseInt(params[pos])
+        if (intVal) {
+            return intVal
+        }
+    }
+    return 0
+}
+
 function setActiveEntity(countryId, regionId, riverId, spotId) {
     var hash = getActiveEntityHash(countryId, regionId, riverId, spotId)
     window.location.hash = hash

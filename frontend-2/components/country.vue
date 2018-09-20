@@ -17,6 +17,13 @@
 <script type="text/javascript">
     module.exports = {
         props: ['country'],
+        created: function() {
+            if (isActiveEntity(this.country.id)) {
+                this.expand()
+            } else {
+                this.collapse()
+            }
+        },
         data: function() {
             return {
                 regions: [],
@@ -37,7 +44,7 @@
                         this.collapse();
                     }
                     return false
-                }
+                },
             }
         }
     }
