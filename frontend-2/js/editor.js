@@ -111,3 +111,77 @@ function setSpotPreview(spotId, imgId) {
 function dropSpotPreview(spotId) {
     return doDeleteSync(backendApiBase + "/spot/" + spotId + "/preview", true)
 }
+
+function isActive(countryId, regionId, riverId, spotId) {
+    hash = window.location.hash
+    if (!hash) {
+        return false
+    }
+    hash = hash.substr(1)
+    var params = hash.split(',')
+
+    if (spotId && riverId && countryId) {
+        return params.length >= 4
+            && parseInt(params[0])==countryId
+            && parseInt(params[1])==regionIdNvl(regionId)
+            && parseInt(params[2])==riverId
+            && parseInt(params[3])==spotId
+    } else if (countryId && riverId) {
+        return params.length >= 3
+            && parseInt(params[0])==countryId
+            && parseInt(params[1])==regionIdNvl(regionId)
+            && parseInt(params[2])==riverId
+    } else if (countryId && regionId) {
+        return params.length >= 4
+            && parseInt(params[0])==countryId
+            && parseInt(params[1])==regionId
+    } else if (countryId) {
+        return params.length >= 4
+            && parseInt(params[0])==countryId
+    }
+    return false
+}
+
+function regionIdNvl(regionId) {
+    if (regionId) {
+        return regionId
+    } else {
+        return 0
+    }
+}
+
+function nvlReturningId(region) {
+    if (region && region.id) {
+        return region.id
+    } else {
+        return 0
+    }
+}
+
+function setActiveEntity(countryId, regionId, riverId, spotId) {
+    var hash = getActiveEntityHash(countryId, regionId, riverId, spotId)
+    window.location.hash = hash
+}
+
+function getActiveEntityHash(countryId, regionId, riverId, spotId) {
+    hash = countryId
+
+    if (regionId) {
+        hash += "," + regionId
+    } else if (riverId) {
+        hash += ",0"
+    } else {
+        return hash
+    }
+
+    if (riverId) {
+        hash += "," + riverId
+    } else {
+          return hash
+    }
+
+    if (spotId) {
+        hash += "," + spotId
+    }
+    return hash
+}

@@ -1,5 +1,5 @@
 <template>
-    <li class="menu-item region-menu-item"><a href="#" v-on:click='changeExpandState();selectRegion();'
+    <li class="menu-item region-menu-item"><a href="javascript:void(0);" v-on:click='changeExpandState();selectRegion();return false;'
                                               class="title-link btn btn-outline-secondary">{{ region.title }}</a>
         <ul>
             <river v-bind:key="river.id" v-bind:river="river" v-for="river in rivers"/>
@@ -9,7 +9,7 @@
 
 <script>
     module.exports = {
-        props: ['region'],
+        props: ['region', 'country'],
         data: function () {
             return {
                 rivers: [],
@@ -27,6 +27,8 @@
                     }
                 },
                 selectRegion:function() {
+                    setActiveEntity(this.country.id, this.region.id)
+
                     app.spoteditorstate.visible = false
                     app.rivereditorstate.visible=false;
                     app.regioneditorstate.visible = false;

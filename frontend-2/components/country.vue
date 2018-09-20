@@ -1,13 +1,13 @@
 <template>
     <li class="menu-item country-menu-item"><a
-            href="#" v-on:click='changeExpandState()' class="title-link btn btn-outline-success">{{ country.title }}</a>
+            href="javascript:void(0);" v-on:click='changeExpandState()' class="title-link btn btn-outline-success">{{ country.title }}</a>
         <ul>
-            <region v-bind:key="region.id" v-bind:region="region" v-for="region in regions"/>
+            <region v-bind:key="region.id" v-bind:region="region" v-bind:country="country" v-for="region in regions"/>
         </ul>
         <ul>
             <li>
                 <ul>
-                    <river v-bind:key="river.id" v-bind:river="river" v-for="river in rivers"/>
+                    <river v-bind:key="river.id" v-bind:river="river" v-bind:country="country" v-for="river in rivers"/>
                 </ul>
             </li>
         </ul>
@@ -29,12 +29,14 @@
                     this.regions=[]
                     this.rivers=[]
                 },
-                changeExpandState:function(){
+                changeExpandState:function() {
+                    setActiveEntity(this.country.id)
                     if (this.rivers.length==0 && this.regions.length==0) {
                         this.expand();
                     } else {
                         this.collapse();
                     }
+                    return false
                 }
             }
         }
