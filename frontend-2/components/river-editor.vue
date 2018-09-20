@@ -120,7 +120,7 @@
 
 <script>
     module.exports = {
-        props: ['river', 'reports'],
+        props: ['river', 'reports', 'country', 'region'],
         components: {
           FileUpload: VueUploadComponent
         },
@@ -152,6 +152,7 @@
                         this.river = updated
                         this.editMode=false
                         this.hideError()
+                        setActiveEntity(this.country.id, nvlReturningId(this.region), updated.id)
                     } else {
                         this.showError("Не удалось сохранить реку. Возможно, недостаточно прав")
                     }
@@ -190,6 +191,8 @@
                         point:getRiverCenter(this.river.id),
                         aliases:[],
                     }
+                    app.spoteditorstate.country = this.country
+                    app.spoteditorstate.region = this.region
                 },
 
                 regions: getAllRegions(),

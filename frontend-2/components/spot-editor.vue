@@ -258,7 +258,7 @@
 
 <script>
     module.exports = {
-        props: ['initialSpot'],
+        props: ['initialSpot', 'country', 'region'],
 
         methods: {
             onSearch: function(search, loading) {
@@ -335,6 +335,8 @@
                         this.reloadMainImg()
                         this.reloadImgs()
                         this.hideError()
+
+                        setActiveEntity(this.country.id, nvlReturningId(this.region), this.spot.river.id, updated.id)
                     } else {
                         this.showError("Не удалось сохранить препятствие. Возможно, недостаточно прав")
                     }

@@ -10,7 +10,7 @@
 
 <script>
     module.exports = {
-        props: ['region'],
+        props: ['region', 'country'],
         data:function() {
             return {
                 // for editor
@@ -36,6 +36,8 @@
                         region: this.region,
                         aliases: [],
                     }
+                    app.rivereditorstate.country = this.country
+                    app.rivereditorstate.region = this.region
                 },
 
                 regions: getAllRegions(),

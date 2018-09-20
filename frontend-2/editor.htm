@@ -50,14 +50,16 @@
                 <div id="editor-pane" class="col-9" style="bgcolor:red;">
                     <div>
                         <region-editor v-if="regioneditorstate.visible" v-bind:region="regioneditorstate.region"
-                                       v-bind:reports="regioneditorstate.reports"/>
+                                        v-bind:country="regioneditorstate.country"/>
                     </div>
                     <div>
                         <river-editor v-if="rivereditorstate.visible" v-bind:river="rivereditorstate.river"
-                                      v-bind:reports="rivereditorstate.reports"/>
+                                      v-bind:reports="rivereditorstate.reports"
+                                      v-bind:country="rivereditorstate.country" v-bind:region="rivereditorstate.region"/>
                     </div>
                     <div>
-                        <spot-editor v-if="spoteditorstate.visible" v-bind:initial-spot="spoteditorstate.spot"/>
+                        <spot-editor v-if="spoteditorstate.visible" v-bind:initial-spot="spoteditorstate.spot"
+                                     v-bind:country="spoteditorstate.country" v-bind:region="spoteditorstate.region"/>
                     </div>
                 </div>
             </div>

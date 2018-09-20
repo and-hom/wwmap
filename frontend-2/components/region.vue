@@ -44,6 +44,7 @@
                     app.regioneditorstate.visible = false;
 
                     app.regioneditorstate.region = getRegion(this.region.id)
+                    app.regioneditorstate.country = this.country
                     app.regioneditorstate.editMode = false;
                     app.regioneditorstate.visible = true
                 },
