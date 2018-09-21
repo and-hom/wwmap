@@ -1,13 +1,13 @@
 <template>
     <li class="menu-item country-menu-item"><a
-            href="javascript:void(0);" v-on:click='changeExpandState()' class="title-link btn btn-outline-success">{{ country.title }}</a>
+            href="javascript:void(0);" v-on:click='changeExpandState()' :class="countryClass()">{{ country.title }}</a>
         <ul>
-            <region v-bind:key="region.id" v-bind:region="region" v-bind:country="country" v-for="region in regions"/>
+            <region v-bind:key="region.id" v-bind:region="region" v-bind:country="country" v-for="region of regions"/>
         </ul>
         <ul>
             <li>
                 <ul>
-                    <river v-bind:key="river.id" v-bind:river="river" v-bind:country="country" v-for="river in rivers"/>
+                    <river v-bind:key="river.id" v-bind:river="river" v-bind:country="country" v-for="river of rivers"/>
                 </ul>
             </li>
         </ul>
@@ -19,32 +19,43 @@
         props: ['country'],
         created: function() {
             if (isActiveEntity(this.country.id)) {
-                this.expand()
-            } else {
-                this.collapse()
+                showCountrySubentities(this.country.id)
             }
+        },
+        computed: {
+            regions: function() {
+                if (app.treePath[this.country.id]!=null) {
+                    return Array.from(app.treePath[this.country.id].regions.values())
+                }
+                return []
+            },
+            rivers: function() {
+                if (app.treePath[this.country.id]!=null) {
+                    return Array.from(app.treePath[this.country.id].rivers.values())
+                }
+                return []
+            },
         },
         data: function() {
             return {
-                regions: [],
-                rivers: [],
-                expand:function () {
-                    this.regions = getRegions(this.country.id)
-                    this.rivers = getRiversByCountry(this.country.id)
-                },
-                collapse:function () {
-                    this.regions=[]
-                    this.rivers=[]
-                },
                 changeExpandState:function() {
                     setActiveEntity(this.country.id)
-                    if (this.rivers.length==0 && this.regions.length==0) {
-                        this.expand();
+                    setActiveEntityState(this.country.id)
+
+                    if (app.treePath[this.country.id]) {
+                        Vue.delete(app.treePath, this.country.id)
                     } else {
-                        this.collapse();
+                        showCountrySubentities(this.country.id)
                     }
                     return false
                 },
+                countryClass: function() {
+                    if (this.country.id == app.selectedCountry) {
+                        return "title-link btn btn-outline-danger"
+                    } else {
+                        return "title-link btn btn-outline-success"
+                    }
+                }
             }
         }
     }

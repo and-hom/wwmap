@@ -88,6 +88,45 @@
 
     Vue.component('page', httpVueLoader('components/page.vue'))
 
+
+    function getById(arr,id) {
+        var filtered = arr.filter(x => x.id==id)
+        if (filtered.length>0) {
+            return filtered[0]
+        }
+        return null
+    }
+
+    function showCountrySubentities(id) {
+        Vue.set(app.treePath, id, {
+            rivers: getRiversByCountry(id),
+            regions: getRegions(id),
+        })
+    }
+
+    function showRegionTree(countryId, id) {
+        var region = getById(app.treePath[countryId].regions,id)
+        Vue.set(region, "rivers", getRiversByRegion(countryId, id))
+    }
+
+    function showRiverTree(countryId, regionId, id) {
+        var river
+        if (regionId && regionId>0) {
+            var region = getById(app.treePath[countryId].regions, regionId)
+            river = getById(region.rivers, id)
+        } else {
+            river = getById(app.treePath[countryId].rivers, id)
+        }
+        Vue.set(river, "spots", getSpots(id))
+    }
+
+    function setActiveEntityState(countryId, regionId, riverId, spotId) {
+        app.selectedSpot = spotId
+        app.selectedRiver = riverId
+        app.selectedRegion = regionId
+        app.selectedCountry = countryId
+    }
+
     var app = new Vue({
         el: '#vue-app',
         data: {
@@ -106,6 +145,11 @@
             "editMode": false,
           },
           userInfo: getAuthorizedUserInfoOrNull(),
+          treePath: {},
+          selectedCountry: getActiveId(COUNTRY_ACTIVE_ENTITY_LEVEL),
+          selectedRegion: getActiveId(REGION_ACTIVE_ENTITY_LEVEL),
+          selectedRiver: getActiveId(RIVER_ACTIVE_ENTITY_LEVEL),
+          selectedSpot: getActiveId(SPOT_ACTIVE_ENTITY_LEVEL),
         }
     })
 

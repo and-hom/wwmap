@@ -337,6 +337,8 @@
                         this.hideError()
 
                         setActiveEntity(this.country.id, nvlReturningId(this.region), this.spot.river.id, updated.id)
+                        setActiveEntityState(this.country.id, nvlReturningId(this.region), this.spot.river.id, updated.id)
+                        showRiverTree(this.country.id, nvlReturningId(this.region), this.spot.river.id)
                     } else {
                         this.showError("Не удалось сохранить препятствие. Возможно, недостаточно прав")
                     }
@@ -360,6 +362,11 @@
                     this.hideError()
                     if (!removeSpot(this.spot.id)) {
                         this.showError("Can not delete")
+                    } else {
+                        setActiveEntity(this.country.id, nvlReturningId(this.region), this.spot.river.id)
+                        setActiveEntityState(this.country.id, nvlReturningId(this.region), this.spot.river.id)
+                        showRiverTree(this.country.id, nvlReturningId(this.region), this.spot.river.id)
+                        app.spoteditorstate.visible = false;
                     }
                 },
                 showError: function(errMsg) {
@@ -397,6 +404,9 @@
                 previousSpotId: this.initialSpot.id,
                 parseAliases:function(strVal) {
                     return strVal.split('\n').map(function(x) {return x.trim()}).filter(function(x){return x.length>0})
+                },
+                close1:function(){
+                    app.treePath={}
                 },
             }
         }

@@ -153,6 +153,8 @@
                         this.editMode=false
                         this.hideError()
                         setActiveEntity(this.country.id, nvlReturningId(this.region), updated.id)
+                        setActiveEntityState(this.country.id, nvlReturningId(this.region))
+                        showRegionTree(this.country.id, nvlReturningId(this.region))
                     } else {
                         this.showError("Не удалось сохранить реку. Возможно, недостаточно прав")
                     }
@@ -165,6 +167,11 @@
                     this.hideError()
                     if (!removeRiver(this.river.id)) {
                         this.showError("Can not delete")
+                    } else {
+                        setActiveEntity(this.country.id, nvlReturningId(this.region))
+                        setActiveEntityState(this.country.id, nvlReturningId(this.region))
+                        showRegionTree(this.country.id, nvlReturningId(this.region))
+                        app.rivereditorstate.visible = false;
                     }
                 },
                 showError: function(errMsg) {

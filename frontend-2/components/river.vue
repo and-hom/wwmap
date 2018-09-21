@@ -1,9 +1,9 @@
 <template>
     <li class="menu-item river-menu-item"><a href="javascript:void(0);" v-on:click='changeExpandState();selectRiver();'
-                                             class="title-link btn btn-outline-info">{{ river.title }}</a>
+                                             :class="riverClass()">{{ river.title }}</a>
         <ul>
             <li class="menu-item spot-menu-item" v-on:click.stop="selectSpot(spot)"
-                v-for="spot in spots"><a href="javascript:void(0);"
+                v-for="spot in river.spots"><a href="javascript:void(0);"
                 :class="spotClass(spot)">{{spot.title}}</a>
             </li>
         </ul>
@@ -17,7 +17,7 @@
             var riverSelected = isActiveEntity(this.country.id, nvlReturningId(this.region), this.river.id)
 
             if (riverSelected) {
-                this.expand()
+                showRiverTree(this.country.id, this.region.id, this.river.id)
                 if (getActiveEntityLevel()==RIVER_ACTIVE_ENTITY_LEVEL) {
                     this.selectRiver()
                 } else if (getActiveEntityLevel()==SPOT_ACTIVE_ENTITY_LEVEL) {
@@ -27,28 +27,24 @@
                         this.selectSpot(selectedSpot[0])
                     }
                 }
-            } else {
-                this.collapse()
             }
         },
         data: function () {
             return {
                 spots: [],
-                expand:function() {
-                    this.spots = getSpots(this.river.id)
-                },
                 collapse:function () {
                     this.spots=[]
                 },
-                changeExpandState:function(){
-                    if (this.spots.length==0) {
-                        this.expand();
-                    } else {
-                        this.collapse();
-                    }
+                changeExpandState:function() {
+                        if (this.river.spots) {
+                            Vue.delete(this.river, "spots")
+                        } else {
+                            Vue.set(this.river, "spots", getSpots(this.river.id))
+                        }
                 },
                 selectSpot:function(spot) {
                     setActiveEntity(this.country.id, nvlReturningId(this.region), this.river.id, spot.id)
+                    setActiveEntityState(this.country.id, nvlReturningId(this.region), this.river.id, spot.id)
 
                     app.spoteditorstate.visible = false
                     app.rivereditorstate.visible=false;
@@ -60,12 +56,11 @@
                     app.spoteditorstate.country = this.country
                     app.spoteditorstate.region = this.region
 
-                    this.$forceUpdate()
-
                     return false
                 },
                 selectRiver:function() {
                     setActiveEntity(this.country.id, nvlReturningId(this.region), this.river.id)
+                    setActiveEntityState(this.country.id, nvlReturningId(this.region), this.river.id)
 
                     app.spoteditorstate.visible = false
                     app.rivereditorstate.visible=false;
@@ -80,9 +75,15 @@
 
                     return false
                 },
+                riverClass: function() {
+                    if (this.river.id == app.selectedRiver) {
+                        return "title-link btn btn-outline-danger"
+                    } else {
+                        return "title-link btn btn-outline-info"
+                    }
+                },
                 spotClass: function(spot) {
-                    var spotSelected = isActiveEntity(this.country.id, nvlReturningId(this.region), this.river.id, spot.id)
-                    if (spotSelected) {
+                    if (spot.id == app.selectedSpot) {
                         return "title-link btn btn-outline-danger"
                     } else {
                         return "title-link btn btn-outline-primary"
