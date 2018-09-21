@@ -1,3 +1,9 @@
+wwmap-backend (0.0.22) unstable; urgency=medium
+
+  * #121 Show/hide button for river
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Fri, 21 Sep 2018 14:49:46 +0300
+
 wwmap-backend (0.0.21) unstable; urgency=medium
 
   * Show login in auth component

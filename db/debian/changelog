@@ -1,3 +1,9 @@
+wwmap-db (0.0.12) unstable; urgency=medium
+
+  * #121 Show/hide button for river
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Fri, 21 Sep 2018 14:52:43 +0300
+
 wwmap-db (0.0.11) unstable; urgency=medium
 
   * #53 Aliases added to spot
