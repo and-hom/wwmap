@@ -1,3 +1,5 @@
+// lecagy js. use map.v2.js
+
     ymaps.ready(init);
     var myMap;
 
