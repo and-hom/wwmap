@@ -79,6 +79,10 @@ function removeRiver(id) {
     return doDeleteSync(backendApiBase + "/river/" + id, true)
 }
 
+function setRiverVisible(riverId, visible) {
+    return doPostJsonSync(backendApiBase + "/river/" + riverId + "/visible", visible, true)
+}
+
 function getImages(id, _type) {
     var imgs = doGetJsonSync(backendApiBase + "/spot/" + id + "/img?type=" + _type)
     if (imgs) {

@@ -41,6 +41,7 @@ func (this *GeoHierarchyHandler) Init(r *mux.Router) {
 	this.Register(r, "/river/{riverId}/spots", HandlerFunctions{Get:this.ListSpots})
 	this.Register(r, "/river/{riverId}/center", HandlerFunctions{Get:this.GetRiverCenter})
 	this.Register(r, "/river/{riverId}/gpx", HandlerFunctions{Post:this.UploadGpx, Put:this.UploadGpx})
+	this.Register(r, "/river/{riverId}/visible", HandlerFunctions{Post:this.SetRiverVisible, Put:this.SetRiverVisible})
 
 	this.Register(r, "/spot/{spotId}", HandlerFunctions{Get:this.GetSpot, Post:this.SaveSpot, Put:this.SaveSpot, Delete:this.RemoveSpot})
 }
@@ -51,6 +52,7 @@ type RiverDto struct {
 	Aliases     []string `json:"aliases"`
 	Region      dao.Region `json:"region"`
 	Description string `json:"description,omitempty"`
+	Visible     bool `json:"visible"`
 }
 
 func (this *GeoHierarchyHandler) getRegion(id int64) dao.Region {
@@ -315,6 +317,31 @@ func (this *GeoHierarchyHandler) SaveRiver(w http.ResponseWriter, r *http.Reques
 	this.writeRiver(id, w)
 }
 
+func (this *GeoHierarchyHandler) SetRiverVisible(w http.ResponseWriter, r *http.Request) {
+	if !this.CheckRoleAllowedAndMakeResponse(w, r, dao.ADMIN, dao.EDITOR) {
+		return
+	}
+
+	pathParams := mux.Vars(r)
+	riverId, err := strconv.ParseInt(pathParams["riverId"], 10, 64)
+	if err != nil {
+		OnError(w, err, "Can not parse id", http.StatusBadRequest)
+		return
+	}
+
+	bodyBytes, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		OnError500(w, err, "Can not read body")
+		return
+	}
+	visible := false
+	json.Unmarshal(bodyBytes, &visible)
+
+	this.RiverDao.SetVisible(riverId, visible)
+
+	this.writeRiver(riverId, w)
+}
+
 func (this *GeoHierarchyHandler) RemoveRiver(w http.ResponseWriter, r *http.Request) {
 	if !this.CheckRoleAllowedAndMakeResponse(w, r, dao.ADMIN, dao.EDITOR) {
 		return
@@ -375,6 +402,7 @@ func (this *GeoHierarchyHandler) writeRiver(riverId int64, w http.ResponseWriter
 		Aliases:river.Aliases,
 		Region:region,
 		Description:river.Description,
+		Visible: river.Visible,
 	}
 	this.JsonAnswer(w, riverWithRegion)
 }

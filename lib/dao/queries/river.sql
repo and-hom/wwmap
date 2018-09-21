@@ -13,11 +13,13 @@ ST_Distance(path,  ST_GeomFromGeoJSON($1)) AS distance FROM river INNER JOIN wat
 --@inside-bounds
 SELECT river.id,region_id, river.title, ST_AsGeoJSON(ST_Extent(white_water_rapid.point)), river.aliases FROM
 river INNER JOIN white_water_rapid ON river.id=white_water_rapid.river_id
-WHERE exists(SELECT 1 FROM white_water_rapid WHERE white_water_rapid.river_id=river.id and point && ST_MakeEnvelope($1,$2,$3,$4))
+WHERE exists(SELECT 1 FROM white_water_rapid
+    WHERE (river.visible OR $6)
+        AND white_water_rapid.river_id=river.id and point && ST_MakeEnvelope($1,$2,$3,$4))
 GROUP BY river.id, river.title ORDER BY popularity DESC LIMIT $5
 
 --@by-id
-SELECT id,region_id,title,NULL,river.aliases AS aliases, description FROM river WHERE id=$1
+SELECT id,region_id,title,NULL,river.aliases AS aliases, description, visible FROM river WHERE id=$1
 
 --@by-region
 SELECT river.id, region_id, river.title, NULL, river.aliases
@@ -25,7 +27,7 @@ SELECT river.id, region_id, river.title, NULL, river.aliases
     ORDER BY CASE river.title WHEN '-' THEN NULL ELSE river.title END ASC
 
 --@by-region-full
-SELECT river.id, region_id, river.title, NULL, river.aliases, description
+SELECT river.id, region_id, river.title, NULL, river.aliases, description, visible
     FROM river INNER JOIN region ON river.region_id=region.id WHERE region.id=$1
     ORDER BY CASE river.title WHEN '-' THEN NULL ELSE river.title END ASC
 
@@ -35,7 +37,7 @@ SELECT river.id as id, region_id, river.title as title, NULL, river.aliases as a
     ORDER BY CASE river.title WHEN '-' THEN NULL ELSE river.title END ASC
 
 --@by-country-full
-SELECT river.id as id, region_id, river.title as title, NULL, river.aliases as aliases, description
+SELECT river.id as id, region_id, river.title as title, NULL, river.aliases as aliases, description, visible
     FROM river INNER JOIN region ON river.region_id=region.id WHERE region.fake AND region.country_id=$1
     ORDER BY CASE river.title WHEN '-' THEN NULL ELSE river.title END ASC
 
@@ -50,3 +52,6 @@ INSERT INTO river(region_id, title, aliases, description) VALUES($1,$2,$3,$4) RE
 
 --@delete
 DELETE FROM river WHERE id=$1
+
+--@set-visible
+UPDATE river SET visible=$2 WHERE id=$1

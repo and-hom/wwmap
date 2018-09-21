@@ -78,7 +78,7 @@
                     if (this.spot && this.spot.id) {
                         skip = this.spot.id
                     }
-                    return backendApiBase + '/ymaps-tile-ww?bbox=%b&zoom=%z&skip=' + skip
+                    return backendApiBase + '/ymaps-tile-ww?bbox=%b&zoom=%z&skip=' + skip + '&token=' + token
                 },
                 addObjectManager:function() {
                         var objectManager = new ymaps.RemoteObjectManager(this.objectManagerUrlTemplate(), {

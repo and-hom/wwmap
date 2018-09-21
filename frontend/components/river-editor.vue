@@ -29,6 +29,19 @@
         <input v-if="editMode" v-model.trim="river.title" style="display:block"/>
         <h1 v-else>{{ river.title }}</h1>
         <dl>
+            <dt>Показывать на карте:</dt>
+            <dd>
+                <span style="padding-left:40px;" v-if="river.visible">Да</span>
+                <span style="padding-left:40px;" v-else>Нет</span>&nbsp;&nbsp;&nbsp;
+                <button type="button" class="btn btn-info" v-if="canEdit() && !editMode && !river.visible" v-on:click="setVisible(true); hideError();">
+                    Показывать на карте
+                </button>
+                <button type="button" class="btn btn-info" v-if="canEdit() && !editMode && river.visible" v-on:click="setVisible(false); hideError();">
+                    Скрыть на карте
+                </button>
+                <div  style="padding-left:40px;font-size:70%;color:grey">Нужно, когда мы не хотим выставлять наполовину размеченную и описанную реку.
+                Если добавляешь часть порогов, а остальные планируешь на потом, не делай реку видимой на карте.</div>
+            </dd>
             <dt>Регион:</dt>
             <dd>
                 <div v-if="editMode">
@@ -162,6 +175,9 @@
                 reload:function() {
                     this.river = getRiver(this.river.id)
                     this.hideError()
+                },
+                setVisible: function(visible) {
+                    this.river = setRiverVisible(this.river.id, visible)
                 },
                 remove: function() {
                     this.hideError()

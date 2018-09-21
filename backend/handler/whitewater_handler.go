@@ -45,7 +45,17 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 		}
 	}
 
-	rivers, err := this.RiverDao.ListRiversWithBounds(bbox, math.MaxInt32)
+	token := req.FormValue("token")
+	allowed := false
+	if token != "" {
+		allowed, err = this.CheckRoleAllowed(req, ADMIN, EDITOR)
+		if err != nil {
+			OnError500(w, err, "Can not get user info for token")
+			return
+		}
+	}
+
+	rivers, err := this.RiverDao.ListRiversWithBounds(bbox, math.MaxInt32, allowed)
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not read whitewater points for bbox %s", bbox.String()))
 		return

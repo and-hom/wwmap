@@ -31,7 +31,8 @@ type RiverTitle struct {
 
 type River struct {
 	RiverTitle
-	Description string
+	Description string `json:"description"`
+	Visible     bool `json:"visible"`
 }
 
 type WaterWay struct {

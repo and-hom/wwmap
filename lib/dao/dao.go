@@ -25,7 +25,7 @@ type RiverDao interface {
 	IdEntity
 	NearestRivers(point Point, limit int) ([]RiverTitle, error)
 	Find(id int64) (River, error)
-	ListRiversWithBounds(bbox Bbox, limit int) ([]RiverTitle, error)
+	ListRiversWithBounds(bbox Bbox, limit int, showUnpublished bool) ([]RiverTitle, error)
 	FindTitles(titles []string) ([]RiverTitle, error)
 	ListByCountry(countryId int64) ([]RiverTitle, error)
 	ListByCountryFull(countryId int64) ([]River, error)
@@ -34,6 +34,7 @@ type RiverDao interface {
 	ListByFirstLetters(query string, limit int) ([]RiverTitle, error)
 	Insert(river River) (int64, error)
 	Save(river ...River) error
+	SetVisible(id int64, visible bool) (error)
 }
 
 type WhiteWaterDao interface {
