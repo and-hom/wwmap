@@ -13,15 +13,19 @@ func NewRegionPostgresDao(postgresStorage PostgresStorage) RegionDao {
 		listQuery:queries.SqlQuery("region", "list-real"),
 		listAllWithCountryQuery:queries.SqlQuery("region", "list-all-with-country"),
 		getByIdQuery:queries.SqlQuery("region", "get-by-id"),
+		getFakeQuery:queries.SqlQuery("region", "get-fake"),
+		createFakeQuery:queries.SqlQuery("region", "create-fake"),
 	}
 }
 
 type regionStorage struct {
 	PostgresStorage
-	PropsManager     PropertyManager
-	getByIdQuery string
-	listQuery    string
-	listAllWithCountryQuery    string
+	PropsManager            PropertyManager
+	getByIdQuery            string
+	listQuery               string
+	listAllWithCountryQuery string
+	getFakeQuery            string
+	createFakeQuery         string
 }
 
 func (this regionStorage) List(countryId int64) ([]Region, error) {
@@ -48,7 +52,7 @@ func (this regionStorage) ListAllWithCountry() ([]RegionWithCountry, error) {
 		result := RegionWithCountry{
 			Country: Country{},
 		}
-		err := rows.Scan(&result.Id, &result.Country.Id, &result.Country.Title, &result.Title)
+		err := rows.Scan(&result.Id, &result.Country.Id, &result.Country.Title, &result.Title, &result.Fake)
 		return result, err
 	})
 	if err != nil {
@@ -57,9 +61,23 @@ func (this regionStorage) ListAllWithCountry() ([]RegionWithCountry, error) {
 	return lst.([]RegionWithCountry), nil
 }
 
-
 func (this regionStorage) Props() PropertyManager {
 	return this.PropsManager
+}
+
+func (this regionStorage) GetFake(countryId int64) (Region, bool, error) {
+	result, found, err := this.doFindAndReturn(this.getFakeQuery, scanFuncI, countryId)
+	if err != nil {
+		return Region{}, false, err
+	}
+	if !found {
+		return Region{}, false, nil
+	}
+	return result.(Region), true, nil
+}
+
+func (this regionStorage) CreateFake(countryId int64) (int64, error) {
+	return this.insertReturningId(this.createFakeQuery, countryId)
 }
 
 func scanFuncI(rows *sql.Rows) (interface{}, error) {
@@ -68,7 +86,7 @@ func scanFuncI(rows *sql.Rows) (interface{}, error) {
 
 func scanFunc(rows *sql.Rows) (Region, error) {
 	result := Region{}
-	err := rows.Scan(&result.Id, &result.CountryId, &result.Title)
+	err := rows.Scan(&result.Id, &result.CountryId, &result.Title, &result.Fake)
 	return result, err
 }
 

@@ -49,6 +49,10 @@
                 </div>
                 <div id="editor-pane" class="col-9" style="bgcolor:red;">
                     <div>
+                        <country-editor v-if="countryeditorstate.visible"
+                                        v-bind:country="countryeditorstate.country"/>
+                    </div>
+                    <div>
                         <region-editor v-if="regioneditorstate.visible" v-bind:region="regioneditorstate.region"
                                         v-bind:country="regioneditorstate.country"/>
                     </div>
@@ -82,6 +86,7 @@
     Vue.component('region', httpVueLoader('components/region.vue'))
     Vue.component('country', httpVueLoader('components/country.vue'))
 
+    Vue.component('country-editor', httpVueLoader('components/country-editor.vue'))
     Vue.component('region-editor', httpVueLoader('components/region-editor.vue'))
     Vue.component('river-editor', httpVueLoader('components/river-editor.vue'))
     Vue.component('spot-editor', httpVueLoader('components/spot-editor.vue'))
@@ -127,6 +132,23 @@
         app.selectedCountry = countryId
     }
 
+    function newRiver(country, region) {
+        app.spoteditorstate.visible = false
+        app.rivereditorstate.visible = false;
+        app.regioneditorstate.visible = false;
+        app.countryeditorstate.visible = false;
+
+        app.rivereditorstate.visible = true;
+        app.rivereditorstate.editMode = true;
+        app.rivereditorstate.river = {
+            id: 0,
+            region: region,
+            aliases: [],
+        }
+        app.rivereditorstate.country = country
+        app.rivereditorstate.region = region
+    }
+
     var app = new Vue({
         el: '#vue-app',
         data: {
@@ -141,6 +163,10 @@
             "editMode": false,
           },
           "regioneditorstate": {
+            "visible": false,
+            "editMode": false,
+          },
+          "countryeditorstate": {
             "visible": false,
             "editMode": false,
           },

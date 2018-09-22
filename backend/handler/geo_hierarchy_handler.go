@@ -290,13 +290,33 @@ func (this *GeoHierarchyHandler) SaveRiver(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	regionId := river.Region.Id
+	if (regionId == 0) {
+		log.Error(river.Region.CountryId)
+		fakeRegion, found, err := this.RegionDao.GetFake(river.Region.CountryId)
+		if err != nil {
+			OnError500(w, err, fmt.Sprintf("Can not get fake region for country: %s", river.Region.CountryId))
+			return
+		}
+		if (found) {
+			regionId = fakeRegion.Id
+		} else {
+			regionId, err = this.RegionDao.CreateFake(river.Region.CountryId)
+			if err != nil {
+				OnError500(w, err, fmt.Sprintf("Can not create fake region for country: %s", river.Region.CountryId))
+				return
+			}
+			log.Errorf("RegionId = %v", regionId)
+		}
+	}
+
 	riverForDb := dao.River{
 		RiverTitle: dao.RiverTitle{
 			IdTitle:dao.IdTitle{
 				Id:river.Id,
 				Title:river.Title,
 			},
-			RegionId:river.Region.Id,
+			RegionId:regionId,
 			Aliases:river.Aliases,
 		},
 		Description:river.Description,

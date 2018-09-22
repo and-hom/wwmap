@@ -17,7 +17,7 @@
             var riverSelected = isActiveEntity(this.country.id, nvlReturningId(this.region), this.river.id)
 
             if (riverSelected) {
-                showRiverTree(this.country.id, this.region.id, this.river.id)
+                showRiverTree(this.country.id, nvlReturningId(this.region), this.river.id)
                 if (getActiveEntityLevel()==RIVER_ACTIVE_ENTITY_LEVEL) {
                     this.selectRiver()
                 } else if (getActiveEntityLevel()==SPOT_ACTIVE_ENTITY_LEVEL) {
@@ -49,6 +49,7 @@
                     app.spoteditorstate.visible = false
                     app.rivereditorstate.visible=false;
                     app.regioneditorstate.visible = false;
+                    app.countryeditorstate.visible = false;
 
                     app.spoteditorstate.visible=true;
                     app.spoteditorstate.editMode = false;
@@ -65,6 +66,7 @@
                     app.spoteditorstate.visible = false
                     app.rivereditorstate.visible=false;
                     app.regioneditorstate.visible = false;
+                    app.countryeditorstate.visible = false;
 
                     app.rivereditorstate.river = getRiver(this.river.id)
                     app.rivereditorstate.editMode = false;

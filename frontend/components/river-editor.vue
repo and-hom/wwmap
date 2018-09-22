@@ -42,11 +42,11 @@
                 <div  style="padding-left:40px;font-size:70%;color:grey">Нужно, когда мы не хотим выставлять наполовину размеченную и описанную реку.
                 Если добавляешь часть порогов, а остальные планируешь на потом, не делай реку видимой на карте.</div>
             </dd>
-            <dt>Регион:</dt>
-            <dd>
+            <dt v-if="river.region.id>0 && !river.region.fake">Регион:</dt>
+            <dd v-if="river.region.id>0 && !river.region.fake">
                 <div v-if="editMode">
                     <select v-model="river.region.id">
-                        <option v-for="region in regions" v-bind:value="region.id">{{region.title}}</option>
+                        <option v-for="region in regions()" v-bind:value="region.id">{{region.title}}</option>
                     </select>
                 </div>
                 <div v-else style="padding-left:40px;">
@@ -166,8 +166,8 @@
                         this.editMode=false
                         this.hideError()
                         setActiveEntity(this.country.id, nvlReturningId(this.region), updated.id)
-                        setActiveEntityState(this.country.id, nvlReturningId(this.region))
-                        showRegionTree(this.country.id, nvlReturningId(this.region))
+                        setActiveEntityState(this.country.id, nvlReturningId(this.region), updated.id)
+                        this.refreshTree()
                     } else {
                         this.showError("Не удалось сохранить реку. Возможно, недостаточно прав")
                     }
@@ -186,7 +186,7 @@
                     } else {
                         setActiveEntity(this.country.id, nvlReturningId(this.region))
                         setActiveEntityState(this.country.id, nvlReturningId(this.region))
-                        showRegionTree(this.country.id, nvlReturningId(this.region))
+                        this.refreshTree()
                         app.rivereditorstate.visible = false;
                     }
                 },
@@ -218,9 +218,31 @@
                     app.spoteditorstate.region = this.region
                 },
 
-                regions: getAllRegions(),
+                regions: function() {
+                    var regions = getAllRegions()
+                    realRegions = regions.map(function(x){
+                        if (x.fake) {
+                            return {
+                                id:x.id,
+                                title: x.country.title
+                            }
+                        }
+                        return {
+                            id:x.id,
+                            title: x.country.title + " - " + x.title
+                        }
+                    })
+                    return realRegions
+                },
                 parseAliases:function(strVal) {
                     return strVal.split('\n').map(function(x) {return x.trim()}).filter(function(x){return x.length>0})
+                },
+                refreshTree: function() {
+                    if (this.river.region.fake) {
+                        showCountrySubentities(this.country.id)
+                    } else {
+                        showRegionTree(this.country.id, nvlReturningId(this.region))
+                    }
                 },
             }
         }

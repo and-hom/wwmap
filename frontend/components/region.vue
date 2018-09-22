@@ -34,6 +34,7 @@
                     app.spoteditorstate.visible = false
                     app.rivereditorstate.visible=false;
                     app.regioneditorstate.visible = false;
+                    app.countryeditorstate.visible = false;
 
                     app.regioneditorstate.region = getRegion(this.region.id)
                     app.regioneditorstate.country = this.country

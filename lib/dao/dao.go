@@ -116,6 +116,8 @@ type CountryDao interface {
 type RegionDao interface {
 	HasProperties
 	Get(id int64) (Region, error)
+	GetFake(countryId int64) (Region, bool, error)
+	CreateFake(countryId int64) (int64, error)
 	List(countryId int64) ([]Region, error)
 	ListAllWithCountry() ([]RegionWithCountry, error)
 }

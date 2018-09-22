@@ -231,10 +231,12 @@ type Region struct {
 	Id        int64 `json:"id,omitempty"`
 	CountryId int64 `json:"country_id,omitempty"`
 	Title     string `json:"title"`
+	Fake      bool `json:"fake,omitempty"`
 }
 
 type RegionWithCountry struct {
 	Id      int64 `json:"id,omitempty"`
 	Country Country `json:"country,omitempty"`
 	Title   string `json:"title"`
+	Fake      bool `json:"fake,omitempty"`
 }

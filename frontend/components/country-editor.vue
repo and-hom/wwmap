@@ -2,7 +2,7 @@
     <div>
         <div v-if="canEdit()" class="btn-toolbar">
             <div class="btn-group mr-2" role="group">
-                <button type="button" class="btn btn-primary" v-on:click="add_river()">Добавить реку</button>
+                <button type="button" class="btn btn-primary" v-on:click="add_river()">Добавить реку без региона</button>
             </div>
         </div>
     </div>
@@ -10,7 +10,7 @@
 
 <script>
     module.exports = {
-        props: ['region', 'country'],
+        props: ['country'],
         data:function() {
             return {
                 // for editor
@@ -23,8 +23,11 @@
                     return this.editMode ? 'Просмотр' : 'Редактирование';
                 },
                 // end of editor
-
-                add_river: function() {return newRiver(this.country, this.region)},
+                add_river: function() {return newRiver(this.country, {
+                    id: 0,
+                    title: this.country.title,
+                    country_id: this.country.id,
+                })},
             }
         }
     }
