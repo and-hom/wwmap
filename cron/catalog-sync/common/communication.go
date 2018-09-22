@@ -19,7 +19,11 @@ type WithReportProvider func() (ReportProvider, error)
 func (this WithReportProvider) Do(payload func(ReportProvider) error) error {
 	provider, err := this()
 	if err != nil {
-		return fmt.Errorf("Can not connect to source %s: %s", provider.SourceId(), err.Error())
+		if provider!=nil {
+			return fmt.Errorf("Can not connect to source %s: %v", provider.SourceId(), err)
+		} else {
+			return fmt.Errorf("Can not connect to source unknown (nil provider): %v", err)
+		}
 	}
 	defer provider.Close()
 
