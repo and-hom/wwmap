@@ -6,6 +6,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"io/ioutil"
 	"fmt"
+	"time"
 )
 
 type ClusterizationParams struct {
@@ -41,6 +42,7 @@ type WordpressSync struct {
 	Login      string `yaml:"login"`
 	Password   string `yaml:"password"`
 	RootPageId int `yaml:"root-page-id"`
+	MinDeltaBetweenRequests time.Duration `yaml:"min-delta-between-requests"`
 }
 
 type ImgStorageParams struct {

@@ -48,3 +48,4 @@ sync:
   login: "wwmap"
   password: ""
   root-page-id: 1739
+  min-delta-between-requests: "1s"

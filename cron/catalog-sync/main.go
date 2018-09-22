@@ -64,9 +64,9 @@ func main() {
 	app.DoWriteCatalog()
 }
 
-func (this App) getCachedCatalogConnector() common.CatalogConnector {
+func (this *App) getCachedCatalogConnector() common.CatalogConnector {
 	if this.catalogConnector == nil {
-		catalogConnector, err := huskytm.GetCatalogConnector(this.Configuration.Login, this.Configuration.Password)
+		catalogConnector, err := huskytm.GetCatalogConnector(this.Configuration.Login, this.Configuration.Password, this.Configuration.MinDeltaBetweenRequests)
 		if err != nil {
 			this.Fatalf(err, "Can not connect to catalog")
 		}
