@@ -40,11 +40,13 @@ var publishedDateRe = regexp.MustCompile(PUBLISHED_DATE_RE)
 func GetReportProvider() (common.ReportProvider, error) {
 	return &TlibReportsProvider{
 		client:http.Client{},
+		rateLimit:util.NewRateLimit(100 * time.Millisecond),
 	}, nil
 }
 
 type TlibReportsProvider struct {
-	client http.Client
+	client    http.Client
+	rateLimit util.RateLimit
 }
 
 func (this *TlibReportsProvider) SourceId() string {

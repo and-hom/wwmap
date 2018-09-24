@@ -62,8 +62,7 @@ func GetCatalogConnector(login, password string, minDeltaBetweenRequests time.Du
 		regionPageTemplate: regionPageTemplate,
 		countryPageTemplate: countryPageTemplate,
 		rootPageTemplate: rootPageTemplate,
-		lastRequestTs:util.ZeroDateUTC(),
-		minDeltaBetweenRequests:minDeltaBetweenRequests,
+		rateLimit:util.NewRateLimit(minDeltaBetweenRequests),
 	}, nil
 }
 
@@ -76,8 +75,7 @@ type HuskytmCatalogConnector struct {
 	regionPageTemplate      *template.Template
 	countryPageTemplate     *template.Template
 	rootPageTemplate        *template.Template
-	lastRequestTs           time.Time
-	minDeltaBetweenRequests time.Duration
+	rateLimit		util.RateLimit
 }
 
 func (this *HuskytmCatalogConnector) Close() error {
@@ -91,7 +89,7 @@ func (this *HuskytmCatalogConnector) CreateEmptyPageIfNotExistsAndReturnId(paren
 		created := err == nil
 		return id, link, created, err
 	}
-	this.waitUntilNextRequest()
+	this.rateLimit.WaitIfNecessary()
 	p, r, _, err := this.client.Pages().Get(pageId, emptyMap())
 	if r.StatusCode == http.StatusNotFound || p.Status == "trash" {
 		id, link, err := this.createPage(parent, title)
@@ -104,7 +102,7 @@ func (this *HuskytmCatalogConnector) CreateEmptyPageIfNotExistsAndReturnId(paren
 }
 
 func (this *HuskytmCatalogConnector) createPage(parent int, title string) (int, string, error) {
-	this.waitUntilNextRequest()
+	this.rateLimit.WaitIfNecessary()
 	p, r, b, err := this.client.Pages().Create(&wp.Page{
 		Title:        wp.Title{Raw:title},
 		Author:        this.me,
@@ -188,7 +186,7 @@ func (this *HuskytmCatalogConnector) writePage(pageId int, tmpl *template.Templa
 		Content:wp.Content{Raw:htmlBuf.String()},
 	}
 
-	this.waitUntilNextRequest()
+	this.rateLimit.WaitIfNecessary()
 	_, r, b, err := this.client.Pages().Update(pageId, &page)
 	if err != nil {
 		log.Errorf("Connection failed. Code: %d Body: %s", r.StatusCode, string(b))
@@ -209,7 +207,7 @@ func (this *HuskytmCatalogConnector) GetImages(key string) ([]dao.Img, error) {
 }
 
 func (this *HuskytmCatalogConnector) CreatePage(title string, parent int) (int, error) {
-	this.waitUntilNextRequest()
+	this.rateLimit.WaitIfNecessary()
 	p, r, b, err := this.client.Pages().Create(&wp.Page{
 		Title:        wp.Title{Raw:title},
 		Author:        this.me,
@@ -238,7 +236,7 @@ func (this *HuskytmCatalogConnector) GetId(title string, parent int) (int, error
 		params["parent"] = parent
 	}
 	found, err := paginate(func(p interface{}) ([]interface{}, *http.Response, []byte, error) {
-		this.waitUntilNextRequest()
+		this.rateLimit.WaitIfNecessary()
 		f, r, b, e := this.client.Pages().List(params)
 		res := make([]interface{}, len(f))
 		for i := 0; i < len(f); i++ {
@@ -267,16 +265,5 @@ type PageNotFoundError struct {
 
 func (this PageNotFoundError) Error() string {
 	return this.msg
-}
-
-func (this *HuskytmCatalogConnector) waitUntilNextRequest() {
-	now := time.Now()
-	lastRequestTs := this.lastRequestTs
-
-	delta := now.Sub(lastRequestTs)
-	if (delta < this.minDeltaBetweenRequests) {
-		time.Sleep(this.minDeltaBetweenRequests - delta)
-	}
-	this.lastRequestTs = now
 }
 

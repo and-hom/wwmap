@@ -47,7 +47,7 @@ func CreateApp() App {
 		stat: &ImportExportReport{},
 		reportProviders:[]common.WithReportProvider{
 			common.WithReportProvider(func() (common.ReportProvider, error) {
-				return huskytm.GetReportProvider(configuration.Sync.Login, configuration.Sync.Password)
+				return huskytm.GetReportProvider(configuration.Sync.Login, configuration.Sync.Password, configuration.Sync.MinDeltaBetweenRequests)
 			}),
 			common.WithReportProvider(tlib.GetReportProvider),
 		},
