@@ -1,3 +1,9 @@
+wwmap-config (0.0.2) unstable; urgency=medium
+
+  * Configuration fields added
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Mon, 24 Sep 2018 10:50:36 +0300
+
 wwmap-config (0.0.1) unstable; urgency=medium
 
   * Configuration package for wwmap
