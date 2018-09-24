@@ -1,3 +1,9 @@
+wwmap-frontend (0.0.22) unstable; urgency=medium
+
+  * #125 Add rivers to fake region (to country)
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Mon, 24 Sep 2018 10:16:05 +0300
+
 wwmap-frontend (0.0.21) unstable; urgency=medium
 
   * #121 Show/hide button for river
