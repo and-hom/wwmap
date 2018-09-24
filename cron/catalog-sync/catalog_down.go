@@ -4,8 +4,8 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/lib/dao"
 	"github.com/and-hom/wwmap/cron/catalog-sync/common"
-	"github.com/and-hom/wwmap/cron/catalog-sync/huskytm"
 	"time"
+	"github.com/and-hom/wwmap/cron/catalog-sync/huskytm"
 )
 
 func (this *App) DoReadCatalog() {
@@ -16,7 +16,10 @@ func (this *App) DoReadCatalog() {
 	lastWwPassportIdStr := lastId.(time.Time).Format(huskytm.TIME_FORMAT)
 	log.Infof("Get and store ww passport entries since %s", lastWwPassportIdStr)
 
-	catalogConnector := this.getCachedCatalogConnector()
+	catalogConnector , err:= this.getCachedCatalogConnector()
+	if err!=nil {
+		log.Fatal("Can not get catalog connector: ", err.Error())
+	}
 
 	wwPassportEntries, err := catalogConnector.PassportEntriesSince(lastWwPassportIdStr)
 	if err != nil {

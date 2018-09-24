@@ -53,27 +53,46 @@ func (this DummyPropertyManager) SetIntProperty(name string, id int64, value int
 	return nil
 }
 func (this *App) DoWriteCatalog() {
+	err := this.doWriteCatalog()
+	if err != nil {
+		log.Error(err)
+	}
+}
+
+func (this *App) doWriteCatalog() error {
 	fakeRegion := dao.Region{Id:0, Title:"-"}
 	log.Info("Create missing ww passports")
-	catalogConnector := this.getCachedCatalogConnector()
+	catalogConnector, err := this.getCachedCatalogConnector()
+	if err != nil {
+		log.Error("Can not get catalog connector")
+		return err
+	}
+
 	countries, err := this.CountryDao.List()
 	if err != nil {
-		this.Fatalf(err, "Can not list countries")
+		log.Error("Can not list countries")
+		return err
 	}
-	_, rootPageLink := this.createBlankPageIfNotExists(DummyHasProperties{pageId:this.Configuration.RootPageId}, 0, "", 0)
+	_, rootPageLink, err := this.createBlankPageIfNotExists(DummyHasProperties{pageId:this.Configuration.RootPageId}, 0, "", 0)
+	if err != nil {
+		log.Error("Can not create blank root page if not exists")
+		return err
+	}
 	countries = filterCountries(countries)
 	countryLinks := []common.CountryLink{}
 	for _, country := range countries {
 		log.Infof("Upload country %s", country.Title)
 		regions, err := this.RegionDao.List(country.Id)
 		if err != nil {
-			this.Fatalf(err, "Can not list regions for country %d", country.Id)
+			log.Errorf("Can not list regions for country %d", country.Id)
+			return err
 		}
 		regions = filterRegions(regions)
 
 		rivers, err := this.RiverDao.ListByCountryFull(country.Id)
 		if err != nil {
-			this.Fatalf(err, "Can not list rivers for country %d", country.Id)
+			log.Errorf("Can not list rivers for country %d", country.Id)
+			return err
 		}
 
 		if len(rivers) == 0 && len(regions) == 0 {
@@ -81,7 +100,11 @@ func (this *App) DoWriteCatalog() {
 			continue
 		}
 
-		countryPageId, countryPageLink := this.createBlankPageIfNotExists(this.CountryDao, country.Id, country.Title, this.Configuration.RootPageId)
+		countryPageId, countryPageLink, err := this.createBlankPageIfNotExists(this.CountryDao, country.Id, country.Title, this.Configuration.RootPageId)
+		if err != nil {
+			log.Error("Can not create blank country page if not exists")
+			return err
+		}
 
 		countryRegionLinks := []common.LinkOnPage{}
 		countryRiverLinks := []common.LinkOnPage{}
@@ -89,52 +112,65 @@ func (this *App) DoWriteCatalog() {
 			log.Infof("Upload region %s/%s", country.Title, region.Title)
 			regionRivers, err := this.RiverDao.ListByRegionFull(region.Id)
 			if err != nil {
-				this.Fatalf(err, "Can not list rivers for region %d", region.Id)
+				log.Errorf("Can not list rivers for region %d", region.Id)
+				return err
 			}
 			if len(regionRivers) == 0 {
 				log.Infof("Skip region %s - no rivers", region.Title)
 				continue
 			}
 
-			regionPageId, regionPageLink := this.createBlankPageIfNotExists(this.RegionDao, region.Id, region.Title, countryPageId)
+			regionPageId, regionPageLink, err := this.createBlankPageIfNotExists(this.RegionDao, region.Id, region.Title, countryPageId)
+			if err != nil {
+				log.Error("Can not create blank root region if not exists")
+				return err
+			}
 
 			riverLinks := []common.LinkOnPage{}
 			for _, river := range regionRivers {
-				log.Infof("Upload river %s/%s/%s", country.Title, region.Title, river.Title)
-				riverPageId, riverPageLink, spotLinks, needUpdate := this.writeSpots(regionPageId, river, region, country, rootPageLink, countryPageLink, regionPageLink)
-				if !needUpdate {
-					log.Infof("Skip river %s - no spots", river.Title)
-					continue
-				}
-				err := catalogConnector.WriteRiverPage(riverPageId, river, region, country, spotLinks, rootPageLink, countryPageLink, regionPageLink, noImage(0), this.reports(river.Id))
+				riverPageLink, err := this.uploadRiver(country, region, river, rootPageLink, countryPageLink, regionPageLink, regionPageId)
 				if err != nil {
-					this.Fatalf(err, "Can not write river page %d", river.Id)
+					return err
 				}
-				riverLinks = append(riverLinks, common.LinkOnPage{Title:river.Title, Url:riverPageLink})
+				if riverPageLink!="" {
+					riverLinks = append(riverLinks, common.LinkOnPage{Title:river.Title, Url:riverPageLink})
+				}
 			}
-			err = catalogConnector.WriteRegionPage(regionPageId, region, country, riverLinks, rootPageLink, countryPageLink)
+			err = catalogConnector.WriteRegionPage(common.RegionPageDto{
+				Id: regionPageId,
+				Region:region,
+				Country:country,
+				Links:riverLinks,
+				RootPageLink:rootPageLink,
+				CountryPageLink:countryPageLink,
+			})
 			if err != nil {
-				this.Fatalf(err, "Can not write region page %d", region.Id)
+				log.Errorf("Can not write region page %d", region.Id)
+				return err
 			}
 			countryRegionLinks = append(countryRegionLinks, common.LinkOnPage{Title:region.Title, Url:regionPageLink})
 		}
 		for _, river := range rivers {
 			log.Infof("Upload river %s/%s", country.Title, river.Title)
-			riverPageId, riverPageLink, spotLinks, needUpdate := this.writeSpots(countryPageId, river, fakeRegion, country, rootPageLink, countryPageLink, "")
-			if !needUpdate {
-				log.Infof("Skip river %s - no spots", river.Title)
-				continue
-			}
-			err := catalogConnector.WriteRiverPage(riverPageId, river, fakeRegion, country, spotLinks, rootPageLink, countryPageLink, "", noImage(0), this.reports(river.Id))
+			riverPageLink, err := this.uploadRiver(country, fakeRegion, river, rootPageLink, countryPageLink, "", countryPageId)
 			if err != nil {
-				this.Fatalf(err, "Can not write river page %d", river.Id)
+				return err
 			}
-			countryRiverLinks = append(countryRiverLinks, common.LinkOnPage{Title:river.Title, Url:riverPageLink})
+			if riverPageLink!="" {
+				countryRiverLinks = append(countryRiverLinks, common.LinkOnPage{Title:river.Title, Url:riverPageLink})
+			}
 		}
 
-		err = catalogConnector.WriteCountryPage(countryPageId, country, countryRegionLinks, countryRiverLinks, rootPageLink)
+		err = catalogConnector.WriteCountryPage(common.CountryPageDto{
+			Id:countryPageId,
+			Country:country,
+			RegionLinks:countryRegionLinks,
+			RiverLinks:countryRiverLinks,
+			RootPageLink:rootPageLink,
+		})
 		if err != nil {
-			this.Fatalf(err, "Can not write country page %d", country.Id)
+			log.Errorf("Can not write country page %d", country.Id)
+			return err
 		}
 
 		countryLinks = append(countryLinks, common.CountryLink{
@@ -143,15 +179,66 @@ func (this *App) DoWriteCatalog() {
 		})
 	}
 
-	catalogConnector.WriteRootPage(this.Configuration.RootPageId, countryLinks)
+	err = catalogConnector.WriteRootPage(common.RootPageDto{
+		Id: this.Configuration.RootPageId,
+		Links:countryLinks,
+	})
+
+	if err != nil {
+		log.Errorf("Can not write root page contents")
+	}
+	return err
+}
+
+func (this *App) uploadRiver(country dao.Country, region dao.Region, river dao.River,
+rootPageLink, countryPageLink, regionPageLink string, parentPageId int) (string, error) {
+	catalogConnector, err := this.getCachedCatalogConnector()
+	if err != nil {
+		log.Error("Can not get catalog connector")
+		return "", err
+	}
+
+	log.Infof("Upload river %s/%s/%s", country.Title, region.Title, river.Title)
+	riverPageId, riverPageLink, spotLinks, needUpdate, err := this.writeSpots(parentPageId, river, region, country, rootPageLink, countryPageLink, regionPageLink)
+	if err != nil {
+		log.Error("Can not create blank river page if not exists")
+		return "", err
+	}
+	if !needUpdate {
+		log.Infof("Skip river %s - no spots", river.Title)
+		return "", nil
+	}
+	reports, err := this.reports(river.Id)
+	if err != nil {
+		log.Errorf("Can not get reports for river %d", river.Id)
+		return "", err
+	}
+	err = catalogConnector.WriteRiverPage(common.RiverPageDto{
+		Id:riverPageId,
+		River:river,
+		Region:region,
+		Country:country,
+		Links: spotLinks,
+		RootPageLink:rootPageLink,
+		CountryPageLink:countryPageLink,
+		RegionPageLink:regionPageLink,
+		MainImg:noImage(0),
+		Reports:reports,
+	})
+	if err != nil {
+		log.Errorf("Can not write river page %d", river.Id)
+		return "", err
+	}
+	return riverPageLink, nil
 }
 
 const MAX_REPORTS_PER_SOURCE = 15
 
-func (this *App) reports(riverId int64) []common.VoyageReportLink {
+func (this *App) reports(riverId int64) ([]common.VoyageReportLink, error) {
 	r, err := this.VoyageReportDao.List(riverId, MAX_REPORTS_PER_SOURCE)
 	if err != nil {
-		log.Fatalf("Can not read report links: %v", err)
+		log.Errorf("Can not read report links: %v", err)
+		return []common.VoyageReportLink{}, err
 	}
 	result := make([]common.VoyageReportLink, len(r))
 	for i := 0; i < len(r); i++ {
@@ -160,53 +247,90 @@ func (this *App) reports(riverId int64) []common.VoyageReportLink {
 			SourceLogo:this.ResourceBase + "/img/report_sources/" + strings.ToLower(r[i].Source) + ".png",
 		}
 	}
-	return result
+	return result, nil
 }
 
-func (this *App) createBlankPageIfNotExists(dao dao.HasProperties, id int64, title string, parentId int) (int, string) {
-	catalogConnector := this.getCachedCatalogConnector()
+func (this *App) createBlankPageIfNotExists(dao dao.HasProperties, id int64, title string, parentId int) (int, string, error) {
+	catalogConnector, err := this.getCachedCatalogConnector()
+	if err != nil {
+		log.Errorf("Can not get catalog connector")
+		return 0, "", err
+	}
 	pageId, err := dao.Props().GetIntProperty(PAGE_ID_PROP_NAME, id)
 	if err != nil {
-		this.Fatalf(err, "Can not get page id for entity %d:%s", id, title)
+		log.Errorf("Can not get page id for entity %d:%s", id, title)
+		return 0, "", err
 	}
 	childPageId, link, created, err := catalogConnector.CreateEmptyPageIfNotExistsAndReturnId(parentId, pageId, title)
 	if err != nil {
-		this.Fatalf(err, "Can not create page for entity %d:%s", id, title)
+		log.Errorf("Can not create page for entity %d:%s", id, title)
+		return 0, "", err
 	}
 	if created {
 		log.Infof("Created page id=%d for %d - %s", childPageId, id, title)
 		err := dao.Props().SetIntProperty(PAGE_ID_PROP_NAME, id, childPageId)
 		if err != nil {
-			this.Fatalf(err, "Can not set page id for entity %d:%s", id, title)
+			log.Errorf("Can not set page id for entity %d:%s", id, title)
+			return 0, "", err
 		}
 	}
-	return childPageId, link
+	return childPageId, link, nil
 }
 
-func (this *App) writeSpots(parentPageId int, river dao.River, region dao.Region, country dao.Country, rootPageLink, countryPageLink, regionPageLink string) (int, string, []common.SpotLink, bool) {
+func (this *App) writeSpots(parentPageId int, river dao.River, region dao.Region, country dao.Country, rootPageLink, countryPageLink, regionPageLink string) (int, string, []common.SpotLink, bool, error) {
 	spots, err := this.WhiteWaterDao.ListByRiverFull(river.Id)
 	if err != nil {
-		this.Fatalf(err, "Can not list spots for river %d", river.Id)
+		log.Errorf("Can not list spots for river %d", river.Id)
+		return 0, "", []common.SpotLink{}, false, err
 	}
 	if len(spots) == 0 {
-		return 0, "", []common.SpotLink{}, false
+		return 0, "", []common.SpotLink{}, false, nil
 	}
 
-	catalogConnector := this.getCachedCatalogConnector()
-	riverPageId, riverPageLink := this.createBlankPageIfNotExists(this.RiverDao, river.Id, river.Title, parentPageId)
+	catalogConnector, err := this.getCachedCatalogConnector()
+	if err != nil {
+		return 0, "", []common.SpotLink{}, false, err
+	}
+	riverPageId, riverPageLink, err := this.createBlankPageIfNotExists(this.RiverDao, river.Id, river.Title, parentPageId)
+	if err != nil {
+		return 0, "", []common.SpotLink{}, false, err
+	}
 
 	spotLinks := []common.SpotLink{}
 	for _, spot := range spots {
 		log.Infof("Upload spot %s/%s", river.Title, spot.Title)
-		spotPageId, spotPageLink := this.createBlankPageIfNotExists(this.WhiteWaterDao, spot.Id, spot.Title, riverPageId)
+		spotPageId, spotPageLink, err := this.createBlankPageIfNotExists(this.WhiteWaterDao, spot.Id, spot.Title, riverPageId)
+		if err != nil {
+			log.Errorf("Can not get attached images for %d", spot.Id)
+			return 0, "", []common.SpotLink{}, false, err
+		}
 		imgs, err := this.ImgDao.List(spot.Id, MAX_ATTACHED_IMGS, dao.IMAGE_TYPE_IMAGE, true)
 		if err != nil {
-			this.Fatalf(err, "Can not get attached images for %d", spot.Id)
+			log.Errorf("Can not get attached images for %d", spot.Id)
+			return 0, "", []common.SpotLink{}, false, err
 		}
-		err = catalogConnector.WriteSpotPage(spotPageId, spot, river, region, country, this.mainImage(spot, imgs), imgs,
-			rootPageLink, countryPageLink, regionPageLink, riverPageLink)
+		mainImg, err := this.mainImage(spot, imgs)
 		if err != nil {
-			this.Fatalf(err, "Can not write spot page %d", spot.Id)
+			log.Errorf("Can not get main image for spot %d", spot.Id)
+			return 0, "", []common.SpotLink{}, false, err
+		}
+		err = catalogConnector.WriteSpotPage(common.SpotPageDto{
+			Id:spotPageId,
+			Spot:spot,
+			River:river,
+			Region:region,
+			Country:country,
+			MainImg:mainImg,
+			Imgs:imgs,
+
+			RootPageLink:rootPageLink,
+			CountryPageLink:countryPageLink,
+			RegionPageLink:regionPageLink,
+			RiverPageLink:riverPageLink,
+		})
+		if err != nil {
+			log.Errorf("Can not write spot page %d", spot.Id)
+			return 0, "", []common.SpotLink{}, false, err
 		}
 		spotLinks = append(spotLinks, common.SpotLink{
 			LinkOnPage: common.LinkOnPage{
@@ -216,7 +340,7 @@ func (this *App) writeSpots(parentPageId int, river dao.River, region dao.Region
 			Category:categoryStr(spot),
 		})
 	}
-	return riverPageId, riverPageLink, spotLinks, true
+	return riverPageId, riverPageLink, spotLinks, true, nil
 }
 
 func categoryStr(spot dao.WhiteWaterPointFull) string {
@@ -224,24 +348,25 @@ func categoryStr(spot dao.WhiteWaterPointFull) string {
 		return fmt.Sprintf("%s/%s/%s",
 			util.HumanReadableCategoryName(spot.LowWaterCategory, false),
 			util.HumanReadableCategoryName(spot.MediumWaterCategory, false),
-			util.HumanReadableCategoryName(spot.HighWaterCategory, false),)
+			util.HumanReadableCategoryName(spot.HighWaterCategory, false), )
 	}
 	return util.HumanReadableCategoryName(spot.Category, false)
 }
 
-func (this *App) mainImage(spot dao.WhiteWaterPointFull, imgs []dao.Img) dao.Img {
+func (this *App) mainImage(spot dao.WhiteWaterPointFull, imgs []dao.Img) (dao.Img, error) {
 	mainImg, found, err := this.ImgDao.GetMainForSpot(spot.Id)
 	if err != nil {
-		this.Fatalf(err, "Can not get main image for %d", spot.Id)
+		log.Errorf("Can not get main image for %d", spot.Id)
+		return dao.Img{}, err
 	}
 	if found {
 		this.processForWeb(&mainImg)
-		return mainImg
+		return mainImg, nil
 	}
 	if len(imgs) > 0 {
-		return imgs[0]
+		return imgs[0], nil
 	} else {
-		return noImage(spot.Id)
+		return noImage(spot.Id), nil
 	}
 
 }

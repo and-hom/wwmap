@@ -26,6 +26,7 @@ func GetReportProvider(login, password string, requestRateLimit time.Duration) (
 		BaseAPIURL: API_BASE, // example: `http://192.168.99.100:32777/wp-json/wp/v2`
 		Username:   login,
 		Password:   password,
+		Timeout: 10 * time.Second,
 	})
 
 	tags, err := paginate(func(p interface{}) ([]interface{}, *http.Response, []byte, error) {
@@ -133,7 +134,8 @@ func (this *HuskytmReportProvider) ReportsSince(key time.Time) ([]dao.VoyageRepo
 			if found {
 				tags = append(tags, tag)
 			} else {
-				log.Fatalf("Unknown tag with id %d in %v+", tagId, this.tags)
+				log.Errorf("Unknown tag with id %d in %v+", tagId, this.tags)
+				return []dao.VoyageReport{}, key, err
 			}
 		}
 

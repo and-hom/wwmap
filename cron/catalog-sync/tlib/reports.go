@@ -199,7 +199,8 @@ func (this TlibReportsProvider) queryData(pageNum int, viewState ViewState, date
 
 		submatch := titleRe.FindStringSubmatch(descriptionText)
 		if len(submatch) < 2 {
-			log.Fatalf("Illegal title: %s\n%s", descriptionText, row.Text())
+			log.Errorf("Illegal title: %s\n%s", descriptionText, row.Text())
+			return
 		}
 		title := submatch[1]
 		tags := make([]string, 0)

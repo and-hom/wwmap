@@ -1,21 +1,21 @@
-<a href="{{.rootPage}}" style="font-size:80%;">Каталог водных препятствий</a><br/>&nbsp;&nbsp;<a
-        href="{{.countryPage}}" style="font-size:80%;">{{.country.Title}}</a><br/>&nbsp;&nbsp;&nbsp;&nbsp;<a
-        href="{{.regionPage}}" style="font-size:80%;">{{.region.Title}}</a>
+<a href="{{.RootPage}}" style="font-size:80%;">Каталог водных препятствий</a><br/>&nbsp;&nbsp;<a
+        href="{{.CountryPage}}" style="font-size:80%;">{{.Country.Title}}</a><br/>&nbsp;&nbsp;&nbsp;&nbsp;<a
+        href="{{.RegionPage}}" style="font-size:80%;">{{.Region.Title}}</a>
 
 <table style="border:0px;">
     <tr>
         <td colspan="2">
-            <h1>{{.river.Title}}</h1>
-            {{.river.Description}}
+            <h1>{{.River.Title}}</h1>
+            {{.River.Description}}
         </td>
         <td>
-            <img style="width:200px;" src="{{.mainImage.Url}}"/>
+            <img style="width:200px;" src="{{.MainImage.Url}}"/>
         </td>
     </tr>
     <tr>
         <td colspan="2"><strong>Пороги</strong>&nbsp;&nbsp;<a
                 href="https://wwmap.ru/api/gpx/river/{{.River.Id}}">GPX</a>&nbsp;<a
-                href="{{.ApiBase}}/gpx/river/{{.river.Id}}?tr=true">GPX<sub>en</sub></a></td>
+                href="{{.ApiBase}}/gpx/river/{{.River.Id}}?tr=true">GPX<sub>en</sub></a></td>
         <td rowspan="{{ inc (len .links) }}">
             Карта
         </td>

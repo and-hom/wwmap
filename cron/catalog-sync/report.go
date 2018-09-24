@@ -17,26 +17,27 @@ const COMMON_TIME_FORMAT string = "2006-01-02T15:04:05"
 func (this *App) DoSyncReports() {
 	for _, rpf := range this.reportProviders {
 		err := rpf.Do(func(rp common.ReportProvider) error {
-			this.doSyncReports(&rp)
-			return nil
+			return this.doSyncReports(&rp)
 		})
 		if err != nil {
-			this.Fatalf(err, "Can not access to source")
+			log.Errorf("Can not access to source: %v", err)
 		}
 	}
 }
 
-func (this *App) doSyncReports(reportProvider *common.ReportProvider) {
+func (this *App) doSyncReports(reportProvider *common.ReportProvider) error {
 	source := (*reportProvider).SourceId()
 	lastId, err := this.VoyageReportDao.GetLastId(source)
 	if err != nil {
-		this.Fatalf(err, "Can not connect get last report id")
+		log.Error("Can not connect get last report id")
+		return err
 	}
 	log.Infof("Get and store reports from %s since %s", source, lastId.(time.Time).Format(COMMON_TIME_FORMAT))
 
 	reports, next, err := (*reportProvider).ReportsSince(lastId.(time.Time))
 	if err != nil {
-		log.Fatal(err, "Can not get posts")
+		log.Error("Can not get posts")
+		return err
 	}
 	if len(reports) == 0 {
 		next = lastId.(time.Time)
@@ -44,7 +45,8 @@ func (this *App) doSyncReports(reportProvider *common.ReportProvider) {
 
 	reports, err = this.VoyageReportDao.UpsertVoyageReports(reports...)
 	if err != nil {
-		this.Fatalf(err, "Can not store reports from %s: %v", source, reports)
+		log.Errorf("Can not store reports from %s: %v", source, reports)
+		return err
 	}
 
 	log.Infof("%d reports from %s are successfully stored. Next id is %s\n", len(reports), source, next)
@@ -57,7 +59,8 @@ func (this *App) doSyncReports(reportProvider *common.ReportProvider) {
 	log.Info("Try to connect reports with known rivers")
 	err = this.associateReportsWithRivers(source, &reportsToRivers)
 	if err != nil {
-		log.Fatal("Can not associate rivers with reports: ", err)
+		log.Error("Can not associate rivers with reports: ", err)
+		return err
 	}
 
 	for _, report := range reports {
@@ -65,8 +68,12 @@ func (this *App) doSyncReports(reportProvider *common.ReportProvider) {
 		if !found {
 			rivers = []dao.RiverTitle{}
 		}
-		this.findMatchAndStoreImages(report, rivers, reportProvider)
+		err := this.findMatchAndStoreImages(report, rivers, reportProvider)
+		if err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 func (this *App) associateReportsWithRivers(source string, resultHandlerMap *map[int64][]dao.RiverTitle) error {
@@ -95,16 +102,20 @@ func (this *App) associateReportWithRiver(report *dao.VoyageReport, resultHandle
 	return nil
 }
 
-func (this *App) findMatchAndStoreImages(report dao.VoyageReport, rivers []dao.RiverTitle, reportProvider *common.ReportProvider) {
+func (this *App) findMatchAndStoreImages(report dao.VoyageReport, rivers []dao.RiverTitle, reportProvider *common.ReportProvider) error {
 	log.Infof("Find images for report %d: %s %s", report.Id, report.RemoteId, report.Title)
 	imgs, err := (*reportProvider).Images(report.RemoteId)
 	if err != nil {
-		this.Fatalf(err, "Can not load images for report %d", report.Id)
+		log.Errorf("Can not load images for report %d", report.Id)
+		return err
 	}
 	log.Debugf("%d images found for %s %d", len(imgs), report.Source, report.Id)
 	log.Debugf("Bind images to ww spots for report %d", report.Id)
 	matchedImgs := []dao.Img{}
-	candidates := this.matchImgsToWhiteWaterPoints(report, imgs, rivers)
+	candidates, err := this.matchImgsToWhiteWaterPoints(report, imgs, rivers)
+	if err!=nil {
+		return err
+	}
 	log.Debugf("%d images matched for %s %d", len(candidates), report.Source, report.Id)
 
 	for _, imgToWwpts := range candidates {
@@ -119,8 +130,9 @@ func (this *App) findMatchAndStoreImages(report dao.VoyageReport, rivers []dao.R
 	log.Infof("Store %d images for report %d", len(matchedImgs), report.Id)
 	_, err = this.ImgDao.Upsert(matchedImgs...)
 	if err != nil {
-		this.Fatalf(err, "Can not upsert images for report %d", report.Id, )
+		log.Errorf("Can not upsert images for report %d", report.Id)
 	}
+	return err
 }
 
 type ImgWwPoints struct {
@@ -128,13 +140,14 @@ type ImgWwPoints struct {
 	Wwpts []dao.WhiteWaterPointWithRiverTitle
 }
 
-func (this *App) matchImgsToWhiteWaterPoints(report dao.VoyageReport, imgs []dao.Img, rivers []dao.RiverTitle) map[string]ImgWwPoints {
+func (this *App) matchImgsToWhiteWaterPoints(report dao.VoyageReport, imgs []dao.Img, rivers []dao.RiverTitle) (map[string]ImgWwPoints, error) {
 	candidates := make(map[string]ImgWwPoints)
 	for _, img := range imgs {
 		for _, river := range rivers {
 			wwpts, err := this.WhiteWaterDao.ListByRiver(river.Id)
 			if err != nil {
-				this.Fatalf(err, "Can not list white water spots for river %d", river.Id)
+				log.Errorf("Can not list white water spots for river %d", river.Id)
+				return candidates, err
 			}
 			for _, wwpt := range wwpts {
 				for _, label := range img.LabelsForSearch {
@@ -155,7 +168,7 @@ func (this *App) matchImgsToWhiteWaterPoints(report dao.VoyageReport, imgs []dao
 			}
 		}
 	}
-	return candidates
+	return candidates, nil
 }
 
 func forCompare(s string) string {

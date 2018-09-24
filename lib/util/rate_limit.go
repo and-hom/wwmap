@@ -18,7 +18,7 @@ type rateLimit struct {
 	limit time.Duration
 }
 
-func (this *rateLimit) waitUntilNextRequest() {
+func (this *rateLimit) WaitIfNecessary() {
 	now := time.Now()
 	lastRequestTs := this.last
 

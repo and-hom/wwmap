@@ -19,7 +19,7 @@ type WithReportProvider func() (ReportProvider, error)
 func (this WithReportProvider) Do(payload func(ReportProvider) error) error {
 	provider, err := this()
 	if err != nil {
-		if provider!=nil {
+		if provider != nil {
 			return fmt.Errorf("Can not connect to source %s: %v", provider.SourceId(), err)
 		} else {
 			return fmt.Errorf("Can not connect to source unknown (nil provider): %v", err)
@@ -37,7 +37,7 @@ type LinkOnPage struct {
 
 type SpotLink struct {
 	LinkOnPage
-	Category    string
+	Category string
 }
 
 type CountryLink struct {
@@ -50,15 +50,75 @@ type VoyageReportLink struct {
 	SourceLogo string
 }
 
+type SpotPageDto struct {
+	Id          int
+
+	Spot            dao.WhiteWaterPointFull
+	River           dao.River
+	Region          dao.Region
+	Country         dao.Country
+
+	MainImg         dao.Img
+	Imgs            []dao.Img
+
+	RootPageLink    string
+	CountryPageLink string
+	RegionPageLink  string
+	RiverPageLink   string
+}
+type RiverPageDto struct {
+	Id          int
+
+	River           dao.River
+	Region          dao.Region
+	Country         dao.Country
+
+	Links           []SpotLink
+	MainImg         dao.Img
+	Reports         []VoyageReportLink
+
+	RootPageLink    string
+	CountryPageLink string
+	RegionPageLink  string
+}
+
+type RegionPageDto struct {
+	Id          int
+
+	Region          dao.Region
+	Country         dao.Country
+
+	Links           []LinkOnPage
+
+	RootPageLink    string
+	CountryPageLink string
+}
+
+type CountryPageDto struct {
+	Id       int
+
+	Country      dao.Country
+
+	RegionLinks  []LinkOnPage
+	RiverLinks   []LinkOnPage
+
+	RootPageLink string
+}
+
+type RootPageDto struct {
+	Id       int
+	Links []CountryLink
+}
+
 type CatalogConnector interface {
 	io.Closer
 	PassportEntriesSince(key string) ([]dao.WWPassport, error)
 	GetImages(key string) ([]dao.Img, error)
 
 	CreateEmptyPageIfNotExistsAndReturnId(parent int, pageId int, title string) (int, string, bool, error)
-	WriteSpotPage(pageId int, spot dao.WhiteWaterPointFull, river dao.River, region dao.Region, country dao.Country, mainImg dao.Img, imgs []dao.Img, rootPageLink, countryPageLink, regionPageLink, riverPageLink string) error
-	WriteRiverPage(pageId int, river dao.River, region dao.Region, country dao.Country, links []SpotLink, rootPageLink, countryPageLink, regionPageLink string, mainImg dao.Img, reports []VoyageReportLink) error
-	WriteRegionPage(pageId int, region dao.Region, country dao.Country, links []LinkOnPage, rootPageLink, countryPageLink string) error
-	WriteCountryPage(pageId int, country dao.Country, regionLinks, riverLinks []LinkOnPage, rootPageLink string) error
-	WriteRootPage(pageId int, countryLinks []CountryLink) error
+	WriteSpotPage(SpotPageDto) error
+	WriteRiverPage(RiverPageDto) error
+	WriteRegionPage(RegionPageDto) error
+	WriteCountryPage(CountryPageDto) error
+	WriteRootPage(RootPageDto) error
 }

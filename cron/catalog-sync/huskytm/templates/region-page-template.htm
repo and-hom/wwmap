@@ -1,0 +1,8 @@
+<a href="{{.RootPage}}" style="font-size:80%;">Каталог водных препятствий</a><br/>&nbsp;&nbsp;<a
+        href="{{.CountryPage}}" style="font-size:80%;">{{.Country.Title}}</a>
+
+<ul style="list-style-type:none;">
+    {{range .Links}}
+    <li><a href="{{.Url}}">{{.Title}}</a></li>
+    {{end}}
+</ul>

@@ -7,17 +7,20 @@ pre-build:
 
 build-notifier:
 	GOPATH="$(HOME)/.go" go install github.com/go-bindata/go-bindata
-	cd notifier; $(HOME)/.go/bin/go-bindata email-template; GOPATH="$(HOME)/.go" go build
+	cd notifier && $(HOME)/.go/bin/go-bindata email-template && GOPATH="$(HOME)/.go" go build
 
+TEMPLATE_FILES=spot-page-template.htm river-page-template.htm region-page-template.htm country-page-template.htm root-page-template.htm
 build-catalog-sync:
-	TEMPLATE_FILES='email-template spot-page-template.htm river-page-template.htm region-page-template.htm country-page-template.htm root-page-template.htm'
-	cd catalog-sync; \
-	mkdir -p bindata; \
-	$(HOME)/.go/bin/go-bindata -pkg bindata -o bindata/bindata.go $(TEMPLATE_FILES); \
+	cd catalog-sync && \
+	mkdir -p bindata && \
+	$(HOME)/.go/bin/go-bindata -pkg bindata -o bindata/bindata.go email-template && \
+	cd huskytm/templates && \
+	$(HOME)/.go/bin/go-bindata -pkg templates $(TEMPLATE_FILES) && \
+	cd ../../ && \
 	GOPATH="$(HOME)/.go" go build
 
 build-db-clean:
-	cd db-clean; GOPATH="$(HOME)/.go" go build
+	cd db-clean && GOPATH="$(HOME)/.go" go build
 
 build: pre-build build-notifier build-catalog-sync build-db-clean
 

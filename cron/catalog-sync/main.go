@@ -64,13 +64,14 @@ func main() {
 	app.DoWriteCatalog()
 }
 
-func (this *App) getCachedCatalogConnector() common.CatalogConnector {
+func (this *App) getCachedCatalogConnector() (common.CatalogConnector, error) {
 	if this.catalogConnector == nil {
 		catalogConnector, err := huskytm.GetCatalogConnector(this.Configuration.Login, this.Configuration.Password, this.Configuration.MinDeltaBetweenRequests)
 		if err != nil {
-			this.Fatalf(err, "Can not connect to catalog")
+			log.Errorf("Can not connect to catalog: %v", err)
+			return nil, err
 		}
 		this.catalogConnector = catalogConnector
 	}
-	return this.catalogConnector
+	return this.catalogConnector, nil
 }
