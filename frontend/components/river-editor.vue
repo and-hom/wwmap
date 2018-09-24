@@ -42,15 +42,16 @@
                 <div  style="padding-left:40px;font-size:70%;color:grey">Нужно, когда мы не хотим выставлять наполовину размеченную и описанную реку.
                 Если добавляешь часть порогов, а остальные планируешь на потом, не делай реку видимой на карте.</div>
             </dd>
-            <dt v-if="river.region.id>0 && !river.region.fake">Регион:</dt>
-            <dd v-if="river.region.id>0 && !river.region.fake">
+            <dt v-if="river.region.id>0">Регион:</dt>
+            <dd v-if="river.region.id>0">
                 <div v-if="editMode">
                     <select v-model="river.region.id">
                         <option v-for="region in regions()" v-bind:value="region.id">{{region.title}}</option>
                     </select>
                 </div>
                 <div v-else style="padding-left:40px;">
-                    {{river.region.title}}
+                    <div v-if="river.region.fake">{{country.title}}</div>
+                    <div v-else>{{river.region.title}}</div>
                 </div>
             </dd>
             <dt>Описание:</dt>
@@ -162,12 +163,29 @@
                 save:function() {
                     updated = saveRiver(this.river)
                     if (updated) {
+                        var prev = this.river
                         this.river = updated
                         this.editMode=false
                         this.hideError()
-                        setActiveEntity(this.country.id, nvlReturningId(this.region), updated.id)
-                        setActiveEntityState(this.country.id, nvlReturningId(this.region), updated.id)
-                        this.refreshTree()
+                        var new_region_id = nvlReturningId(updated.region)
+                        setActiveEntity(updated.region.country_id, new_region_id, updated.id)
+                        setActiveEntityState(updated.region.country_id, new_region_id, updated.id)
+                        showCountrySubentities(updated.region.country_id)
+
+                        if (new_region_id>0 && !updated.region.fake) {
+                            showRegionTree(updated.region.country_id, new_region_id)
+                        }
+                        if (this.prevCountryId>0 && this.prevRegionId>0 && !this.prevRegionFake && this.prevRegionId!=new_region_id) {
+                            showRegionTree(this.prevCountryId, this.prevRegionId)
+                        } else if(this.prevCountryId>0 && this.prevCountryId!=updated.region.country_id) {
+                            showCountrySubentities(this.prevCountryId)
+                        }
+
+                        this.prevRegionId = nvlReturningId(updated.region)
+                        if (updated.region) {
+                            this.prevRegionFake = updated.region.fake
+                            this.prevCountryId = updated.region.country_id
+                        }
                     } else {
                         this.showError("Не удалось сохранить реку. Возможно, недостаточно прав")
                     }
@@ -186,7 +204,11 @@
                     } else {
                         setActiveEntity(this.country.id, nvlReturningId(this.region))
                         setActiveEntityState(this.country.id, nvlReturningId(this.region))
-                        this.refreshTree()
+                        if (this.river.region.fake) {
+                            showCountrySubentities(this.country.id)
+                        } else {
+                            showRegionTree(this.country.id, nvlReturningId(this.region))
+                        }
                         app.rivereditorstate.visible = false;
                     }
                 },
@@ -237,13 +259,9 @@
                 parseAliases:function(strVal) {
                     return strVal.split('\n').map(function(x) {return x.trim()}).filter(function(x){return x.length>0})
                 },
-                refreshTree: function() {
-                    if (this.river.region.fake) {
-                        showCountrySubentities(this.country.id)
-                    } else {
-                        showRegionTree(this.country.id, nvlReturningId(this.region))
-                    }
-                },
+                prevRegionId: nvlReturningId(this.river.region),
+                prevRegionFake: this.river.region.fake,
+                prevCountryId: this.river.region.country_id,
             }
         }
     }
