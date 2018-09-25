@@ -168,59 +168,6 @@ func (this *HuskytmCatalogConnector) GetImages(key string) ([]dao.Img, error) {
 	return []dao.Img{}, nil
 }
 
-func (this *HuskytmCatalogConnector) CreatePage(title string, parent int) (int, error) {
-	this.rateLimit.WaitIfNecessary()
-	p, r, b, err := this.client.Pages().Create(&wp.Page{
-		Title:        wp.Title{Raw:title},
-		Author:        this.me,
-		Parent:        parent,
-		Status:        "publish",
-	})
-	if err != nil {
-		log.Errorf("Connection failed. Code: %d Body: %s", r.StatusCode, string(b))
-		return 0, err
-	}
-	return p.ID, nil
-}
-
-func (this *HuskytmCatalogConnector) GetId(title string, parent int) (int, error) {
-	cacheId := fmt.Sprintf("%d-%s", parent, title)
-	idFromCache, isInCache := this.pageIdsCache[cacheId]
-	if isInCache {
-		log.Infof("Get id for %s from cache: %d", title, idFromCache)
-		return idFromCache, nil
-	} else {
-		log.Infof("Do real request: get id for %s child of %d", title, parent)
-	}
-
-	params := emptyMap()
-	if parent > 0 {
-		params["parent"] = parent
-	}
-	found, err := paginate(func(p interface{}) ([]interface{}, *http.Response, []byte, error) {
-		this.rateLimit.WaitIfNecessary()
-		f, r, b, e := this.client.Pages().List(params)
-		res := make([]interface{}, len(f))
-		for i := 0; i < len(f); i++ {
-			res[i] = f[i]
-		}
-		return res, r, b, e
-	}, params)
-
-	if err != nil {
-		return 0, err
-	}
-	for _, p := range found {
-		//log.Debugf("Search by name for %s: %s", title, p.(wp.Page).Title.Rendered)
-		if p.(wp.Page).Title.Rendered == title {
-			id := p.(wp.Page).ID
-			this.pageIdsCache[cacheId] = id
-			return id, nil
-		}
-	}
-	return 0, PageNotFoundError{fmt.Sprintf("Can not find page with name \"%s\" as child of %d", title, parent)}
-}
-
 type PageNotFoundError struct {
 	msg string
 }
