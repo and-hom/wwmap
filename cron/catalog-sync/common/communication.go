@@ -14,6 +14,32 @@ type ReportProvider interface {
 	Images(reportId string) ([]dao.Img, error);
 }
 
+type WithCatalogConnector struct {
+	F      func() (CatalogConnector, error)
+	cached CatalogConnector
+}
+
+func (this WithCatalogConnector) Do(payload func(CatalogConnector) error) error {
+	var connector CatalogConnector
+	var err error
+
+	if this.cached == nil {
+		connector, err = this.F()
+	} else {
+		connector = this.cached
+	}
+	if err != nil {
+		if connector != nil {
+			return fmt.Errorf("Can not connect to source %s: %v", connector.SourceId(), err)
+		} else {
+			return fmt.Errorf("Can not connect to source unknown (nil provider): %v", err)
+		}
+	}
+	defer connector.Close()
+
+	return payload(connector)
+}
+
 type WithReportProvider func() (ReportProvider, error)
 
 func (this WithReportProvider) Do(payload func(ReportProvider) error) error {
@@ -51,14 +77,14 @@ type VoyageReportLink struct {
 }
 
 type SpotPageDto struct {
-	Id          int
+	Id              int
 
 	Spot            dao.WhiteWaterPointFull
 	River           dao.River
 	Region          dao.Region
 	Country         dao.Country
 
-	MainImg         dao.Img
+	MainImage       dao.Img
 	Imgs            []dao.Img
 
 	RootPageLink    string
@@ -67,14 +93,14 @@ type SpotPageDto struct {
 	RiverPageLink   string
 }
 type RiverPageDto struct {
-	Id          int
+	Id              int
 
 	River           dao.River
 	Region          dao.Region
 	Country         dao.Country
 
 	Links           []SpotLink
-	MainImg         dao.Img
+	MainImage       dao.Img
 	Reports         []VoyageReportLink
 
 	RootPageLink    string
@@ -83,7 +109,7 @@ type RiverPageDto struct {
 }
 
 type RegionPageDto struct {
-	Id          int
+	Id              int
 
 	Region          dao.Region
 	Country         dao.Country
@@ -95,7 +121,7 @@ type RegionPageDto struct {
 }
 
 type CountryPageDto struct {
-	Id       int
+	Id           int
 
 	Country      dao.Country
 
@@ -106,12 +132,13 @@ type CountryPageDto struct {
 }
 
 type RootPageDto struct {
-	Id       int
+	Id    int
 	Links []CountryLink
 }
 
 type CatalogConnector interface {
 	io.Closer
+	SourceId() string
 	PassportEntriesSince(key string) ([]dao.WWPassport, error)
 	GetImages(key string) ([]dao.Img, error)
 

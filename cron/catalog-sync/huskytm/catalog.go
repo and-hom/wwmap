@@ -79,6 +79,10 @@ type HuskytmCatalogConnector struct {
 	rateLimit           util.RateLimit
 }
 
+func (this *HuskytmCatalogConnector) SourceId() string {
+	return SOURCE
+}
+
 func (this *HuskytmCatalogConnector) Close() error {
 	return nil
 }

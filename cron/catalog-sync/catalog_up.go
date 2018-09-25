@@ -222,7 +222,7 @@ rootPageLink, countryPageLink, regionPageLink string, parentPageId int) (string,
 		RootPageLink:rootPageLink,
 		CountryPageLink:countryPageLink,
 		RegionPageLink:regionPageLink,
-		MainImg:noImage(0),
+		MainImage:noImage(0),
 		Reports:reports,
 	})
 	if err != nil {
@@ -320,7 +320,7 @@ func (this *App) writeSpots(parentPageId int, river dao.River, region dao.Region
 			River:river,
 			Region:region,
 			Country:country,
-			MainImg:mainImg,
+			MainImage:mainImg,
 			Imgs:imgs,
 
 			RootPageLink:rootPageLink,
