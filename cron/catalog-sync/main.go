@@ -7,6 +7,7 @@ import (
 	"github.com/and-hom/wwmap/lib/dao"
 	"github.com/and-hom/wwmap/cron/catalog-sync/common"
 	"github.com/and-hom/wwmap/cron/catalog-sync/tlib"
+	"github.com/and-hom/wwmap/cron/catalog-sync/pdf"
 )
 
 type App struct {
@@ -27,6 +28,7 @@ type App struct {
 	stat              *ImportExportReport
 	catalogConnector  common.CatalogConnector
 	reportProviders   []common.WithReportProvider
+	catalogConnectors []common.WithCatalogConnector
 }
 
 func CreateApp() App {
@@ -51,6 +53,12 @@ func CreateApp() App {
 			}),
 			common.WithReportProvider(tlib.GetReportProvider),
 		},
+		catalogConnectors: []common.WithCatalogConnector{
+			//{F:func() (common.CatalogConnector, error) {
+			//	return huskytm.GetCatalogConnector(configuration.Sync.Login, configuration.Sync.Password, configuration.Sync.MinDeltaBetweenRequests)
+			//}},
+			{F:pdf.GetCatalogConnector},
+		},
 		ImgUrlBase:configuration.ImgStorage.Full.UrlBase,
 		ImgUrlPreviewBase:configuration.ImgStorage.Preview.UrlBase,
 		ResourceBase:configuration.Content.ResourceBase,
@@ -60,18 +68,6 @@ func CreateApp() App {
 func main() {
 	log.Infof("Starting wwmap")
 	app := CreateApp()
-	app.DoSyncReports()
+	//app.DoSyncReports()
 	app.DoWriteCatalog()
-}
-
-func (this *App) getCachedCatalogConnector() (common.CatalogConnector, error) {
-	if this.catalogConnector == nil {
-		catalogConnector, err := huskytm.GetCatalogConnector(this.Configuration.Login, this.Configuration.Password, this.Configuration.MinDeltaBetweenRequests)
-		if err != nil {
-			log.Errorf("Can not connect to catalog: %v", err)
-			return nil, err
-		}
-		this.catalogConnector = catalogConnector
-	}
-	return this.catalogConnector, nil
 }
