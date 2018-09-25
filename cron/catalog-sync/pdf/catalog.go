@@ -8,6 +8,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/lib/blob"
 	"strings"
+	"github.com/SebastiaanKlippert/go-wkhtmltopdf"
 )
 
 const SOURCE = "pdf"
@@ -17,6 +18,7 @@ func GetCatalogConnector(storage blob.BlobStorage) (common.CatalogConnector, err
 	if err != nil {
 		return nil, err
 	}
+
 	return &PdfCatalogConnector{
 		templates:t,
 		storage:storage,
@@ -25,9 +27,9 @@ func GetCatalogConnector(storage blob.BlobStorage) (common.CatalogConnector, err
 }
 
 type PdfCatalogConnector struct {
-	storage   blob.BlobStorage
-	templates common.Templates
-	spotBuf   []common.SpotPageDto
+	storage      blob.BlobStorage
+	templates    common.Templates
+	spotBuf      []common.SpotPageDto
 }
 
 func (this *PdfCatalogConnector) SourceId() string {
@@ -69,7 +71,27 @@ func (this *PdfCatalogConnector) WriteRootPage(page common.RootPageDto) error {
 
 func (this *PdfCatalogConnector) writePage(pageId int, body string, title string) error {
 	log.Infof("Write page %d for %s", pageId, title)
-	err := this.storage.Store(fmt.Sprintf("%d", pageId), strings.NewReader(body))
+	pdfGenerator, err := wkhtmltopdf.NewPDFGenerator()
+	if err != nil {
+		log.Error("Can not create PDF generator")
+		return err
+	}
+	pdfGenerator.Dpi.Set(300)
+	pdfGenerator.Orientation.Set(wkhtmltopdf.OrientationPortrait)
+
+
+	pr := wkhtmltopdf.NewPageReader(strings.NewReader(body))
+	pdfGenerator.AddPage(pr)
+
+	err = pdfGenerator.Create()
+	if err != nil {
+		log.Errorf("Can not render pdf", err)
+		return err
+	}
+
+	pdfGenerator.WriteFile("/tmp/1.pdf")
+
+	err = this.storage.Store(fmt.Sprintf("%d", pageId), pdfGenerator.Buffer())
 	if err != nil {
 		log.Errorf("Can not write file", err)
 		return err
