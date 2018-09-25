@@ -6,6 +6,7 @@
     * **notifier** - sends reports to email
     * **catalog-sync** - synchronize database with remote reports and catalogs
     * **backup** - performs backups to yandex disk
+    * **spot-sort** - spot ordering tool. Calculates order index for each spot relying on the rivar track(s)
 * **data** - utilities for OSM xml parsing
 * **db** - database migrations package
 * **frontend** - map frontend: html, css, js, images
