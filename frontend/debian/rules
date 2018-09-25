@@ -4,36 +4,31 @@
 
 override_dh_auto_install:
 	install -d $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/img/report_sources
+	install -d $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/img/flags
 	install -d $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/js
+	install -d $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/js-editor
 	install -d $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/css
+	install -d $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/components
+	install -d $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/map-components
 
 	install -D -m 0644 *.htm $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/
-	install -D -m 0644 img/report_sources/*.png $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/img/report_sources
 	install -D -m 0644 img/*.png $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/img/
-	install -D -m 0644 css/* $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/css/
+	install -D -m 0644 img/report_sources/*.png $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/img/report_sources
+	install -D -m 0644 img/flags/*.png $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/img/flags/
 	install -D -m 0644 js/* $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/js/
+	install -D -m 0644 js-editor/* $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/js-editor/
+	install -D -m 0644 css/* $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/css/
+	install -D -m 0644 ../frontend/components/*.vue $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/components/
+	install -D -m 0644 ../frontend/map-components/*.htm $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/map-components/
 
-	install -D -m 0644 nginx.conf $$(pwd)/debian/wwmap-frontend/etc/nginx/sites-available/wwmap-frontend
+	install -D -m 0644 ../frontend/favicon.ico $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/
+	install -D -m 0644 ../INTEGRATION_ru.md $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/
 
 	sed -i 's#apiBase = ".*"#apiBase = "https://wwmap.ru/api"#g' \
 	    $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/js/config.js
 
-	# install editor
-	install -d $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend-2/img/report_sources
-	install -d $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend-2/js
-	install -d $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend-2/css
-	install -d $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend-2/components
+	sed -i 's#backendApiBase = ".*"#backendApiBase = "https://wwmap.ru/editor-api"#g' \
+	    $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/js-editor/api.js
 
-	install -D -m 0644 ../frontend-2/*.htm $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend-2/
-	install -D -m 0644 ../frontend-2/css/* $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend-2/css/
-	install -D -m 0644 ../frontend-2/js/* $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend-2/js/
-	install -D -m 0644 ../frontend-2/img/*.png $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend-2/img/
-	install -D -m 0644 img/report_sources/*.png $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend-2/img/report_sources/
-	install -D -m 0644 ../frontend-2/components/*.vue $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend-2/components/
-	install -D -m 0644 ../frontend-2/favicon.ico $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend-2/
-	install -D -m 0644 ../INTEGRATION_ru.md $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend-2/
 
 	install -D -m 0644 nginx.conf $$(pwd)/debian/wwmap-frontend/etc/nginx/sites-available/wwmap-frontend
-
-	sed -i 's#backendApiBase = ".*"#backendApiBase = "https://wwmap.ru/editor-api"#g' \
-	    $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend-2/js/api.js

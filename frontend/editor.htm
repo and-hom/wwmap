@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Редактор</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon" />
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/editor.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link type="text/css" rel="stylesheet" href="//unpkg.com/bootstrap/dist/css/bootstrap.min.css"/>
+    <link type="text/css" rel="stylesheet" href="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.css"/>
+
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script type="text/javascript" src="js-editor/bootstrap.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/vue-select@2.4.0/dist/vue-select.js"></script>
+    <script type="text/javascript" src="//unpkg.com/babel-polyfill@latest/dist/polyfill.min.js"></script>
+    <script type="text/javascript" src="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.js"></script>
+
+    <!--gallery-->
+    <link rel="stylesheet" type="text/css" href="https://unpkg.com/blueimp-gallery@2.27.0/css/blueimp-gallery.min.css">
+    <script type="text/javascript" src="https://unpkg.com/blueimp-gallery@2.27.0/js/blueimp-helper.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/blueimp-gallery@2.27.0/js/blueimp-gallery.js"></script>
+    <script type="text/javascript"
+            src="https://unpkg.com/blueimp-gallery@2.27.0/js/blueimp-gallery-fullscreen.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/vue-gallery@1.4.0/dist/js/vue-gallery.min.js"></script>
+    <!--end of gallery-->
+    <script src="https://unpkg.com/vue-upload-component"></script>
+    <script src="https://unpkg.com/http-vue-loader"></script>
+
+    <script type="text/javascript" src="js-editor/api.js"></script>
+    <script type="text/javascript" src="js-editor/editor.js"></script>
+    <script type="text/javascript" src="js-editor/auth.js"></script>
+    <script type="text/javascript" src="https://api-maps.yandex.ru/2.1/?lang=ru_RU"></script>
+    <script type="text/javascript" src="js-editor/map-common.js"></script>
+</head>
+<body>
+
+<div id="vue-app">
+    <page link="editor.htm">
+        <div class="container-fluid" style="margin-top: 20px;" v-if="userInfo!=null">
+            <div class="row">
+                <div class="col-3" id="left-menu">
+                    <ul>
+                        <country v-bind:key="country.id" v-bind:country="country" v-for="country in countries"/>
+                    </ul>
+                </div>
+                <div id="editor-pane" class="col-9" style="bgcolor:red;">
+                    <div>
+                        <country-editor v-if="countryeditorstate.visible"
+                                        v-bind:country="countryeditorstate.country"/>
+                    </div>
+                    <div>
+                        <region-editor v-if="regioneditorstate.visible" v-bind:region="regioneditorstate.region"
+                                        v-bind:country="regioneditorstate.country"/>
+                    </div>
+                    <div>
+                        <river-editor v-if="rivereditorstate.visible" v-bind:river="rivereditorstate.river"
+                                      v-bind:reports="rivereditorstate.reports"
+                                      v-bind:country="rivereditorstate.country" v-bind:region="rivereditorstate.region"/>
+                    </div>
+                    <div>
+                        <spot-editor v-if="spoteditorstate.visible" v-bind:initial-spot="spoteditorstate.spot"
+                                     v-bind:country="spoteditorstate.country" v-bind:region="spoteditorstate.region"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </page>
+</div>
+
+<script type="text/javascript">
+    Vue.component('v-select', VueSelect.VueSelect)
+    Vue.component('gallery', VueGallery)
+    Vue.component('file-upload', VueUploadComponent)
+
+    Vue.component('ask', httpVueLoader('components/ask.vue'))
+    Vue.component('auth', httpVueLoader('components/auth.vue'))
+    Vue.component('ya-map-location', httpVueLoader('components/ya-map-location.vue'))
+    Vue.component('img-upload', httpVueLoader('components/img-upload.vue'))
+    Vue.component('category', httpVueLoader('components/category.vue'))
+
+    Vue.component('river', httpVueLoader('components/river.vue'))
+    Vue.component('region', httpVueLoader('components/region.vue'))
+    Vue.component('country', httpVueLoader('components/country.vue'))
+
+    Vue.component('country-editor', httpVueLoader('components/country-editor.vue'))
+    Vue.component('region-editor', httpVueLoader('components/region-editor.vue'))
+    Vue.component('river-editor', httpVueLoader('components/river-editor.vue'))
+    Vue.component('spot-editor', httpVueLoader('components/spot-editor.vue'))
+
+    Vue.component('page', httpVueLoader('components/page.vue'))
+
+
+    function getById(arr,id) {
+        var filtered = arr.filter(x => x.id==id)
+        if (filtered.length>0) {
+            return filtered[0]
+        }
+        return null
+    }
+
+    function showCountrySubentities(id) {
+        Vue.set(app.treePath, id, {
+            rivers: getRiversByCountry(id),
+            regions: getRegions(id),
+        })
+    }
+
+    function showRegionTree(countryId, id) {
+        var region = getById(app.treePath[countryId].regions,id)
+        Vue.set(region, "rivers", getRiversByRegion(countryId, id))
+    }
+
+    function showRiverTree(countryId, regionId, id) {
+        var river
+        if (regionId && regionId>0) {
+            var region = getById(app.treePath[countryId].regions, regionId)
+            river = getById(region.rivers, id)
+        } else {
+            river = getById(app.treePath[countryId].rivers, id)
+        }
+        Vue.set(river, "spots", getSpots(id))
+    }
+
+    function setActiveEntityState(countryId, regionId, riverId, spotId) {
+        app.selectedSpot = spotId
+        app.selectedRiver = riverId
+        app.selectedRegion = regionId
+        app.selectedCountry = countryId
+    }
+
+    function newRiver(country, region) {
+        app.spoteditorstate.visible = false
+        app.rivereditorstate.visible = false;
+        app.regioneditorstate.visible = false;
+        app.countryeditorstate.visible = false;
+
+        app.rivereditorstate.visible = true;
+        app.rivereditorstate.editMode = true;
+        app.rivereditorstate.river = {
+            id: 0,
+            region: region,
+            aliases: [],
+        }
+        app.rivereditorstate.country = country
+        app.rivereditorstate.region = region
+    }
+
+    var app = new Vue({
+        el: '#vue-app',
+        data: {
+          countries: getCountries(),
+          regions: getAllRegions(),
+          "spoteditorstate": {
+            "visible": false,
+            "editMode": false,
+          },
+          "rivereditorstate": {
+            "visible": false,
+            "editMode": false,
+          },
+          "regioneditorstate": {
+            "visible": false,
+            "editMode": false,
+          },
+          "countryeditorstate": {
+            "visible": false,
+            "editMode": false,
+          },
+          userInfo: getAuthorizedUserInfoOrNull(),
+          treePath: {},
+          selectedCountry: getActiveId(COUNTRY_ACTIVE_ENTITY_LEVEL),
+          selectedRegion: getActiveId(REGION_ACTIVE_ENTITY_LEVEL),
+          selectedRiver: getActiveId(RIVER_ACTIVE_ENTITY_LEVEL),
+          selectedSpot: getActiveId(SPOT_ACTIVE_ENTITY_LEVEL),
+        }
+    })
+
+</script>
+
+</body>
+</html>

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-TABLES="schema_migrations user report country region river white_water_rapid voyage_report image"
+TABLES=`cat /usr/share/wwmap/backup/tables.list`
 
 function config() {
     python -c 'import yaml; print(yaml.load(open("/etc/wwmap/config.yaml","r"))'$1')'
@@ -26,9 +26,9 @@ do
   ls -tr1 $DIR/wwmap.*.gz | head -n 1 | xargs rm -f
   BACKUPS=`expr $BACKUPS - 1`
 done
-FILE=$DIR/wwmap.$NOW-$(date +"%T").sql.gz
+FILE=$DIR/wwmap.$NOW-$(date +"%T").gz
 
-pg_dump $CONN_STR `for t in $TABLES; do echo -n ' -t '$t; done` | gzip -c > $FILE
+pg_dump -Fc --data-only $CONN_STR `for t in $TABLES; do echo -n ' -t '$t; done` | gzip -c > $FILE
 curl -f --user $YA_EMAIL:$YA_PASSWORD -T "{$FILE}" https://webdav.yandex.ru/backup/
 
 exit 0

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/lib/pq"
 	"github.com/and-hom/wwmap/lib/dao/queries"
+	"reflect"
 )
 
 func NewRiverPostgresDao(postgresStorage PostgresStorage) RiverDao {
@@ -19,11 +20,14 @@ func NewRiverPostgresDao(postgresStorage PostgresStorage) RiverDao {
 		insideBoundsQuery: queries.SqlQuery("river", "inside-bounds"),
 		byIdQuery:queries.SqlQuery("river", "by-id"),
 		listByCountryQuery:queries.SqlQuery("river", "by-country"),
+		listByCountryFullQuery:queries.SqlQuery("river", "by-country-full"),
 		listByRegionQuery:queries.SqlQuery("river", "by-region"),
+		listByRegionFullQuery:queries.SqlQuery("river", "by-region-full"),
 		listByFirstLettersQuery:queries.SqlQuery("river", "by-first-letters"),
 		insertQuery:queries.SqlQuery("river", "insert"),
 		updateQuery:queries.SqlQuery("river", "update"),
 		deleteQuery:queries.SqlQuery("river", "delete"),
+		setVisibleQuery:queries.SqlQuery("river", "set-visible"),
 	}
 }
 
@@ -35,11 +39,14 @@ type riverStorage struct {
 	insideBoundsQuery       string
 	byIdQuery               string
 	listByCountryQuery      string
+	listByCountryFullQuery  string
 	listByRegionQuery       string
+	listByRegionFullQuery   string
 	listByFirstLettersQuery string
 	insertQuery             string
 	updateQuery             string
 	deleteQuery             string
+	setVisibleQuery         string
 }
 
 func (this riverStorage) FindTitles(titles []string) ([]RiverTitle, error) {
@@ -54,53 +61,71 @@ func (this riverStorage) NearestRivers(point geo.Point, limit int) ([]RiverTitle
 	return this.listRiverTitles(this.nearestQuery, string(pointBytes), limit)
 }
 
-func (this riverStorage) ListRiversWithBounds(bbox geo.Bbox, limit int) ([]RiverTitle, error) {
-	return this.listRiverTitles(this.insideBoundsQuery, bbox.Y1, bbox.X1, bbox.Y2, bbox.X2, limit)
+func (this riverStorage) ListRiversWithBounds(bbox geo.Bbox, limit int, showUnpublished bool) ([]RiverTitle, error) {
+	return this.listRiverTitles(this.insideBoundsQuery, bbox.Y1, bbox.X1, bbox.Y2, bbox.X2, limit, showUnpublished)
 }
 
-func (this riverStorage) Find(id int64) (RiverTitle, error) {
-	found, err := this.listRiverTitles(this.byIdQuery, id)
+func (this riverStorage) Find(id int64) (River, error) {
+	r, found, err := this.doFindAndReturn(this.byIdQuery, riverMapperFull, id)
 	if err != nil {
-		return RiverTitle{}, err
+		return River{}, err
 	}
-	if len(found) == 0 {
-		return RiverTitle{}, fmt.Errorf("River with id %d not found", id)
+	if !found {
+		return River{}, fmt.Errorf("River with id %d not found", id)
 	}
-	return found[0], nil
+	return r.(River), nil
 }
 
 func (this riverStorage) ListByCountry(countryId int64) ([]RiverTitle, error) {
 	return this.listRiverTitles(this.listByCountryQuery, countryId)
 }
 
+func (this riverStorage) ListByCountryFull(countryId int64) ([]River, error) {
+	found, err := this.doFindList(this.listByCountryFullQuery, riverMapperFull, countryId)
+	if err != nil {
+		return []River{}, err
+	}
+	return found.([]River), err
+}
+
 func (this riverStorage) ListByRegion(regionId int64) ([]RiverTitle, error) {
 	return this.listRiverTitles(this.listByRegionQuery, regionId)
+}
+
+func (this riverStorage) ListByRegionFull(regionId int64) ([]River, error) {
+	found, err := this.doFindList(this.listByRegionFullQuery, riverMapperFull, regionId)
+	if err != nil {
+		return []River{}, err
+	}
+	return found.([]River), err
 }
 
 func (this riverStorage) ListByFirstLetters(query string, limit int) ([]RiverTitle, error) {
 	return this.listRiverTitles(this.listByFirstLettersQuery, query, limit)
 }
 
-func (this riverStorage) Insert(river RiverTitle) (int64, error) {
+func (this riverStorage) Insert(river River) (int64, error) {
 	aliasesB, err := json.Marshal(river.Aliases)
 	if err != nil {
 		return 0, err
 	}
-	return this.insertReturningId(this.insertQuery, river.RegionId, river.Title, string(aliasesB))
+	return this.insertReturningId(this.insertQuery, river.RegionId, river.Title, string(aliasesB), river.Description)
 }
 
-func (this riverStorage) Save(rivers ...RiverTitle) error {
+func (this riverStorage) Save(rivers ...River) error {
 	vars := make([]interface{}, len(rivers))
 	for i, p := range rivers {
 		vars[i] = p
 	}
 	return this.performUpdates(this.updateQuery, func(entity interface{}) ([]interface{}, error) {
-		_river := entity.(RiverTitle)
+		_river := entity.(River)
 		aliasesB, err := json.Marshal(_river.Aliases)
 		if err != nil {
 			return []interface{}{}, err
 		}
-		return []interface{}{_river.Id, _river.RegionId, _river.Title, string(aliasesB)}, nil
+		log.Info(_river.Description)
+		log.Info(reflect.TypeOf(_river.Description))
+		return []interface{}{_river.Id, _river.RegionId, _river.Title, string(aliasesB), _river.Description}, nil
 	}, vars...)
 }
 
@@ -111,7 +136,8 @@ func (this riverStorage) listRiverTitles(query string, queryParams ...interface{
 			riverTitle := RiverTitle{}
 			boundsStr := sql.NullString{}
 			aliases := sql.NullString{}
-			err := rows.Scan(&riverTitle.Id, &riverTitle.RegionId, &riverTitle.Title, &boundsStr, &aliases)
+			props := ""
+			err := rows.Scan(&riverTitle.Id, &riverTitle.RegionId, &riverTitle.Title, &boundsStr, &aliases, &props)
 			if err != nil {
 				return RiverTitle{}, err
 			}
@@ -139,6 +165,10 @@ func (this riverStorage) listRiverTitles(query string, queryParams ...interface{
 			if aliases.Valid {
 				err = json.Unmarshal([]byte(aliases.String), &riverTitle.Aliases)
 			}
+			if err != nil {
+				return RiverTitle{}, err
+			}
+			err = json.Unmarshal([]byte(props), &riverTitle.Props)
 			return riverTitle, err
 		}, queryParams...)
 	if (err != nil ) {
@@ -176,4 +206,33 @@ func (this riverStorage) Remove(id int64, tx interface{}) error {
 
 func (this riverStorage) Props() PropertyManager {
 	return this.PropsManager
+}
+
+func (this riverStorage) SetVisible(id int64, visible bool) (error) {
+	fmt.Println("visible", visible)
+	return this.performUpdates(this.setVisibleQuery, arrayMapper, []interface{}{id, visible})
+}
+
+func riverMapperFull(rows *sql.Rows) (River, error) {
+	river := River{}
+	boundsStr := sql.NullString{}
+	aliases := sql.NullString{}
+	props := ""
+	spotCounters := ""
+	err := rows.Scan(&river.Id, &river.RegionId, &river.Title, &boundsStr, &aliases, &river.Description, &river.Visible, &props, &spotCounters)
+	if err != nil {
+		return river, err
+	}
+	if aliases.Valid {
+		err = json.Unmarshal([]byte(aliases.String), &river.Aliases)
+	}
+	if err != nil {
+		return river, err
+	}
+	err = json.Unmarshal([]byte(props), &river.Props)
+	if err != nil {
+		return river, err
+	}
+	err = json.Unmarshal([]byte(spotCounters), &river.SpotCounters)
+	return river, err
 }

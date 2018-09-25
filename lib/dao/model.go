@@ -21,12 +21,25 @@ type IdTitle struct {
 	Title string `json:"title"`
 }
 
+type SpotCounters struct {
+	Ordered int `json:"ordered"`
+	Total   int `json:"total"`
+}
+
 type RiverTitle struct {
 	IdTitle
 	OsmId    int64 `json:"osm_id"`
 	RegionId int64 `json:"region_id"`
 	Bounds   Bbox `json:"bounds"`
 	Aliases  []string `json:"aliases"`
+	Props    map[string]interface{} `json:"props"`
+}
+
+type River struct {
+	RiverTitle
+	Description  string `json:"description"`
+	Visible      bool `json:"visible"`
+	SpotCounters SpotCounters `json:"spot_counters"`
 }
 
 type WaterWay struct {
@@ -213,16 +226,19 @@ type User struct {
 type Country struct {
 	Id    int64 `json:"id,omitempty"`
 	Title string `json:"title"`
+	Code  string `json:"code"`
 }
 
 type Region struct {
 	Id        int64 `json:"id,omitempty"`
 	CountryId int64 `json:"country_id,omitempty"`
 	Title     string `json:"title"`
+	Fake      bool `json:"fake,omitempty"`
 }
 
 type RegionWithCountry struct {
 	Id      int64 `json:"id,omitempty"`
 	Country Country `json:"country,omitempty"`
 	Title   string `json:"title"`
+	Fake    bool `json:"fake,omitempty"`
 }

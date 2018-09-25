@@ -66,7 +66,7 @@ func (this *RiverHandler) GetVisibleRivers(w http.ResponseWriter, req *http.Requ
 		return
 	}
 
-	rivers, err := this.RiverDao.ListRiversWithBounds(bbox, 30)
+	rivers, err := this.RiverDao.ListRiversWithBounds(bbox, 30, false)
 	if err != nil {
 		OnError500(w, err, "Can not select rivers")
 		return

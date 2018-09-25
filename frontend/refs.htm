@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Сайты</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon" />
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script type="text/javascript" src="js-editor/bootstrap.min.js"></script>
+    <script type="text/javascript" src="js-editor/api.js"></script>
+    <script type="text/javascript" src="js-editor/auth.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/http-vue-loader"></script>
+    <script type="text/javascript" src="js-editor/showdown.min.js"></script>
+</head>
+<body>
+
+<div id="vue-app">
+    <page link="refs.htm">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12" id="left-menu">
+                    <h1>Сайты, на которых размещена карта</h1>
+                    <ul>
+                        <li v-for="ref in refs"><a target="_blank" :href="ref.page">{{ ref.page }}</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12" style="padding-top:30px;">
+                    <div id="integration-guide" v-html="integrationGuide">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </page>
+</div>
+
+<script type="text/javascript">
+    function getRefs() {
+        return doGetJsonSync(backendApiBase + "/ref-sites")
+    }
+
+    Vue.component('auth', httpVueLoader('components/auth.vue'))
+    Vue.component('page', httpVueLoader('components/page.vue'))
+
+    var app = new Vue({
+        el: '#vue-app',
+        computed: {
+                integrationGuide:function () {
+                    var converter = new showdown.Converter();
+                    var xhr = sendRequest('INTEGRATION_ru.md', 'GET', false)
+                    if (xhr && xhr.status == 200) {
+                        return converter.makeHtml(xhr.response);
+                    }
+                    var xhr = sendRequest('../INTEGRATION_ru.md', 'GET', false)
+                    if (xhr && xhr.status == 200) {
+                        return converter.makeHtml(xhr.response);
+                    }
+                    return '<span style="color:red">Can not load</span>'
+                 },
+        },
+        data: {
+            refs: getRefs(),
+        }
+    })
+
+</script>
+
+</body>
+</html>

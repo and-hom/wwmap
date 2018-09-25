@@ -7,17 +7,23 @@ pre-build:
 	cd ../lib/dao/queries; $(HOME)/.go/bin/go-bindata -pkg queries .
 
 build-notifier:
-	cd notifier; $(HOME)/.go/bin/go-bindata email-template; GOPATH="$(HOME)/.go" go build
+	cd notifier && $(HOME)/.go/bin/go-bindata email-template && GOPATH="$(HOME)/.go" go build
 
+TEMPLATE_FILES=spot-page-template.htm river-page-template.htm region-page-template.htm country-page-template.htm root-page-template.htm decorator.htm
 build-catalog-sync:
-	TEMPLATE_FILES='email-template spot-page-template.htm river-page-template.htm region-page-template.htm country-page-template.htm root-page-template.htm'
-	cd catalog-sync; \
-	mkdir -p bindata; \
-	$(HOME)/.go/bin/go-bindata -pkg bindata -o bindata/bindata.go $(TEMPLATE_FILES); \
+	cd catalog-sync && \
+	mkdir -p bindata && \
+	$(HOME)/.go/bin/go-bindata -pkg bindata -o bindata/bindata.go email-template && \
+	cd huskytm/templates && \
+	$(HOME)/.go/bin/go-bindata -pkg templates $(TEMPLATE_FILES) && \
+	cd ../../ && \
+	cd pdf/templates && \
+	$(HOME)/.go/bin/go-bindata -pkg templates $(TEMPLATE_FILES) && \
+	cd ../../ && \
 	GOPATH="$(HOME)/.go" go build
 
 build-db-clean:
-	cd db-clean; GOPATH="$(HOME)/.go" go build
+	cd db-clean && GOPATH="$(HOME)/.go" go build
 
 build-spot-sort:
 	cd spot-sort; GOPATH="$(HOME)/.go" go build
@@ -25,8 +31,11 @@ build-spot-sort:
 build: pre-build build-notifier build-catalog-sync build-db-clean build spot-sort
 
 override_dh_auto_install:
+	install -d $$(pwd)/debian/wwmap-cron/usr/share/wwmap/backup/
+
 	install -D -m 0755 notifier/notifier $$(pwd)/debian/wwmap-cron/usr/bin/wwmap-notifier
 	install -D -m 0755 backup/backup.sh $$(pwd)/debian/wwmap-cron/usr/bin/wwmap-backup
+	install -D -m 0644 backup/tables.list $$(pwd)/debian/wwmap-cron/usr/share/wwmap/backup/tables.list
 	install -D -m 0755 catalog-sync/catalog-sync $$(pwd)/debian/wwmap-cron/usr/bin/wwmap-catalog-sync
 	install -D -m 0755 db-clean/db-clean $$(pwd)/debian/wwmap-cron/usr/bin/wwmap-db-clean
 	install -D -m 0755 spot-sort/spot-sort $$(pwd)/debian/wwmap-cron/usr/bin/wwmap-spot-sort

@@ -1,0 +1,38 @@
+<a href="{{.RootPageLink}}" style="font-size:80%;">Каталог водных препятствий</a><br/>&nbsp;&nbsp;<a
+        href="{{.CountryPageLink}}" style="font-size:80%;">{{.Country.Title}}</a><br/>&nbsp;&nbsp;&nbsp;&nbsp;<a
+        href="{{.RegionPageLink}}" style="font-size:80%;">{{.Region.Title}}</a>
+
+<table style="border:0px;">
+    <tr>
+        <td colspan="2">
+            <h1>{{.River.Title}}</h1>
+            {{.River.Description}}
+        </td>
+        <td>
+            <img style="width:200px;" src="{{.MainImage.Url}}"/>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"><strong>Пороги</strong>&nbsp;&nbsp;<a
+                href="https://wwmap.ru/api/gpx/river/{{.River.Id}}">GPX</a>&nbsp;<a
+                href="https://wwmap.ru/api/gpx/river/{{.River.Id}}?tr=true">GPX<sub>en</sub></a></td>
+        <td rowspan="{{ inc (len .Links) }}">
+            Карта
+        </td>
+    </tr>
+    {{range .Links}}
+    <tr>
+        <td colspan="2"><a
+                href="{{.Url}}">{{.Title}}&nbsp;({{.Category}})</a>
+        </td>
+    </tr>
+    {{end}}
+    <tr>
+        <td colspan="3"><strong>Отчёты</strong></td>
+    </tr>
+    {{range .Reports}}
+    <tr>
+        <td colspan="3"><a href="{{.Url}}" target="_blank"><img src="{{.SourceLogo}}"/>&nbsp;{{.Title}}</a></td>
+    </tr>
+    {{end}}
+</table>

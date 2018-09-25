@@ -1,3 +1,4 @@
+log-level: "info"
 db-connection-string: "postgres://wwmap:WWMAP_POSTGRES_PASSWORD@localhost:5432/wwmap?sslmode=require"
 clusterization:
   barrier_ratio: 2
@@ -37,6 +38,8 @@ img-storage:
   preview:
     dir: "/var/lib/wwmap/backend/images/preview"
     url-base: "http://localhost:7007/spot/0/img/%d/preview"
+river-passport-storage:
+  dir: "/var/lib/wwmap/backend/river-passport"
 
 
 backup:
@@ -47,3 +50,4 @@ sync:
   login: "wwmap"
   password: ""
   root-page-id: 1739
+  min-delta-between-requests: "1s"

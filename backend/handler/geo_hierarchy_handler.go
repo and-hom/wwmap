@@ -16,14 +16,16 @@ import (
 	"github.com/ptrv/go-gpx"
 	"github.com/and-hom/wwmap/lib/geo"
 	"github.com/and-hom/wwmap/lib/model"
-	"github.com/and-hom/wwmap/lib/img_storage"
+	"github.com/and-hom/wwmap/lib/blob"
+	"io"
 )
 
 type GeoHierarchyHandler struct {
 	App
-	ImgStorage        img_storage.ImgStorage
-	PreviewImgStorage img_storage.ImgStorage
-	regions           map[int64]dao.Region
+	ImgStorage           blob.BlobStorage
+	PreviewImgStorage    blob.BlobStorage
+	RiverPassportStorage blob.BlobStorage
+	regions              map[int64]dao.Region
 }
 
 func (this *GeoHierarchyHandler) Init(r *mux.Router) {
@@ -35,21 +37,25 @@ func (this *GeoHierarchyHandler) Init(r *mux.Router) {
 	this.Register(r, "/region", HandlerFunctions{Get:this.ListAllRegions})
 	this.Register(r, "/region/{regionId}", HandlerFunctions{Get:this.GetRegion})
 
-	this.Register(r, "/river/{riverId}", HandlerFunctions{Get:this.GetRiver, Put:this.SaveRiver, Post:this.SaveRiver, Delete:this.RemoveRiver})
 	this.Register(r, "/river", HandlerFunctions{Get:this.FilterRivers})
+	this.Register(r, "/river/{riverId}", HandlerFunctions{Get:this.GetRiver, Put:this.SaveRiver, Post:this.SaveRiver, Delete:this.RemoveRiver})
 	this.Register(r, "/river/{riverId}/reports", HandlerFunctions{Get:this.ListRiverReports})
 	this.Register(r, "/river/{riverId}/spots", HandlerFunctions{Get:this.ListSpots})
 	this.Register(r, "/river/{riverId}/center", HandlerFunctions{Get:this.GetRiverCenter})
 	this.Register(r, "/river/{riverId}/gpx", HandlerFunctions{Post:this.UploadGpx, Put:this.UploadGpx})
+	this.Register(r, "/river/{riverId}/pdf", HandlerFunctions{Get:this.GetRiverPassport})
+	this.Register(r, "/river/{riverId}/visible", HandlerFunctions{Post:this.SetRiverVisible, Put:this.SetRiverVisible})
 
 	this.Register(r, "/spot/{spotId}", HandlerFunctions{Get:this.GetSpot, Post:this.SaveSpot, Put:this.SaveSpot, Delete:this.RemoveSpot})
 }
 
 type RiverDto struct {
-	Id      int64 `json:"id"`
-	Title   string `json:"title"`
-	Aliases []string `json:"aliases"`
-	Region  dao.Region `json:"region"`
+	Id          int64 `json:"id"`
+	Title       string `json:"title"`
+	Aliases     []string `json:"aliases"`
+	Region      dao.Region `json:"region"`
+	Description string `json:"description,omitempty"`
+	Visible     bool `json:"visible"`
 }
 
 func (this *GeoHierarchyHandler) getRegion(id int64) dao.Region {
@@ -287,13 +293,36 @@ func (this *GeoHierarchyHandler) SaveRiver(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	riverForDb := dao.RiverTitle{
-		IdTitle:dao.IdTitle{
-			Id:river.Id,
-			Title:river.Title,
+	regionId := river.Region.Id
+	if (regionId == 0) {
+		log.Error(river.Region.CountryId)
+		fakeRegion, found, err := this.RegionDao.GetFake(river.Region.CountryId)
+		if err != nil {
+			OnError500(w, err, fmt.Sprintf("Can not get fake region for country: %s", river.Region.CountryId))
+			return
+		}
+		if (found) {
+			regionId = fakeRegion.Id
+		} else {
+			regionId, err = this.RegionDao.CreateFake(river.Region.CountryId)
+			if err != nil {
+				OnError500(w, err, fmt.Sprintf("Can not create fake region for country: %s", river.Region.CountryId))
+				return
+			}
+			log.Errorf("RegionId = %v", regionId)
+		}
+	}
+
+	riverForDb := dao.River{
+		RiverTitle: dao.RiverTitle{
+			IdTitle:dao.IdTitle{
+				Id:river.Id,
+				Title:river.Title,
+			},
+			RegionId:regionId,
+			Aliases:river.Aliases,
 		},
-		RegionId:river.Region.Id,
-		Aliases:river.Aliases,
+		Description:river.Description,
 	}
 
 	var id int64
@@ -311,6 +340,31 @@ func (this *GeoHierarchyHandler) SaveRiver(w http.ResponseWriter, r *http.Reques
 	this.writeRiver(id, w)
 }
 
+func (this *GeoHierarchyHandler) SetRiverVisible(w http.ResponseWriter, r *http.Request) {
+	if !this.CheckRoleAllowedAndMakeResponse(w, r, dao.ADMIN, dao.EDITOR) {
+		return
+	}
+
+	pathParams := mux.Vars(r)
+	riverId, err := strconv.ParseInt(pathParams["riverId"], 10, 64)
+	if err != nil {
+		OnError(w, err, "Can not parse id", http.StatusBadRequest)
+		return
+	}
+
+	bodyBytes, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		OnError500(w, err, "Can not read body")
+		return
+	}
+	visible := false
+	json.Unmarshal(bodyBytes, &visible)
+
+	this.RiverDao.SetVisible(riverId, visible)
+
+	this.writeRiver(riverId, w)
+}
+
 func (this *GeoHierarchyHandler) RemoveRiver(w http.ResponseWriter, r *http.Request) {
 	if !this.CheckRoleAllowedAndMakeResponse(w, r, dao.ADMIN, dao.EDITOR) {
 		return
@@ -323,7 +377,7 @@ func (this *GeoHierarchyHandler) RemoveRiver(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	imgs,err := this.ImgDao.ListAllByRiver(riverId)
+	imgs, err := this.ImgDao.ListAllByRiver(riverId)
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not get images for river: %d", riverId))
 		return
@@ -370,6 +424,8 @@ func (this *GeoHierarchyHandler) writeRiver(riverId int64, w http.ResponseWriter
 		Title:river.Title,
 		Aliases:river.Aliases,
 		Region:region,
+		Description:river.Description,
+		Visible: river.Visible,
 	}
 	this.JsonAnswer(w, riverWithRegion)
 }
@@ -503,4 +559,16 @@ func (this *GeoHierarchyHandler) writeSpot(spotId int64, w http.ResponseWriter) 
 		return
 	}
 	this.JsonAnswer(w, spot)
+}
+
+func (this *GeoHierarchyHandler) GetRiverPassport(w http.ResponseWriter, req *http.Request) {
+	pathParams := mux.Vars(req)
+	w.Header().Set("Content-Type", "application/pdf")
+	r, err := this.RiverPassportStorage.Read(pathParams["riverId"])
+	if err != nil {
+		OnError500(w, err, "Can not get river passport")
+		return
+	}
+	defer r.Close()
+	io.Copy(w, r)
 }

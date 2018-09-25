@@ -25,13 +25,13 @@ func paginate(get func(interface{}) ([]interface{}, *http.Response, []byte, erro
 		params["page"] = fmt.Sprintf("%d", page)
 
 		res, resp, b, err := get(params)
-		if resp.StatusCode != http.StatusOK {
-			log.Errorf("Can not paginate: %s", string(b))
-			return nil, errors.New("Can not paginate")
-		}
 		if err != nil {
 			log.Errorf("Can not paginate: %s", string(b))
 			return nil, err
+		}
+		if resp.StatusCode != http.StatusOK {
+			log.Errorf("Can not paginate: %s", string(b))
+			return nil, errors.New("Can not paginate")
 		}
 		result = append(result, res...)
 

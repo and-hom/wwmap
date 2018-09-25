@@ -1,3 +1,5 @@
+// lecagy js. use map.v2.js
+
     ymaps.ready(init);
     var myMap;
 
@@ -10,7 +12,8 @@
             $('#rivers').html('');
             var dataObj = {
                 "rivers" : JSON.parse(data),
-                "apiUrl": apiBase + "/gpx"
+                "apiUrl": apiBase + "/gpx/river",
+                "apiBase": apiBase
             }
             for (i in dataObj.rivers) {
                 if(dataObj.rivers[i].bounds) {

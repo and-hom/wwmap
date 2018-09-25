@@ -1,0 +1,90 @@
+<div class="wwmap-popuptext" id="report_popup">
+    <form>
+        <label for="object_id">ID</label>
+        <input type="text" id="object_id" name="object_id" readonly style="margin-bottom:10px;"/><br/>
+        <label for="comment" style="width:400px">Исправления происходят в ручном режиме и после проверки. Пожалуйста,
+            расскажите коротко,
+            что не так. Будет полезным добавить источники информации (отчёты, например) и указать реальные координаты
+            точки.
+            <u>Оставьте контакт для обратной связи</u> на случай, если у меня возникнет вопрос.</label><br/>
+        <textarea id="comment" name="comment" rows="20" maxlength="4000"
+                  style="margin-top:10px; margin-bottom:20px; "></textarea>
+        <input type="submit" value="Отправить" width="600px; align: center;"/>
+        <input type="button" name="cancel" value="Отмена" width="600px; align: center;"/>
+    </form>
+</div>
+
+
+<div class="wwmap-popuptext" style="width:1000px;" id="info_popup">
+    <h3>Что это такое?</h3>
+    <p>Это карта порогов для водного туризма с описаниями, категориями, ссылками на отчёты и выгрузкой GPX-файлов в
+        навигатор. </p>
+    <h3>Как добавить новые препятствия на карту?</h3>
+    <ol>
+        <li>Зайти на сайт <a target="_blank" href="https://wwmap.ru">wwmap.ru</a></li>
+        <li>В правом верхнем углу нажать кнопку "Авторизоваться через Яндекс" (для этого должна быть учётная запись на Яндексе). Конечно, если вы уже не авторизованы.</li>
+        <li>Сообщить об этом мне по электронной почте <a class="email-link" href=""></a> или любым другим известным вам способом</li>
+        <li>Подождать немного, пока я добавлю права на редактирование. Возможно, например, если мы не знакомы, мне захочется сначала побеседовать.</li>
+        <li>Воспользоваться встроенным редактором точек и рек (появится после прохождения предыдущего пункта)</li>
+    </ol>
+    <h3>Как ещё помочь развитию карты?</h3>
+    <ol>
+        <li>Рассказать про открытые библиотеки отчётов по водному туризму и способы автомтизированного анализа их
+            отчётов
+        </li>
+        <li>Разместить карту у себя на сайте. Как это сделать, описано <a target="_blank"
+                                                                          href="https://github.com/and-hom/wwmap/blob/master/INTEGRATION_ru.md">тут</a>
+        </li>
+        <li>Помочь в разработке</li>
+    </ol>
+    <h3>Как связаться с разработчиком?</h3>
+    <p>По всем свящанным с картой вопросам нужно писать по электронной почте <a class="email-link" href=""></a>
+        Также можно ознакомиться с проектом на <a target="_blank" href="https://github.com/and-hom/wwmap">github</a>,
+        узнать о текущи задачах,
+        предложить улучшения и предложить пулл-реквест.</p>
+    <input type="button" name="cancel" value="Понятно" width="600px; align: center;"/>
+</div>
+
+<script type="text/x-jquery-tmpl" id="bubble_template">
+    <h3 class="popover-title">
+        {%if properties.link%}<a target="_blank" href="{{properties.link}}">{{properties.title}}</a>{%else%}{{properties.title}}{%endif%}
+    </h3>
+
+    <div class="popover-content">
+        {%if properties.category%}<div><strong>Категория сложности:</strong>&nbsp;{{properties.category}}</div>{%endif%}
+        {%if properties.river_name%}<div><strong>Река:</strong>&nbsp;{{properties.river_name}}</div>{%endif%}
+        <div>{{properties.short_description}}</div>
+        {%if properties.images %}&nbsp;<br/>
+        <div class="gallery-div" style="height:auto; width: 100%; overflow-x: scroll; overflow-y: hidden;white-space: nowrap;">
+            {% for img in properties.images %} <img style="display: inline; width:150px;" src="{{img.preview_url}}"/> {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    <div class="popover-footer">
+        <a target="_top" href="#" onclick="show_report_popup({{properties.id}}); return false">Сообщить о неточности</a>
+    </div>
+</script>
+
+<script type="text/x-jquery-tmpl" id="rivers_template">
+    <table>
+    {%each rivers%}
+        <tr>
+            <td class="title-col"><a href="" style="padding-left:10px;" onclick="show_map_at(${bounds}); return false;">${title}</a></td>
+            <td class="gpx-col">
+                <a href="${apiUrl}/${id}" style="padding-right:10px;" alt="Скачать GPX с точками порогов">GPX</a>
+                <a href="${apiUrl}/${id}?tr=true" alt="Скачать GPX с точками порогов">GPX<sub>en</sub></a>
+                {%if props.export_pdf%}
+                <a href="${apiBase}/river/${id}/pdf" target="_blank" alt="Скачать описание PDF">Описание&nbsp;<sub>PDF</sub></a>
+                {%/if%}
+            </td>
+            <td class="report-col">
+                <ul class="reports">
+                {%each reports%}
+                    <li><a target="_blank" href="${url}" title="${title}"><img src="${source_logo_url}"/>&nbsp;{%if year>1%}<strong>${year}&nbsp;</strong>{%/if%}${title}</a></li>
+                {%/each%}
+                </ul>
+            </td>
+        </tr>
+    {%/each%}
+    </table>
+</script>

@@ -6,17 +6,15 @@ import (
 	"net/http"
 	"fmt"
 	"github.com/ptrv/go-gpx"
-	"regexp"
-	"strings"
 	. "github.com/and-hom/wwmap/lib/http"
 	. "github.com/and-hom/wwmap/lib/handler"
-	"github.com/and-hom/wwmap/lib/model"
+	"github.com/and-hom/wwmap/lib/util"
 )
 
-type GpxHandler struct { App };
+type GpxHandler struct{ App };
 
 func (this *GpxHandler) Init(r *mux.Router) {
-	this.Register(r, "/gpx/{id}", HandlerFunctions{Get: this.DownloadGpx})
+	this.Register(r, "/gpx/river/{id}", HandlerFunctions{Get: this.DownloadGpx})
 }
 
 func (this *GpxHandler) DownloadGpx(w http.ResponseWriter, req *http.Request) {
@@ -44,11 +42,11 @@ func (this *GpxHandler) DownloadGpx(w http.ResponseWriter, req *http.Request) {
 			Lon: whitewaterPoint.Point.Lon,
 			Cmt: whitewaterPoint.Comment,
 		}
-		categoryString := catStr(whitewaterPoint.Category, transliterate)
+		categoryString := util.HumanReadableCategoryNameWithBrackets(whitewaterPoint.Category, transliterate)
 
 		titleString := whitewaterPoint.Title
 		if transliterate {
-			titleString = cyrillicToTranslit(whitewaterPoint.Title)
+			titleString = util.CyrillicToTranslit(whitewaterPoint.Title)
 		}
 
 		waypoints[i].Name = categoryString + titleString
@@ -67,70 +65,3 @@ func (this *GpxHandler) DownloadGpx(w http.ResponseWriter, req *http.Request) {
 	xmlBytes := gpxData.ToXML()
 	w.Write(xmlBytes)
 }
-
-func catStr(category model.SportCategory, translit bool) string {
-	if category.Category == -1 {
-		if translit {
-			return "(Stop!)"
-		} else {
-			return "(Непроход)"
-		}
-	}
-	if category.Category == 0 {
-		return ""
-	}
-	if category.Sub == "" {
-		return "(" + category.Serialize() + ")"
-	}
-	return "(" + category.Serialize() + ")"
-}
-
-var translitCharMap = map[string]string{
-	"a":"a",
-	"б":"b",
-	"в":"v",
-	"г":"g",
-	"д":"d",
-	"е":"e",
-	"ё":"e",
-	"ж":"zh",
-	"з":"z",
-	"и":"i",
-	"й":"j",
-	"к":"k",
-	"л":"l",
-	"м":"m",
-	"н":"n",
-	"о":"o",
-	"п":"p",
-	"р":"r",
-	"с":"s",
-	"т":"t",
-	"у":"u",
-	"ф":"f",
-	"х":"h",
-	"ц":"ts",
-	"ч":"ch",
-	"ш":"sh",
-	"щ":"sch",
-	"ы":"y",
-	"ь":"'",
-	"э":"ye",
-	"ю":"ju",
-	"я":"ya",
-}
-
-func doReplace(data string, from string, to string) string {
-	r, _ := regexp.Compile(from)
-	return r.ReplaceAllString(data, to)
-}
-
-func cyrillicToTranslit(cyrillicString string) string {
-	translitString := cyrillicString
-	for k, v := range translitCharMap {
-		translitString = doReplace(translitString, k, v)
-		translitString = doReplace(translitString, strings.ToUpper(k), strings.Title(v))
-	}
-	return translitString
-}
-

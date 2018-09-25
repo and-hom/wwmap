@@ -14,12 +14,42 @@ type ReportProvider interface {
 	Images(reportId string) ([]dao.Img, error);
 }
 
+type WithCatalogConnector struct {
+	F      func() (CatalogConnector, error)
+	cached CatalogConnector
+}
+
+func (this WithCatalogConnector) Do(payload func(CatalogConnector) error) error {
+	var connector CatalogConnector
+	var err error
+
+	if this.cached == nil {
+		connector, err = this.F()
+	} else {
+		connector = this.cached
+	}
+	if err != nil {
+		if connector != nil {
+			return fmt.Errorf("Can not connect to source %s: %v", connector.SourceId(), err)
+		} else {
+			return fmt.Errorf("Can not connect to source unknown (nil provider): %v", err)
+		}
+	}
+	defer connector.Close()
+
+	return payload(connector)
+}
+
 type WithReportProvider func() (ReportProvider, error)
 
 func (this WithReportProvider) Do(payload func(ReportProvider) error) error {
 	provider, err := this()
 	if err != nil {
-		return fmt.Errorf("Can not connect to source %s: %s", provider.SourceId(), err.Error())
+		if provider != nil {
+			return fmt.Errorf("Can not connect to source %s: %v", provider.SourceId(), err)
+		} else {
+			return fmt.Errorf("Can not connect to source unknown (nil provider): %v", err)
+		}
 	}
 	defer provider.Close()
 
@@ -31,15 +61,91 @@ type LinkOnPage struct {
 	Title string
 }
 
+type SpotLink struct {
+	LinkOnPage
+	Category string
+}
+
+type CountryLink struct {
+	LinkOnPage
+	Code string
+}
+
+type VoyageReportLink struct {
+	LinkOnPage
+	SourceLogo string
+}
+
+type SpotPageDto struct {
+	Id              int
+
+	Spot            dao.WhiteWaterPointFull
+	River           dao.River
+	Region          dao.Region
+	Country         dao.Country
+
+	MainImage       dao.Img
+	Imgs            []dao.Img
+
+	RootPageLink    string
+	CountryPageLink string
+	RegionPageLink  string
+	RiverPageLink   string
+}
+type RiverPageDto struct {
+	Id              int
+
+	River           dao.River
+	Region          dao.Region
+	Country         dao.Country
+
+	Links           []SpotLink
+	MainImage       dao.Img
+	Reports         []VoyageReportLink
+
+	RootPageLink    string
+	CountryPageLink string
+	RegionPageLink  string
+}
+
+type RegionPageDto struct {
+	Id              int
+
+	Region          dao.Region
+	Country         dao.Country
+
+	Links           []LinkOnPage
+
+	RootPageLink    string
+	CountryPageLink string
+}
+
+type CountryPageDto struct {
+	Id           int
+
+	Country      dao.Country
+
+	RegionLinks  []LinkOnPage
+	RiverLinks   []LinkOnPage
+
+	RootPageLink string
+}
+
+type RootPageDto struct {
+	Id    int
+	Links []CountryLink
+}
+
 type CatalogConnector interface {
 	io.Closer
+	SourceId() string
 	PassportEntriesSince(key string) ([]dao.WWPassport, error)
 	GetImages(key string) ([]dao.Img, error)
 
-	CreateEmptyPageIfNotExistsAndReturnId(parent int, pageId int, title string) (int, string, bool, error)
-	WriteSpotPage(pageId int, spot dao.WhiteWaterPointFull, river dao.RiverTitle, region dao.Region, country dao.Country, mainImg dao.Img, imgs []dao.Img, rootPageLink, countryPageLink, regionPageLink, riverPageLink string) error
-	WriteRiverPage(pageId int, river dao.RiverTitle, region dao.Region, country dao.Country, links []LinkOnPage, rootPageLink, countryPageLink, regionPageLink string) error
-	WriteRegionPage(pageId int, region dao.Region, country dao.Country, links []LinkOnPage, rootPageLink, countryPageLink string) error
-	WriteCountryPage(pageId int, country dao.Country, regionLinks, riverLinks []LinkOnPage, rootPageLink string) error
-	WriteRootPage(pageId int, countryLinks []LinkOnPage) error
+	CreateEmptyPageIfNotExistsAndReturnId(id int64, parent int, pageId int, title string) (int, string, bool, error)
+	WriteSpotPage(SpotPageDto) error
+	WriteRiverPage(RiverPageDto) error
+	WriteRegionPage(RegionPageDto) error
+	WriteCountryPage(CountryPageDto) error
+	WriteRootPage(RootPageDto) error
 }

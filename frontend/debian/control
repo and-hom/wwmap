@@ -7,5 +7,5 @@ Section: misc
 Package: wwmap-frontend
 Priority: extra
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, wwmap-config
+Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: Frontend (html/js/css) for whitewater map

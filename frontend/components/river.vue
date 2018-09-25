@@ -1,0 +1,97 @@
+<template>
+    <li class="menu-item river-menu-item"><a href="javascript:void(0);" v-on:click='changeExpandState();selectRiver();'
+                                             :class="riverClass()">{{ river.title }}</a>
+        <ul>
+            <li class="menu-item spot-menu-item" v-on:click.stop="selectSpot(spot)"
+                v-for="spot in river.spots"><a href="javascript:void(0);"
+                :class="spotClass(spot)">{{spot.title}}</a>
+            </li>
+        </ul>
+    </li>
+</template>
+
+<script>
+    module.exports = {
+        props: ['river', 'region', 'country'],
+        created: function() {
+            var riverSelected = isActiveEntity(this.country.id, nvlReturningId(this.region), this.river.id)
+
+            if (riverSelected) {
+                showRiverTree(this.country.id, nvlReturningId(this.region), this.river.id)
+                if (getActiveEntityLevel()==RIVER_ACTIVE_ENTITY_LEVEL) {
+                    this.selectRiver()
+                } else if (getActiveEntityLevel()==SPOT_ACTIVE_ENTITY_LEVEL) {
+                    var selectedSpotId = getActiveId(SPOT_ACTIVE_ENTITY_LEVEL)
+                    selectedSpot = this.spots.filter(function(x){return x.id==selectedSpotId})
+                    if (selectedSpot.length>0) {
+                        this.selectSpot(selectedSpot[0])
+                    }
+                }
+            }
+        },
+        data: function () {
+            return {
+                spots: [],
+                collapse:function () {
+                    this.spots=[]
+                },
+                changeExpandState:function() {
+                        if (this.river.spots) {
+                            Vue.delete(this.river, "spots")
+                        } else {
+                            Vue.set(this.river, "spots", getSpots(this.river.id))
+                        }
+                },
+                selectSpot:function(spot) {
+                    setActiveEntity(this.country.id, nvlReturningId(this.region), this.river.id, spot.id)
+                    setActiveEntityState(this.country.id, nvlReturningId(this.region), this.river.id, spot.id)
+
+                    app.spoteditorstate.visible = false
+                    app.rivereditorstate.visible=false;
+                    app.regioneditorstate.visible = false;
+                    app.countryeditorstate.visible = false;
+
+                    app.spoteditorstate.visible=true;
+                    app.spoteditorstate.editMode = false;
+                    app.spoteditorstate.spot=getSpot(spot.id)
+                    app.spoteditorstate.country = this.country
+                    app.spoteditorstate.region = this.region
+
+                    return false
+                },
+                selectRiver:function() {
+                    setActiveEntity(this.country.id, nvlReturningId(this.region), this.river.id)
+                    setActiveEntityState(this.country.id, nvlReturningId(this.region), this.river.id)
+
+                    app.spoteditorstate.visible = false
+                    app.rivereditorstate.visible=false;
+                    app.regioneditorstate.visible = false;
+                    app.countryeditorstate.visible = false;
+
+                    app.rivereditorstate.river = getRiver(this.river.id)
+                    app.rivereditorstate.editMode = false;
+                    app.rivereditorstate.reports=getReports(this.river.id)
+                    app.rivereditorstate.visible = true
+                    app.rivereditorstate.country = this.country
+                    app.rivereditorstate.region = this.region
+
+                    return false
+                },
+                riverClass: function() {
+                    if (this.river.id == app.selectedRiver) {
+                        return "title-link btn btn-outline-danger"
+                    } else {
+                        return "title-link btn btn-outline-info"
+                    }
+                },
+                spotClass: function(spot) {
+                    if (spot.id == app.selectedSpot) {
+                        return "title-link btn btn-outline-danger"
+                    } else {
+                        return "title-link btn btn-outline-primary"
+                    }
+                }
+            }
+        },
+    }
+</script>

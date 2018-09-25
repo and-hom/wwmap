@@ -1,0 +1,1 @@
+ALTER TABLE river DROP COLUMN visible;

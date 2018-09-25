@@ -24,6 +24,7 @@ Run ``debuild -us -uc`` in directory containing ``debian`` folder
 CREATE ROLE wwmap_group;
 CREATE ROLE wwmap LOGIN
   NOSUPERUSER INHERIT NOCREATEDB NOCREATEROLE NOREPLICATION;
+CREATE DATABASE wwmap WITH OWNER = wwmap_group ENCODING = 'UTF8';
 GRANT wwmap_group TO wwmap;
 \password wwmap
 \c wwmap

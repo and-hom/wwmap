@@ -7,6 +7,9 @@ import (
 	"github.com/and-hom/wwmap/lib/dao"
 	"github.com/and-hom/wwmap/cron/catalog-sync/common"
 	"github.com/and-hom/wwmap/cron/catalog-sync/tlib"
+	"github.com/and-hom/wwmap/cron/catalog-sync/pdf"
+	"github.com/and-hom/wwmap/lib/blob"
+	"fmt"
 )
 
 type App struct {
@@ -22,15 +25,23 @@ type App struct {
 
 	ImgUrlBase        string
 	ImgUrlPreviewBase string
+	ResourceBase      string
 
 	stat              *ImportExportReport
 	catalogConnector  common.CatalogConnector
 	reportProviders   []common.WithReportProvider
+	catalogConnectors []common.WithCatalogConnector
 }
 
 func CreateApp() App {
 	configuration := config.Load("")
+	configuration.ChangeLogLevel()
+
 	pgStorage := dao.NewPostgresStorage(configuration.DbConnString)
+	riverPassportStorage := blob.BasicFsStorage{
+		BaseDir:configuration.RiverPassportStorage.Dir,
+	}
+	fmt.Println(configuration.RiverPassportStorage)
 	return App{
 		VoyageReportDao:dao.NewVoyageReportPostgresDao(pgStorage),
 		CountryDao:dao.NewCountryPostgresDao(pgStorage),
@@ -44,12 +55,19 @@ func CreateApp() App {
 		stat: &ImportExportReport{},
 		reportProviders:[]common.WithReportProvider{
 			common.WithReportProvider(func() (common.ReportProvider, error) {
-				return huskytm.GetReportProvider(configuration.Sync.Login, configuration.Sync.Password)
+				return huskytm.GetReportProvider(configuration.Sync.Login, configuration.Sync.Password, configuration.Sync.MinDeltaBetweenRequests)
 			}),
 			common.WithReportProvider(tlib.GetReportProvider),
 		},
+		catalogConnectors: []common.WithCatalogConnector{
+			{F:func() (common.CatalogConnector, error) {
+				return huskytm.GetCatalogConnector(configuration.Sync.Login, configuration.Sync.Password, configuration.Sync.MinDeltaBetweenRequests)
+			}},
+			{F:func() (common.CatalogConnector, error) {return pdf.GetCatalogConnector(riverPassportStorage)}},
+		},
 		ImgUrlBase:configuration.ImgStorage.Full.UrlBase,
 		ImgUrlPreviewBase:configuration.ImgStorage.Preview.UrlBase,
+		ResourceBase:configuration.Content.ResourceBase,
 	}
 }
 
@@ -57,16 +75,5 @@ func main() {
 	log.Infof("Starting wwmap")
 	app := CreateApp()
 	app.DoSyncReports()
-	//app.DoWriteCatalog()
-}
-
-func (this App) getCachedCatalogConnector() common.CatalogConnector {
-	if this.catalogConnector == nil {
-		catalogConnector, err := huskytm.GetCatalogConnector(this.Configuration.Login, this.Configuration.Password)
-		if err != nil {
-			this.Fatalf(err, "Can not connect to catalog")
-		}
-		this.catalogConnector = catalogConnector
-	}
-	return this.catalogConnector
+	app.DoWriteCatalog()
 }

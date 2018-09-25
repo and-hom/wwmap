@@ -21,11 +21,12 @@ const YEAR_RE string = "(?:\\D|:^)(2\\d{3})(?:\\D|$)"
 
 var yearRe = regexp.MustCompile(YEAR_RE)
 
-func GetReportProvider(login, password string) (ReportProvider, error) {
+func GetReportProvider(login, password string, requestRateLimit time.Duration) (ReportProvider, error) {
 	client := wp.NewClient(&wp.Options{
 		BaseAPIURL: API_BASE, // example: `http://192.168.99.100:32777/wp-json/wp/v2`
 		Username:   login,
 		Password:   password,
+		Timeout: 10 * time.Second,
 	})
 
 	tags, err := paginate(func(p interface{}) ([]interface{}, *http.Response, []byte, error) {
@@ -55,6 +56,7 @@ func GetReportProvider(login, password string) (ReportProvider, error) {
 		images:make([]dao.Img, 0),
 		imgExprs:[]ImgSearcher{s1, s2},
 		cachedImgSearchResults:make(map[int][]ImgSearchResult),
+		rateLimit: util.NewRateLimit(requestRateLimit),
 	}, nil
 }
 
@@ -87,6 +89,7 @@ type HuskytmReportProvider struct {
 	images                 []dao.Img
 	cachedImgSearchResults map[int][]ImgSearchResult
 	imgExprs               []ImgSearcher
+	rateLimit              util.RateLimit
 }
 
 func (this *HuskytmReportProvider) SourceId() string {
@@ -103,6 +106,7 @@ func (this *HuskytmReportProvider) ReportsSince(key time.Time) ([]dao.VoyageRepo
 	params["orderby"] = "modified"
 	params["categories"] = REPORT_CATEGORY
 
+	this.rateLimit.WaitIfNecessary()
 	posts, _, responseBytes, err := this.client.Posts().List(params)
 	if err != nil {
 		log.Error(string(responseBytes))
@@ -130,7 +134,8 @@ func (this *HuskytmReportProvider) ReportsSince(key time.Time) ([]dao.VoyageRepo
 			if found {
 				tags = append(tags, tag)
 			} else {
-				log.Fatalf("Unknown tag with id %d in %v+", tagId, this.tags)
+				log.Errorf("Unknown tag with id %d in %v+", tagId, this.tags)
+				return []dao.VoyageReport{}, key, err
 			}
 		}
 
@@ -183,6 +188,7 @@ func (this *HuskytmReportProvider) cacheImages() error {
 	params := emptyMap()
 	params["media_type"] = "image"
 	media, err := paginate(func(p interface{}) ([]interface{}, *http.Response, []byte, error) {
+		this.rateLimit.WaitIfNecessary()
 		m, r, b, e := this.client.Media().List(params)
 		res := make([]interface{}, len(m))
 		for i := 0; i < len(m); i++ {
