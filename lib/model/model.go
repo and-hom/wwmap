@@ -60,3 +60,7 @@ func (this *SportCategory) UnmarshalJSON(data []byte) error {
 func (this *SportCategory) Undefined() bool {
 	return this.Category == UNDEFINED_CATEGORY
 }
+
+func (this *SportCategory) Impassable() bool {
+	return this.Category == IMPASSABLE
+}

@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"bytes"
 	log "github.com/Sirupsen/logrus"
+	"github.com/and-hom/wwmap/lib/dao"
+	"github.com/and-hom/wwmap/lib/util"
+	"github.com/and-hom/wwmap/lib/model"
 )
 
 type Templates interface {
@@ -72,6 +75,10 @@ func LoadTemplates(load func(name string) []byte) (Templates, error) {
 		"inc": func(i int) int {
 			return i + 1
 		},
+		"spotCatStr": CategoryStr,
+		"catStr": func(cat model.SportCategory) string {
+			return util.HumanReadableCategoryName(cat, false)
+		},
 	}
 	t := templates{}
 	var e error
@@ -101,4 +108,14 @@ func LoadTemplates(load func(name string) []byte) (Templates, error) {
 		return nil, fmt.Errorf("Can not compile decorator template: %s", e.Error())
 	}
 	return &t, nil
+}
+
+func CategoryStr(spot dao.WhiteWaterPointFull) string {
+	if (!spot.HighWaterCategory.Undefined() || !spot.MediumWaterCategory.Undefined() || !spot.LowWaterCategory.Undefined()) {
+		return fmt.Sprintf("%s/%s/%s",
+			util.HumanReadableCategoryName(spot.LowWaterCategory, false),
+			util.HumanReadableCategoryName(spot.MediumWaterCategory, false),
+			util.HumanReadableCategoryName(spot.HighWaterCategory, false), )
+	}
+	return util.HumanReadableCategoryName(spot.Category, false)
 }

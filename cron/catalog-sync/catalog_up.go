@@ -6,7 +6,6 @@ import (
 	"github.com/and-hom/wwmap/cron/catalog-sync/common"
 	"fmt"
 	"time"
-	"github.com/and-hom/wwmap/lib/util"
 	"strings"
 )
 
@@ -134,7 +133,7 @@ func (this *App) doWriteCatalog(catalogConnector *common.CatalogConnector) error
 			riverLinks := []common.LinkOnPage{}
 			for _, river := range regionRivers {
 				riverPageLink := ""
-				if river.SpotCounters.Ordered==river.SpotCounters.Total && river.SpotCounters.Total>0 {
+				if river.SpotCounters.Ordered == river.SpotCounters.Total && river.SpotCounters.Total > 0 {
 					riverPageLink, err = this.uploadRiver(catalogConnector, country, region, river, rootPageLink, countryPageLink, regionPageLink, regionPageId)
 				}
 
@@ -168,7 +167,7 @@ func (this *App) doWriteCatalog(catalogConnector *common.CatalogConnector) error
 		for _, river := range countryRivers {
 			log.Infof("Upload river %s/%s", country.Title, river.Title)
 			riverPageLink := ""
-			if river.SpotCounters.Ordered==river.SpotCounters.Total && river.SpotCounters.Total>0 {
+			if river.SpotCounters.Ordered == river.SpotCounters.Total && river.SpotCounters.Total > 0 {
 				riverPageLink, err = this.uploadRiver(catalogConnector, country, fakeRegion, river, rootPageLink, countryPageLink, "", countryPageId)
 			}
 			exportOk := err == nil && riverPageLink != ""
@@ -346,20 +345,10 @@ func (this *App) writeSpots(catalogConnector *common.CatalogConnector, parentPag
 				Title:spot.Title,
 				Url:spotPageLink,
 			},
-			Category:categoryStr(spot),
+			Category:common.CategoryStr(spot),
 		})
 	}
 	return riverPageId, riverPageLink, spotLinks, true, nil
-}
-
-func categoryStr(spot dao.WhiteWaterPointFull) string {
-	if (!spot.HighWaterCategory.Undefined() || !spot.MediumWaterCategory.Undefined() || !spot.LowWaterCategory.Undefined()) {
-		return fmt.Sprintf("%s/%s/%s",
-			util.HumanReadableCategoryName(spot.LowWaterCategory, false),
-			util.HumanReadableCategoryName(spot.MediumWaterCategory, false),
-			util.HumanReadableCategoryName(spot.HighWaterCategory, false), )
-	}
-	return util.HumanReadableCategoryName(spot.Category, false)
 }
 
 func (this *App) mainImage(spot dao.WhiteWaterPointFull, imgs []dao.Img) (dao.Img, error) {

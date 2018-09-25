@@ -3,7 +3,7 @@
 <h3>Пороги (к./с.)</h3>
 <ul style="list-style-type:none">
     {{range .Spots}}
-    <li><a href="#spot{{.Spot.Id}}">{{.Spot.Title}}&nbsp;({{.Spot.Category}})</a></li>
+    <li><a href="#spot{{.Spot.Id}}">{{.Spot.Title}}&nbsp;({{spotCatStr .Spot}})</a></li>
     {{end}}
 </ul>
 <h3>Отчёты</h3>
@@ -39,9 +39,9 @@
                 <strong>Координаты:</strong><br/><strong>Широта:</strong>&nbsp;{{.Spot.Point.Lat}}
                 <br/><strong>Долгота:</strong>&nbsp;{{.Spot.Point.Lon}}
                 <br/>
-                <div><strong>К.с. нв/св/вв:</strong>&nbsp;{{.Spot.LowWaterCategory}}/{{.Spot.MediumWaterCategory}}/{{.Spot.HighWaterCategory}}
+                <div><strong>К.с. нв/св/вв:</strong>&nbsp;{{catStr .Spot.LowWaterCategory}}/{{catStr .Spot.MediumWaterCategory}}/{{catStr .Spot.HighWaterCategory}}
                 </div>
-                <div><strong>К.с. по классификатору:</strong>&nbsp;{{.Spot.Category}}</div>
+                <div><strong>К.с. по классификатору:</strong>&nbsp;{{catStr .Spot.Category}}</div>
             </div>
         </td>
     </tr>

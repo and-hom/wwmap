@@ -24,14 +24,14 @@ func HumanReadableCategoryNameWithBrackets(category model.SportCategory, transli
 }
 
 func HumanReadableCategoryName(category model.SportCategory, translit bool) string {
-	if category.Category == -1 {
+	if category.Impassable() {
 		if translit {
 			return "Stop!"
 		} else {
 			return "Непроход"
 		}
 	}
-	if category.Category == 0 {
+	if category.Undefined() {
 		return "-"
 	}
 	return category.Serialize()
