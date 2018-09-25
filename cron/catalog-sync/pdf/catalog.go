@@ -27,9 +27,9 @@ func GetCatalogConnector(storage blob.BlobStorage) (common.CatalogConnector, err
 }
 
 type PdfCatalogConnector struct {
-	storage      blob.BlobStorage
-	templates    common.Templates
-	spotBuf      []common.SpotPageDto
+	storage   blob.BlobStorage
+	templates common.Templates
+	spotBuf   []common.SpotPageDto
 }
 
 func (this *PdfCatalogConnector) SourceId() string {
@@ -41,7 +41,7 @@ func (this *PdfCatalogConnector) Close() error {
 }
 
 func (this *PdfCatalogConnector) CreateEmptyPageIfNotExistsAndReturnId(id int64, parent int, pageId int, title string) (int, string, bool, error) {
-	return int(id), "", true, nil
+	return int(id), "pdf", true, nil
 }
 
 func (this *PdfCatalogConnector) WriteSpotPage(page common.SpotPageDto) error {
@@ -78,7 +78,6 @@ func (this *PdfCatalogConnector) writePage(pageId int, body string, title string
 	}
 	pdfGenerator.Dpi.Set(300)
 	pdfGenerator.Orientation.Set(wkhtmltopdf.OrientationPortrait)
-
 
 	pr := wkhtmltopdf.NewPageReader(strings.NewReader(body))
 	pdfGenerator.AddPage(pr)

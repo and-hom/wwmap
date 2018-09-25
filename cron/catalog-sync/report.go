@@ -86,6 +86,7 @@ func (this *App) associateReportWithRiver(report *dao.VoyageReport, resultHandle
 	log.Debugf("Tags are: %v", report.Tags)
 	rivers, err := this.RiverDao.FindTitles(report.Tags)
 	if err != nil {
+		log.Error("Can not find rivers by tags")
 		return err
 	}
 	log.Info(rivers)

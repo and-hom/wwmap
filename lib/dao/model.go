@@ -27,6 +27,7 @@ type RiverTitle struct {
 	RegionId int64 `json:"region_id"`
 	Bounds   Bbox `json:"bounds"`
 	Aliases  []string `json:"aliases"`
+	Props    map[string]interface{} `json:"props"`
 }
 
 type River struct {
@@ -238,5 +239,5 @@ type RegionWithCountry struct {
 	Id      int64 `json:"id,omitempty"`
 	Country Country `json:"country,omitempty"`
 	Title   string `json:"title"`
-	Fake      bool `json:"fake,omitempty"`
+	Fake    bool `json:"fake,omitempty"`
 }

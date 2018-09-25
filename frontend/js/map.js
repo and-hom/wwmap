@@ -12,7 +12,8 @@
             $('#rivers').html('');
             var dataObj = {
                 "rivers" : JSON.parse(data),
-                "apiUrl": apiBase + "/gpx/river"
+                "apiUrl": apiBase + "/gpx/river",
+                "apiBase": apiBase
             }
             for (i in dataObj.rivers) {
                 if(dataObj.rivers[i].bounds) {

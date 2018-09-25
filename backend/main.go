@@ -45,6 +45,9 @@ func main() {
 	imgPreviewStorage := blob.BasicFsStorage{
 		BaseDir:configuration.ImgStorage.Preview.Dir,
 	}
+	riverPassportStorage := blob.BasicFsStorage{
+		BaseDir:configuration.RiverPassportStorage.Dir,
+	}
 
 	app := handler.App{
 		Handler: Handler{},
@@ -71,6 +74,7 @@ func main() {
 			App: app,
 			ImgStorage: imgStorage,
 			PreviewImgStorage: imgPreviewStorage,
+			RiverPassportStorage:riverPassportStorage,
 		},
 		&handler.ImgHandler{
 			App:app,
