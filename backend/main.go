@@ -12,7 +12,7 @@ import (
 	"github.com/and-hom/wwmap/backend/passport"
 	"time"
 	"github.com/and-hom/wwmap/backend/referer"
-	"github.com/and-hom/wwmap/lib/img_storage"
+	"github.com/and-hom/wwmap/lib/blob"
 	"github.com/and-hom/wwmap/backend/handler"
 	"github.com/and-hom/wwmap/backend/clustering"
 )
@@ -39,10 +39,10 @@ func main() {
 	clusterMaker := clustering.NewClusterMaker(whiteWaterDao, imgDao,
 		configuration.ClusterizationParams)
 
-	imgStorage := img_storage.BasicFsStorage{
+	imgStorage := blob.BasicFsStorage{
 		BaseDir:configuration.ImgStorage.Full.Dir,
 	}
-	imgPreviewStorage := img_storage.BasicFsStorage{
+	imgPreviewStorage := blob.BasicFsStorage{
 		BaseDir:configuration.ImgStorage.Preview.Dir,
 	}
 

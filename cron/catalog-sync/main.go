@@ -8,6 +8,8 @@ import (
 	"github.com/and-hom/wwmap/cron/catalog-sync/common"
 	"github.com/and-hom/wwmap/cron/catalog-sync/tlib"
 	"github.com/and-hom/wwmap/cron/catalog-sync/pdf"
+	"github.com/and-hom/wwmap/lib/blob"
+	"fmt"
 )
 
 type App struct {
@@ -36,6 +38,10 @@ func CreateApp() App {
 	configuration.ChangeLogLevel()
 
 	pgStorage := dao.NewPostgresStorage(configuration.DbConnString)
+	riverPassportStorage := blob.BasicFsStorage{
+		BaseDir:configuration.RiverPassportStorage.Dir,
+	}
+	fmt.Println(configuration.RiverPassportStorage)
 	return App{
 		VoyageReportDao:dao.NewVoyageReportPostgresDao(pgStorage),
 		CountryDao:dao.NewCountryPostgresDao(pgStorage),
@@ -54,10 +60,10 @@ func CreateApp() App {
 			common.WithReportProvider(tlib.GetReportProvider),
 		},
 		catalogConnectors: []common.WithCatalogConnector{
-			//{F:func() (common.CatalogConnector, error) {
-			//	return huskytm.GetCatalogConnector(configuration.Sync.Login, configuration.Sync.Password, configuration.Sync.MinDeltaBetweenRequests)
-			//}},
-			{F:pdf.GetCatalogConnector},
+			{F:func() (common.CatalogConnector, error) {
+				return huskytm.GetCatalogConnector(configuration.Sync.Login, configuration.Sync.Password, configuration.Sync.MinDeltaBetweenRequests)
+			}},
+			{F:func() (common.CatalogConnector, error) {return pdf.GetCatalogConnector(riverPassportStorage)}},
 		},
 		ImgUrlBase:configuration.ImgStorage.Full.UrlBase,
 		ImgUrlPreviewBase:configuration.ImgStorage.Preview.UrlBase,
@@ -68,6 +74,6 @@ func CreateApp() App {
 func main() {
 	log.Infof("Starting wwmap")
 	app := CreateApp()
-	//app.DoSyncReports()
+	app.DoSyncReports()
 	app.DoWriteCatalog()
 }

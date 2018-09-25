@@ -16,13 +16,13 @@ import (
 	"github.com/ptrv/go-gpx"
 	"github.com/and-hom/wwmap/lib/geo"
 	"github.com/and-hom/wwmap/lib/model"
-	"github.com/and-hom/wwmap/lib/img_storage"
+	"github.com/and-hom/wwmap/lib/blob"
 )
 
 type GeoHierarchyHandler struct {
 	App
-	ImgStorage        img_storage.ImgStorage
-	PreviewImgStorage img_storage.ImgStorage
+	ImgStorage        blob.BlobStorage
+	PreviewImgStorage blob.BlobStorage
 	regions           map[int64]dao.Region
 }
 

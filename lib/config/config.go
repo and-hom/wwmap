@@ -39,20 +39,20 @@ type TileCache struct {
 }
 
 type WordpressSync struct {
-	Login      string `yaml:"login"`
-	Password   string `yaml:"password"`
-	RootPageId int `yaml:"root-page-id"`
+	Login                   string `yaml:"login"`
+	Password                string `yaml:"password"`
+	RootPageId              int `yaml:"root-page-id"`
 	MinDeltaBetweenRequests time.Duration `yaml:"min-delta-between-requests"`
 }
 
-type ImgStorageParams struct {
+type BlobStorageParams struct {
 	Dir     string `yaml:"dir"`
 	UrlBase string `yaml:"url-base"`
 }
 
 type ImgStorage struct {
-	Full    ImgStorageParams `yaml:"full"`
-	Preview ImgStorageParams `yaml:"preview"`
+	Full    BlobStorageParams `yaml:"full"`
+	Preview BlobStorageParams `yaml:"preview"`
 }
 
 type Configuration struct {
@@ -64,15 +64,16 @@ type Configuration struct {
 	TileCache            TileCache `yaml:"tile-cache"`
 	Sync                 WordpressSync `yaml:"sync"`
 	ImgStorage           ImgStorage `yaml:"img-storage"`
-	LogLevel	     string `yaml:"log-level"`
+	RiverPassportStorage BlobStorageParams `yaml:"river-passport-storage"`
+	LogLevel             string `yaml:"log-level"`
 }
 
 func (this *Configuration) ChangeLogLevel() {
-	if this.LogLevel=="" {
+	if this.LogLevel == "" {
 		return
 	}
 	level, err := log.ParseLevel(this.LogLevel)
-	if err!=nil {
+	if err != nil {
 		log.Fatalf("Can not parse log level %s: %v", this.LogLevel, err)
 	}
 	log.SetLevel(level)

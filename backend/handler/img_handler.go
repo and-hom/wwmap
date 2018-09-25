@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"github.com/and-hom/wwmap/lib/img_storage"
+	"github.com/and-hom/wwmap/lib/blob"
 	"net/http"
 	. "github.com/and-hom/wwmap/lib/http"
 	. "github.com/and-hom/wwmap/lib/handler"
@@ -30,8 +30,8 @@ const (
 
 type ImgHandler struct {
 	App
-	ImgStorage        img_storage.ImgStorage
-	PreviewImgStorage img_storage.ImgStorage
+	ImgStorage        blob.BlobStorage
+	PreviewImgStorage blob.BlobStorage
 	ImgUrlBase        string
 	ImgUrlPreviewBase string
 };

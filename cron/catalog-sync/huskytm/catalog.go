@@ -7,9 +7,7 @@ import (
 	"github.com/and-hom/wwmap/cron/catalog-sync/huskytm/templates"
 	"fmt"
 	"net/http"
-	"html/template"
 	log "github.com/Sirupsen/logrus"
-	"bytes"
 	"time"
 	"github.com/and-hom/wwmap/lib/util"
 )
@@ -28,55 +26,25 @@ func GetCatalogConnector(login, password string, minDeltaBetweenRequests time.Du
 	if r.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("Connection failed. Code: %d Body: %s", r.StatusCode, string(b))
 	}
-	funcMap := template.FuncMap{
-		"inc": func(i int) int {
-			return i + 1
-		},
-	}
-
-	spotPageTemplate, e := template.New("spot").Funcs(funcMap).Parse(string(templates.MustAsset("spot-page-template.htm")))
-	if e != nil {
-		return nil, fmt.Errorf("Can not compile template: %s", e.Error())
-	}
-	riverPageTemplate, e := template.New("river").Funcs(funcMap).Parse(string(templates.MustAsset("river-page-template.htm")))
-	if e != nil {
-		return nil, fmt.Errorf("Can not compile template: %s", e.Error())
-	}
-	regionPageTemplate, e := template.New("region").Funcs(funcMap).Parse(string(templates.MustAsset("region-page-template.htm")))
-	if e != nil {
-		return nil, fmt.Errorf("Can not compile template: %s", e.Error())
-	}
-	countryPageTemplate, e := template.New("country").Funcs(funcMap).Parse(string(templates.MustAsset("country-page-template.htm")))
-	if e != nil {
-		return nil, fmt.Errorf("Can not compile template: %s", e.Error())
-	}
-	rootPageTemplate, e := template.New("root").Funcs(funcMap).Parse(string(templates.MustAsset("root-page-template.htm")))
-	if e != nil {
-		return nil, fmt.Errorf("Can not compile template: %s", e.Error())
+	t, err := common.LoadTemplates(templates.MustAsset)
+	if err!=nil {
+		return nil, err
 	}
 	return &HuskytmCatalogConnector{
 		client:client,
 		me:u.ID,
 		pageIdsCache:make(map[string]int),
-		spotPageTemplate: spotPageTemplate,
-		riverPageTemplate : riverPageTemplate,
-		regionPageTemplate: regionPageTemplate,
-		countryPageTemplate: countryPageTemplate,
-		rootPageTemplate: rootPageTemplate,
+		templates:t,
 		rateLimit:util.NewRateLimit(minDeltaBetweenRequests),
 	}, nil
 }
 
 type HuskytmCatalogConnector struct {
-	client              *wp.Client
-	me                  int
-	pageIdsCache        map[string]int
-	spotPageTemplate    *template.Template
-	riverPageTemplate   *template.Template
-	regionPageTemplate  *template.Template
-	countryPageTemplate *template.Template
-	rootPageTemplate    *template.Template
-	rateLimit           util.RateLimit
+	client       *wp.Client
+	me           int
+	pageIdsCache map[string]int
+	templates    common.Templates
+	rateLimit    util.RateLimit
 }
 
 func (this *HuskytmCatalogConnector) SourceId() string {
@@ -87,7 +55,7 @@ func (this *HuskytmCatalogConnector) Close() error {
 	return nil
 }
 
-func (this *HuskytmCatalogConnector) CreateEmptyPageIfNotExistsAndReturnId(parent int, pageId int, title string) (int, string, bool, error) {
+func (this *HuskytmCatalogConnector) CreateEmptyPageIfNotExistsAndReturnId(_ int64, parent int, pageId int, title string) (int, string, bool, error) {
 	log.Infof("Check page for id=%d", pageId)
 	if pageId <= 0 {
 		id, link, err := this.createPage(parent, title)
@@ -122,34 +90,35 @@ func (this *HuskytmCatalogConnector) createPage(parent int, title string) (int, 
 }
 
 func (this *HuskytmCatalogConnector) WriteSpotPage(page common.SpotPageDto) error {
-	return this.writePage(page.Id, this.spotPageTemplate, page.Spot.Title, page)
+	return this.writePage(page.Id, this.templates.WriteSpot, page.Spot.Title, page)
 }
 func (this *HuskytmCatalogConnector) WriteRiverPage(page common.RiverPageDto) error {
-	return this.writePage(page.Id, this.riverPageTemplate, page.River.Title, page)
+	return this.writePage(page.Id, this.templates.WriteRiver, page.River.Title, page)
 }
 func (this *HuskytmCatalogConnector) WriteRegionPage(page common.RegionPageDto) error {
-	return this.writePage(page.Id, this.regionPageTemplate, page.Region.Title, page)
+	return this.writePage(page.Id, this.templates.WriteRegion, page.Region.Title, page)
 }
 func (this *HuskytmCatalogConnector) WriteCountryPage(page common.CountryPageDto) error {
-	return this.writePage(page.Id, this.countryPageTemplate, page.Country.Title, page)
+	return this.writePage(page.Id, this.templates.WriteCountry, page.Country.Title, page)
 }
 
 func (this *HuskytmCatalogConnector) WriteRootPage(page common.RootPageDto) error {
-	return this.writePage(page.Id, this.rootPageTemplate, "Каталог водных препятствий", page)
+	return this.writePage(page.Id, this.templates.WriteRoot, "Каталог водных препятствий", page)
 }
 
-func (this *HuskytmCatalogConnector) writePage(pageId int, tmpl *template.Template, title string, data interface{}) error {
+func (this *HuskytmCatalogConnector) writePage(pageId int, tmpl func(data interface{}) (string, error), title string, data interface{}) error {
 	log.Infof("Write page %d for %s", pageId, title)
-	htmlBuf := bytes.Buffer{}
-	err := tmpl.Execute(&htmlBuf, data)
+
+	body, err := tmpl(data)
 	if err != nil {
 		log.Errorf("Can not process template", err)
 		return err
 	}
+
 	page := wp.Page{
 		Title:  wp.Title{Raw:title},
 		Author:        this.me,
-		Content:wp.Content{Raw:htmlBuf.String()},
+		Content:wp.Content{Raw:body},
 	}
 
 	this.rateLimit.WaitIfNecessary()

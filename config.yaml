@@ -38,6 +38,8 @@ img-storage:
   preview:
     dir: "/var/lib/wwmap/backend/images/preview"
     url-base: "http://localhost:7007/spot/0/img/%d/preview"
+river-passport-storage:
+  dir: "/var/lib/wwmap/backend/river-passport"
 
 
 backup:
