@@ -1,36 +1,24 @@
-<table style="border:0px;">
-    <tr>
-        <td colspan="2">
-            <h1>{{.River.Title}}</h1>
-            {{.River.Description}}
-        </td>
-        <td>
-            <img style="width:200px;" src="{{.MainImage.Url}}"/>
-        </td>
-    </tr>
-    <tr>
-        <td colspan="2"><strong>Пороги</strong>&nbsp;&nbsp;<a
-                href="https://wwmap.ru/api/gpx/river/{{.River.Id}}">GPX</a>&nbsp;<a
-                href="https://wwmap.ru/api/gpx/river/{{.River.Id}}?tr=true">GPX<sub>en</sub></a></td>
-        <td rowspan="{{ inc (len .Links) }}">
-            Карта
-        </td>
-    </tr>
-    {{range .Links}}
-    <tr>
-        <td colspan="2"><a
-                href="{{.Url}}">{{.Title}}&nbsp;({{.Category}})</a>
-        </td>
-    </tr>
+<h1>{{.River.Title}}</h1>
+{{.River.Description}}
+<h3>Пороги (к./с.)</h3>
+<ul style="list-style-type:none">
+    {{range .Spots}}
+    <li><a href="#spot{{.Spot.Id}}">{{.Spot.Title}}&nbsp;({{.Spot.Category}})</a></li>
     {{end}}
-    <tr>
-        <td colspan="3"><strong>Отчёты</strong></td>
-    </tr>
-</table>
+</ul>
+<h3>Отчёты</h3>
+<ul style="list-style-type:none">
+    {{range .Reports}}
+    <li><a href="{{.Url}}" target="_blank"><img src="{{.SourceLogo}}"/>&nbsp;{{.Title}}</a></li>
+    {{end}}
+</ul>
+
 {{range .Spots}}
-<table style="border:0px;">
+<hr/>
+<h2 id="spot{{.Spot.Id}}">{{.Spot.Title}}</h2>
+<table style="border:0px; width: 100%;">
     <tr>
-        <td colspan="2">{{.Spot.ShortDesc}}</td>
+        <td colspan="2" style="width:70%;">{{.Spot.ShortDesc}}</td>
         <td rowspan="2">
             <img style="width:200px;" src="{{.MainImage.Url}}"/>
         </td>

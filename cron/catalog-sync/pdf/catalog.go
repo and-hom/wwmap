@@ -78,6 +78,12 @@ func (this *PdfCatalogConnector) writePage(pageId int, body string, title string
 	}
 	pdfGenerator.Dpi.Set(300)
 	pdfGenerator.Orientation.Set(wkhtmltopdf.OrientationPortrait)
+	pdfGenerator.PageWidth.Set(210)
+	pdfGenerator.PageHeight.Set(297)
+	pdfGenerator.MarginTop.Set(15)
+	pdfGenerator.MarginBottom.Set(20)
+	pdfGenerator.MarginLeft.Set(10)
+	pdfGenerator.MarginRight.Set(10)
 
 	pr := wkhtmltopdf.NewPageReader(strings.NewReader(body))
 	pdfGenerator.AddPage(pr)
