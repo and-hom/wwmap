@@ -135,7 +135,8 @@ func (this riverStorage) listRiverTitles(query string, queryParams ...interface{
 			riverTitle := RiverTitle{}
 			boundsStr := sql.NullString{}
 			aliases := sql.NullString{}
-			err := rows.Scan(&riverTitle.Id, &riverTitle.RegionId, &riverTitle.Title, &boundsStr, &aliases)
+			props := ""
+			err := rows.Scan(&riverTitle.Id, &riverTitle.RegionId, &riverTitle.Title, &boundsStr, &aliases, &props)
 			if err != nil {
 				return RiverTitle{}, err
 			}
@@ -180,6 +181,10 @@ func (this riverStorage) listRiverTitles(query string, queryParams ...interface{
 			if aliases.Valid {
 				err = json.Unmarshal([]byte(aliases.String), &riverTitle.Aliases)
 			}
+			if err != nil {
+				return RiverTitle{}, err
+			}
+			err = json.Unmarshal([]byte(props), &riverTitle.Props)
 			return riverTitle, err
 		}, queryParams...)
 	if (err != nil ) {
@@ -199,19 +204,29 @@ func (this riverStorage) Props() PropertyManager {
 
 func (this riverStorage) SetVisible(id int64, visible bool) (error) {
 	fmt.Println("visible", visible)
-	return this.performUpdates(this.setVisibleQuery, arrayMapper, []interface{} {id, visible})
+	return this.performUpdates(this.setVisibleQuery, arrayMapper, []interface{}{id, visible})
 }
 
 func riverMapperFull(rows *sql.Rows) (River, error) {
 	river := River{}
 	boundsStr := sql.NullString{}
 	aliases := sql.NullString{}
-	err := rows.Scan(&river.Id, &river.RegionId, &river.Title, &boundsStr, &aliases, &river.Description, &river.Visible)
+	props := ""
+	spotCounters := ""
+	err := rows.Scan(&river.Id, &river.RegionId, &river.Title, &boundsStr, &aliases, &river.Description, &river.Visible, &props, &spotCounters)
 	if err != nil {
 		return river, err
 	}
 	if aliases.Valid {
 		err = json.Unmarshal([]byte(aliases.String), &river.Aliases)
 	}
+	if err != nil {
+		return river, err
+	}
+	err = json.Unmarshal([]byte(props), &river.Props)
+	if err != nil {
+		return river, err
+	}
+	err = json.Unmarshal([]byte(spotCounters), &river.SpotCounters)
 	return river, err
 }

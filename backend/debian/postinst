@@ -3,4 +3,5 @@
 mkdir -p /var/lib/wwmap/backend
 mkdir -p /var/lib/wwmap/backend/images/full
 mkdir -p /var/lib/wwmap/backend/images/preview
+mkdir -p /var/lib/wwmap/backend/river-passport
 chown -R wwmap:wwmap /var/lib/wwmap/backend

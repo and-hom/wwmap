@@ -1,4 +1,4 @@
-package img_storage
+package blob
 
 import (
 	"io"
@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-type ImgStorage interface {
+type BlobStorage interface {
 	Store(id string, r io.Reader) error
 	Read(id string) (io.ReadCloser, error)
 	Remove(id string) error

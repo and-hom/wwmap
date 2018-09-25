@@ -357,6 +357,8 @@ func (this *PostgresStorage) performUpdates(query string, mapper func(entity int
 type PropertyManager interface {
 	GetIntProperty(name string, id int64) (int, error)
 	SetIntProperty(name string, id int64, value int) error
+	GetBoolProperty(name string, id int64) (bool, error)
+	SetBoolProperty(name string, id int64, value bool) error
 }
 
 type PropertyManagerImpl struct {
@@ -365,13 +367,12 @@ type PropertyManagerImpl struct {
 }
 
 func (this PropertyManagerImpl) GetIntProperty(name string, id int64) (int, error) {
-	i, found, err := this.dao.doFindAndReturn(
-		"WITH txt_val AS (SELECT (props->>'" + name + "') val FROM " + this.table + " WHERE id=$1) SELECT val::INT FROM txt_val WHERE val IS NOT NULL",
-		func(rows *sql.Rows) (int, error) {
-			i := 0
-			err := rows.Scan(&i)
-			return i, err
-		}, id)
+	rowMapper := func(rows *sql.Rows) (int, error) {
+		i := 0
+		err := rows.Scan(&i)
+		return i, err
+	}
+	i, found,err:=this.getProperty(name, "int", rowMapper, id)
 	if err != nil {
 		return 0, err
 	}
@@ -382,6 +383,35 @@ func (this PropertyManagerImpl) GetIntProperty(name string, id int64) (int, erro
 }
 
 func (this PropertyManagerImpl) SetIntProperty(name string, id int64, value int) error {
+	return this.setProperty(name, id, value)
+}
+
+func (this PropertyManagerImpl) GetBoolProperty(name string, id int64) (bool, error) {
+	rowMapper := func(rows *sql.Rows) (bool, error) {
+		i := false
+		err := rows.Scan(&i)
+		return i, err
+	}
+	i, found,err:=this.getProperty(name, "bool", rowMapper, id)
+	if err != nil {
+		return false, err
+	}
+	if !found {
+		return false, nil
+	}
+	return i.(bool), nil
+}
+
+func (this PropertyManagerImpl) SetBoolProperty(name string, id int64, value bool) error {
+	return this.setProperty(name, id, value)
+}
+
+func (this PropertyManagerImpl) getProperty(name string, sqlType string, rowMapper interface{}, id int64) (interface{}, bool, error) {
+	return this.dao.doFindAndReturn(
+		"WITH txt_val AS (SELECT (props->>'" + name + "') val FROM " + this.table + " WHERE id=$1) SELECT val::" + sqlType + " FROM txt_val WHERE val IS NOT NULL",
+		rowMapper, id)
+}
+func (this PropertyManagerImpl) setProperty(name string, id int64, value interface{}) error {
 	return this.dao.performUpdates("UPDATE " + this.table + " SET props=jsonb_set(props, '{" + name + "}', $2::text::jsonb, true) WHERE id=$1",
 		arrayMapper, []interface{}{id, value})
 }

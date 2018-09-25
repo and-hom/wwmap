@@ -73,6 +73,9 @@
             <td class="gpx-col">
                 <a href="${apiUrl}/${id}" style="padding-right:10px;" alt="Скачать GPX с точками порогов">GPX</a>
                 <a href="${apiUrl}/${id}?tr=true" alt="Скачать GPX с точками порогов">GPX<sub>en</sub></a>
+                {%if props.export_pdf%}
+                <a href="${apiBase}/river/${id}/pdf" target="_blank" alt="Скачать описание PDF">Описание&nbsp;<sub>PDF</sub></a>
+                {%/if%}
             </td>
             <td class="report-col">
                 <ul class="reports">

@@ -61,6 +61,8 @@
 
 .wwmap-river-menu .gpx-col {
     width: 100px;
+    padding-bottom: 7px;
+    font-size: 86%;
 
 }
 .wwmap-river-menu .report-col {

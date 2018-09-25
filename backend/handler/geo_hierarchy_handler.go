@@ -16,14 +16,16 @@ import (
 	"github.com/ptrv/go-gpx"
 	"github.com/and-hom/wwmap/lib/geo"
 	"github.com/and-hom/wwmap/lib/model"
-	"github.com/and-hom/wwmap/lib/img_storage"
+	"github.com/and-hom/wwmap/lib/blob"
+	"io"
 )
 
 type GeoHierarchyHandler struct {
 	App
-	ImgStorage        img_storage.ImgStorage
-	PreviewImgStorage img_storage.ImgStorage
-	regions           map[int64]dao.Region
+	ImgStorage           blob.BlobStorage
+	PreviewImgStorage    blob.BlobStorage
+	RiverPassportStorage blob.BlobStorage
+	regions              map[int64]dao.Region
 }
 
 func (this *GeoHierarchyHandler) Init(r *mux.Router) {
@@ -41,6 +43,7 @@ func (this *GeoHierarchyHandler) Init(r *mux.Router) {
 	this.Register(r, "/river/{riverId}/spots", HandlerFunctions{Get:this.ListSpots})
 	this.Register(r, "/river/{riverId}/center", HandlerFunctions{Get:this.GetRiverCenter})
 	this.Register(r, "/river/{riverId}/gpx", HandlerFunctions{Post:this.UploadGpx, Put:this.UploadGpx})
+	this.Register(r, "/river/{riverId}/pdf", HandlerFunctions{Get:this.GetRiverPassport})
 	this.Register(r, "/river/{riverId}/visible", HandlerFunctions{Post:this.SetRiverVisible, Put:this.SetRiverVisible})
 
 	this.Register(r, "/spot/{spotId}", HandlerFunctions{Get:this.GetSpot, Post:this.SaveSpot, Put:this.SaveSpot, Delete:this.RemoveSpot})
@@ -556,4 +559,16 @@ func (this *GeoHierarchyHandler) writeSpot(spotId int64, w http.ResponseWriter) 
 		return
 	}
 	this.JsonAnswer(w, spot)
+}
+
+func (this *GeoHierarchyHandler) GetRiverPassport(w http.ResponseWriter, req *http.Request) {
+	pathParams := mux.Vars(req)
+	w.Header().Set("Content-Type", "application/pdf")
+	r, err := this.RiverPassportStorage.Read(pathParams["riverId"])
+	if err != nil {
+		OnError500(w, err, "Can not get river passport")
+		return
+	}
+	defer r.Close()
+	io.Copy(w, r)
 }

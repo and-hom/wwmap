@@ -142,7 +142,7 @@ type CatalogConnector interface {
 	PassportEntriesSince(key string) ([]dao.WWPassport, error)
 	GetImages(key string) ([]dao.Img, error)
 
-	CreateEmptyPageIfNotExistsAndReturnId(parent int, pageId int, title string) (int, string, bool, error)
+	CreateEmptyPageIfNotExistsAndReturnId(id int64, parent int, pageId int, title string) (int, string, bool, error)
 	WriteSpotPage(SpotPageDto) error
 	WriteRiverPage(RiverPageDto) error
 	WriteRegionPage(RegionPageDto) error

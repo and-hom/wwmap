@@ -1,0 +1,73 @@
+<h1>{{.River.Title}}</h1>
+{{.River.Description}}
+<h3>Пороги (к./с.)</h3>
+<ul style="list-style-type:none">
+    {{range .Spots}}
+    <li><a href="#spot{{.Spot.Id}}">{{.Spot.Title}}&nbsp;({{.Spot.Category}})</a></li>
+    {{end}}
+</ul>
+<h3>Отчёты</h3>
+<ul style="list-style-type:none">
+    {{range .Reports}}
+    <li><a href="{{.Url}}" target="_blank"><img src="{{.SourceLogo}}"/>&nbsp;{{.Title}}</a></li>
+    {{end}}
+</ul>
+
+{{range .Spots}}
+<hr/>
+<h2 id="spot{{.Spot.Id}}">{{.Spot.Title}}</h2>
+<table style="border:0px; width: 100%;">
+    <tr>
+        <td colspan="2" style="width:70%;">{{.Spot.ShortDesc}}</td>
+        <td rowspan="2">
+            <img style="width:200px;" src="{{.MainImage.Url}}"/>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <strong>Ориентиры:</strong><br/>
+            {{.Spot.Orient}}
+        </td>
+    </tr>
+    <tr>
+        <td><strong>Уровень воды</strong></td>
+        <td><strong>Тех. описание</strong></td>
+        <td rowspan="7">
+            <strong>Расположение: </strong>
+            <div style="width:100%" id="wwmap">Тут будет карта</div>
+            <div class="short-div">
+                <strong>Координаты:</strong><br/><strong>Широта:</strong>&nbsp;{{.Spot.Point.Lat}}
+                <br/><strong>Долгота:</strong>&nbsp;{{.Spot.Point.Lon}}
+                <br/>
+                <div><strong>К.с. нв/св/вв:</strong>&nbsp;{{.Spot.LowWaterCategory}}/{{.Spot.MediumWaterCategory}}/{{.Spot.HighWaterCategory}}
+                </div>
+                <div><strong>К.с. по классификатору:</strong>&nbsp;{{.Spot.Category}}</div>
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td><strong>Низкая вода</strong></td>
+        <td>{{.Spot.LowWaterDescription}}</td>
+    </tr>
+    <tr>
+        <td><strong>Средняя вода</strong></td>
+        <td>{{.Spot.MediumWaterDescription}}</td>
+    </tr>
+    <tr>
+        <td><strong>Высокая вода</strong></td>
+        <td>{{.Spot.HighWaterDescription}}</td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <strong>Подход/выход</strong>
+            {{.Spot.Approach}}
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <strong>Страховка</strong>
+            {{.Spot.Safety}}
+        </td>
+    </tr>
+</table>
+{{end}}
