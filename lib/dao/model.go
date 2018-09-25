@@ -21,6 +21,11 @@ type IdTitle struct {
 	Title string `json:"title"`
 }
 
+type SpotCounters struct {
+	Ordered int `json:"ordered"`
+	Total   int `json:"total"`
+}
+
 type RiverTitle struct {
 	IdTitle
 	OsmId    int64 `json:"osm_id"`
@@ -32,8 +37,9 @@ type RiverTitle struct {
 
 type River struct {
 	RiverTitle
-	Description string `json:"description"`
-	Visible     bool `json:"visible"`
+	Description  string `json:"description"`
+	Visible      bool `json:"visible"`
+	SpotCounters SpotCounters `json:"spot_counters"`
 }
 
 type WaterWay struct {

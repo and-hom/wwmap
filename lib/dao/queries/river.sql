@@ -19,7 +19,9 @@ WHERE exists(SELECT 1 FROM white_water_rapid
 GROUP BY river.id, river.title ORDER BY popularity DESC LIMIT $5
 
 --@by-id
-SELECT id,region_id,title,NULL,river.aliases AS aliases, description, visible, props FROM river WHERE id=$1
+SELECT id,region_id,title,NULL,river.aliases AS aliases, description, visible, props,
+(SELECT to_json(spot_counters) FROM (SELECT COALESCE(sum(CASE WHEN auto_ordering AND last_auto_ordering>to_timestamp(0) THEN 1 WHEN order_index>0 THEN 1 ELSE 0 END),0) as ordered, count(1) as total FROM white_water_rapid WHERE river_id=river.id) spot_counters) AS spot_counters
+ FROM river WHERE id=$1
 
 --@by-region
 SELECT river.id, region_id, river.title, NULL, river.aliases, river.props
@@ -27,7 +29,8 @@ SELECT river.id, region_id, river.title, NULL, river.aliases, river.props
     ORDER BY CASE river.title WHEN '-' THEN NULL ELSE river.title END ASC
 
 --@by-region-full
-SELECT river.id, region_id, river.title, NULL, river.aliases, description, visible, river.props
+SELECT river.id, region_id, river.title, NULL, river.aliases, description, visible, river.props,
+(SELECT to_json(spot_counters) FROM (SELECT COALESCE(sum(CASE WHEN auto_ordering AND last_auto_ordering>to_timestamp(0) THEN 1 WHEN order_index>0 THEN 1 ELSE 0 END),0) as ordered, count(1) as total FROM white_water_rapid WHERE river_id=river.id) spot_counters) AS spot_counters
     FROM river INNER JOIN region ON river.region_id=region.id WHERE region.id=$1
     ORDER BY CASE river.title WHEN '-' THEN NULL ELSE river.title END ASC
 
@@ -37,7 +40,8 @@ SELECT river.id as id, region_id, river.title as title, NULL, river.aliases as a
     ORDER BY CASE river.title WHEN '-' THEN NULL ELSE river.title END ASC
 
 --@by-country-full
-SELECT river.id as id, region_id, river.title as title, NULL, river.aliases as aliases, description, visible, river.props
+SELECT river.id as id, region_id, river.title as title, NULL, river.aliases as aliases, description, visible, river.props,
+(SELECT to_json(spot_counters) FROM (SELECT COALESCE(sum(CASE WHEN auto_ordering AND last_auto_ordering>to_timestamp(0) THEN 1 WHEN order_index>0 THEN 1 ELSE 0 END),0) as ordered, count(1) as total FROM white_water_rapid WHERE river_id=river.id) spot_counters) AS spot_counters
     FROM river INNER JOIN region ON river.region_id=region.id WHERE region.fake AND region.country_id=$1
     ORDER BY CASE river.title WHEN '-' THEN NULL ELSE river.title END ASC
 

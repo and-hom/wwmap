@@ -212,7 +212,8 @@ func riverMapperFull(rows *sql.Rows) (River, error) {
 	boundsStr := sql.NullString{}
 	aliases := sql.NullString{}
 	props := ""
-	err := rows.Scan(&river.Id, &river.RegionId, &river.Title, &boundsStr, &aliases, &river.Description, &river.Visible, &props)
+	spotCounters := ""
+	err := rows.Scan(&river.Id, &river.RegionId, &river.Title, &boundsStr, &aliases, &river.Description, &river.Visible, &props, &spotCounters)
 	if err != nil {
 		return river, err
 	}
@@ -223,5 +224,9 @@ func riverMapperFull(rows *sql.Rows) (River, error) {
 		return river, err
 	}
 	err = json.Unmarshal([]byte(props), &river.Props)
+	if err != nil {
+		return river, err
+	}
+	err = json.Unmarshal([]byte(spotCounters), &river.SpotCounters)
 	return river, err
 }

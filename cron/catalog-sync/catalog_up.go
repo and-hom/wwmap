@@ -94,13 +94,13 @@ func (this *App) doWriteCatalog(catalogConnector *common.CatalogConnector) error
 		}
 		regions = filterRegions(regions)
 
-		rivers, err := this.RiverDao.ListByCountryFull(country.Id)
+		countryRivers, err := this.RiverDao.ListByCountryFull(country.Id)
 		if err != nil {
 			log.Errorf("Can not list rivers for country %d", country.Id)
 			return err
 		}
 
-		if len(rivers) == 0 && len(regions) == 0 {
+		if len(countryRivers) == 0 && len(regions) == 0 {
 			log.Infof("Skip country %s - no rivers or regions", country.Title)
 			continue
 		}
@@ -133,7 +133,11 @@ func (this *App) doWriteCatalog(catalogConnector *common.CatalogConnector) error
 
 			riverLinks := []common.LinkOnPage{}
 			for _, river := range regionRivers {
-				riverPageLink, err := this.uploadRiver(catalogConnector, country, region, river, rootPageLink, countryPageLink, regionPageLink, regionPageId)
+				riverPageLink := ""
+				if river.SpotCounters.Ordered==river.SpotCounters.Total && river.SpotCounters.Total>0 {
+					riverPageLink, err = this.uploadRiver(catalogConnector, country, region, river, rootPageLink, countryPageLink, regionPageLink, regionPageId)
+				}
+
 				exportOk := err == nil && riverPageLink != ""
 				log.Infof("Mark as exported: %v", exportOk)
 				err2 := this.RiverDao.Props().SetBoolProperty("export_" + (*catalogConnector).SourceId(), river.Id, exportOk)
@@ -161,9 +165,12 @@ func (this *App) doWriteCatalog(catalogConnector *common.CatalogConnector) error
 			}
 			countryRegionLinks = append(countryRegionLinks, common.LinkOnPage{Title:region.Title, Url:regionPageLink})
 		}
-		for _, river := range rivers {
+		for _, river := range countryRivers {
 			log.Infof("Upload river %s/%s", country.Title, river.Title)
-			riverPageLink, err := this.uploadRiver(catalogConnector, country, fakeRegion, river, rootPageLink, countryPageLink, "", countryPageId)
+			riverPageLink := ""
+			if river.SpotCounters.Ordered==river.SpotCounters.Total && river.SpotCounters.Total>0 {
+				riverPageLink, err = this.uploadRiver(catalogConnector, country, fakeRegion, river, rootPageLink, countryPageLink, "", countryPageId)
+			}
 			exportOk := err == nil && riverPageLink != ""
 			log.Infof("Mark as exported: %v", exportOk)
 			err2 := this.RiverDao.Props().SetBoolProperty("export_" + (*catalogConnector).SourceId(), river.Id, exportOk)
