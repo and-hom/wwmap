@@ -9,12 +9,15 @@ build-notifier:
 	GOPATH="$(HOME)/.go" go install github.com/go-bindata/go-bindata
 	cd notifier && $(HOME)/.go/bin/go-bindata email-template && GOPATH="$(HOME)/.go" go build
 
-TEMPLATE_FILES=spot-page-template.htm river-page-template.htm region-page-template.htm country-page-template.htm root-page-template.htm
+TEMPLATE_FILES=spot-page-template.htm river-page-template.htm region-page-template.htm country-page-template.htm root-page-template.htm decorator.htm
 build-catalog-sync:
 	cd catalog-sync && \
 	mkdir -p bindata && \
 	$(HOME)/.go/bin/go-bindata -pkg bindata -o bindata/bindata.go email-template && \
 	cd huskytm/templates && \
+	$(HOME)/.go/bin/go-bindata -pkg templates $(TEMPLATE_FILES) && \
+	cd ../../ && \
+	cd pdf/templates && \
 	$(HOME)/.go/bin/go-bindata -pkg templates $(TEMPLATE_FILES) && \
 	cd ../../ && \
 	GOPATH="$(HOME)/.go" go build
