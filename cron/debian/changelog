@@ -1,3 +1,10 @@
+wwmap-cron (0.0.9) unstable; urgency=medium
+
+  * #126 Do not break report import and catalog export on error of one of report sources or catalog targets
+  * Some html export fix
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Tue, 25 Sep 2018 17:33:58 +0300
+
 wwmap-cron (0.0.8) unstable; urgency=medium
 
   * #101 One second between requests to huskytm
