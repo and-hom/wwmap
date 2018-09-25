@@ -34,9 +34,6 @@ func HumanReadableCategoryName(category model.SportCategory, translit bool) stri
 	if category.Category == 0 {
 		return "-"
 	}
-	if category.Sub == "" {
-		return category.Serialize()
-	}
 	return category.Serialize()
 }
 
