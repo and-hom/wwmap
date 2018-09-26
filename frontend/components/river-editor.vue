@@ -17,8 +17,8 @@
                 <button type="button" class="btn btn-info" v-if="!editMode" v-on:click="editMode=true; hideError();">
                     Редактирование
                 </button>
-                <button type="button" class="btn btn-success" v-if="editMode" v-on:click="save()">Сохранить</button>
-                <button type="button" class="btn btn-secondary" v-if="editMode" v-on:click="reload()">Отменить</button>
+                <button type="button" class="btn btn-success" v-if="editMode" v-on:click="editMode=false; save()">Сохранить</button>
+                <button type="button" class="btn btn-secondary" v-if="editMode" v-on:click="editMode=false; reload()">Отменить</button>
             </div>
             <div class="btn-group">
                 <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#del-river">Удалить
