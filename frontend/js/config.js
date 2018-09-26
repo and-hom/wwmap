@@ -12,7 +12,7 @@ const GOOGLE_SAT_TILES = 'http://khms' + Math.floor(Math.random()) % 4 + '.googl
 const THUNDERFOREST_OUTDOOR_TILES = 'http://a.tile.thunderforest.com/outdoors/%z/%x/%y.png';
 const THUNDERFOREST_LANDSCAPE_TILES = 'http://a.tile.thunderforest.com/landscape/%z/%x/%y.png';
 
-const MAP_FRAGMENTS_URL = 'https://wwmap.ru/map-components/map-html-components.htm'
+const MAP_FRAGMENTS_URL = 'map-components/map-html-components.htm'
 
 function getLastPosition() {
     lastPos = $.cookie(LAST_POS_COOKIE_NAME);
