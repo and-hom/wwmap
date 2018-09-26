@@ -100,8 +100,8 @@ function removeImage(spotId, id, _type) {
     return doDeleteWithJsonRespSync(backendApiBase + "/spot/" + spotId + "/img/" + id + "?type=" + _type, true)
 }
 
-function setImageEnabled(spotId, id, enabled) {
-    return doPostJsonSync(backendApiBase + "/spot/" + spotId + "/img/" + id + "/enabled", enabled, true)
+function setImageEnabled(spotId, id, enabled, _type) {
+    return doPostJsonSync(backendApiBase + "/spot/" + spotId + "/img/" + id + "/enabled?type=" + _type, enabled, true)
 }
 
 function getSpotMainImageUrl(spotId) {
@@ -112,8 +112,8 @@ function getSpotMainImageUrl(spotId) {
     return null
 }
 
-function setSpotPreview(spotId, imgId) {
-    return doPostJsonSync(backendApiBase + "/spot/" + spotId + "/preview", imgId, true)
+function setSpotPreview(spotId, imgId, _type) {
+    return doPostJsonSync(backendApiBase + "/spot/" + spotId + "/preview?type=" + _type, imgId, true)
 }
 
 function dropSpotPreview(spotId) {

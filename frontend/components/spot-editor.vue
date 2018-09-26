@@ -142,10 +142,10 @@
                     </div>
                 </b-tab>
                 <b-tab title="Схемы" :disabled="spot.id>0 ? false : true">
-                    <img-upload ref="schemasList" :spot="spot" type="schema" :auth="true"></img-upload>
+                    <img-upload ref="schemasList" :spot="spot" v-bind:images="schemas" type="schema" :auth="true"></img-upload>
                 </b-tab>
                 <b-tab title="Фото" :disabled="spot.id>0 ? false : true">
-                    <img-upload ref="imagesList" :spot="spot" type="photo" :auth="true"></img-upload>
+                    <img-upload ref="imagesList" :spot="spot" v-bind:images="images" type="image" :auth="true"></img-upload>
                 </b-tab>
                 <b-tab title="Видео" disabled>
                 </b-tab>
@@ -226,29 +226,29 @@
                         <div><strong>Автоматическое упорядочивание:</strong>&nbsp;<span v-if="spot.automatic_ordering">Да</span><span v-else>Нет</span></div>
                         <div><strong>В последний раз автоматическое упорядочивание срабатывало:</strong> {{ spot.last_automatic_ordering }}</div>
                     </div>
-                <div>
+                </div>
             </div>
             <div v-if="schemas.length">
                 <h2>Схемы</h2>
                 <div>
-                    <gallery id="schemas-gallery" :images="schemas" :index="schIndex" @close="schemaIndex = null"></gallery>
+                    <gallery id="schemas-gallery" :images="schemas.map(x => x.url)" :index="schIndex" @close="schemaIndex = null"></gallery>
                     <div
                             class="image wwmap-gallery-cell"
                             v-for="schema, schemaIndex in schemas"
                             @click="schIndex = schemaIndex"
-                            :style="{ backgroundImage: 'url(' + schema + ')' }"
+                            :style="{ backgroundImage: 'url(' + schema.preview_url + ')', width: '300px', height: '200px' }"
                     ></div>
                 </div>
             </div>
             <div v-if="images.length">
                 <h2>Фото галерея</h2>
                 <div>
-                    <gallery id="image-gallery" :images="images" :index="imgIndex" @close="imageIndex = null"></gallery>
+                    <gallery id="image-gallery" :images="images.map(x => x.url)" :index="imgIndex" @close="imageIndex = null"></gallery>
                     <div
                             class="image wwmap-gallery-cell"
                             v-for="image, imageIndex in images"
                             @click="imgIndex = imageIndex"
-                            :style="{ backgroundImage: 'url(' + image + ')' }"
+                            :style="{ backgroundImage: 'url(' + image.preview_url + ')', width: '300px', height: '200px' }"
                     ></div>
                 </div>
             </div>
@@ -314,6 +314,24 @@
                         this.spotMainUrlCached = newVal
                     },
                 },
+                images: {
+                    get:function() {
+                        return app.spoteditorstate.images
+                    },
+
+                    set:function(newVal) {
+                        app.spoteditorstate.images = newVal
+                    },
+                },
+                schemas: {
+                    get:function() {
+                        return app.spoteditorstate.schemas
+                    },
+
+                    set:function(newVal) {
+                        app.spoteditorstate.schemas = newVal
+                    },
+                },
         },
         data:function() {
             return {
@@ -353,9 +371,9 @@
                     this.spotMainUrl = getSpotMainImageUrl(this.spot.id)
                 },
                 reloadImgs: function() {
-                    this.images = getImages(this.initialSpot.id, "image").map(x => x.url)
+                    this.images = getImages(this.initialSpot.id, "image")
                     this.imgIndex = null
-                    this.schemas = getImages(this.initialSpot.id, "schema").map(x => x.url)
+                    this.schemas = getImages(this.initialSpot.id, "schema")
                     this.schIndex = null
                 },
                 remove: function() {
@@ -385,8 +403,6 @@
                 schIndex: null,
 
                 spot: null,
-                images: [],
-                schemas: [],
                 shouldReInit:function(){
                     return this.spot==null || this.previousSpotId != this.initialSpot.id && this.initialSpot.id > 0
                 },
@@ -395,8 +411,8 @@
                         this.previousSpotId = this.initialSpot.id
                         this.spot = this.initialSpot
                         this.spotMainUrl = getSpotMainImageUrl(this.initialSpot.id)
-                        this.images = getImages(this.initialSpot.id, "image").map(x => x.url)
-                        this.schemas = getImages(this.initialSpot.id, "schema").map(x => x.url)
+                        this.images = getImages(this.initialSpot.id, "image")
+                        this.schemas = getImages(this.initialSpot.id, "schema")
                     }
                 },
 

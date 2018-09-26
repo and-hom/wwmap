@@ -70,20 +70,15 @@
 
 <script>
     module.exports = {
-        props: ['spot', 'type', 'auth'],
+        props: ['spot', 'images', 'type', 'auth'],
         components: {
           FileUpload: VueUploadComponent
         },
         updated: function() {
             if(this.$refs[this.type] && this.$refs[this.type].value.length && this.$refs[this.type].uploaded) {
-                if (this.imagesOutOfDate) {
-                    setTimeout(() => {
-                        this.refresh()
-                    }, 700);
-                    this.imagesOutOfDate = false
-                } else {
-                    this.imagesOutOfDate = true
-                }
+                setTimeout(() => {
+                    this.refresh()
+                }, 700);
             }
         },
         computed: {
@@ -98,18 +93,23 @@
         },
         data:function() {
             return {
-                images: getImages(this.spot.id, this.type),
-                imagesOutOfDate: true,
                 files: [],
                 uploadPath: function() { return backendApiBase + "/spot/" + this.spot.id +"/img?type=" + this.type },
                 removeImage: function(imgId) {
                     this.images = removeImage(this.spot.id, imgId, this.type);
                 },
                 setImgEnabled: function(enabled, imgId) {
-                    this.images = setImageEnabled(this.spot.id, imgId, enabled);
+                    this.images = setImageEnabled(this.spot.id, imgId, enabled, this.type);
                 },
                 setSpotPreview: function(imgId) {
-                    this.images = setSpotPreview(this.spot.id, imgId);
+                    imgs = setSpotPreview(this.spot.id, imgId, this.type)
+                    if (this.type=="image") {
+                        Vue.set(app.spoteditorstate, "schemas", getImages(this.spot.id, "schema"))
+                        Vue.set(app.spoteditorstate, "images", imgs)
+                    } else {
+                        Vue.set(app.spoteditorstate, "schemas", imgs)
+                        Vue.set(app.spoteditorstate, "images", getImages(this.spot.id, "image"))
+                    }
                 },
                 refresh:function() {
                     this.images = getImages(this.spot.id, this.type)
