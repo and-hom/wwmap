@@ -70,7 +70,7 @@ func sqlQuery(file string, name string, walkedIdsStack []string) string {
 		log.Fatalf("Can not get sql query for key %s in file %s", name, file)
 	}
 	query = strings.Replace(query, "\n", "", -1)
-	log.Info("\"" +query+"\"")
+	log.Debug("\"" +query+"\"")
 	return subQueryReplacer.ReplaceAllStringFunc(query, func(src string) string {
 		queryId := subQueryReplacer.FindStringSubmatch(src)[1]
 		for i := 0; i < len(walkedIdsStack); i++ {
