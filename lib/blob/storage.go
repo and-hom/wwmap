@@ -9,6 +9,7 @@ import (
 type BlobStorage interface {
 	Store(id string, r io.Reader) error
 	Read(id string) (io.ReadCloser, error)
+	Length(id string) (int64, error)
 	Remove(id string) error
 }
 
@@ -28,6 +29,14 @@ func (this BasicFsStorage) Store(id string, r io.Reader) error {
 
 func (this BasicFsStorage) Read(id string) (io.ReadCloser, error) {
 	return  os.Open(this.path(id))
+}
+
+func (this BasicFsStorage) Length(id string) (int64, error) {
+	stat,err :=  os.Stat(this.path(id))
+	if err!=nil {
+		return 0,err
+	}
+	return stat.Size(), nil
 }
 
 func (this BasicFsStorage) Remove(id string) error {

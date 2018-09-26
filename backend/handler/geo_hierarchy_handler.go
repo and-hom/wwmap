@@ -564,6 +564,12 @@ func (this *GeoHierarchyHandler) writeSpot(spotId int64, w http.ResponseWriter) 
 func (this *GeoHierarchyHandler) GetRiverPassport(w http.ResponseWriter, req *http.Request) {
 	pathParams := mux.Vars(req)
 	w.Header().Set("Content-Type", "application/pdf")
+	length,err := this.RiverPassportStorage.Length(pathParams["riverId"])
+	if err != nil {
+		log.Warnf("Can not get river passport content length %s: %v", pathParams["riverId"], err)
+		length = 0
+	}
+	w.Header().Set("Content-Length", fmt.Sprintf("%d", length))
 	r, err := this.RiverPassportStorage.Read(pathParams["riverId"])
 	if err != nil {
 		OnError500(w, err, "Can not get river passport")
