@@ -22,7 +22,8 @@
                     this.selectRiver()
                 } else if (getActiveEntityLevel()==SPOT_ACTIVE_ENTITY_LEVEL) {
                     var selectedSpotId = getActiveId(SPOT_ACTIVE_ENTITY_LEVEL)
-                    selectedSpot = this.spots.filter(function(x){return x.id==selectedSpotId})
+                    var spots = getSpotsFromTree(this.country.id, nvlReturningId(this.region), this.river.id)
+                    selectedSpot = spots.filter(function(x){return x.id==selectedSpotId})
                     if (selectedSpot.length>0) {
                         this.selectSpot(selectedSpot[0])
                     }

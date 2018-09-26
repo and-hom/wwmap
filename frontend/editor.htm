@@ -125,6 +125,17 @@
         Vue.set(river, "spots", getSpots(id))
     }
 
+    function getSpotsFromTree(countryId, regionId, riverId) {
+        var river
+        if (regionId && regionId>0) {
+            var region = getById(app.treePath[countryId].regions, regionId)
+            river = getById(region.rivers, riverId)
+        } else {
+            river = getById(app.treePath[countryId].rivers, riverId)
+        }
+        return river.spots
+    }
+
     function setActiveEntityState(countryId, regionId, riverId, spotId) {
         app.selectedSpot = spotId
         app.selectedRiver = riverId
