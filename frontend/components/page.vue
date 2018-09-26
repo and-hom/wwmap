@@ -2,8 +2,8 @@
 <div>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <ul class="navbar-nav mr-auto">
-            <li :class="pageClass(link)" v-if="showMenuItem(page)" v-for="(page, link) in pages">
-                <a class="nav-link" :href="pageLink(link)">{{pageTitle(page)}}</a>
+            <li :class="pageClass(page.href)" v-if="showMenuItem(page)" v-for="page in pages">
+                <a class="nav-link" :href="pageLink(page.href)">{{pageTitle(page)}}</a>
             </li>
         </ul>
         <auth></auth>
@@ -17,22 +17,42 @@
         props: ['link'],
         data: function () {
             return {
-                pages: {
-                    "editor.htm": {
+                pages: [
+                    {
+                        href:  "editor.htm",
                         title: "Редактор",
-                        allow: ['USER', 'EDITOR', 'ADMIN'],
+                        allow: ['EDITOR', 'ADMIN'],
                     },
-                    "map.htm": "Карта",
-                    "refs.htm": "Сайты",
-                    "users.htm": {
+                    {
+                        href:  "editor.htm",
+                        title: "Каталог",
+                        allow: ['USER', 'ANONYMOUS'],
+                    },
+                    {
+                        href: "map.htm",
+                        title: "Как карта видна окружающим",
+                        allow: ['EDITOR', 'ADMIN'],
+                    },
+                    {
+                        href: "map.htm",
+                        title: "Карта",
+                        allow: ['USER', 'ANONYMOUS'],
+                    },
+                    {
+                        href: "refs.htm",
+                        title: "Сайты"
+                    },
+                    {
+                        href: "users.htm",
                         title: "Пользователи",
                         allow: ['ADMIN'],
                     },
-                    "docs.htm": {
+                    {
+                        href: "docs.htm",
                         title: "Прочитай меня",
                         allow: ['EDITOR', 'ADMIN'],
                     },
-                },
+                ],
                 showMenuItem: function(page) {
                     if (typeof page == 'string' || page instanceof String) {
                         return true
@@ -43,7 +63,7 @@
 
                     userInfo = getAuthorizedUserInfoOrNull()
                     if (userInfo==null || userInfo.roles==null) {
-                        return false
+                        return page.allow.filter(r => r=='ANONYMOUS').length>0
                     }
 
                     return page.allow.filter(r => userInfo.roles.includes(r)).length>0
