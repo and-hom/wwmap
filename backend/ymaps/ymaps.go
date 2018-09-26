@@ -14,14 +14,16 @@ const MAX_CLUSTERS int64 = 8192
 const MAX_CLUSTER_ID int64 = int64(math.MaxInt32)
 const CLUSTER_CATEGORY_DEFINITING_POINTS_COUNT int = 3
 
-func mkFeature(point WhiteWaterPointWithRiverTitle, withDescription bool, resourcesBase string) Feature {
+func mkFeature(point WhiteWaterPointWithRiverTitle, withDescription bool, resourcesBase string, processImgForWeb func(img *Img)) Feature {
 	var description = ""
 	if withDescription {
 		description = point.ShortDesc
 	}
 
 	imgs := make([]Preview, len(point.Images))
-	for i, img := range point.Images {
+	for i := 0; i < len(point.Images); i++ {
+		img := &point.Images[i]
+		processImgForWeb(img)
 		imgs[i] = Preview{
 			PreviewUrl:img.PreviewUrl,
 			Url:img.Url,
@@ -43,10 +45,6 @@ func mkFeature(point WhiteWaterPointWithRiverTitle, withDescription bool, resour
 		properties.Category = &point.Category
 	}
 
-	imageHref := fmt.Sprintf(resourcesBase + "/img/cat%d.png", point.Category.Category)
-	if point.Category.Category == model.IMPASSABLE {
-		imageHref = resourcesBase + "/img/impassable.png"
-	}
 	return Feature{
 		Id:point.Id,
 		Geometry:NewYmapsGeoPoint(point.Point),
@@ -54,12 +52,20 @@ func mkFeature(point WhiteWaterPointWithRiverTitle, withDescription bool, resour
 		Properties:properties,
 		Options:FeatureOptions{
 			IconLayout: IMAGE,
-			IconImageHref: imageHref,
+			IconImageHref: CatImg(resourcesBase, point.Category),
 			IconImageSize: []int{32, 32},
 			IconImageOffset: []int{-16, -16},
 
 			Id: point.Id,
 		},
+	}
+}
+
+func CatImg(resourcesBase string, cat model.SportCategory) string {
+	if cat.Impassable() {
+		return resourcesBase + "/img/impassable.png"
+	} else {
+		return fmt.Sprintf(resourcesBase + "/img/cat%d.png", cat.Category)
 	}
 }
 
@@ -148,9 +154,9 @@ func mkCluster(Id clustering.ClusterId, points []WhiteWaterPointWithRiverTitle) 
 	}
 }
 
-func WhiteWaterPointsToYmaps(clusterMaker clustering.ClusterMaker, rivers []RiverTitle, bbox Bbox, zoom int, resourcesBase string, skipId int64) ([]Feature, error) {
+func WhiteWaterPointsToYmaps(clusterMaker clustering.ClusterMaker, rivers []RiverTitle, bbox Bbox, zoom int, resourcesBase string, skipId int64, processImgForWeb func(img *Img)) ([]Feature, error) {
 	result := make([]Feature, 0)
-	for _,river := range rivers {
+	for _, river := range rivers {
 		riverClusters, err := clusterMaker.Get(river.Id, zoom, bbox)
 		if err != nil {
 			return []Feature{}, nil
@@ -161,7 +167,7 @@ func WhiteWaterPointsToYmaps(clusterMaker clustering.ClusterMaker, rivers []Rive
 			case WhiteWaterPointWithRiverTitle:
 				wwp := obj.(WhiteWaterPointWithRiverTitle)
 				if wwp.Id != skipId {
-					result = append(result, mkFeature(wwp, true, resourcesBase))
+					result = append(result, mkFeature(wwp, true, resourcesBase, processImgForWeb))
 				}
 			case clustering.Cluster:
 				result = append(result, mkCluster(id, obj.(clustering.Cluster).Points))

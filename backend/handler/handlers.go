@@ -5,6 +5,7 @@ import (
 	. "github.com/and-hom/wwmap/lib/handler"
 	"github.com/and-hom/wwmap/backend/passport"
 	"github.com/and-hom/wwmap/backend/referer"
+	"fmt"
 )
 
 type App struct {
@@ -20,6 +21,15 @@ type App struct {
 	RegionDao       RegionDao
 	YandexPassport  passport.YandexPassport
 	RefererStorage  referer.RefererStorage
+	ImgUrlBase        string
+	ImgUrlPreviewBase string
+}
+
+func (this *App) processForWeb(img *Img) {
+	if img.Source == IMG_SOURCE_WWMAP {
+		img.Url = fmt.Sprintf(this.ImgUrlBase, img.Id)
+		img.PreviewUrl = fmt.Sprintf(this.ImgUrlPreviewBase, img.Id)
+	}
 }
 
 

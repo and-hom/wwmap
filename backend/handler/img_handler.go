@@ -32,8 +32,6 @@ type ImgHandler struct {
 	App
 	ImgStorage        blob.BlobStorage
 	PreviewImgStorage blob.BlobStorage
-	ImgUrlBase        string
-	ImgUrlPreviewBase string
 };
 
 func (this *ImgHandler) Init(r *mux.Router) {
@@ -313,13 +311,6 @@ func (this *ImgHandler) listImagesForSpot(w http.ResponseWriter, spotId int64, _
 	}
 
 	this.JsonAnswer(w, imgs)
-}
-
-func (this *ImgHandler) processForWeb(img *dao.Img) {
-	if img.Source == dao.IMG_SOURCE_WWMAP {
-		img.Url = fmt.Sprintf(this.ImgUrlBase, img.Id)
-		img.PreviewUrl = fmt.Sprintf(this.ImgUrlPreviewBase, img.Id)
-	}
 }
 
 func getImgType(req *http.Request) dao.ImageType {

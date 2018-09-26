@@ -61,7 +61,7 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 		return
 	}
 
-	features, err := ymaps.WhiteWaterPointsToYmaps(this.ClusterMaker, rivers, bbox, zoom, this.ResourceBase, skip)
+	features, err := ymaps.WhiteWaterPointsToYmaps(this.ClusterMaker, rivers, bbox, zoom, this.ResourceBase, skip, this.processForWeb)
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not cluster: %s", bbox.String()))
 		return

@@ -62,6 +62,8 @@ func main() {
 		RegionDao: regionDao,
 		YandexPassport: yandexPassport,
 		RefererStorage: referer.CreateDbReferrerStorage(storage),
+		ImgUrlBase:configuration.ImgStorage.Full.UrlBase,
+		ImgUrlPreviewBase:configuration.ImgStorage.Preview.UrlBase,
 	}
 
 	_handlers := []ApiHandler{
@@ -80,8 +82,6 @@ func main() {
 			App:app,
 			ImgStorage: imgStorage,
 			PreviewImgStorage: imgPreviewStorage,
-			ImgUrlBase:configuration.ImgStorage.Full.UrlBase,
-			ImgUrlPreviewBase:configuration.ImgStorage.Preview.UrlBase,
 		},
 		&handler.RefSitesHandler{app},
 	}
