@@ -5,6 +5,7 @@ import (
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"strings"
+	"github.com/and-hom/wwmap/lib/dao"
 )
 
 func CorsHeaders(w http.ResponseWriter, methods ...string) {
@@ -27,12 +28,27 @@ func OnError500(w http.ResponseWriter, err error, msg string) {
 	OnError(w, err, msg, http.StatusInternalServerError)
 }
 
-func GetOauthToken(r *http.Request) string {
+type AuthProviderAndToken struct {
+	AuthProvider dao.AuthProvider
+	Token        string
+}
+
+func GetOauthProviderAndToken(r *http.Request) AuthProviderAndToken {
+	var token string
+	var provider string
+
 	authorization := r.Header.Get("Authorization")
 	parts := strings.Split(authorization, " ")
 	if len(parts) > 1 && parts[1] != "" {
-		return parts[1]
+		provider = parts[0]
+		token = parts[1]
+	} else {
+		provider = r.FormValue("provider")
+		token = r.FormValue("token")
 	}
 
-	return r.FormValue("token")
+	return AuthProviderAndToken{
+		AuthProvider:dao.AuthProvider(provider),
+		Token:token,
+	}
 }

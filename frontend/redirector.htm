@@ -4,8 +4,11 @@
     <script type="text/javascript" src="js-editor/auth.js"></script>
 </head>
 <body>
+<div id="nojs">
     Если вы видите это сообщение, включите javascript
+</div>
     <script type="text/javascript">
+        document.getElementById("nojs").innerHTML = ""
         var hash = window.location.hash
         if (hash) {
             hash = hash.substr(1)

@@ -216,11 +216,17 @@ type UserInfo struct {
 	Login     string `json:"login"`
 }
 
+type AuthProvider string
+
+const YANDEX AuthProvider = "yandex"
+const VK AuthProvider = "vk"
+
 type User struct {
-	Id       int64 `json:"id"`
-	YandexId int64 `json:"yandex_id"`
-	Role     Role `json:"role"`
-	Info     UserInfo `json:"info"`
+	Id           int64 `json:"id"`
+	ExtId        int64 `json:"ext_id"`
+	AuthProvider AuthProvider  `json:"auth_provider"`
+	Role         Role `json:"role"`
+	Info         UserInfo `json:"info"`
 }
 
 type Country struct {

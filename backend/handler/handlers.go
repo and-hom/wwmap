@@ -18,7 +18,7 @@ type App struct {
 	UserDao         UserDao
 	CountryDao      CountryDao
 	RegionDao       RegionDao
-	YandexPassport  passport.YandexPassport
+	AuthProviders	map[AuthProvider]passport.Passport
 	RefererStorage  referer.RefererStorage
 }
 

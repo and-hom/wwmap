@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"github.com/and-hom/wwmap/lib/dao"
 	"net/url"
+	"github.com/and-hom/wwmap/backend/passport"
 )
 
 func (this *App) bboxFormValue(w http.ResponseWriter, req *http.Request) (geo.Bbox, error) {
@@ -56,14 +57,14 @@ func (this *App) CloseAndRemove(f *os.File) {
 }
 
 func (this *App) CreateMissingUser(r *http.Request) error {
-	token := GetOauthToken(r)
-	info, err := this.YandexPassport.ResolveUserInfo(token)
+	authProvider, info, err := this.GetUserInfo(r)
 	if err != nil {
 		return err
 	}
 
 	return this.UserDao.CreateIfNotExists(dao.User{
-		YandexId:info.Id,
+		ExtId:info.Id,
+		AuthProvider:authProvider,
 		Role:dao.USER,
 		Info: dao.UserInfo{
 			FirstName:info.FirstName,
@@ -93,14 +94,23 @@ func (this *App) CheckRoleAllowedAndMakeResponse(w http.ResponseWriter, r *http.
 	return true
 }
 
+func (this *App) GetUserInfo(r *http.Request) (dao.AuthProvider, passport.UserInfo, error) {
+	providerAndToken := GetOauthProviderAndToken(r)
+	p, found := this.AuthProviders[providerAndToken.AuthProvider]
+	if !found {
+		return dao.AuthProvider(""), passport.UserInfo{}, fmt.Errorf("Can not find provider for %v", providerAndToken.AuthProvider)
+	}
+	userInfo, err := p.ResolveUserInfo(providerAndToken.Token)
+	return providerAndToken.AuthProvider, userInfo, err
+}
+
 func (this *App) CheckRoleAllowed(r *http.Request, allowedRoles ...dao.Role) (bool, error) {
-	token := GetOauthToken(r)
-	info, err := this.YandexPassport.ResolveUserInfo(token)
+	authProvider, info, err := this.GetUserInfo(r)
 	if err != nil {
 		return false, err
 	}
 
-	role, err := this.UserDao.GetRole(info.Id)
+	role, err := this.UserDao.GetRole(authProvider, info.Id)
 	if err != nil {
 		return false, err
 	}
