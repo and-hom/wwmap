@@ -26,7 +26,8 @@
                                 :drop="true"
                                 :drop-directory="true"
                                 v-model="files"
-                                :ref="type">
+                                :ref="type"
+                                :input-id="type">
                             <i class="fa fa-plus"></i>
                             Выбрать изображения
                         </file-upload>
