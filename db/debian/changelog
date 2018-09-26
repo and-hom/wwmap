@@ -1,3 +1,10 @@
+wwmap-db (0.0.13) unstable; urgency=medium
+
+  * #101 Catalog upload improvements
+  * #122 Choordinates order fixed in postgres
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Wed, 26 Sep 2018 15:13:22 +0300
+
 wwmap-db (0.0.12) unstable; urgency=medium
 
   * #121 Show/hide button for river

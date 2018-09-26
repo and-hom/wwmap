@@ -1,3 +1,9 @@
+wwmap-cron (0.0.10) unstable; urgency=medium
+
+  * #75 Generate river passports PDF
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Wed, 26 Sep 2018 15:10:34 +0300
+
 wwmap-cron (0.0.9) unstable; urgency=medium
 
   * #126 Do not break report import and catalog export on error of one of report sources or catalog targets

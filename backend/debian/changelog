@@ -1,3 +1,10 @@
+wwmap-backend (0.0.24) unstable; urgency=medium
+
+  * #57 Show rive passport download link
+  * #122 Choordinates order fixed in postgres
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Wed, 26 Sep 2018 15:09:14 +0300
+
 wwmap-backend (0.0.23) unstable; urgency=medium
 
   * #125 Add rivers to fake region (to country)

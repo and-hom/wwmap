@@ -1,3 +1,13 @@
+wwmap-frontend (0.0.23) unstable; urgency=medium
+
+  * #57 Show rive passport download link
+  * #116 Store css and js locally
+  * #133 Image upload fixed
+  * #134 Main image button refresh fixed
+  * Image gallery preview fixed
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Wed, 26 Sep 2018 15:07:08 +0300
+
 wwmap-frontend (0.0.22) unstable; urgency=medium
 
   * #125 Add rivers to fake region (to country)
