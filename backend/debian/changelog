@@ -1,3 +1,12 @@
+wwmap-backend (0.0.25) unstable; urgency=medium
+
+  * #107 VK login
+  * Image url fixed in map bubble
+  * Content-Length aded to river passport download
+  * Download PDF directly from Nginx
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Thu, 27 Sep 2018 11:01:21 +0300
+
 wwmap-backend (0.0.24) unstable; urgency=medium
 
   * #57 Show rive passport download link

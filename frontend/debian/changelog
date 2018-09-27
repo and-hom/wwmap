@@ -1,3 +1,13 @@
+wwmap-frontend (0.0.24) UNRELEASED; urgency=medium
+
+  * #107 VK login
+  * Show selected spot on F5
+  * Upload data size increased to 10M (for images)
+  * Allow anonymous access to catalog
+  * Download PDF directly from Nginx
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Thu, 27 Sep 2018 10:59:26 +0300
+
 wwmap-frontend (0.0.23) unstable; urgency=medium
 
   * #57 Show rive passport download link
