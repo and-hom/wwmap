@@ -30,7 +30,7 @@ func (this *GpxHandler) DownloadGpx(w http.ResponseWriter, req *http.Request) {
 
 	whitewaterPoints, err := this.WhiteWaterDao.ListByRiver(id)
 	if err != nil {
-		OnError500(w, err, fmt.Sprintf("Can not read whitewater points for river %s", id))
+		OnError500(w, err, fmt.Sprintf("Can not read whitewater points for river %d", id))
 		return
 	}
 

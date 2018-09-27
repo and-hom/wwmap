@@ -298,7 +298,7 @@ func (this *GeoHierarchyHandler) SaveRiver(w http.ResponseWriter, r *http.Reques
 		log.Error(river.Region.CountryId)
 		fakeRegion, found, err := this.RegionDao.GetFake(river.Region.CountryId)
 		if err != nil {
-			OnError500(w, err, fmt.Sprintf("Can not get fake region for country: %s", river.Region.CountryId))
+			OnError500(w, err, fmt.Sprintf("Can not get fake region for country: %d", river.Region.CountryId))
 			return
 		}
 		if (found) {
@@ -306,7 +306,7 @@ func (this *GeoHierarchyHandler) SaveRiver(w http.ResponseWriter, r *http.Reques
 		} else {
 			regionId, err = this.RegionDao.CreateFake(river.Region.CountryId)
 			if err != nil {
-				OnError500(w, err, fmt.Sprintf("Can not create fake region for country: %s", river.Region.CountryId))
+				OnError500(w, err, fmt.Sprintf("Can not create fake region for country: %d", river.Region.CountryId))
 				return
 			}
 			log.Errorf("RegionId = %v", regionId)
@@ -495,7 +495,7 @@ func (this *GeoHierarchyHandler) SaveSpot(w http.ResponseWriter, r *http.Request
 		id, err = this.WhiteWaterDao.InsertWhiteWaterPointFull(spot)
 	}
 	if err != nil {
-		OnError500(w, err, fmt.Sprintf("Can not save spot %d", string(bodyBytes)))
+		OnError500(w, err, fmt.Sprintf("Can not save spot %s", string(bodyBytes)))
 		return
 	}
 
