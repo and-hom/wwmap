@@ -114,3 +114,7 @@ function getAuthorizedUserInfoOrNull() {
         return null;
     }
 }
+
+function authHeaderVal(sourceAndToken) {
+    return sourceAndToken.source + " " + sourceAndToken.token
+}

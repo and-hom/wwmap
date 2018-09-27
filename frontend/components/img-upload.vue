@@ -85,7 +85,7 @@
             headers:function(){
                 if (this.auth) {
                     return {
-                        Authorization: "Token " + getToken(),
+                        Authorization: authHeaderVal(getSourceAndToken()),
                     }
                 }
                 return {}

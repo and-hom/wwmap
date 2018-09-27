@@ -54,5 +54,5 @@ function addAuth(xhr, auth) {
     if (!sourceAndToken) {
         return
     }
-    xhr.setRequestHeader("Authorization", sourceAndToken.source + " " + sourceAndToken.token);
+    xhr.setRequestHeader("Authorization", authHeaderVal(sourceAndToken));
 }
