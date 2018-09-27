@@ -15,6 +15,7 @@ import (
 type RiverHandler struct {
 	App
 	ResourceBase string
+	RiverPassportUrlBase string
 }
 
 func (this *RiverHandler) Init(r *mux.Router) {
@@ -55,9 +56,10 @@ type VoyageReportDto struct {
 	SourceLogoUrl string `json:"source_logo_url"`
 }
 
-type RiverWithReports struct {
+type RiverListDto struct {
 	dao.RiverTitle
 	Reports []VoyageReportDto `json:"reports"`
+	PdfUrl	string `json:"pdf"`
 }
 
 func (this *RiverHandler) GetVisibleRivers(w http.ResponseWriter, req *http.Request) {
@@ -72,7 +74,7 @@ func (this *RiverHandler) GetVisibleRivers(w http.ResponseWriter, req *http.Requ
 		return
 	}
 
-	riversWithReports := make([]RiverWithReports, len(rivers))
+	riversWithReports := make([]RiverListDto, len(rivers))
 	for i := 0; i < len(rivers); i++ {
 		river := &rivers[i]
 		river.Bounds = river.Bounds.WithMargins(0.05)
@@ -94,8 +96,20 @@ func (this *RiverHandler) GetVisibleRivers(w http.ResponseWriter, req *http.Requ
 			}
 		}
 
-		riversWithReports[i] = RiverWithReports{*river, reportDtos}
+		riversWithReports[i] = RiverListDto{
+			RiverTitle: *river,
+			Reports: reportDtos,
+			PdfUrl: this.getPdfUrl(river),
+		}
 
 	}
 	w.Write([]byte(this.JsonStr(riversWithReports, "[]")))
+}
+
+func (this *RiverHandler) getPdfUrl(river *dao.RiverTitle) string {
+	export, found :=  river.Props["export_pdf"]
+	if found && export.(bool) {
+		return fmt.Sprintf(this.RiverPassportUrlBase, river.Id)
+	}
+	return ""
 }

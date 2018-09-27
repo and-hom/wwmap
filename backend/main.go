@@ -68,7 +68,11 @@ func main() {
 
 	_handlers := []ApiHandler{
 		&handler.GpxHandler{app},
-		&handler.RiverHandler{App:app, ResourceBase: configuration.Content.ResourceBase},
+		&handler.RiverHandler{
+			App:app,
+			ResourceBase: configuration.Content.ResourceBase,
+			RiverPassportUrlBase: configuration.RiverPassportStorage.UrlBase,
+		},
 		&handler.WhiteWaterHandler{App:app, ResourceBase:configuration.Content.ResourceBase, ClusterMaker: clusterMaker},
 		&handler.ReportHandler{app},
 		&handler.UserInfoHandler{app},
