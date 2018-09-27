@@ -26,6 +26,9 @@ import (
 const (
 	PREVIEW_MAX_HEIGHT = 150
 	PREVIEW_MAX_WIDTH = 150
+
+	BIG_IMG_MAX_HEIGHT = 2000
+	BIG_IMG_MAX_WIDTH = 2000
 )
 
 type ImgHandler struct {
@@ -86,7 +89,7 @@ func (this *ImgHandler) Upload(w http.ResponseWriter, req *http.Request) {
 		OnError(w, err, "Can not parse id", http.StatusBadRequest)
 		return
 	}
-	if spotId<=0 {
+	if spotId <= 0 {
 		OnError(w, err, "Can not upload image for non existing spot", http.StatusBadRequest)
 		return
 	}
@@ -114,37 +117,62 @@ func (this *ImgHandler) Upload(w http.ResponseWriter, req *http.Request) {
 		OnError500(w, err, "Can not get decode image file")
 		return
 	}
-	previewRect := previewRect(sourceImage.Bounds())
-	preview := image.NewRGBA(previewRect)
-	draw.ApproxBiLinear.Scale(preview, previewRect, sourceImage, sourceImage.Bounds(), draw.Over, nil)
-	var b bytes.Buffer
-	err = png.Encode(&b, preview)
+
+	previewReader, err := compress(sourceImage, f, PREVIEW_MAX_WIDTH, PREVIEW_MAX_HEIGHT, true)
+	if err != nil {
+		OnError500(w, err, "Can not compress preview")
+		return
+	}
+	err = this.PreviewImgStorage.Store(img.IdStr(), previewReader)
 	if err != nil {
 		OnError500(w, err, "Can not store preview")
 		return
 	}
-	this.PreviewImgStorage.Store(img.IdStr(), &b)
 
-	f.Seek(0, 0)
-	err = this.ImgStorage.Store(img.IdStr(), f)
+	bigImgReader, err := compress(sourceImage, f, BIG_IMG_MAX_WIDTH, BIG_IMG_MAX_HEIGHT, false)
+	if err != nil {
+		OnError500(w, err, "Can not compress image")
+		return
+	}
+	err = this.ImgStorage.Store(img.IdStr(), bigImgReader)
 	if err != nil {
 		OnError500(w, err, "Can not store image")
 		return
 	}
 }
 
-func previewRect(r image.Rectangle) image.Rectangle {
-	d := math.Abs(float64(r.Max.X - r.Min.X) / float64(r.Max.Y - r.Min.Y))
-	w := PREVIEW_MAX_WIDTH
-	h := PREVIEW_MAX_HEIGHT
+func compress(sourceImage image.Image, src io.ReadSeeker, maxW, maxH int, resizeSmallerImages bool) (io.Reader, error) {
+	rect, small := PreviewRect(sourceImage.Bounds(), maxW, maxH)
+	if small && !resizeSmallerImages {
+		src.Seek(0, 0)
+		return src, nil
+	}
 
-	if d > 1 {
-		h = int(float64(h) / d)
+	resized := image.NewRGBA(rect)
+	draw.ApproxBiLinear.Scale(resized, rect, sourceImage, sourceImage.Bounds(), draw.Over, nil)
+	var b bytes.Buffer
+	err := png.Encode(&b, resized)
+	if err != nil {
+		return nil, err
 	}
-	if d < 1 {
-		w = int(float64(w) * d)
-	}
-	return image.Rect(0, 0, w, h)
+	return &b, nil
+}
+
+func PreviewRect(r image.Rectangle, areaWidth, areaHeight int) (image.Rectangle, bool) {
+	srcWidth := r.Max.X - r.Min.X
+	srcHeight := r.Max.Y - r.Min.Y
+
+	kX := float64(areaWidth) / float64(srcWidth)
+	kY := float64(areaHeight) / float64(srcHeight)
+
+	newImgWidht := areaWidth
+	newImgHeight := areaHeight
+
+	k := math.Min(kX, kY)
+	newImgWidht = int(k * float64(srcWidth))
+	newImgHeight = int(k * float64(srcHeight))
+
+	return image.Rect(0, 0, newImgWidht, newImgHeight), kX > 1.0 && kY > 1.0
 }
 
 func (this *ImgHandler) Delete(w http.ResponseWriter, req *http.Request) {
@@ -238,7 +266,7 @@ func (this *ImgHandler) SetPreview(w http.ResponseWriter, req *http.Request) {
 	imgId := int64(0)
 	json.Unmarshal(bodyBytes, &imgId)
 
-	img,found, err := this.ImgDao.Find(imgId)
+	img, found, err := this.ImgDao.Find(imgId)
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not find image id=%d", imgId))
 		return
@@ -269,7 +297,6 @@ func (this *ImgHandler) DropPreview(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-
 	err = this.ImgDao.DropMainForSpot(spotId)
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not set preview for spot %d", spotId))
@@ -284,7 +311,6 @@ func (this *ImgHandler) GetPreview(w http.ResponseWriter, req *http.Request) {
 		OnError(w, err, "Can not parse id", http.StatusBadRequest)
 		return
 	}
-
 
 	img, found, err := this.ImgDao.GetMainForSpot(spotId)
 	if err != nil {
