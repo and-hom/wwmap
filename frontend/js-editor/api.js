@@ -3,9 +3,7 @@ const backendApiBase = "http://localhost:7007";
 function sendRequest(url , _type, auth) {
     var xhr = new XMLHttpRequest();
     xhr.open(_type, url, false);
-    if (auth) {
-        xhr.setRequestHeader("Authorization", "Token " + getToken());
-    }
+    addAuth(xhr, auth)
     try {
         xhr.send();
         return xhr
@@ -39,13 +37,22 @@ function doPostJsonSync(url, value, auth) {
     var xhr = new XMLHttpRequest();
     xhr.open('POST', url, false);
     xhr.setRequestHeader("Content-Type", "application/json");
-    if (auth) {
-        xhr.setRequestHeader("Authorization", "Token " + getToken());
-    }
+    addAuth(xhr, auth)
     var data = JSON.stringify(value);
     xhr.send(data);
     if (xhr.status == 200) {
         return JSON.parse(xhr.response)
     }
     return null
+}
+
+function addAuth(xhr, auth) {
+    if (!auth) {
+        return
+    }
+    sourceAndToken = getSourceAndToken()
+    if (!sourceAndToken) {
+        return
+    }
+    xhr.setRequestHeader("Authorization", sourceAndToken.source + " " + sourceAndToken.token);
 }

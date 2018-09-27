@@ -34,8 +34,6 @@ func main() {
 	countryDao := NewCountryPostgresDao(storage)
 	regionDao := NewRegionPostgresDao(storage)
 
-	yandexPassport := passport.New(15 * time.Minute)
-
 	clusterMaker := clustering.NewClusterMaker(whiteWaterDao, imgDao,
 		configuration.ClusterizationParams)
 
@@ -60,7 +58,10 @@ func main() {
 		UserDao: userDao,
 		CountryDao: countryDao,
 		RegionDao: regionDao,
-		YandexPassport: yandexPassport,
+		AuthProviders: map[AuthProvider]passport.Passport{
+			YANDEX: passport.Yandex(15 * time.Minute),
+			VK:     passport.Vk(15 * time.Minute),
+		},
 		RefererStorage: referer.CreateDbReferrerStorage(storage),
 		ImgUrlBase:configuration.ImgStorage.Full.UrlBase,
 		ImgUrlPreviewBase:configuration.ImgStorage.Preview.UrlBase,

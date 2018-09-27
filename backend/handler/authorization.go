@@ -10,6 +10,7 @@ import (
 	"github.com/gorilla/mux"
 	"strconv"
 	"io/ioutil"
+	"fmt"
 )
 
 type UserInfoHandler struct {
@@ -17,10 +18,11 @@ type UserInfoHandler struct {
 }
 
 type UserInfoDto struct {
-	Login     string `json:"login"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Roles     []dao.Role `json:"roles"`
+	AuthProvider dao.AuthProvider `json:"auth_provider"`
+	Login        string `json:"login"`
+	FirstName    string `json:"first_name"`
+	LastName     string `json:"last_name"`
+	Roles        []dao.Role `json:"roles"`
 }
 
 func (this *UserInfoHandler) Init(r *mux.Router) {
@@ -28,6 +30,7 @@ func (this *UserInfoHandler) Init(r *mux.Router) {
 	this.Register(r, "/auth-test", HandlerFunctions{Get: this.TestAuth})
 	this.Register(r, "/user", HandlerFunctions{Get: this.ListUsers})
 	this.Register(r, "/user/{userId}/role", HandlerFunctions{Post: this.SetRole})
+	this.Register(r, "/vk/token", HandlerFunctions{Get: this.GetVkToken})
 }
 
 func (this *UserInfoHandler) GetUserInfo(w http.ResponseWriter, r *http.Request) {
@@ -37,14 +40,13 @@ func (this *UserInfoHandler) GetUserInfo(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	token := GetOauthToken(r)
-	info, err := this.YandexPassport.ResolveUserInfo(token)
+	p, info, err := this.App.GetUserInfo(r)
 	if err != nil {
 		onPassportErr(err, w, "Can not do request to Yandex Passport")
 		return
 	}
 
-	role, err := this.UserDao.GetRole(info.Id)
+	role, err := this.UserDao.GetRole(p, info.Id)
 	if err != nil {
 		onPassportErr(err, w, "Can not get role for user")
 		return
@@ -55,6 +57,7 @@ func (this *UserInfoHandler) GetUserInfo(w http.ResponseWriter, r *http.Request)
 		LastName:info.LastName,
 		Login:info.Login,
 		Roles:[]dao.Role{role},
+		AuthProvider: p,
 	}
 
 	bytes, err := json.Marshal(infoDto)
@@ -140,4 +143,46 @@ func onPassportErr(err error, w http.ResponseWriter, msg string) {
 	default:
 		OnError500(w, err, msg)
 	}
+}
+
+type VkTokenAnswer struct {
+	AccessToken string `json:"access_token"`
+	Expires     int `json:"expires_in"`
+	Uid         int64 `json:"uid"`
+	ErrDesc     string `json:"error_description"`
+}
+
+func (this *UserInfoHandler) GetVkToken(w http.ResponseWriter, r *http.Request) {
+	code := r.FormValue("code")
+	resp, err := http.Get("https://oauth.vk.com/access_token?client_id=6703809&client_secret=Q3pUfqqJT77ZbWCyzw5Q&redirect_uri=https://wwmap.ru/redirector-vk.htm&code=" + code)
+	if err != nil {
+		OnError500(w, err, "Can not get token")
+		return
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		OnError500(w, err, "Can not get token")
+		return
+	}
+
+	answer := VkTokenAnswer{}
+	err = json.Unmarshal(body, &answer)
+	if err != nil {
+		OnError500(w, err, fmt.Sprintf("Can not parse VK response: %s", string(body)))
+		return
+	}
+
+	if (answer.AccessToken == "") {
+		OnError(w, nil, answer.ErrDesc, http.StatusUnauthorized)
+	}
+
+	rb, err := json.Marshal(answer.AccessToken)
+	if err != nil {
+		OnError500(w, err, "Can not marshal response")
+		return
+	}
+
+	w.Write(rb)
 }

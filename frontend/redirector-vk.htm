@@ -1,0 +1,42 @@
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <script type="text/javascript" src="js-editor/api.js"></script>
+    <script type="text/javascript" src="js-editor/auth.js"></script>
+</head>
+<body>
+<div id="nojs">
+    Если вы видите это сообщение, включите javascript
+</div>
+    <script type="text/javascript">
+        document.getElementById("nojs").innerHTML = ""
+        var urlParams = new URLSearchParams(window.location.search);
+        var state = urlParams.get('state')
+        var code = urlParams.get('code')
+        var error = urlParams.get('error')
+        var error_description = urlParams.get('error_description')
+
+        if (error || error_description) {
+            document.write(error)
+            document.write('\n')
+            document.write(error_description)
+            throw ''
+        }
+        if (!state){
+            document.write('Пропущен параметр state')
+            throw ''
+        }
+        if (!code){
+            document.write('Пропущен параметр code')
+            throw ''
+        }
+
+        token = acquireTokenVk(code)
+        if (token) {
+            setSourceAndToken('vk', token)
+        }
+
+        window.location.href = decodeURIComponent(state)
+    </script>
+</body>
+</html>

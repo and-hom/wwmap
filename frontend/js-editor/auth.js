@@ -1,11 +1,22 @@
 YNDX_AUTH_URL = "https://oauth.yandex.ru/authorize?response_type=token&client_id=f50947e6ab4944e1b1c14f2a21f76271"
-TOKEN_FIELD = 'token'
+VK_AUTH_URL = "https://oauth.vk.com/authorize?client_id=6703809&display=page&redirect_uri=https://wwmap.ru/redirector-vk.htm"
+SOURCE_FIELD = 'auth_source'
+TOKEN_FIELD = 'auth_token'
 
-function getToken() {
-    return window.localStorage[TOKEN_FIELD]
+function getSourceAndToken() {
+    var source = window.localStorage[SOURCE_FIELD]
+    var token = window.localStorage[TOKEN_FIELD]
+    if (!source || !token) {
+        return null
+    }
+    return {
+        source: source,
+        token: token,
+    }
 }
 
-function setToken(token) {
+function setSourceAndToken(source, token) {
+    window.localStorage[SOURCE_FIELD] = source
     window.localStorage[TOKEN_FIELD] = token
 }
 
@@ -13,13 +24,17 @@ function clearToken() {
     window.localStorage.removeItem(TOKEN_FIELD)
 }
 
-function forceRedirect() {
+function forceRedirectYndx() {
     window.location.href = YNDX_AUTH_URL + "&state=" + encodeURIComponent(window.location.href)
 }
 
+function forceRedirectVk() {
+    window.location.href = VK_AUTH_URL + "&state=" + encodeURIComponent(window.location.href)
+}
+
 function requireIfNotAuthorized() {
-    if (!getToken()) {
-        forceRedirect()
+    if (!getToken()[1]) {
+        forceRedirectYndx()
     }
 }
 
@@ -38,7 +53,7 @@ function parseParams(paramsStr) {
     return params;
 }
 
-function extractToken() {
+function extractTokenYndx() {
     var hash = window.location.hash
     if (hash) {
         hash = hash.substr(1)
@@ -50,9 +65,13 @@ function extractToken() {
     return null
 }
 
-function getUserInfo(token) {
+function acquireTokenVk(code) {
+    return doGetJsonSync(backendApiBase + "/vk/token?code=" + code)
+}
+
+function getUserInfo(source, token) {
     var xhr = new XMLHttpRequest();
-    xhr.open('GET', backendApiBase + '/user-info?token=' + token, false);
+    xhr.open('GET', backendApiBase + '/user-info?provider=' + source + "&token=" + token, false);
     xhr.send();
     if (xhr.status == 200) {
         return JSON.parse(xhr.response)
@@ -61,9 +80,9 @@ function getUserInfo(token) {
 }
 
 function storeTokenFromRequest() {
-    token = extractToken()
+    token = extractTokenYndx()
     if (token) {
-        setToken(token)
+        setSourceAndToken('yandex', token)
     }
 }
 
@@ -75,14 +94,14 @@ function getAuthorizedUserInfoOrNull() {
         return cachedUserInfo
     }
 
-    token = getToken()
-    if (!token) {
-        token = extractToken()
-    }
-    if (token) {
-        setToken(token)
+    sourceAndToken = getSourceAndToken()
+//    if (!sourceAndToken) {
+//        token = extractTokenYndx()
+//    }
+    if (sourceAndToken) {
+//        setSourceAndToken(sourceAndToken.source, sourceAndToken.token)
         try {
-            userInfo = getUserInfo(token)
+            userInfo = getUserInfo(sourceAndToken.source, sourceAndToken.token)
             cachedUserInfo = userInfo
             userInfoWasCached = true
             return userInfo
