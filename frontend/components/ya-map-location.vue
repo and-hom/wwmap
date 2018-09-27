@@ -81,7 +81,7 @@
                     url = backendApiBase + '/ymaps-tile-ww?bbox=%b&zoom=%z&skip=' + skip
                     st = getSourceAndToken()
                     if (st) {
-                        url += '&token=' + st.token + '&source=' + st.source
+                        url += '&token=' + st.token + '&provider=' + st.source
                     }
                     return url
                 },
