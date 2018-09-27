@@ -21,6 +21,7 @@ function setSourceAndToken(source, token) {
 }
 
 function clearToken() {
+    window.localStorage.removeItem(SOURCE_FIELD)
     window.localStorage.removeItem(TOKEN_FIELD)
 }
 
