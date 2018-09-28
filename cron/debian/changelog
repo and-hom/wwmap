@@ -1,3 +1,9 @@
+wwmap-cron (0.0.11) unstable; urgency=medium
+
+  * #84 spot ordering fixed
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Fri, 28 Sep 2018 23:31:15 +0300
+
 wwmap-cron (0.0.10) unstable; urgency=medium
 
   * #75 Generate river passports PDF
