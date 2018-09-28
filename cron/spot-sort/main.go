@@ -34,7 +34,7 @@ func (this App) PerformReordering() {
 	if err != nil {
 		log.Fatalf("Can not list river ids for spot reordering: %v+", err)
 	}
-	log.Infof("%d rivers for reordering", len(riverIds))
+	log.Infof("%d rivers for reordering: %v", len(riverIds), riverIds)
 
 	// 1. Select all gpx tracks from whaterways (OSM) for
 	for _, riverId := range riverIds {
