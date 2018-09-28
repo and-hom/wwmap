@@ -173,7 +173,7 @@
                 </div>
                 <div class="row">
                     <div class="col-7">
-                        <div class="container-fluid" style="padding-bottom:15px;">
+                        <div class="container-fluid border-inside" style="padding-bottom:15px;">
                             <div class="row">
                                 <div class="col-4"><strong>Уровень воды</strong></div>
                                 <div class="col-8"><strong>Тех. описание</strong></div>
