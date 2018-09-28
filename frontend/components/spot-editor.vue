@@ -225,7 +225,7 @@
                             <div style="font-size:60%;">Эти параметры предназначены для определения порядка следования порогов.</div>
                             <div><strong>Порядок следования:</strong> {{ spot.order_index }}</div>
                             <div><strong>Автоматическое упорядочивание:</strong>&nbsp;<span v-if="spot.automatic_ordering">Да</span><span v-else>Нет</span></div>
-                            <div><strong>В последний раз автоматическое упорядочивание срабатывало:</strong> {{ spot.last_automatic_ordering }}</div>
+                            <div><strong>В последний раз автоматическое упорядочивание срабатывало:</strong> {{ lastAutoOrdering() }}</div>
                         </div>
                     </div>
                 </div>
@@ -423,8 +423,13 @@
                 parseAliases:function(strVal) {
                     return strVal.split('\n').map(function(x) {return x.trim()}).filter(function(x){return x.length>0})
                 },
-                close1:function(){
-                    app.treePath={}
+                lastAutoOrdering:function() {
+                    var lastOrderingDate = new Date(this.spot.last_automatic_ordering)
+                    console.log(lastOrderingDate)
+                    if (lastOrderingDate.getFullYear()<=2017) {
+                        return 'Никогда'
+                    }
+                    return this.spot.last_automatic_ordering
                 },
             }
         }
