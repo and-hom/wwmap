@@ -107,7 +107,7 @@ function setImageEnabled(spotId, id, enabled, _type) {
 function getSpotMainImageUrl(spotId) {
     img =  doGetJsonSync(backendApiBase + "/spot/" + spotId + "/preview")
     if (img) {
-        return img.url
+        return img.preview_url
     }
     return null
 }
