@@ -257,6 +257,7 @@ func (this *GeoHierarchyHandler) UploadGpx(w http.ResponseWriter, req *http.Requ
 		spot.Point = geo.Point{Lat:wpt.Lat, Lon:wpt.Lon}
 		spot.ShortDesc = wpt.Desc
 		spot.Category = model.SportCategory{Category:model.UNDEFINED_CATEGORY}
+		spot.Aliases = []string{}
 		_, err = this.WhiteWaterDao.InsertWhiteWaterPointFull(spot)
 		if err != nil {
 			OnError500(w, err, "Can not insert spot")
