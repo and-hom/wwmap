@@ -4,6 +4,7 @@ import (
 	"io"
 	"path/filepath"
 	"os"
+	"io/ioutil"
 )
 
 type BlobStorage interface {
@@ -11,6 +12,7 @@ type BlobStorage interface {
 	Read(id string) (io.ReadCloser, error)
 	Length(id string) (int64, error)
 	Remove(id string) error
+	ListIds() ([]string, error)
 }
 
 type BasicFsStorage struct {
@@ -28,19 +30,31 @@ func (this BasicFsStorage) Store(id string, r io.Reader) error {
 }
 
 func (this BasicFsStorage) Read(id string) (io.ReadCloser, error) {
-	return  os.Open(this.path(id))
+	return os.Open(this.path(id))
 }
 
 func (this BasicFsStorage) Length(id string) (int64, error) {
-	stat,err :=  os.Stat(this.path(id))
-	if err!=nil {
-		return 0,err
+	stat, err := os.Stat(this.path(id))
+	if err != nil {
+		return 0, err
 	}
 	return stat.Size(), nil
 }
 
 func (this BasicFsStorage) Remove(id string) error {
-	return  os.Remove(this.path(id))
+	return os.Remove(this.path(id))
+}
+
+func (this BasicFsStorage) ListIds() ([]string, error) {
+	infos, err := ioutil.ReadDir(this.BaseDir)
+	if err != nil {
+		return []string{}, err
+	}
+	result := make([]string, 0, len(infos))
+	for i := 0; i < len(infos); i++ {
+		result = append(result, infos[i].Name())
+	}
+	return result, nil
 }
 
 func (this BasicFsStorage) path(id string) string {

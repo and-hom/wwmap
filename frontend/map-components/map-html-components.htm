@@ -69,7 +69,7 @@
     <table>
     {%each rivers%}
         <tr>
-            <td class="title-col"><a href="" style="padding-left:10px;" onclick="show_map_at(${bounds}); return false;">${title}</a></td>
+            <td class="title-col title-col-${category}"><a href="" style="padding-left:10px;" onclick="show_map_at(${bounds}); return false;">${title}</a></td>
             <td class="gpx-col">
                 <a href="${apiUrl}/${id}" style="padding-right:10px;" alt="Скачать GPX с точками порогов">GPX</a>
                 <a href="${apiUrl}/${id}?tr=true" alt="Скачать GPX с точками порогов">GPX<sub>en</sub></a>
