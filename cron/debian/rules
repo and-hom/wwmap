@@ -26,7 +26,7 @@ build-db-clean:
 	cd db-clean && GOPATH="$(HOME)/.go" go build
 
 build-spot-sort:
-	cd spot-sort; GOPATH="$(HOME)/.go" go build
+	cd spot-sort && GOPATH="$(HOME)/.go" go build
 
 build: pre-build build-notifier build-catalog-sync build-db-clean build spot-sort
 
