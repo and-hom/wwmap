@@ -221,10 +221,12 @@
                         </ul>
                     </div>
                     <div class="col-6">
-                        <div style="font-size:60%;">Эти параметры предназначены для определения порядка следования порогов.</div>
-                        <div><strong>Порядок следования:</strong> {{ spot.order_index }}</div>
-                        <div><strong>Автоматическое упорядочивание:</strong>&nbsp;<span v-if="spot.automatic_ordering">Да</span><span v-else>Нет</span></div>
-                        <div><strong>В последний раз автоматическое упорядочивание срабатывало:</strong> {{ spot.last_automatic_ordering }}</div>
+                        <div v-if="canEdit()">
+                            <div style="font-size:60%;">Эти параметры предназначены для определения порядка следования порогов.</div>
+                            <div><strong>Порядок следования:</strong> {{ spot.order_index }}</div>
+                            <div><strong>Автоматическое упорядочивание:</strong>&nbsp;<span v-if="spot.automatic_ordering">Да</span><span v-else>Нет</span></div>
+                            <div><strong>В последний раз автоматическое упорядочивание срабатывало:</strong> {{ spot.last_automatic_ordering }}</div>
+                        </div>
                     </div>
                 </div>
             </div>
