@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>О проекте</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon"/>
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon"/>
+
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+
+    <script type="text/javascript" src="js-editor/jquery-3.2.1.slim.min.js"></script>
+    <script type="text/javascript" src="js-editor/bootstrap.min.js"></script>
+    <script type="text/javascript" src="js/map.v2.js"></script>
+
+    <script type="text/javascript" src="js-editor/api.js"></script>
+    <script type="text/javascript" src="js-editor/auth.js"></script>
+    <script type="text/javascript" src="js-editor/vue.js"></script>
+    <script type="text/javascript" src="js-editor/http-vue-loader.js"></script>
+    <script type="text/javascript" src="js-editor/showdown.min.js"></script>
+</head>
+<body>
+
+<div id="vue-app">
+    <page link="about.htm">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <h2>Что такое WWMap?</h2>
+                    <p>WWMap - это карта порогов, интересных для спортивного сплава на байдарках и катамаранах. Пороги сопровождаются описаниями и фотографиями.</p>
+                    <p>Для каждой из описанных сплавных рек можно скачать <a target="_blank" href="https://ru.wikipedia.org/wiki/GPX">GPX</a>-файл,
+                    который затем загрузить в свой навигатор. Также можно скачать описание с фотографиями.</p>
+                    <p>WWMap собирает отчёты с <a target="_blank" href="http://tlib.ru">tlib.ru</a> и автоматически привязывает их к рекам. Ссылки можно найти в таблице рядом с картой.</p>
+                    <p>Карту можно встроить на свой сайт при помощи <a target="_blank" href="./refs.htm#integration-guide">простой инструкции</a>.</p>
+                    <h2>В чём цель проекта?</h2>
+                    <p>Очень часто перед походом приходится самостоятельно размечать пороги в навигаторе. Это занимает достаточно много времени и не всегда получается точно. Одна из целей -
+                        собрать большую проверенную коллекцию координат препятствий и поделиться ею с туристическим сообществом.</p>
+                    <p>Также мы собираем описания порогов для разного уровня воды, фотографии и схемы, а потом собираем в один документ, и также предоставляем его коллегам-туристам.</p>
+                    <h2>Кто редактирует и проверяет всю эту информацию?</h2>
+                    <p>Небольшая группа спортсменов-водников из команды <a target="_blank" href="https://huskytm.ru">HuskyTeam</a>. Ты тоже можешь этим заняться. Нужно желание,
+                        хорошее знание рек и аккуратность. Если ты можешь и хочешь помочь наполнению карты новыми порогами/описаниями/фотографиями лучше писать на <a class="email-link" href=""></a>.</p>
+                </div>
+            </div>
+        </div>
+    </page>
+</div>
+
+<script type="text/javascript">
+    Vue.component('auth', httpVueLoader('components/auth.vue'))
+    Vue.component('page', httpVueLoader('components/page.vue'))
+
+    var app = new Vue({
+        el: '#vue-app',
+
+        data: {
+        }
+    })
+
+    $(document).ready(function() {
+        initMailtoLinks()
+    })
+</script>
+
+</body>
+</html>
