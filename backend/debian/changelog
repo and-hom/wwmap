@@ -1,3 +1,9 @@
+wwmap-backend (0.0.27) unstable; urgency=medium
+
+  * preview size increased up to 300x200
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sat, 29 Sep 2018 00:14:36 +0300
+
 wwmap-backend (0.0.26) unstable; urgency=medium
 
   * Compress image on upload
