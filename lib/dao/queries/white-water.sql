@@ -127,6 +127,7 @@ SELECT wwpts.id, ST_Length(ST_LineSubstring(
         ST_LineLocatePoint(path, ST_StartPoint(path)),
         ST_LineLocatePoint(path, point))::geography)::int
         FROM p inner join wwpts on true
+        WHERE ST_Distance(path::geography,point::geography)<$3
         ORDER BY 2
 
 --@update-order-idx

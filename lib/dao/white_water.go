@@ -386,6 +386,7 @@ func (this whiteWaterStorage) AutoOrderingRiverIds() ([]int64, error) {
 
 type idDistPair struct{ int64; int }
 
+const ORDERING_MIN_DISTANCE_METERS = 30
 func (this whiteWaterStorage) DistanceFromBeginning(riverId int64, path []geo.Point) (map[int64]int, error) {
 	result := make(map[int64]int)
 	pathB, err := json.Marshal(geo.NewLineString(path))
@@ -400,7 +401,7 @@ func (this whiteWaterStorage) DistanceFromBeginning(riverId int64, path []geo.Po
 			result[wwpId] = dist
 		}
 		return idDistPair{wwpId, dist}, err
-	}, riverId, string(pathB))
+	}, riverId, string(pathB), ORDERING_MIN_DISTANCE_METERS)
 	if err != nil {
 		return result, err
 	}
