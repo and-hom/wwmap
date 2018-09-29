@@ -45,12 +45,14 @@
                 </div>
             </div>
         </template>
-        <table>
-            <tr>
-                <td></td>
-                <td>Ссылка на источник</td>
-                <td></td>
-            </tr>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Ссылка на источник</th>
+                    <th></th>
+                </tr>
+            </thead>
             <tr v-for="image in images">
                 <td><img :class="imageClass(image)" :src="image.preview_url"/></td>
                 <td>
@@ -58,10 +60,10 @@
                     <a v-else target="_blank" :href="image.report_url">{{image.report_title}}</a>
                 </td>
                 <td>
-                    <button v-if="image.enabled==false" v-on:click="setImgEnabled(true, image.id)">Показывать</button>
-                    <button v-if="image.enabled==true" v-on:click="setImgEnabled(false, image.id)">Не показывать</button>
-                    <button v-if="image.source=='wwmap'" v-on:click="removeImage(image.id)">Удалить</button>
-                    <button v-if="!image.main_image" v-on:click="setSpotPreview(image.id)">Сделать главным изображением</button>
+                    <button v-if="image.enabled==false" v-on:click="setImgEnabled(true, image.id)" class="btn btn-success">Показывать</button>
+                    <button v-if="image.enabled==true" v-on:click="setImgEnabled(false, image.id)"class="btn btn-secondary">Не показывать</button>
+                    <button v-if="image.source=='wwmap'" v-on:click="removeImage(image.id)" class="btn btn-danger">Удалить</button>
+                    <button v-if="!image.main_image" v-on:click="setSpotPreview(image.id)" class="btn btn-info">Сделать главным изображением</button>
                 </td>
             </tr>
         </table>
