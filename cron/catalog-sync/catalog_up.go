@@ -11,7 +11,6 @@ import (
 
 const MAX_ATTACHED_IMGS = 300
 const MISSING_IMAGE = "https://wwmap.ru/img/no-photo.png"
-const PAGE_ID_PROP_NAME = "huskytm_page_id"
 
 func filterRegions(regions []dao.Region) []dao.Region {
 	result := make([]dao.Region, 0, len(regions))
@@ -71,6 +70,8 @@ func (this *App) DoWriteCatalog() {
 func (this *App) doWriteCatalog(catalogConnector *common.CatalogConnector) error {
 	fakeRegion := dao.Region{Id:0, Title:"-"}
 	log.Info("Create missing ww passports")
+
+	exportedPropName := "export_" + (*catalogConnector).SourceId()
 
 	countries, err := this.CountryDao.List()
 	if err != nil {
@@ -137,7 +138,7 @@ func (this *App) doWriteCatalog(catalogConnector *common.CatalogConnector) error
 
 				exportOk := err == nil && riverPageLink != ""
 				log.Infof("Mark as exported: %v", exportOk)
-				err2 := this.RiverDao.Props().SetBoolProperty("export_" + (*catalogConnector).SourceId(), river.Id, exportOk)
+				err2 := this.RiverDao.Props().SetBoolProperty(exportedPropName, river.Id, exportOk)
 				if err != nil {
 					return err
 				}
@@ -168,7 +169,7 @@ func (this *App) doWriteCatalog(catalogConnector *common.CatalogConnector) error
 			riverPageLink, err := this.uploadRiver(catalogConnector, country, fakeRegion, river, rootPageLink, countryPageLink, "", countryPageId)
 			exportOk := err == nil && riverPageLink != ""
 			log.Infof("Mark as exported: %v", exportOk)
-			err2 := this.RiverDao.Props().SetBoolProperty("export_" + (*catalogConnector).SourceId(), river.Id, exportOk)
+			err2 := this.RiverDao.Props().SetBoolProperty(exportedPropName, river.Id, exportOk)
 			if err != nil {
 				return err
 			}
@@ -272,7 +273,8 @@ func (this *App) reports(riverId int64) ([]common.VoyageReportLink, error) {
 }
 
 func (this *App) createBlankPageIfNotExists(catalogConnector *common.CatalogConnector, dao dao.HasProperties, id int64, title string, parentId int) (int, string, error) {
-	pageId, err := dao.Props().GetIntProperty(PAGE_ID_PROP_NAME, id)
+	page_id_prop_name := (*catalogConnector).SourceId() + "_page_id"
+	pageId, err := dao.Props().GetIntProperty(page_id_prop_name, id)
 	if err != nil {
 		log.Errorf("Can not get page id for entity %d:%s", id, title)
 		return 0, "", err
@@ -284,7 +286,7 @@ func (this *App) createBlankPageIfNotExists(catalogConnector *common.CatalogConn
 	}
 	if created {
 		log.Infof("Created page id=%d for %d - %s", childPageId, id, title)
-		err := dao.Props().SetIntProperty(PAGE_ID_PROP_NAME, id, childPageId)
+		err := dao.Props().SetIntProperty(page_id_prop_name, id, childPageId)
 		if err != nil {
 			log.Errorf("Can not set page id for entity %d:%s", id, title)
 			return 0, "", err
