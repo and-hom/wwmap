@@ -132,10 +132,8 @@ func (this *App) doWriteCatalog(catalogConnector *common.CatalogConnector) error
 
 			riverLinks := []common.LinkOnPage{}
 			for _, river := range regionRivers {
-				riverPageLink := ""
-				if river.SpotCounters.Ordered == river.SpotCounters.Total && river.SpotCounters.Total > 0 {
-					riverPageLink, err = this.uploadRiver(catalogConnector, country, region, river, rootPageLink, countryPageLink, regionPageLink, regionPageId)
-				}
+				log.Infof("Upload river %s/%s/%s", country.Title, region.Title, river.Title)
+				riverPageLink, err := this.uploadRiver(catalogConnector, country, region, river, rootPageLink, countryPageLink, regionPageLink, regionPageId)
 
 				exportOk := err == nil && riverPageLink != ""
 				log.Infof("Mark as exported: %v", exportOk)
@@ -166,10 +164,8 @@ func (this *App) doWriteCatalog(catalogConnector *common.CatalogConnector) error
 		}
 		for _, river := range countryRivers {
 			log.Infof("Upload river %s/%s", country.Title, river.Title)
-			riverPageLink := ""
-			if river.SpotCounters.Ordered == river.SpotCounters.Total && river.SpotCounters.Total > 0 {
-				riverPageLink, err = this.uploadRiver(catalogConnector, country, fakeRegion, river, rootPageLink, countryPageLink, "", countryPageId)
-			}
+
+			riverPageLink, err := this.uploadRiver(catalogConnector, country, fakeRegion, river, rootPageLink, countryPageLink, "", countryPageId)
 			exportOk := err == nil && riverPageLink != ""
 			log.Infof("Mark as exported: %v", exportOk)
 			err2 := this.RiverDao.Props().SetBoolProperty("export_" + (*catalogConnector).SourceId(), river.Id, exportOk)
@@ -213,8 +209,16 @@ func (this *App) doWriteCatalog(catalogConnector *common.CatalogConnector) error
 	return err
 }
 
+func (this *App) canExport(river dao.River) bool {
+	return river.SpotCounters.Total == 1 || river.SpotCounters.Total > 0 && river.SpotCounters.Ordered == river.SpotCounters.Total
+}
+
 func (this *App) uploadRiver(catalogConnector *common.CatalogConnector, country dao.Country, region dao.Region, river dao.River,
 rootPageLink, countryPageLink, regionPageLink string, parentPageId int) (string, error) {
+	if !this.canExport(river) {
+		log.Infof("River %d %s can not be exported", river.Id, river.Title)
+		return "", nil
+	}
 	log.Infof("Upload river %s/%s/%s", country.Title, region.Title, river.Title)
 	riverPageId, riverPageLink, spotLinks, needUpdate, err := this.writeSpots(catalogConnector, parentPageId, river, region, country, rootPageLink, countryPageLink, regionPageLink)
 	if err != nil {
