@@ -167,7 +167,8 @@
                         </div>
                     </div>
                     <div class="col-5">
-                        <img v-if="spotMainUrl" :src="spotMainUrl" style="width:100%"/>
+                        <img v-if="spotMainUrl" :src="spotMainUrl" style="width:100%; cursor: pointer;"
+                        @click="imgIndex = mainImageIndex; schIndex = mainSchemaIndex"/>
                         <img v-else src="img/no-photo.png" style="width:100%"/>
                     </div>
                 </div>
@@ -233,24 +234,24 @@
             <div v-if="schemas.length">
                 <h2>Схемы</h2>
                 <div>
-                    <gallery id="schemas-gallery" :images="schemas.map(x => x.url)" :index="schIndex" @close="schemaIndex = null"></gallery>
+                    <gallery id="schemas-gallery" :images="schemas.map(x => x.url)" :index="schIndex" @close="schIndex = null"></gallery>
                     <div
                             class="image wwmap-gallery-cell"
                             v-for="schema, schemaIndex in schemas"
                             @click="schIndex = schemaIndex"
-                            :style="{ backgroundImage: 'url(' + schema.preview_url + ')', width: '300px', height: '200px' }"
+                            :style="{ backgroundImage: 'url(' + schema.preview_url + ')', width: '300px', height: '200px', cursor: 'pointer' }"
                     ></div>
                 </div>
             </div>
             <div v-if="images.length">
                 <h2>Фото галерея</h2>
                 <div>
-                    <gallery id="image-gallery" :images="images.map(x => x.url)" :index="imgIndex" @close="imageIndex = null"></gallery>
+                    <gallery id="image-gallery" :images="images.map(x => x.url)" :index="imgIndex" @close="imgIndex = null"></gallery>
                     <div
                             class="image wwmap-gallery-cell"
                             v-for="image, imageIndex in images"
                             @click="imgIndex = imageIndex"
-                            :style="{ backgroundImage: 'url(' + image.preview_url + ')', width: '300px', height: '200px' }"
+                            :style="{ backgroundImage: 'url(' + image.preview_url + ')', width: '300px', height: '200px', cursor: 'pointer' }"
                     ></div>
                 </div>
             </div>
@@ -333,6 +334,22 @@
                     set:function(newVal) {
                         app.spoteditorstate.schemas = newVal
                     },
+                },
+                mainImageIndex: function() {
+                    var imgIdx = this.findMainImgIdx(this.images, this.spotMainUrl)
+                    if (imgIdx>-1) {
+                        return imgIdx
+                    }
+                    console.log('img-null')
+                    return null
+                },
+                mainSchemaIndex: function() {
+                    imgIdx = this.findMainImgIdx(this.schemas, this.spotMainUrl)
+                    if (imgIdx>-1) {
+                        return imgIdx
+                    }
+                    console.log('sch-null')
+                    return null
                 },
         },
         data:function() {
@@ -425,12 +442,25 @@
                 },
                 lastAutoOrdering:function() {
                     var lastOrderingDate = new Date(this.spot.last_automatic_ordering)
-                    console.log(lastOrderingDate)
                     if (lastOrderingDate.getFullYear()<=2017) {
                         return 'Никогда'
                     }
                     return this.spot.last_automatic_ordering
                 },
+                findMainImgIdx:function(imgs, spotMainUrl) {
+                    return imgs.findIndex(function(el) {
+                                                   if (el.preview_url == spotMainUrl) {
+                                                       return true
+                                                   }
+                                                   return false
+                                               })
+                },
+                schemaIndex: null,
+                imageIndex: null,
+        i: [
+          'https://dummyimage.com/800/ffffff/000000',
+        ],
+        index: null
             }
         }
     }
