@@ -89,7 +89,6 @@ func (this *App) associateReportWithRiver(report *dao.VoyageReport, resultHandle
 		log.Error("Can not find rivers by tags")
 		return err
 	}
-	log.Info(rivers)
 	for _, river := range rivers {
 		err := this.VoyageReportDao.AssociateWithRiver(report.Id, river.Id)
 		if err != nil {

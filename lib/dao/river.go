@@ -130,7 +130,6 @@ func (this riverStorage) Save(rivers ...River) error {
 }
 
 func (this riverStorage) listRiverTitles(query string, queryParams ...interface{}) ([]RiverTitle, error) {
-	log.Infof("%v", queryParams)
 	result, err := this.doFindList(query,
 		func(rows *sql.Rows) (RiverTitle, error) {
 			riverTitle := RiverTitle{}

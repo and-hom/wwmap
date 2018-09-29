@@ -70,7 +70,7 @@ func (this *PgTxHolder) performUpdates(query string, mapper func(entity interfac
 		}
 	}
 
-	log.Infof("Update completed. Commit.")
+	log.Debug("Update completed. Commit.")
 	return stmt.Close()
 }
 

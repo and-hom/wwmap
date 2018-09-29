@@ -55,19 +55,24 @@ func (this *HuskytmCatalogConnector) Close() error {
 	return nil
 }
 
-func (this *HuskytmCatalogConnector) CreateEmptyPageIfNotExistsAndReturnId(_ int64, parent int, pageId int, title string) (int, string, bool, error) {
-	log.Infof("Check page for id=%d", pageId)
+func (this *HuskytmCatalogConnector) CreateEmptyPageIfNotExistsAndReturnId(id int64, parent int, pageId int, title string) (int, string, bool, error) {
+	log.Infof("Check page for id=%d page_id=%d", id, pageId)
 	if pageId <= 0 {
-		id, link, err := this.createPage(parent, title)
+		log.Infof("Really create new page for %s", title)
+		createdPageId, link, err := this.createPage(parent, title)
 		created := err == nil
-		return id, link, created, err
+		return createdPageId, link, created, err
+	} else {
+		log.Infof("Page exists: %d %s - do check", pageId, title)
 	}
 	this.rateLimit.WaitIfNecessary()
 	p, r, _, err := this.client.Pages().Get(pageId, emptyMap())
 	if r.StatusCode == http.StatusNotFound || p.Status == "trash" {
-		id, link, err := this.createPage(parent, title)
+		log.Warnf("Existing page %d is not sutable: %d %s", pageId, r.StatusCode, p.Status)
+		createdPageId, link, err := this.createPage(parent, title)
+		log.Info("Created page id=%d for entity id=%d", createdPageId, id)
 		created := err == nil
-		return id, link, created, err
+		return createdPageId, link, created, err
 	} else if err != nil {
 		return 0, "", false, err
 	}
