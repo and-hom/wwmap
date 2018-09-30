@@ -1,3 +1,9 @@
+wwmap-cron (0.0.13) unstable; urgency=medium
+
+  * #101 Show map in huskytm exported pages
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sun, 30 Sep 2018 23:58:40 +0300
+
 wwmap-cron (0.0.12) unstable; urgency=medium
 
   * #75 #84 #101 Export unsorted rivers with single spot
