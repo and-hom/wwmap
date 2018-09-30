@@ -1,3 +1,12 @@
+wwmap-cron (0.0.12) unstable; urgency=medium
+
+  * #75 #84 #101 Export unsorted rivers with single spot
+  * Exporting page duplicates fixed
+  * Some logging improvements
+  * Send notifications every hour if exist
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sun, 30 Sep 2018 21:32:24 +0300
+
 wwmap-cron (0.0.11) unstable; urgency=medium
 
   * #84 spot ordering fixed

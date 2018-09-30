@@ -1,4 +1,15 @@
-wwmap-frontend (0.0.24) UNRELEASED; urgency=medium
+wwmap-frontend (0.0.25) unstable; urgency=medium
+
+  * Look improvements: show spot preview on click as gallery element
+  * Use image preview in spot page
+  * Display last ordering date is never if before 2017
+  * Show borders in spot description table
+  * Show auto ordering options for editors and admins only
+  * About page
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sun, 30 Sep 2018 21:36:09 +0300
+
+wwmap-frontend (0.0.24) unstable; urgency=medium
 
   * #107 VK login
   * Show selected spot on F5

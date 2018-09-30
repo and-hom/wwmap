@@ -1,3 +1,9 @@
+wwmap-db (0.0.15) unstable; urgency=medium
+
+  * #84 Spot auto ordering fixed
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sun, 30 Sep 2018 21:37:54 +0300
+
 wwmap-db (0.0.14) unstable; urgency=medium
 
   * #107 Multiple login providers (for VK support)
