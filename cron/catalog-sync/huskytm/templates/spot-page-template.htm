@@ -1,3 +1,7 @@
+<script type="text/javascript" src="https://api-maps.yandex.ru/2.1/?lang=ru_RU"></script>
+<script type="text/javascript" src="https://wwmap.ru/js/config.js"></script>
+<script type="text/javascript" src="https://wwmap.ru/js/map.v2.js"></script>
+
 <a href="{{.RootPageLink}}" style="font-size:80%;">Каталог водных препятствий</a><br/>&nbsp;&nbsp;<a
         href="{{.CountryPageLink}}" style="font-size:80%;">{{.Country.Title}}</a><br/>&nbsp;&nbsp;&nbsp;&nbsp;<a
         href="{{.RegionPageLink}}" style="font-size:80%;">{{.Region.Title}}</a><br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a
@@ -7,7 +11,7 @@
     <tr>
         <td colspan="2">{{.Spot.ShortDesc}}</td>
         <td rowspan="2">
-            <img style="width:200px;" src="{{.MainImage.Url}}"/>
+            <img style="width:200px;" src="{{.MainImage.PreviewUrl}}"/>
         </td>
     </tr>
     <tr>
@@ -21,14 +25,13 @@
         <td><strong>Тех. описание</strong></td>
         <td rowspan="7">
             <strong>Расположение: </strong>
-            <div style="width:100%" id="wwmap">Тут будет карта</div>
+            <div id="map" style="width:300px; height: 250px;"></div>
             <div class="short-div">
-                <strong>Координаты:</strong><br/><strong>Широта:</strong>&nbsp;{{.Spot.Point.Lat}}
-                <br/><strong>Долгота:</strong>&nbsp;{{.Spot.Point.Lon}}
+                <strong>Координаты:</strong><br/><strong>Широта:</strong>&nbsp;{{printf "%.7f" .Spot.Point.Lat}}<br/><strong>Долгота:</strong>&nbsp;{{printf "%.7f" .Spot.Point.Lon}}
                 <br/>
-                <div><strong>К.с. нв/св/вв:</strong>&nbsp;{{.Spot.LowWaterCategory}}/{{.Spot.MediumWaterCategory}}/{{.Spot.HighWaterCategory}}
+                <div><strong>К.с. нв/св/вв:</strong>&nbsp;{{catStr .Spot.LowWaterCategory}}/{{catStr .Spot.MediumWaterCategory}}/{{catStr .Spot.HighWaterCategory}}
                 </div>
-                <div><strong>К.с. по классификатору:</strong>&nbsp;{{.Spot.Category}}</div>
+                <div><strong>К.с. по классификатору:</strong>&nbsp;{{catStr .Spot.Category}}</div>
             </div>
         </td>
     </tr>
@@ -57,3 +60,45 @@
         </td>
     </tr>
 </table>
+
+<script type="text/javascript">
+    ymaps.ready(function() {
+                addCachedLayer('osm#standard', 'OSM', 'OpenStreetMap contributors, CC-BY-SA', 'osm')
+                addLayer('google#satellite', 'Спутник Google', 'Изображения © DigitalGlobe,CNES / Airbus, 2018,Картографические данные © Google, 2018', GOOGLE_SAT_TILES)
+                addCachedLayer('ggc#standard', 'Топографическая карта', '', 'ggc', 0, 15)
+                var myMap = new ymaps.Map("map", {
+                    center: {{.Spot.Point}},
+                    zoom: 11,
+                    controls: ["zoomControl"],
+                    type: "osm#standard",
+                });
+                myMap.controls.add(
+                    new ymaps.control.TypeSelector([
+                        'osm#standard',
+                        'ggc#standard',
+                        'yandex#satellite',
+                        'google#satellite',
+                    ])
+                );
+                var objectManager = new ymaps.RemoteObjectManager('https://wwmap.ru/api/ymaps-tile-ww?bbox=%b&zoom=%z&skip={{.Spot.Id}}', {
+                        clusterHasBalloon: false,
+                        geoObjectOpenBalloonOnClick: false,
+                        geoObjectStrokeWidth: 3,
+                        splitRequests: true,
+                        clusterHasBalloon: false,
+                    });
+                myMap.geoObjects.add(objectManager);
+                var label = new ymaps.GeoObject({
+                       geometry: {
+                           type: "Point",
+                           coordinates: {{.Spot.Point}}
+                       },
+                       properties: {
+                           hintContent: {{.Spot.Title}},
+                       }
+                   }, {
+                       preset: 'islands#blueIcon',
+                   })
+                myMap.geoObjects.add(label)
+            })
+</script>

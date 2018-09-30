@@ -15,6 +15,11 @@ river
 
 ) spot_counters) AS spot_counters
 
+--@bounds
+SELECT @@table@@.id id, ST_AsGeoJSON(ST_Extent(white_water_rapid.point)) bounds from
+    @@table@@ INNER JOIN white_water_rapid ON  @@table@@.id=white_water_rapid.river_id
+    GROUP BY @@table@@.id
+
 --@find-by-tags
 SELECT id,region_id,title,NULL, NULL, '{}' FROM (
 		SELECT id,region_id, title, CASE aliases WHEN '[]' THEN NULL ELSE jsonb_array_elements_text(aliases) END AS alias FROM river) sq
@@ -25,6 +30,7 @@ SELECT ROW_NUMBER() OVER (PARTITION BY id ORDER BY distance ASC) AS r_num, id, t
 SELECT river.id AS id, river.title AS title, river.aliases AS aliases,
 ST_Distance(path,  ST_GeomFromGeoJSON($1)) AS distance FROM river INNER JOIN waterway ON river.id=waterway.river_id) ssq
 )sq WHERE r_num<=1 ORDER BY distance ASC LIMIT $2;
+
 --@inside-bounds
 SELECT river.id,region_id, river.title, ST_AsGeoJSON(ST_Extent(white_water_rapid.point)), river.aliases, river.props FROM
 river INNER JOIN white_water_rapid ON river.id=white_water_rapid.river_id
@@ -43,8 +49,11 @@ SELECT river.id, region_id, river.title, NULL, river.aliases, river.props
     ORDER BY CASE river.title WHEN '-' THEN NULL ELSE river.title END ASC
 
 --@by-region-full
-SELECT river.id, region_id, river.title, NULL, river.aliases, description, visible, river.props, @@spot-counters@@
-    FROM river INNER JOIN region ON river.region_id=region.id WHERE region.id=$1
+WITH bounds AS (@@bounds@@)
+SELECT river.id, region_id, river.title, b.bounds, river.aliases, description, visible, river.props, @@spot-counters@@
+    FROM river INNER JOIN region ON river.region_id=region.id
+     INNER JOIN (SELECT * FROM bounds) b ON b.id=@@table@@.id
+    WHERE region.id=$1
     ORDER BY CASE river.title WHEN '-' THEN NULL ELSE river.title END ASC
 
 --@by-country
@@ -53,8 +62,11 @@ SELECT river.id as id, region_id, river.title as title, NULL, river.aliases as a
     ORDER BY CASE river.title WHEN '-' THEN NULL ELSE river.title END ASC
 
 --@by-country-full
-SELECT river.id as id, region_id, river.title as title, NULL, river.aliases as aliases, description, visible, river.props, @@spot-counters@@
-    FROM river INNER JOIN region ON river.region_id=region.id WHERE region.fake AND region.country_id=$1
+WITH bounds AS (@@bounds@@)
+SELECT river.id as id, region_id, river.title as title, b.bounds, river.aliases as aliases, description, visible, river.props, @@spot-counters@@
+    FROM river INNER JOIN region ON river.region_id=region.id
+     INNER JOIN (SELECT * FROM bounds) b ON b.id=@@table@@.id
+    WHERE region.fake AND region.country_id=$1
     ORDER BY CASE river.title WHEN '-' THEN NULL ELSE river.title END ASC
 
 --@by-first-letters

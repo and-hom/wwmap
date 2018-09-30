@@ -15,7 +15,7 @@ import (
 
 func (this *App) bboxFormValue(w http.ResponseWriter, req *http.Request) (geo.Bbox, error) {
 	bboxStr := req.FormValue("bbox")
-	bbox, err := geo.NewBbox(bboxStr)
+	bbox, err := geo.ParseBbox(bboxStr)
 	if err != nil {
 		OnError(w, err, fmt.Sprintf("Can not parse bbox: %v", bbox), http.StatusBadRequest)
 		return geo.Bbox{}, err

@@ -141,23 +141,10 @@ func (this riverStorage) listRiverTitles(query string, queryParams ...interface{
 				return RiverTitle{}, err
 			}
 
-			var pgRect PgPolygon
 			if boundsStr.Valid {
-				err = json.Unmarshal([]byte(boundsStr.String), &pgRect)
-				if err != nil {
-					var pgPoint PgPoint
-					err = json.Unmarshal([]byte(boundsStr.String), &pgPoint)
-					if err != nil {
-						log.Warnf("Can not parse rect or point %s for white water object %d: %v", boundsStr.String, riverTitle.Id, err)
-					}
-					pgRect.Coordinates = point2rect(pgPoint)
-				}
-
-				riverTitle.Bounds = geo.Bbox{
-					X1:pgRect.Coordinates[0][0].Lat,
-					Y1:pgRect.Coordinates[0][0].Lon,
-					X2:pgRect.Coordinates[0][2].Lat,
-					Y2:pgRect.Coordinates[0][2].Lon,
+				riverTitle.Bounds, err = ParseBounds(boundsStr.String)
+				if err!= nil {
+					log.Warnf("Can not parse rect or point %s for white water object %d: %v", boundsStr.String, riverTitle.Id, err)
 				}
 			}
 
@@ -174,6 +161,26 @@ func (this riverStorage) listRiverTitles(query string, queryParams ...interface{
 		return []RiverTitle{}, err
 	}
 	return result.([]RiverTitle), nil
+}
+
+func ParseBounds(boundsStr string) (geo.Bbox, error) {
+	var pgRect PgPolygon
+	err := json.Unmarshal([]byte(boundsStr), &pgRect)
+	if err != nil {
+		var pgPoint PgPoint
+		err := json.Unmarshal([]byte(boundsStr), &pgPoint)
+		if err != nil {
+			return geo.Bbox{}, err
+		}
+		pgRect.Coordinates = point2rect(pgPoint)
+	}
+
+	return geo.Bbox{
+		X1:pgRect.Coordinates[0][0].Lat,
+		Y1:pgRect.Coordinates[0][0].Lon,
+		X2:pgRect.Coordinates[0][2].Lat,
+		Y2:pgRect.Coordinates[0][2].Lon,
+	}, nil
 }
 
 func point2rect(pgPoint PgPoint) [][]geo.Point {
@@ -231,6 +238,13 @@ func riverMapperFull(rows *sql.Rows) (River, error) {
 	err = json.Unmarshal([]byte(props), &river.Props)
 	if err != nil {
 		return river, err
+	}
+
+	if boundsStr.Valid {
+		river.Bounds, err = ParseBounds(boundsStr.String)
+		if err!= nil {
+			log.Warnf("Can not parse rect or point %s for white water object %d: %v", boundsStr.String, river.Id, err)
+		}
 	}
 	err = json.Unmarshal([]byte(spotCounters), &river.SpotCounters)
 	return river, err

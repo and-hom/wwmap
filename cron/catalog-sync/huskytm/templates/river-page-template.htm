@@ -1,3 +1,7 @@
+<script type="text/javascript" src="https://api-maps.yandex.ru/2.1/?lang=ru_RU"></script>
+<script type="text/javascript" src="https://wwmap.ru/js/config.js"></script>
+<script type="text/javascript" src="https://wwmap.ru/js/map.v2.js"></script>
+
 <a href="{{.RootPageLink}}" style="font-size:80%;">Каталог водных препятствий</a><br/>&nbsp;&nbsp;<a
         href="{{.CountryPageLink}}" style="font-size:80%;">{{.Country.Title}}</a><br/>&nbsp;&nbsp;&nbsp;&nbsp;<a
         href="{{.RegionPageLink}}" style="font-size:80%;">{{.Region.Title}}</a>
@@ -5,7 +9,6 @@
 <table style="border:0px;">
     <tr>
         <td colspan="2">
-            <h1>{{.River.Title}}</h1>
             {{.River.Description}}
         </td>
         <td>
@@ -17,7 +20,7 @@
                 href="https://wwmap.ru/api/gpx/river/{{.River.Id}}">GPX</a>&nbsp;<a
                 href="https://wwmap.ru/api/gpx/river/{{.River.Id}}?tr=true">GPX<sub>en</sub></a></td>
         <td rowspan="{{ inc (len .Links) }}">
-            Карта
+            <div id="map" style="width:500px; height: 450px;"></div>
         </td>
     </tr>
     {{range .Links}}
@@ -36,3 +39,32 @@
     </tr>
     {{end}}
 </table>
+
+<script type="text/javascript">
+    ymaps.ready(function() {
+                addCachedLayer('osm#standard', 'OSM', 'OpenStreetMap contributors, CC-BY-SA', 'osm')
+                addLayer('google#satellite', 'Спутник Google', 'Изображения © DigitalGlobe,CNES / Airbus, 2018,Картографические данные © Google, 2018', GOOGLE_SAT_TILES)
+                addCachedLayer('ggc#standard', 'Топографическая карта', '', 'ggc', 0, 15)
+                var myMap = new ymaps.Map("map", {
+                    bounds: {{ .River.Bounds.WithMargins 0.1 }},
+                    controls: ["zoomControl"],
+                    type: "osm#standard",
+                });
+                myMap.controls.add(
+                    new ymaps.control.TypeSelector([
+                        'osm#standard',
+                        'ggc#standard',
+                        'yandex#satellite',
+                        'google#satellite',
+                    ])
+                );
+                var objectManager = new ymaps.RemoteObjectManager('https://wwmap.ru/api/ymaps-tile-ww?bbox=%b&zoom=%z', {
+                        clusterHasBalloon: false,
+                        geoObjectOpenBalloonOnClick: false,
+                        geoObjectStrokeWidth: 3,
+                        splitRequests: true,
+                        clusterHasBalloon: false,
+                    });
+                myMap.geoObjects.add(objectManager);
+            })
+</script>

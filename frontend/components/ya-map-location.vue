@@ -86,7 +86,7 @@
                     return url
                 },
                 addObjectManager:function() {
-                        var objectManager = new ymaps.RemoteObjectManager(this.objectManagerUrlTemplate(), {
+                    var objectManager = new ymaps.RemoteObjectManager(this.objectManagerUrlTemplate(), {
                         clusterHasBalloon: false,
                         geoObjectOpenBalloonOnClick: false,
                         geoObjectStrokeWidth: 3,

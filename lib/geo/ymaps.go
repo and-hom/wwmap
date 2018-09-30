@@ -43,7 +43,7 @@ func (this Bbox) String() string {
 	return buffer.String()
 }
 
-func (this *Bbox) WithMargins(ratio float64) Bbox {
+func (this Bbox) WithMargins(ratio float64) Bbox {
 	dx := this.X2 - this.X1
 	dy := this.Y2 - this.Y1
 	marginX := dx * ratio
@@ -56,7 +56,7 @@ func (this *Bbox) WithMargins(ratio float64) Bbox {
 	}
 }
 
-func NewBbox(data string) (Bbox, error) {
+func ParseBbox(data string) (Bbox, error) {
 	parts := strings.Split(data, ",")
 	if len(parts) != 4 {
 		return Bbox{}, fmt.Errorf("%s is illegal bbox representation. Length sould be equals %d", data, len(parts))
