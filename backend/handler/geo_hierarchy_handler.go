@@ -571,7 +571,7 @@ func (this *GeoHierarchyHandler) GetRiverPassport(w http.ResponseWriter, req *ht
 		length = 0
 	}
 	w.Header().Set("Content-Length", fmt.Sprintf("%d", length))
-	r, err := this.RiverPassportStorage.Read(pathParams["riverId"])
+	r, err := this.RiverPassportStorage.Read(pathParams["riverId"] + ".pdf")
 	if err != nil {
 		OnError500(w, err, "Can not get river passport")
 		return

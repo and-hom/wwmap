@@ -58,7 +58,7 @@ func (this *ImgHandler) GetImages(w http.ResponseWriter, req *http.Request) {
 
 func (this *ImgHandler) GetImage(w http.ResponseWriter, req *http.Request) {
 	pathParams := mux.Vars(req)
-	r, err := this.ImgStorage.Read(pathParams["imgId"])
+	r, err := this.ImgStorage.Read(storageKey(pathParams["imgId"]))
 	if err != nil {
 		OnError500(w, err, "Can not get image")
 		return
@@ -69,7 +69,7 @@ func (this *ImgHandler) GetImage(w http.ResponseWriter, req *http.Request) {
 
 func (this *ImgHandler) GetImagePreview(w http.ResponseWriter, req *http.Request) {
 	pathParams := mux.Vars(req)
-	r, err := this.PreviewImgStorage.Read(pathParams["imgId"])
+	r, err := this.PreviewImgStorage.Read(storageKey(pathParams["imgId"]))
 	if err != nil {
 		OnError500(w, err, "Can not get image")
 		return
@@ -123,7 +123,7 @@ func (this *ImgHandler) Upload(w http.ResponseWriter, req *http.Request) {
 		OnError500(w, err, "Can not compress preview")
 		return
 	}
-	err = this.PreviewImgStorage.Store(img.IdStr(), previewReader)
+	err = this.PreviewImgStorage.Store(storageKey(img), previewReader)
 	if err != nil {
 		OnError500(w, err, "Can not store preview")
 		return
@@ -134,11 +134,19 @@ func (this *ImgHandler) Upload(w http.ResponseWriter, req *http.Request) {
 		OnError500(w, err, "Can not compress image")
 		return
 	}
-	err = this.ImgStorage.Store(img.IdStr(), bigImgReader)
+	err = this.ImgStorage.Store(storageKey(img), bigImgReader)
 	if err != nil {
 		OnError500(w, err, "Can not store image")
 		return
 	}
+}
+
+func storageKey(img dao.Img) string {
+	return fmt.Sprintf("%d.png", img.Id)
+}
+
+func storageKeyById(imgId string) string {
+	return fmt.Sprintf("%s.png", imgId)
 }
 
 func compress(sourceImage image.Image, src io.ReadSeeker, maxW, maxH int, resizeSmallerImages bool) (io.Reader, error) {

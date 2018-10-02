@@ -93,7 +93,7 @@ func (this *PdfCatalogConnector) writePage(pageId int, body string, title string
 		return err
 	}
 
-	err = this.storage.Store(fmt.Sprintf("%d", pageId), pdfGenerator.Buffer())
+	err = this.storage.Store(fmt.Sprintf("%d.pdf", pageId), pdfGenerator.Buffer())
 	if err != nil {
 		log.Errorf("Can not write file", err)
 		return err
