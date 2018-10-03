@@ -5,6 +5,7 @@ import (
 	"io"
 	"time"
 	"fmt"
+	"github.com/Sirupsen/logrus"
 )
 
 type ReportProvider interface {
@@ -19,7 +20,7 @@ type WithCatalogConnector struct {
 	cached CatalogConnector
 }
 
-func (this WithCatalogConnector) Do(payload func(CatalogConnector) error) error {
+func (this WithCatalogConnector) getConnector() (CatalogConnector, error) {
 	var connector CatalogConnector
 	var err error
 
@@ -30,14 +31,28 @@ func (this WithCatalogConnector) Do(payload func(CatalogConnector) error) error 
 	}
 	if err != nil {
 		if connector != nil {
-			return fmt.Errorf("Can not connect to source %s: %v", connector.SourceId(), err)
+			return nil, fmt.Errorf("Can not connect to source %s: %v", connector.SourceId(), err)
 		} else {
-			return fmt.Errorf("Can not connect to source unknown (nil provider): %v", err)
+			return nil, fmt.Errorf("Can not connect to source unknown (nil provider): %v", err)
 		}
 	}
-	defer connector.Close()
-
+	return connector, err
+}
+func (this WithCatalogConnector) Do(payload func(CatalogConnector) error) error {
+	connector, err := this.getConnector()
+	if err != nil {
+		return err
+	}
 	return payload(connector)
+}
+
+func (this WithCatalogConnector)  SourceId() string {
+	connector, err := this.getConnector()
+	if err != nil {
+		logrus.Errorf("Can not create connector: %v", err)
+		return ""
+	}
+	return connector.SourceId()
 }
 
 type WithReportProvider func() (ReportProvider, error)
@@ -54,6 +69,15 @@ func (this WithReportProvider) Do(payload func(ReportProvider) error) error {
 	defer provider.Close()
 
 	return payload(provider)
+}
+
+func (this WithReportProvider)  SourceId() string {
+	provider, err := this()
+	if err != nil {
+		logrus.Errorf("Can not create connector: %v", err)
+		return ""
+	}
+	return provider.SourceId()
 }
 
 type LinkOnPage struct {

@@ -17,7 +17,11 @@ const COMMON_TIME_FORMAT string = "2006-01-02T15:04:05"
 func (this *App) DoSyncReports() {
 	for _, rpf := range this.reportProviders {
 		err := rpf.Do(func(rp common.ReportProvider) error {
-			return this.doSyncReports(&rp)
+			if this.sourceOnly=="" || this.sourceOnly==rp.SourceId() {
+				return this.doSyncReports(&rp)
+			} else {
+				return nil
+			}
 		})
 		if err != nil {
 			log.Errorf("Can not access to source: %v", err)

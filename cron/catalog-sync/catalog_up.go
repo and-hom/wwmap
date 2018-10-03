@@ -59,7 +59,11 @@ func (this DummyPropertyManager) SetBoolProperty(name string, id int64, value bo
 func (this *App) DoWriteCatalog() {
 	for _, rpf := range this.catalogConnectors {
 		err := rpf.Do(func(cc common.CatalogConnector) error {
-			return this.doWriteCatalog(&cc)
+			if this.sourceOnly=="" || this.sourceOnly==cc.SourceId() {
+				return this.doWriteCatalog(&cc)
+			} else {
+				return nil
+			}
 		})
 		if err != nil {
 			log.Errorf("Can not access to source: %v", err)
