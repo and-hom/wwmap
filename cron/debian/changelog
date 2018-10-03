@@ -1,3 +1,10 @@
+wwmap-cron (0.0.14) unstable; urgency=medium
+
+  * #143 file suffix in storage
+  * CLI flags to run catalog-sync stages and sources separately
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Wed, 03 Oct 2018 21:43:40 +0300
+
 wwmap-cron (0.0.13) unstable; urgency=medium
 
   * #101 Show map in huskytm exported pages
