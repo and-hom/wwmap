@@ -58,7 +58,7 @@ func (this *ImgHandler) GetImages(w http.ResponseWriter, req *http.Request) {
 
 func (this *ImgHandler) GetImage(w http.ResponseWriter, req *http.Request) {
 	pathParams := mux.Vars(req)
-	r, err := this.ImgStorage.Read(storageKey(pathParams["imgId"]))
+	r, err := this.ImgStorage.Read(storageKeyById(pathParams["imgId"]))
 	if err != nil {
 		OnError500(w, err, "Can not get image")
 		return
@@ -69,7 +69,7 @@ func (this *ImgHandler) GetImage(w http.ResponseWriter, req *http.Request) {
 
 func (this *ImgHandler) GetImagePreview(w http.ResponseWriter, req *http.Request) {
 	pathParams := mux.Vars(req)
-	r, err := this.PreviewImgStorage.Read(storageKey(pathParams["imgId"]))
+	r, err := this.PreviewImgStorage.Read(storageKeyById(pathParams["imgId"]))
 	if err != nil {
 		OnError500(w, err, "Can not get image")
 		return
