@@ -89,13 +89,13 @@ func (this *PdfCatalogConnector) writePage(pageId int, body string, title string
 
 	err = pdfGenerator.Create()
 	if err != nil {
-		log.Errorf("Can not render pdf", err)
+		log.Errorf("Can not render pdf: %v", err)
 		return err
 	}
 
 	err = this.storage.Store(fmt.Sprintf("%d.pdf", pageId), pdfGenerator.Buffer())
 	if err != nil {
-		log.Errorf("Can not write file", err)
+		log.Errorf("Can not write file: %v", err)
 		return err
 	}
 
