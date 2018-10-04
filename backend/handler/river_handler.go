@@ -15,7 +15,8 @@ import (
 type RiverHandler struct {
 	App
 	ResourceBase string
-	RiverPassportUrlBase string
+	RiverPassportPdfUrlBase string
+	RiverPassportHtmlUrlBase string
 }
 
 func (this *RiverHandler) Init(r *mux.Router) {
@@ -60,6 +61,7 @@ type RiverListDto struct {
 	dao.RiverTitle
 	Reports []VoyageReportDto `json:"reports"`
 	PdfUrl	string `json:"pdf"`
+	HtmlUrl	string `json:"html"`
 }
 
 func (this *RiverHandler) GetVisibleRivers(w http.ResponseWriter, req *http.Request) {
@@ -99,17 +101,18 @@ func (this *RiverHandler) GetVisibleRivers(w http.ResponseWriter, req *http.Requ
 		riversWithReports[i] = RiverListDto{
 			RiverTitle: *river,
 			Reports: reportDtos,
-			PdfUrl: this.getPdfUrl(river),
+			PdfUrl: this.getRiverPassportUrl(river, this.RiverPassportPdfUrlBase),
+			HtmlUrl:this.getRiverPassportUrl(river, this.RiverPassportHtmlUrlBase),
 		}
 
 	}
 	w.Write([]byte(this.JsonStr(riversWithReports, "[]")))
 }
 
-func (this *RiverHandler) getPdfUrl(river *dao.RiverTitle) string {
+func (this *RiverHandler) getRiverPassportUrl(river *dao.RiverTitle, base string) string {
 	export, found :=  river.Props["export_pdf"]
 	if found && export.(bool) {
-		return fmt.Sprintf(this.RiverPassportUrlBase, river.Id)
+		return fmt.Sprintf(base, river.Id)
 	}
 	return ""
 }

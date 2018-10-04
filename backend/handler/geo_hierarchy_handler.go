@@ -22,10 +22,11 @@ import (
 
 type GeoHierarchyHandler struct {
 	App
-	ImgStorage           blob.BlobStorage
-	PreviewImgStorage    blob.BlobStorage
-	RiverPassportStorage blob.BlobStorage
-	regions              map[int64]dao.Region
+	ImgStorage               blob.BlobStorage
+	PreviewImgStorage        blob.BlobStorage
+	RiverPassportPdfStorage  blob.BlobStorage
+	RiverPassportHtmlStorage blob.BlobStorage
+	regions                  map[int64]dao.Region
 }
 
 func (this *GeoHierarchyHandler) Init(r *mux.Router) {
@@ -43,7 +44,8 @@ func (this *GeoHierarchyHandler) Init(r *mux.Router) {
 	this.Register(r, "/river/{riverId}/spots", HandlerFunctions{Get:this.ListSpots})
 	this.Register(r, "/river/{riverId}/center", HandlerFunctions{Get:this.GetRiverCenter})
 	this.Register(r, "/river/{riverId}/gpx", HandlerFunctions{Post:this.UploadGpx, Put:this.UploadGpx})
-	this.Register(r, "/river/{riverId}/pdf", HandlerFunctions{Get:this.GetRiverPassport})
+	this.Register(r, "/river/{riverId}/pdf", HandlerFunctions{Get:this.GetRiverPassportPdf})
+	this.Register(r, "/river/{riverId}/html", HandlerFunctions{Get:this.GetRiverPassportHtml})
 	this.Register(r, "/river/{riverId}/visible", HandlerFunctions{Post:this.SetRiverVisible, Put:this.SetRiverVisible})
 
 	this.Register(r, "/spot/{spotId}", HandlerFunctions{Get:this.GetSpot, Post:this.SaveSpot, Put:this.SaveSpot, Delete:this.RemoveSpot})
@@ -562,20 +564,30 @@ func (this *GeoHierarchyHandler) writeSpot(spotId int64, w http.ResponseWriter) 
 	this.JsonAnswer(w, spot)
 }
 
-func (this *GeoHierarchyHandler) GetRiverPassport(w http.ResponseWriter, req *http.Request) {
+func (this *GeoHierarchyHandler) GetRiverPassportPdf(w http.ResponseWriter, req *http.Request) {
+	this.getRiverPassport(w, req, "application/pdf", this.RiverPassportPdfStorage, ".pdf")
+}
+
+func (this *GeoHierarchyHandler) GetRiverPassportHtml(w http.ResponseWriter, req *http.Request) {
+	this.getRiverPassport(w, req, "text/html", this.RiverPassportHtmlStorage, ".htm")
+}
+
+func (this *GeoHierarchyHandler) getRiverPassport(w http.ResponseWriter, req *http.Request,
+contentType string, storage blob.BlobStorage, suffix string) {
 	pathParams := mux.Vars(req)
-	w.Header().Set("Content-Type", "application/pdf")
-	length,err := this.RiverPassportStorage.Length(pathParams["riverId"])
+	w.Header().Set("Content-Type", contentType)
+	length, err := storage.Length(pathParams["riverId"])
 	if err != nil {
 		log.Warnf("Can not get river passport content length %s: %v", pathParams["riverId"], err)
 		length = 0
 	}
 	w.Header().Set("Content-Length", fmt.Sprintf("%d", length))
-	r, err := this.RiverPassportStorage.Read(pathParams["riverId"] + ".pdf")
+	r, err := storage.Read(pathParams["riverId"] + suffix)
 	if err != nil {
 		OnError500(w, err, "Can not get river passport")
 		return
 	}
 	defer r.Close()
 	io.Copy(w, r)
+
 }

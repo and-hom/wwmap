@@ -56,16 +56,17 @@ type ImgStorage struct {
 }
 
 type Configuration struct {
-	DbConnString         string `yaml:"db-connection-string"`
-	ClusterizationParams ClusterizationParams `yaml:"clusterization"`
-	Notifications        Notifications `yaml:"notifications"`
-	Api                  Api `yaml:"api"`
-	Content              Content `yaml:"content"`
-	TileCache            TileCache `yaml:"tile-cache"`
-	Sync                 WordpressSync `yaml:"sync"`
-	ImgStorage           ImgStorage `yaml:"img-storage"`
-	RiverPassportStorage BlobStorageParams `yaml:"river-passport-storage"`
-	LogLevel             string `yaml:"log-level"`
+	DbConnString             string `yaml:"db-connection-string"`
+	ClusterizationParams     ClusterizationParams `yaml:"clusterization"`
+	Notifications            Notifications `yaml:"notifications"`
+	Api                      Api `yaml:"api"`
+	Content                  Content `yaml:"content"`
+	TileCache                TileCache `yaml:"tile-cache"`
+	Sync                     WordpressSync `yaml:"sync"`
+	ImgStorage               ImgStorage `yaml:"img-storage"`
+	RiverPassportPdfStorage  BlobStorageParams `yaml:"river-passport-pdf-storage"`
+	RiverPassportHtmlStorage BlobStorageParams `yaml:"river-passport-html-storage"`
+	LogLevel                 string `yaml:"log-level"`
 }
 
 func (this *Configuration) ChangeLogLevel() {

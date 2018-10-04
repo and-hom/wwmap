@@ -41,10 +41,12 @@ func CreateApp() App {
 	configuration.ChangeLogLevel()
 
 	pgStorage := dao.NewPostgresStorage(configuration.DbConnString)
-	riverPassportStorage := blob.BasicFsStorage{
-		BaseDir:configuration.RiverPassportStorage.Dir,
+	riverPassportPdfStorage := blob.BasicFsStorage{
+		BaseDir:configuration.RiverPassportPdfStorage.Dir,
 	}
-	fmt.Println(configuration.RiverPassportStorage)
+	riverPassportHtmlStorage := blob.BasicFsStorage{
+		BaseDir:configuration.RiverPassportHtmlStorage.Dir,
+	}
 	return App{
 		VoyageReportDao:dao.NewVoyageReportPostgresDao(pgStorage),
 		CountryDao:dao.NewCountryPostgresDao(pgStorage),
@@ -67,7 +69,7 @@ func CreateApp() App {
 				return huskytm.GetCatalogConnector(configuration.Sync.Login, configuration.Sync.Password, configuration.Sync.MinDeltaBetweenRequests)
 			}},
 			{F:func() (common.CatalogConnector, error) {
-				return pdf.GetCatalogConnector(riverPassportStorage)
+				return pdf.GetCatalogConnector(riverPassportPdfStorage, riverPassportHtmlStorage)
 			}},
 		},
 		ImgUrlBase:configuration.ImgStorage.Full.UrlBase,

@@ -13,7 +13,7 @@ import (
 
 const SOURCE = "pdf"
 
-func GetCatalogConnector(storage blob.BlobStorage) (common.CatalogConnector, error) {
+func GetCatalogConnector(pdfStorage, htmlStorage blob.BlobStorage) (common.CatalogConnector, error) {
 	t, err := common.LoadTemplates(templates.MustAsset)
 	if err != nil {
 		return nil, err
@@ -21,13 +21,15 @@ func GetCatalogConnector(storage blob.BlobStorage) (common.CatalogConnector, err
 
 	return &PdfCatalogConnector{
 		templates:t,
-		storage:storage,
+		pdfStorage:pdfStorage,
+		htmlStorage:htmlStorage,
 		spotBuf:[]common.SpotPageDto{},
 	}, nil
 }
 
 type PdfCatalogConnector struct {
-	storage   blob.BlobStorage
+	pdfStorage   blob.BlobStorage
+	htmlStorage   blob.BlobStorage
 	templates common.Templates
 	spotBuf   []common.SpotPageDto
 }
@@ -70,6 +72,7 @@ func (this *PdfCatalogConnector) WriteRootPage(page common.RootPageDto) error {
 }
 
 func (this *PdfCatalogConnector) writePage(pageId int, body string, title string) error {
+	this.htmlStorage.Store(fmt.Sprintf("%d.htm", pageId), strings.NewReader(body))
 	log.Infof("Write page %d for %s", pageId, title)
 	pdfGenerator, err := wkhtmltopdf.NewPDFGenerator()
 	if err != nil {
@@ -87,13 +90,14 @@ func (this *PdfCatalogConnector) writePage(pageId int, body string, title string
 	pr := wkhtmltopdf.NewPageReader(strings.NewReader(body))
 	pdfGenerator.AddPage(pr)
 
+	storageId := fmt.Sprintf("%d.pdf", pageId)
 	err = pdfGenerator.Create()
 	if err != nil {
-		log.Errorf("Can not render pdf: %v", err)
-		return err
+		log.Errorf("Can not render pdf - remove if exists: %v", err)
+		return this.pdfStorage.Remove(storageId)
 	}
 
-	err = this.storage.Store(fmt.Sprintf("%d.pdf", pageId), pdfGenerator.Buffer())
+	err = this.pdfStorage.Store(storageId, pdfGenerator.Buffer())
 	if err != nil {
 		log.Errorf("Can not write file: %v", err)
 		return err

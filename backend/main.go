@@ -43,8 +43,11 @@ func main() {
 	imgPreviewStorage := blob.BasicFsStorage{
 		BaseDir:configuration.ImgStorage.Preview.Dir,
 	}
-	riverPassportStorage := blob.BasicFsStorage{
-		BaseDir:configuration.RiverPassportStorage.Dir,
+	riverPassportPdfStorage := blob.BasicFsStorage{
+		BaseDir:configuration.RiverPassportPdfStorage.Dir,
+	}
+	riverPassportHtmlStorage := blob.BasicFsStorage{
+		BaseDir:configuration.RiverPassportHtmlStorage.Dir,
 	}
 
 	app := handler.App{
@@ -72,7 +75,8 @@ func main() {
 		&handler.RiverHandler{
 			App:app,
 			ResourceBase: configuration.Content.ResourceBase,
-			RiverPassportUrlBase: configuration.RiverPassportStorage.UrlBase,
+			RiverPassportPdfUrlBase: configuration.RiverPassportPdfStorage.UrlBase,
+			RiverPassportHtmlUrlBase: configuration.RiverPassportHtmlStorage.UrlBase,
 		},
 		&handler.WhiteWaterHandler{App:app, ResourceBase:configuration.Content.ResourceBase, ClusterMaker: clusterMaker},
 		&handler.ReportHandler{app},
@@ -81,7 +85,8 @@ func main() {
 			App: app,
 			ImgStorage: imgStorage,
 			PreviewImgStorage: imgPreviewStorage,
-			RiverPassportStorage:riverPassportStorage,
+			RiverPassportHtmlStorage:riverPassportHtmlStorage,
+			RiverPassportPdfStorage:riverPassportPdfStorage,
 		},
 		&handler.ImgHandler{
 			App:app,
