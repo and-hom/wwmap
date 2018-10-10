@@ -1,11 +1,80 @@
+<script type="text/javascript" src="https://api-maps.yandex.ru/2.1/?lang=ru_RU"></script>
+<script type="text/javascript" src="https://wwmap.ru/js/config.js"></script>
+<script type="text/javascript" src="https://wwmap.ru/js/map.v2.js"></script>
+
 <h1>{{.River.Title}}</h1>
 {{.River.Description}}
-<h3>Пороги (к./с.)</h3>
-<ul style="list-style-type:none">
-    {{range .Spots}}
-    <li><a href="#spot{{.Spot.Id}}">{{.Spot.Title}}&nbsp;({{spotCatStr .Spot}})</a></li>
-    {{end}}
-</ul>
+<table style="border:0px;withh:100%;">
+    <tr>
+        <td style="width:70%;">
+            <h3>Пороги (к./с.)</h3>
+            <ul style="list-style-type:disc">
+                {{range .Spots}}
+                <li style="color:{{ccol .Spot.Category}};"><span style="color:black;">{{.Spot.Title}}&nbsp;({{spotCatStr .Spot}})</span></li>
+                {{end}}
+            </ul>
+        </td>
+        <td>
+            <div id="map" style="width:500px; height: 450px;float: right;"></div>
+        </td>
+    </tr>
+</table>
+
+
+<script type="text/javascript">
+    ymaps.ready(function() {
+                addCachedLayer('osm#standard', 'OSM', 'OpenStreetMap contributors, CC-BY-SA', 'osm')
+                {{ $spotCount := len .Spots }}
+                {{ if eq $spotCount 1 }}
+                {{ $spot := index .Spots 0 }}
+                var myMap = new ymaps.Map("map", {
+                    center: {{$spot.Spot.Point}},
+                    zoom: 15,
+                    type: "osm#standard",
+                    controls: ["zoomControl"],
+                });
+                {{else}}
+                var myMap = new ymaps.Map("map", {
+                    bounds: {{ .River.Bounds.WithMargins 0.2 }},
+                    type: "osm#standard",
+                    controls: ["zoomControl"],
+                });
+                {{end}}
+                var objectManager = new ymaps.RemoteObjectManager('https://wwmap.ru/api/ymaps-tile-ww?bbox=%b&zoom=%z', {
+                        clusterHasBalloon: false,
+                        geoObjectOpenBalloonOnClick: false,
+                        geoObjectStrokeWidth: 3,
+                        splitRequests: true,
+                        clusterHasBalloon: false,
+                    });
+                myMap.geoObjects.add(objectManager);
+            })
+
+    function spotMap(spotId, point, mapType, zoom) {
+        ymaps.ready(function() {
+                    addCachedLayer('osm#standard', 'OSM', 'OpenStreetMap contributors, CC-BY-SA', 'osm')
+                    addLayer('google#satellite', 'Спутник Google', 'Изображения © DigitalGlobe,CNES / Airbus, 2018,Картографические данные © Google, 2018', GOOGLE_SAT_TILES)
+                    addCachedLayer('ggc#standard', 'Топографическая карта', '', 'ggc', 0, 15)
+
+                    divId = "map" + spotId
+                    var myMap = new ymaps.Map(divId, {
+                        center: point,
+                        zoom: zoom,
+                        type: mapType,
+                        controls: ["zoomControl"],
+                    });
+                    var objectManager = new ymaps.RemoteObjectManager('https://wwmap.ru/api/ymaps-tile-ww?bbox=%b&zoom=%z', {
+                            clusterHasBalloon: false,
+                            geoObjectOpenBalloonOnClick: false,
+                            geoObjectStrokeWidth: 3,
+                            splitRequests: true,
+                            clusterHasBalloon: false,
+                        });
+                    myMap.geoObjects.add(objectManager);
+                })
+    }
+</script>
+
 <h3>Отчёты</h3>
 <ul style="list-style-type:none">
     {{range .Reports}}
@@ -34,10 +103,10 @@
         <td><strong>Тех. описание</strong></td>
         <td rowspan="7">
             <strong>Расположение: </strong>
-            <div style="width:100%" id="wwmap">Тут будет карта</div>
+            <div id="map{{.Spot.Id}}" style="width:300px; height: 300px;"></div>
             <div class="short-div">
-                <strong>Координаты:</strong><br/><strong>Широта:</strong>&nbsp;{{.Spot.Point.Lat}}
-                <br/><strong>Долгота:</strong>&nbsp;{{.Spot.Point.Lon}}
+                <strong>Координаты:</strong><br/>&nbsp;<strong>Широта:</strong>&nbsp;{{printf "%.7f" .Spot.Point.Lat}}
+                <br/>&nbsp;<strong>Долгота:</strong>&nbsp;{{printf "%.7f" .Spot.Point.Lon}}
                 <br/>
                 <div><strong>К.с. нв/св/вв:</strong>&nbsp;{{catStr .Spot.LowWaterCategory}}/{{catStr .Spot.MediumWaterCategory}}/{{catStr .Spot.HighWaterCategory}}
                 </div>
@@ -70,4 +139,7 @@
         </td>
     </tr>
 </table>
+<script type="text/javascript">
+    spotMap("{{.Spot.Id}}", {{.Spot.Point}}, "{{coalesce_string_prop "pdf_map_type" "yandex#satellite" .Spot.Props .River.Props}}", {{coalesce_int_prop "pdf_map_zoom" 16 .Spot.Props .River.Props}})
+</script>
 {{end}}

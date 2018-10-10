@@ -35,7 +35,8 @@ white_water_rapid
     auto_ordering,
     last_auto_ordering,
 
-    @@table@@.aliases
+    @@table@@.aliases,
+    @@table@@.props
 
 
 --@by-box
@@ -86,9 +87,9 @@ INSERT INTO @@table@@(title,category, point, short_description, link, river_id,
     mw_category, mw_description,
     hw_category, hw_description,
     orient, approach, safety,
-    order_index, auto_ordering, aliases)
+    order_index, auto_ordering, aliases, props)
     VALUES ($1,$2,ST_GeomFromGeoJSON($3),$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,
-    $16,$17,$18) RETURNING id
+    $16,$17,$18, $19) RETURNING id
     
 --@update-full
 UPDATE @@table@@ SET title=$2,category=$3, point=ST_GeomFromGeoJSON($4), short_description=$5, link=$6, river_id=$7,
@@ -98,7 +99,7 @@ UPDATE @@table@@ SET title=$2,category=$3, point=ST_GeomFromGeoJSON($4), short_d
     orient=$14, approach=$15, safety=$16,
     order_index=CASE WHEN $18 THEN order_index ELSE $17 END, auto_ordering=$18,
     last_auto_ordering=CASE ST_GeomFromGeoJSON($4) WHEN point THEN last_auto_ordering ELSE NULL END,
-    aliases=$19
+    aliases=$19, props=$20
     WHERE id=$1
 
 --@delete

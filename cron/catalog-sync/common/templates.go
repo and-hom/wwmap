@@ -8,6 +8,7 @@ import (
 	"github.com/and-hom/wwmap/lib/dao"
 	"github.com/and-hom/wwmap/lib/util"
 	"github.com/and-hom/wwmap/lib/model"
+	"strconv"
 )
 
 type Templates interface {
@@ -78,6 +79,59 @@ func LoadTemplates(load func(name string) []byte) (Templates, error) {
 		"spotCatStr": CategoryStr,
 		"catStr": func(cat model.SportCategory) string {
 			return util.HumanReadableCategoryName(cat, false)
+		},
+		"ccol": func(cat model.SportCategory) string {
+			switch cat.Category {
+			case 1:
+				return "light-blue"
+			case 2:
+				return "green"
+			case 3:
+				return "yellow"
+			case 4:
+				return "orange"
+			case 5:
+				return "red"
+			case 6:
+				return "#990000"
+			default:
+				return "dark-grey"
+			}
+		},
+		"coalesce_string_prop": func(name string, _default string, props ...map[string]interface{}) string {
+			for _, p := range props {
+				foundVal, found := p[name]
+				if found && foundVal != nil {
+					strVal, castOk := foundVal.(string)
+					if castOk {
+						return strVal
+					}
+				}
+			}
+			return _default
+		},
+		"coalesce_int_prop": func(name string, _default int, props ...map[string]interface{}) int {
+			for _, p := range props {
+				foundVal, found := p[name]
+				if found && foundVal != nil {
+					intVal, castOk := foundVal.(int64)
+					if castOk {
+						return int(intVal)
+					}
+					floatVal, castOk := foundVal.(float64)
+					if castOk {
+						return int(floatVal)
+					}
+					intValS, castOk := foundVal.(string)
+					if castOk {
+						intVal, err := strconv.ParseInt(intValS, 10, 32)
+						if err != nil {
+							return int(intVal)
+						}
+					}
+				}
+			}
+			return _default
 		},
 	}
 	t := templates{}

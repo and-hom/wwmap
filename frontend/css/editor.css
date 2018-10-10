@@ -159,3 +159,8 @@
 .example-btn span {
     margin-bottom: 9px;
 }
+
+.wwmap-system-hint {
+    font-size: 60%;
+    font-color: grey;
+}

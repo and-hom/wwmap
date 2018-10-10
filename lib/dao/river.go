@@ -99,7 +99,11 @@ func (this riverStorage) Insert(river River) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	return this.insertReturningId(this.insertQuery, river.Region.Id, river.Title, string(aliasesB), river.Description)
+	propsB, err := json.Marshal(river.Props)
+	if err != nil {
+		return 0, err
+	}
+	return this.insertReturningId(this.insertQuery, river.Region.Id, river.Title, string(aliasesB), river.Description, string(propsB))
 }
 
 func (this riverStorage) Save(rivers ...River) error {
@@ -113,9 +117,13 @@ func (this riverStorage) Save(rivers ...River) error {
 		if err != nil {
 			return []interface{}{}, err
 		}
+		propsB, err := json.Marshal(_river.Props)
+		if err != nil {
+			return []interface{}{}, err
+		}
 		log.Info(_river.Description)
 		log.Info(reflect.TypeOf(_river.Description))
-		return []interface{}{_river.Id, _river.Region.Id, _river.Title, string(aliasesB), _river.Description}, nil
+		return []interface{}{_river.Id, _river.Region.Id, _river.Title, string(aliasesB), _river.Description, string(propsB)}, nil
 	}, vars...)
 }
 

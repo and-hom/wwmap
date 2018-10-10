@@ -57,7 +57,7 @@
                                         v-bind:country="regioneditorstate.country"/>
                     </div>
                     <div>
-                        <river-editor v-if="rivereditorstate.visible" v-bind:river="rivereditorstate.river"
+                        <river-editor v-if="rivereditorstate.visible" v-bind:initial-river="rivereditorstate.river"
                                       v-bind:reports="rivereditorstate.reports"
                                       v-bind:country="rivereditorstate.country" v-bind:region="rivereditorstate.region"/>
                     </div>
@@ -81,6 +81,7 @@
     Vue.component('ya-map-location', httpVueLoader('components/ya-map-location.vue'))
     Vue.component('img-upload', httpVueLoader('components/img-upload.vue'))
     Vue.component('category', httpVueLoader('components/category.vue'))
+    Vue.component('props', httpVueLoader('components/props.vue'))
 
     Vue.component('river', httpVueLoader('components/river.vue'))
     Vue.component('region', httpVueLoader('components/region.vue'))
@@ -155,6 +156,7 @@
             id: 0,
             region: region,
             aliases: [],
+            props: {},
         }
         app.rivereditorstate.country = country
         app.rivereditorstate.region = region

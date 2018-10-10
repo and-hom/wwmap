@@ -88,15 +88,24 @@ func (this *PdfCatalogConnector) writePage(pageId int, body string, title string
 	pdfGenerator.MarginBottom.Set(20)
 	pdfGenerator.MarginLeft.Set(10)
 	pdfGenerator.MarginRight.Set(10)
+	pdfGenerator.Title.Set(title)
+
 
 	pr := wkhtmltopdf.NewPageReader(strings.NewReader(body))
+	pr.JavascriptDelay.Set(5000)
+	pr.LoadErrorHandling.Set("ignore")
+	pr.LoadMediaErrorHandling.Set("ignore")
 	pdfGenerator.AddPage(pr)
 
 	storageId := fmt.Sprintf("%d.pdf", pageId)
 	err = pdfGenerator.Create()
 	if err != nil {
 		log.Errorf("Can not render pdf - remove if exists: %v", err)
-		return this.pdfStorage.Remove(storageId)
+		err2 := this.pdfStorage.Remove(storageId)
+		if err2!=nil {
+			log.Warnf("Can not remove: %v", err2)
+		}
+		return nil
 	}
 
 	err = this.pdfStorage.Store(storageId, pdfGenerator.Buffer())
