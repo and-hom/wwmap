@@ -6,12 +6,12 @@ import (
 	"github.com/and-hom/wwmap/lib/dao/queries"
 )
 
-func NewReportPostgresDao(postgresStorage PostgresStorage) ReportDao {
+func NewNotificationPostgresDao(postgresStorage PostgresStorage) NotificationDao {
 	return reportStorage{
 		PostgresStorage : postgresStorage,
-		insertQuery : queries.SqlQuery("report", "insert"),
-		listUnreadQuery : queries.SqlQuery("report", "list-unread"),
-		markReadQuery : queries.SqlQuery("report", "mark-read"),
+		insertQuery : queries.SqlQuery("notification", "insert"),
+		listUnreadQuery : queries.SqlQuery("notification", "list-unread"),
+		markReadQuery : queries.SqlQuery("notification", "mark-read"),
 	}
 }
 
@@ -22,7 +22,7 @@ type reportStorage struct {
 	markReadQuery   string
 }
 
-func (this reportStorage) AddReport(report Report) error {
+func (this reportStorage) Add(report Notification) error {
 	_, err := this.updateReturningId(this.insertQuery, arrayMapper, []interface{}{report.ObjectId, report.Comment})
 	return err;
 }

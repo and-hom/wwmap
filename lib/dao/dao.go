@@ -57,10 +57,10 @@ type WhiteWaterDao interface {
 	UpdateOrderIdx(idx map[int64]int) error
 }
 
-type ReportDao interface {
-	AddReport(report Report) error
+type NotificationDao interface {
+	Add(notification Notification) error
 	ListUnread(limit int) ([]ReportWithName, error)
-	MarkRead(reports []int64) error
+	MarkRead(notifications []int64) error
 }
 
 type WaterWayDao interface {

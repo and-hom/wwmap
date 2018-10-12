@@ -53,7 +53,7 @@ func (this *UserInfoHandler) GetUserInfo(w http.ResponseWriter, r *http.Request)
 	}
 
 	if justCreated {
-		this.ReportDao.AddReport(dao.Report{
+		this.NotificationDao.Add(dao.Notification{
 			Comment: fmt.Sprintf("User created: %s/%d %s (%s %s)", authProvider, info.Id, info.Login, info.FirstName, info.LastName),
 			ObjectId:id,
 		})

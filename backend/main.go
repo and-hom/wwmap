@@ -29,7 +29,7 @@ func main() {
 	voyageReportDao := NewVoyageReportPostgresDao(storage)
 	imgDao := NewImgPostgresDao(storage)
 	whiteWaterDao := NewWhiteWaterPostgresDao(storage)
-	reportDao := NewReportPostgresDao(storage)
+	notificationDao := NewNotificationPostgresDao(storage)
 	userDao := NewUserPostgresDao(storage)
 	countryDao := NewCountryPostgresDao(storage)
 	regionDao := NewRegionPostgresDao(storage)
@@ -57,7 +57,7 @@ func main() {
 		Storage:&storage,
 		RiverDao:riverDao,
 		WhiteWaterDao:whiteWaterDao,
-		ReportDao:reportDao,
+		NotificationDao:notificationDao,
 		VoyageReportDao: voyageReportDao,
 		ImgDao:imgDao,
 		UserDao: userDao,

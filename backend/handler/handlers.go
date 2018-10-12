@@ -10,17 +10,17 @@ import (
 
 type App struct {
 	Handler
-	Storage         Storage
-	RiverDao        RiverDao
-	WhiteWaterDao   WhiteWaterDao
-	ReportDao       ReportDao
-	VoyageReportDao VoyageReportDao
-	ImgDao          ImgDao
-	UserDao         UserDao
-	CountryDao      CountryDao
-	RegionDao       RegionDao
-	AuthProviders	map[AuthProvider]passport.Passport
-	RefererStorage  referer.RefererStorage
+	Storage           Storage
+	RiverDao          RiverDao
+	WhiteWaterDao     WhiteWaterDao
+	NotificationDao   NotificationDao
+	VoyageReportDao   VoyageReportDao
+	ImgDao            ImgDao
+	UserDao           UserDao
+	CountryDao        CountryDao
+	RegionDao         RegionDao
+	AuthProviders     map[AuthProvider]passport.Passport
+	RefererStorage    referer.RefererStorage
 	ImgUrlBase        string
 	ImgUrlPreviewBase string
 }

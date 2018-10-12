@@ -98,7 +98,7 @@ type PointRef struct {
 	Idx      int `json:"idx"`
 }
 
-type Report struct {
+type Notification struct {
 	Id        int64 `json:"id"`
 	ObjectId  int64 `json:"object_id,omitempty"`
 	Comment   string `json:"comment"`

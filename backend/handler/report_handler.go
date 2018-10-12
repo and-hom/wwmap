@@ -25,7 +25,7 @@ func (this *ReportHandler) AddReport(w http.ResponseWriter, r *http.Request) {
 		OnError(w, err, fmt.Sprintf("Can not parse object id: %s", objectIdStr), 400)
 		return
 	}
-	err = this.ReportDao.AddReport(Report{
+	err = this.NotificationDao.Add(Notification{
 		ObjectId: objectId,
 		Comment: comment,
 	})
