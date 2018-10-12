@@ -29,26 +29,26 @@ type GeoHierarchyHandler struct {
 	regions                  map[int64]dao.Region
 }
 
-func (this *GeoHierarchyHandler) Init(r *mux.Router) {
-	this.Register(r, "/country", HandlerFunctions{Get: this.ListCountries, })
-	this.Register(r, "/country/{countryId}/region", HandlerFunctions{Get:this.ListRegions})
-	this.Register(r, "/country/{countryId}/region/{regionId}/river", HandlerFunctions{Get:this.ListRegionRivers})
-	this.Register(r, "/country/{countryId}/river", HandlerFunctions{Get:this.ListCountryRivers})
+func (this *GeoHierarchyHandler) Init() {
+	this.Register("/country", HandlerFunctions{Get: this.ListCountries, })
+	this.Register("/country/{countryId}/region", HandlerFunctions{Get:this.ListRegions})
+	this.Register("/country/{countryId}/region/{regionId}/river", HandlerFunctions{Get:this.ListRegionRivers})
+	this.Register("/country/{countryId}/river", HandlerFunctions{Get:this.ListCountryRivers})
 
-	this.Register(r, "/region", HandlerFunctions{Get:this.ListAllRegions})
-	this.Register(r, "/region/{regionId}", HandlerFunctions{Get:this.GetRegion})
+	this.Register("/region", HandlerFunctions{Get:this.ListAllRegions})
+	this.Register("/region/{regionId}", HandlerFunctions{Get:this.GetRegion})
 
-	this.Register(r, "/river", HandlerFunctions{Get:this.FilterRivers})
-	this.Register(r, "/river/{riverId}", HandlerFunctions{Get:this.GetRiver, Put:this.SaveRiver, Post:this.SaveRiver, Delete:this.RemoveRiver})
-	this.Register(r, "/river/{riverId}/reports", HandlerFunctions{Get:this.ListRiverReports})
-	this.Register(r, "/river/{riverId}/spots", HandlerFunctions{Get:this.ListSpots})
-	this.Register(r, "/river/{riverId}/center", HandlerFunctions{Get:this.GetRiverCenter})
-	this.Register(r, "/river/{riverId}/gpx", HandlerFunctions{Post:this.UploadGpx, Put:this.UploadGpx})
-	this.Register(r, "/river/{riverId}/pdf", HandlerFunctions{Get:this.GetRiverPassportPdf})
-	this.Register(r, "/river/{riverId}/html", HandlerFunctions{Get:this.GetRiverPassportHtml})
-	this.Register(r, "/river/{riverId}/visible", HandlerFunctions{Post:this.SetRiverVisible, Put:this.SetRiverVisible})
+	this.Register("/river", HandlerFunctions{Get:this.FilterRivers})
+	this.Register("/river/{riverId}", HandlerFunctions{Get:this.GetRiver, Put:this.SaveRiver, Post:this.SaveRiver, Delete:this.RemoveRiver})
+	this.Register("/river/{riverId}/reports", HandlerFunctions{Get:this.ListRiverReports})
+	this.Register("/river/{riverId}/spots", HandlerFunctions{Get:this.ListSpots})
+	this.Register("/river/{riverId}/center", HandlerFunctions{Get:this.GetRiverCenter})
+	this.Register("/river/{riverId}/gpx", HandlerFunctions{Post:this.UploadGpx, Put:this.UploadGpx})
+	this.Register("/river/{riverId}/pdf", HandlerFunctions{Get:this.GetRiverPassportPdf})
+	this.Register("/river/{riverId}/html", HandlerFunctions{Get:this.GetRiverPassportHtml})
+	this.Register("/river/{riverId}/visible", HandlerFunctions{Post:this.SetRiverVisible, Put:this.SetRiverVisible})
 
-	this.Register(r, "/spot/{spotId}", HandlerFunctions{Get:this.GetSpot, Post:this.SaveSpot, Put:this.SaveSpot, Delete:this.RemoveSpot})
+	this.Register("/spot/{spotId}", HandlerFunctions{Get:this.GetSpot, Post:this.SaveSpot, Put:this.SaveSpot, Delete:this.RemoveSpot})
 }
 
 type RiverDto struct {

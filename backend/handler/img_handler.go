@@ -37,12 +37,12 @@ type ImgHandler struct {
 	PreviewImgStorage blob.BlobStorage
 };
 
-func (this *ImgHandler) Init(r *mux.Router) {
-	this.Register(r, "/spot/{spotId}/img", HandlerFunctions{Get: this.GetImages, Post:this.Upload, Put:this.Upload})
-	this.Register(r, "/spot/{spotId}/img/{imgId}", HandlerFunctions{Get:this.GetImage, Delete: this.Delete})
-	this.Register(r, "/spot/{spotId}/img/{imgId}/preview", HandlerFunctions{Get: this.GetImagePreview})
-	this.Register(r, "/spot/{spotId}/img/{imgId}/enabled", HandlerFunctions{Post:this.SetEnabled})
-	this.Register(r, "/spot/{spotId}/preview", HandlerFunctions{Get: this.GetPreview, Post:this.SetPreview, Delete:this.DropPreview})
+func (this *ImgHandler) Init() {
+	this.Register("/spot/{spotId}/img", HandlerFunctions{Get: this.GetImages, Post:this.Upload, Put:this.Upload})
+	this.Register("/spot/{spotId}/img/{imgId}", HandlerFunctions{Get:this.GetImage, Delete: this.Delete})
+	this.Register("/spot/{spotId}/img/{imgId}/preview", HandlerFunctions{Get: this.GetImagePreview})
+	this.Register("/spot/{spotId}/img/{imgId}/enabled", HandlerFunctions{Post:this.SetEnabled})
+	this.Register("/spot/{spotId}/preview", HandlerFunctions{Get: this.GetPreview, Post:this.SetPreview, Delete:this.DropPreview})
 }
 
 func (this *ImgHandler) GetImages(w http.ResponseWriter, req *http.Request) {

@@ -104,8 +104,8 @@ type DataHandler struct {
 	defaultData []byte
 }
 
-func (this *DataHandler) Init(r *mux.Router) {
-	this.Register(r, "/{type}/{z}/{x}/{y}.png", HandlerFunctions{Get:this.tile, Head: this.tile})
+func (this *DataHandler) Init() {
+	this.Register("/{type}/{z}/{x}/{y}.png", HandlerFunctions{Get:this.tile, Head: this.tile})
 }
 
 func (this *DataHandler) generateDefaultImg() {
@@ -317,7 +317,10 @@ func main() {
 	fullConfiguration.ChangeLogLevel()
 	configuration := fullConfiguration.TileCache
 
+	r := mux.NewRouter()
+
 	handler := DataHandler{
+		Handler: Handler{R:r},
 		baseDir:configuration.BaseDir,
 		urlMapping: typeCdnMapping(configuration),
 		client: &http.Client{
@@ -325,8 +328,7 @@ func main() {
 		},
 	}
 
-	r := mux.NewRouter()
-	handler.Init(r)
+	handler.Init()
 
 	log.Infof("Starting tiles server on %v+", configuration.BindTo)
 

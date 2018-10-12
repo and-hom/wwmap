@@ -13,8 +13,8 @@ import (
 
 type GpxHandler struct{ App };
 
-func (this *GpxHandler) Init(r *mux.Router) {
-	this.Register(r, "/gpx/river/{id}", HandlerFunctions{Get: this.DownloadGpx})
+func (this *GpxHandler) Init() {
+	this.Register("/gpx/river/{id}", HandlerFunctions{Get: this.DownloadGpx})
 }
 
 func (this *GpxHandler) DownloadGpx(w http.ResponseWriter, req *http.Request) {

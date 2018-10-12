@@ -11,7 +11,6 @@ import (
 	. "github.com/and-hom/wwmap/lib/handler"
 	"math"
 	"strconv"
-	"github.com/gorilla/mux"
 	"github.com/and-hom/wwmap/backend/clustering"
 	"github.com/and-hom/wwmap/backend/ymaps"
 )
@@ -22,9 +21,9 @@ type WhiteWaterHandler struct {
 	ClusterMaker clustering.ClusterMaker
 }
 
-func (this *WhiteWaterHandler) Init(r *mux.Router) {
-	this.Register(r, "/ymaps-tile-ww", HandlerFunctions{Get:this.TileWhiteWaterHandler})
-	this.Register(r, "/whitewater", HandlerFunctions{Post: this.InsertWhiteWaterPoints, Put:this.InsertWhiteWaterPoints})
+func (this *WhiteWaterHandler) Init() {
+	this.Register("/ymaps-tile-ww", HandlerFunctions{Get:this.TileWhiteWaterHandler})
+	this.Register("/whitewater", HandlerFunctions{Post: this.InsertWhiteWaterPoints, Put:this.InsertWhiteWaterPoints})
 }
 
 func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req *http.Request) {

@@ -19,7 +19,7 @@ const (
 )
 
 type ApiHandler interface {
-	Init(*mux.Router)
+	Init()
 }
 
 type HandlerFunction func(http.ResponseWriter, *http.Request)
@@ -53,6 +53,7 @@ func (this *HandlerFunctions) CorsMethods() []string {
 }
 
 type Handler struct {
+	R *mux.Router
 }
 
 func (this *Handler) CorOptionsStub(w http.ResponseWriter, r *http.Request, corsMethods []string) {
@@ -60,25 +61,25 @@ func (this *Handler) CorOptionsStub(w http.ResponseWriter, r *http.Request, cors
 	// for cors only
 }
 
-func (this *Handler) Register(r *mux.Router, path string, handlerFunctions HandlerFunctions) {
+func (this *Handler) Register(path string, handlerFunctions HandlerFunctions) {
 	corsMethods := handlerFunctions.CorsMethods()
 
-	r.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+	this.R.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 		this.CorOptionsStub(w, r, corsMethods)
 	}).Methods(OPTIONS)
 
-	this.registerOne(r, path, GET, handlerFunctions.Get, corsMethods)
-	this.registerOne(r, path, HEAD, handlerFunctions.Head, corsMethods)
-	this.registerOne(r, path, PUT, handlerFunctions.Put, corsMethods)
-	this.registerOne(r, path, POST, handlerFunctions.Post, corsMethods)
-	this.registerOne(r, path, DELETE, handlerFunctions.Delete, corsMethods)
+	this.registerOne(path, GET, handlerFunctions.Get, corsMethods)
+	this.registerOne(path, HEAD, handlerFunctions.Head, corsMethods)
+	this.registerOne(path, PUT, handlerFunctions.Put, corsMethods)
+	this.registerOne(path, POST, handlerFunctions.Post, corsMethods)
+	this.registerOne(path, DELETE, handlerFunctions.Delete, corsMethods)
 }
 
-func (this *Handler) registerOne(r *mux.Router, path string, method string, handlerFunction HandlerFunction, corsMethods []string) {
+func (this *Handler) registerOne(path string, method string, handlerFunction HandlerFunction, corsMethods []string) {
 	if handlerFunction == nil {
 		return
 	}
-	r.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+	this.R.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 		CorsHeaders(w, corsMethods...)
 		handlerFunction(w, r)
 	}).Methods(method)

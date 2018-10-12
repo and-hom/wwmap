@@ -50,8 +50,10 @@ func main() {
 		BaseDir:configuration.RiverPassportHtmlStorage.Dir,
 	}
 
+	r := mux.NewRouter()
+
 	app := handler.App{
-		Handler: Handler{},
+		Handler: Handler{R:r},
 		Storage:&storage,
 		RiverDao:riverDao,
 		WhiteWaterDao:whiteWaterDao,
@@ -96,9 +98,8 @@ func main() {
 		&handler.RefSitesHandler{app},
 	}
 
-	r := mux.NewRouter()
 	for _, h := range _handlers {
-		h.Init(r)
+		h.Init()
 	}
 
 	log.Infof("Starting http server on %s", configuration.Api.BindTo)

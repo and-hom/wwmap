@@ -5,13 +5,12 @@ import (
 	"net/http"
 	. "github.com/and-hom/wwmap/lib/http"
 	. "github.com/and-hom/wwmap/lib/handler"
-	"github.com/gorilla/mux"
 )
 
 type RefSitesHandler struct { App };
 
-func (this *RefSitesHandler) Init(r *mux.Router) {
-	this.Register(r, "/ref-sites", HandlerFunctions{Get:this.RefSites})
+func (this *RefSitesHandler) Init() {
+	this.Register("/ref-sites", HandlerFunctions{Get:this.RefSites})
 }
 
 func (this *RefSitesHandler) RefSites(w http.ResponseWriter, req *http.Request) {

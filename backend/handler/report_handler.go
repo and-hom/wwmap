@@ -7,15 +7,14 @@ import (
 	. "github.com/and-hom/wwmap/lib/dao"
 	. "github.com/and-hom/wwmap/lib/http"
 	. "github.com/and-hom/wwmap/lib/handler"
-	"github.com/gorilla/mux"
 )
 
 type ReportHandler struct {
 	App
 }
 
-func (this *ReportHandler) Init(r *mux.Router) {
-	this.Register(r, "/report", HandlerFunctions{Post:this.AddReport, Put:this.AddReport})
+func (this *ReportHandler) Init() {
+	this.Register("/report", HandlerFunctions{Post:this.AddReport, Put:this.AddReport})
 }
 
 func (this *ReportHandler) AddReport(w http.ResponseWriter, r *http.Request) {

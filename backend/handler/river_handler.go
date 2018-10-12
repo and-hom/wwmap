@@ -9,7 +9,6 @@ import (
 	. "github.com/and-hom/wwmap/lib/handler"
 	"github.com/and-hom/wwmap/lib/dao"
 	"strings"
-	"github.com/gorilla/mux"
 )
 
 type RiverHandler struct {
@@ -19,9 +18,9 @@ type RiverHandler struct {
 	RiverPassportHtmlUrlBase string
 }
 
-func (this *RiverHandler) Init(r *mux.Router) {
-	this.Register(r, "/nearest-rivers", HandlerFunctions{Get: this.GetNearestRivers})
-	this.Register(r, "/visible-rivers", HandlerFunctions{Get: this.GetVisibleRivers})
+func (this *RiverHandler) Init() {
+	this.Register("/nearest-rivers", HandlerFunctions{Get: this.GetNearestRivers})
+	this.Register("/visible-rivers", HandlerFunctions{Get: this.GetVisibleRivers})
 }
 
 const MAX_REPORTS_PER_SOURCE = 5

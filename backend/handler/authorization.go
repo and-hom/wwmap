@@ -25,12 +25,12 @@ type UserInfoDto struct {
 	Roles        []dao.Role `json:"roles"`
 }
 
-func (this *UserInfoHandler) Init(r *mux.Router) {
-	this.Register(r, "/user-info", HandlerFunctions{Get: this.GetUserInfo})
-	this.Register(r, "/auth-test", HandlerFunctions{Get: this.TestAuth})
-	this.Register(r, "/user", HandlerFunctions{Get: this.ListUsers})
-	this.Register(r, "/user/{userId}/role", HandlerFunctions{Post: this.SetRole})
-	this.Register(r, "/vk/token", HandlerFunctions{Get: this.GetVkToken})
+func (this *UserInfoHandler) Init() {
+	this.Register("/user-info", HandlerFunctions{Get: this.GetUserInfo})
+	this.Register("/auth-test", HandlerFunctions{Get: this.TestAuth})
+	this.Register("/user", HandlerFunctions{Get: this.ListUsers})
+	this.Register("/user/{userId}/role", HandlerFunctions{Post: this.SetRole})
+	this.Register("/vk/token", HandlerFunctions{Get: this.GetVkToken})
 }
 
 func (this *UserInfoHandler) GetUserInfo(w http.ResponseWriter, r *http.Request) {
