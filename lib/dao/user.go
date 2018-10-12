@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"github.com/and-hom/wwmap/lib/dao/queries"
 	"encoding/json"
+	"github.com/pkg/errors"
 )
 
 func NewUserPostgresDao(postgresStorage PostgresStorage) UserDao {
@@ -24,12 +25,22 @@ type userStorage struct {
 	listQuery    string
 }
 
-func (this userStorage) CreateIfNotExists(user User) error {
+func (this userStorage) CreateIfNotExists(user User) (int64, Role, bool, error) {
 	userInfo, err := json.Marshal(user.Info)
 	if err != nil {
-		return err
+		return 0, ANONYMOUS, false, err
 	}
-	return this.performUpdates(this.createQuery, arrayMapper, []interface{}{user.ExtId, string(user.AuthProvider), user.Role, string(userInfo)})
+	cols, err := this.updateReturningColumns(this.createQuery, arrayMapper, []interface{}{user.ExtId, string(user.AuthProvider), user.Role, string(userInfo)})
+	if err != nil {
+		return 0, ANONYMOUS, false, err
+	}
+	if len(cols) < 1 {
+		return 0, ANONYMOUS, false, errors.New("User id and created flag were not returned! Empty row!")
+	}
+	if len(cols[0]) < 3 {
+		return 0, ANONYMOUS, false, errors.New("User id and created flag were not returned! Too short row, should be length==3")
+	}
+	return *(cols[0][0].(*int64)), Role(*(cols[0][1].(*string))), *(cols[0][2].(*bool)), nil
 }
 
 func (this userStorage) List() ([]User, error) {

@@ -56,12 +56,7 @@ func (this *App) CloseAndRemove(f *os.File) {
 	os.Remove(f.Name())
 }
 
-func (this *App) CreateMissingUser(r *http.Request) error {
-	authProvider, info, err := this.GetUserInfo(r)
-	if err != nil {
-		return err
-	}
-
+func (this *App) CreateMissingUser(r *http.Request, authProvider dao.AuthProvider, info passport.UserInfo) (int64, dao.Role, bool, error) {
 	return this.UserDao.CreateIfNotExists(dao.User{
 		ExtId:info.Id,
 		AuthProvider:authProvider,

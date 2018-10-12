@@ -34,22 +34,29 @@ func (this *UserInfoHandler) Init() {
 }
 
 func (this *UserInfoHandler) GetUserInfo(w http.ResponseWriter, r *http.Request) {
-	err := this.CreateMissingUser(r)
+	authProvider, info, err := this.App.GetUserInfo(r)
 	if err != nil {
-		onPassportErr(err, w, "Can not create user")
+		onPassportErr(err, w, "Can not get user info from request")
 		return
 	}
 
 	p, info, err := this.App.GetUserInfo(r)
 	if err != nil {
-		onPassportErr(err, w, "Can not do request to Yandex Passport")
+		onPassportErr(err, w, fmt.Sprintf("Can not do request to auth provider: %s", authProvider))
 		return
 	}
 
-	role, err := this.UserDao.GetRole(p, info.Id)
+	id, role, justCreated, err := this.CreateMissingUser(r, authProvider, info)
 	if err != nil {
-		onPassportErr(err, w, "Can not get role for user")
+		onPassportErr(err, w, "Can not create user!")
 		return
+	}
+
+	if justCreated {
+		this.ReportDao.AddReport(dao.Report{
+			Comment: fmt.Sprintf("User created: %s/%d %s (%s %s)", authProvider, info.Id, info.Login, info.FirstName, info.LastName),
+			ObjectId:id,
+		})
 	}
 
 	infoDto := UserInfoDto{
