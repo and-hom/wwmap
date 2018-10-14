@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"io/ioutil"
 	"fmt"
+	"time"
 )
 
 type UserInfoHandler struct {
@@ -54,8 +55,12 @@ func (this *UserInfoHandler) GetUserInfo(w http.ResponseWriter, r *http.Request)
 
 	if justCreated {
 		this.NotificationDao.Add(dao.Notification{
-			Comment: fmt.Sprintf("User created: %s/%d %s (%s %s)", authProvider, info.Id, info.Login, info.FirstName, info.LastName),
-			ObjectId:id,
+			IdTitle: dao.IdTitle{Title: string(authProvider)},
+			Object: dao.IdTitle{Id:id, Title: fmt.Sprintf("%d %s (%s %s)", info.Id, info.Login, info.FirstName, info.LastName)},
+			Comment: "User created",
+			Recipient:dao.NotificationRecipient{Provider:dao.NOTIFICATION_PROVIDER_EMAIL, Recipient:"info@wwmap.ru"},
+			Classifier:"user",
+			SendBefore:time.Now(), // send as soon as possible
 		})
 	}
 

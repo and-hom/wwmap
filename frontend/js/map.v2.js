@@ -248,9 +248,11 @@ function show_map_at(bounds) {
    })
 }
 
-function show_report_popup(id){
+function show_report_popup(id, title, riverTitle){
     reportPopup.show(() => {
       $("#report_popup #object_id").val(id)
+      $("#report_popup #object_title").val(title)
+      $("#report_popup #title").val(riverTitle)
     })
 }
 

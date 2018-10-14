@@ -1,0 +1,2 @@
+{{len .}} новых сообщений о неточностях{{range .}}
+{{.Title}}	{{.Object.Id}}	{{.Object.Title}}	{{.Comment}}	{{.CreatedAt}}{{end}}

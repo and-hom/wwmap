@@ -38,7 +38,7 @@ func mkFeature(point WhiteWaterPointWithRiverTitle, withDescription bool, resour
 		Title: point.Title,
 		Link: point.Link,
 		ShortDesc: description,
-		RiverName: point.RiverTitle,
+		RiverTitle: point.RiverTitle,
 		Images: imgs,
 	}
 	if point.Category.Category > 0 {

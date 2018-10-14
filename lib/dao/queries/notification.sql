@@ -2,13 +2,19 @@
 "notification"
 
 --@insert
-INSERT INTO @@table@@(object_id,comment) VALUES($1,$2) RETURNING id
+INSERT INTO @@table@@(title, object_id, object_title, comment, provider, recipient, classifier, send_before) VALUES($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id
+
+--@unread-provider-recipient-classifier
+SELECT provider, recipient, classifier
+    FROM @@table@@
+    WHERE NOT read
+    GROUP BY provider, recipient, classifier
+    HAVING min(send_before)<$1
 
 --@list-unread
-SELECT @@table@@.id, COALESCE(white_water_rapid.id, -1) as title, COALESCE(white_water_rapid.title, '') as title, COALESCE(river.title, '') as river_title, @@table@@.comment, @@table@@.created_at
-FROM @@table@@ LEFT OUTER JOIN white_water_rapid ON @@table@@.object_id=white_water_rapid.id
-LEFT OUTER JOIN river ON white_water_rapid.river_id=river.id
-WHERE NOT @@table@@.read
+SELECT id, title, object_id, object_title, comment, created_at, provider, recipient, classifier, send_before
+FROM @@table@@
+WHERE NOT read AND provider=$2 AND recipient=$3 AND classifier=$4
 ORDER BY created_at ASC LIMIT $1
 
 --@mark-read

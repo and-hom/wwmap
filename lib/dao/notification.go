@@ -4,45 +4,65 @@ import (
 	"database/sql"
 	"github.com/lib/pq"
 	"github.com/and-hom/wwmap/lib/dao/queries"
+	"time"
 )
 
 func NewNotificationPostgresDao(postgresStorage PostgresStorage) NotificationDao {
-	return reportStorage{
+	return notificationStorage{
 		PostgresStorage : postgresStorage,
 		insertQuery : queries.SqlQuery("notification", "insert"),
 		listUnreadQuery : queries.SqlQuery("notification", "list-unread"),
+		unreadRecipientsQuery : queries.SqlQuery("notification", "unread-provider-recipient-classifier"),
 		markReadQuery : queries.SqlQuery("notification", "mark-read"),
 	}
 }
 
-type reportStorage struct {
+type notificationStorage struct {
 	PostgresStorage
-	insertQuery     string
-	listUnreadQuery string
-	markReadQuery   string
+	insertQuery           string
+	listUnreadQuery       string
+	unreadRecipientsQuery string
+	markReadQuery         string
 }
 
-func (this reportStorage) Add(report Notification) error {
-	_, err := this.updateReturningId(this.insertQuery, arrayMapper, []interface{}{report.ObjectId, report.Comment})
+func (this notificationStorage) Add(notification Notification) error {
+	_, err := this.updateReturningId(this.insertQuery, arrayMapper, []interface{}{notification.Title,
+		notification.Object.Id, notification.Object.Title, notification.Comment,
+		notification.Recipient.Provider, notification.Recipient.Recipient, notification.Classifier, notification.SendBefore})
 	return err;
 }
 
-func (this reportStorage) ListUnread(limit int) ([]ReportWithName, error) {
-	reports, err := this.doFindList(this.listUnreadQuery,
-		func(rows *sql.Rows) (ReportWithName, error) {
-			report := ReportWithName{}
-			err := rows.Scan(&report.Id, &report.ObjectId, &report.Title, &report.RiverTitle, &report.Comment, &report.CreatedAt)
-			if err != nil {
-				return ReportWithName{}, err
-			}
-			return report, nil
-		}, limit)
-	return reports.([]ReportWithName), err
+func (this notificationStorage) ListUnreadRecipients(nowTime time.Time) ([]NotificationRecipientWithClassifier, error) {
+	rwcs, err := this.doFindList(this.unreadRecipientsQuery,
+		func(rows *sql.Rows) (NotificationRecipientWithClassifier, error) {
+			notification := NotificationRecipientWithClassifier{}
+			err := rows.Scan(&notification.Provider, &notification.Recipient, &notification.Classifier)
+			return notification, err
+		}, nowTime)
+	if err != nil {
+		return []NotificationRecipientWithClassifier{}, err
+	}
+	return rwcs.([]NotificationRecipientWithClassifier), err
 }
 
-func (this reportStorage) MarkRead(reports []int64) error {
+func (this notificationStorage) ListUnreadByRecipient(rc NotificationRecipientWithClassifier, limit int) ([]Notification, error) {
+	notifications, err := this.doFindList(this.listUnreadQuery,
+		func(rows *sql.Rows) (Notification, error) {
+			notification := Notification{}
+			err := rows.Scan(&notification.Id, &notification.Title, &notification.Object.Id, &notification.Object.Title,
+				&notification.Comment, &notification.CreatedAt, &notification.Recipient.Provider, &notification.Recipient.Recipient,
+				&notification.Classifier, &notification.SendBefore)
+			return notification, err
+		}, limit, rc.Provider, rc.Recipient, rc.Classifier)
+	if err != nil {
+		return []Notification{}, err
+	}
+	return notifications.([]Notification), err
+}
+
+func (this notificationStorage) MarkRead(ids []int64) error {
 	return this.performUpdates(this.markReadQuery,
 		func(ids interface{}) ([]interface{}, error) {
 			return []interface{}{ids}, nil;
-		}, pq.Array(reports))
+		}, pq.Array(ids))
 }

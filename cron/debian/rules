@@ -7,7 +7,7 @@ pre-build:
 	cd ../lib/dao/queries; $(HOME)/.go/bin/go-bindata -pkg queries .
 
 build-notifier:
-	cd notifier && $(HOME)/.go/bin/go-bindata email-template && GOPATH="$(HOME)/.go" go build
+	cd notifier && $(HOME)/.go/bin/go-bindata *-template* && GOPATH="$(HOME)/.go" go build
 
 TEMPLATE_FILES=spot-page-template.htm river-page-template.htm region-page-template.htm country-page-template.htm root-page-template.htm decorator.htm
 build-catalog-sync:

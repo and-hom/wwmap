@@ -1,0 +1,4 @@
+<strong>{{len .}} новых пользователей</strong>
+{{range .}}
+    <div>{{.Title}}/{{.Object.Title}}<div>
+ {{end}}

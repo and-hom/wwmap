@@ -98,20 +98,38 @@ type PointRef struct {
 	Idx      int `json:"idx"`
 }
 
+type NotificationProvider string
+
+const NOTIFICATION_PROVIDER_LOG NotificationProvider = "log"
+const NOTIFICATION_PROVIDER_EMAIL NotificationProvider = "email"
+const NOTIFICATION_PROVIDER_VK NotificationProvider = "vk"
+
 type Notification struct {
-	Id        int64 `json:"id"`
-	ObjectId  int64 `json:"object_id,omitempty"`
-	Comment   string `json:"comment"`
-	CreatedAt JSONTime `json:"created_at,omitempty"`
+	IdTitle
+
+	Object     IdTitle
+	Comment    string
+	CreatedAt  JSONTime
+
+	Recipient  NotificationRecipient
+	Classifier string
+	SendBefore time.Time
 }
 
-type ReportWithName struct {
-	Id         int64
-	ObjectId   int64
-	RiverTitle string
-	Title      string
-	Comment    string
-	CreatedAt  time.Time
+type NotificationRecipient struct {
+	Provider  NotificationProvider
+	Recipient string
+}
+func (this NotificationRecipient) String() string {
+	return fmt.Sprintf("%s/%s", this.Provider, this.Recipient)
+}
+
+type NotificationRecipientWithClassifier struct {
+	NotificationRecipient
+	Classifier string
+}
+func (this NotificationRecipientWithClassifier) String() string {
+	return fmt.Sprintf("%v - %s", this.NotificationRecipient, this.Classifier)
 }
 
 type VoyageReport struct {

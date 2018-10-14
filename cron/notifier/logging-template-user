@@ -1,0 +1,2 @@
+{{len .}} новых пользователей:{{range .}}
+    {{.Title}}/{{.Object.Title}}{{end}}

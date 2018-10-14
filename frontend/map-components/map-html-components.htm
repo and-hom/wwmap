@@ -2,13 +2,18 @@
     <form>
         <label for="object_id">ID</label>
         <input type="text" id="object_id" name="object_id" readonly style="margin-bottom:10px;"/><br/>
+        <label for="object_title">Порог</label>
+        <input type="text" id="object_title" name="object_title" readonly style="margin-bottom:10px;"/><br/>
+        <label for="title">Река</label>
+        <input type="text" id="title" name="title" readonly style="margin-bottom:10px;"/><br/>
+
         <label for="comment" style="width:400px">Исправления происходят в ручном режиме и после проверки. Пожалуйста,
             расскажите коротко,
             что не так. Будет полезным добавить источники информации (отчёты, например) и указать реальные координаты
             точки.
             <u>Оставьте контакт для обратной связи</u> на случай, если у меня возникнет вопрос.</label><br/>
         <textarea id="comment" name="comment" rows="20" maxlength="4000"
-                  style="margin-top:10px; margin-bottom:20px; "></textarea>
+                  style="margin-top:10px; margin-bottom:20px; " autofocus></textarea>
         <input type="submit" value="Отправить" width="600px; align: center;"/>
         <input type="button" name="cancel" value="Отмена" width="600px; align: center;"/>
     </form>
@@ -52,7 +57,7 @@
 
     <div class="popover-content">
         {%if properties.category%}<div><strong>Категория сложности:</strong>&nbsp;{{properties.category}}</div>{%endif%}
-        {%if properties.river_name%}<div><strong>Река:</strong>&nbsp;{{properties.river_name}}</div>{%endif%}
+        {%if properties.river_title%}<div><strong>Река:</strong>&nbsp;{{properties.river_title}}</div>{%endif%}
         <div>{{properties.short_description}}</div>
         {%if properties.images %}&nbsp;<br/>
         <div class="gallery-div" style="height:auto; width: 100%; overflow-x: scroll; overflow-y: hidden;white-space: nowrap;">
@@ -61,7 +66,7 @@
         {% endif %}
     </div>
     <div class="popover-footer">
-        <a target="_top" href="#" onclick="show_report_popup({{properties.id}}); return false">Сообщить о неточности</a>
+        <a target="_top" href="#" onclick="show_report_popup({{properties.id}}, '{{properties.title}}', '{{properties.river_title}}'); return false">Сообщить о неточности</a>
     </div>
 </script>
 

@@ -7,6 +7,7 @@ import (
 	. "github.com/and-hom/wwmap/lib/dao"
 	. "github.com/and-hom/wwmap/lib/http"
 	. "github.com/and-hom/wwmap/lib/handler"
+	"time"
 )
 
 type ReportHandler struct {
@@ -18,16 +19,22 @@ func (this *ReportHandler) Init() {
 }
 
 func (this *ReportHandler) AddReport(w http.ResponseWriter, r *http.Request) {
-	comment := r.FormValue("comment")
+	title := r.FormValue("title")
 	objectIdStr := r.FormValue("object_id")
+	objectTitle := r.FormValue("object_title")
+	comment := r.FormValue("comment")
 	objectId, err := strconv.ParseInt(objectIdStr, 10, 64)
 	if err != nil {
 		OnError(w, err, fmt.Sprintf("Can not parse object id: %s", objectIdStr), 400)
 		return
 	}
 	err = this.NotificationDao.Add(Notification{
-		ObjectId: objectId,
+		IdTitle: IdTitle{Title:title},
+		Object: IdTitle{Id:objectId, Title:objectTitle},
 		Comment: comment,
+		Recipient:NotificationRecipient{Provider:NOTIFICATION_PROVIDER_EMAIL, Recipient:"info@wwmap.ru"},
+		Classifier:"report",
+		SendBefore:time.Now().Add(2 * time.Hour), // wait 2 hours for more messages
 	})
 	if err != nil {
 		OnError500(w, err, "Can not add report")

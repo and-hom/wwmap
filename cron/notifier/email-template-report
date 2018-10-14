@@ -1,4 +1,4 @@
-{{len .}} новых сообщений о неточностях
+<strong>{{len .}} новых сообщений о неточностях</strong>
 
 <table style="width:800px; padding-left:30px;" border="0">
 <tr>

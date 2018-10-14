@@ -59,7 +59,8 @@ type WhiteWaterDao interface {
 
 type NotificationDao interface {
 	Add(notification Notification) error
-	ListUnread(limit int) ([]ReportWithName, error)
+	ListUnreadRecipients(nowTime time.Time) ([]NotificationRecipientWithClassifier, error)
+	ListUnreadByRecipient(rc NotificationRecipientWithClassifier, limit int) ([]Notification, error)
 	MarkRead(notifications []int64) error
 }
 
