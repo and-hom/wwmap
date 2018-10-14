@@ -64,7 +64,11 @@ type emailNotificationProvider struct {
 }
 
 func (this *emailNotificationProvider) Send(classifier string, notifications []dao.Notification) error {
-	return mail.SendMail(this.conf.EmailSender, this.conf.EmailRecipients, this.conf.ReportingEmailSubject, func(w io.Writer) error {
+	recipients := make([]string, len(notifications))
+	for i:=0;i<len(notifications);i++ {
+		recipients[i] = notifications[i].Recipient.Recipient
+	}
+	return mail.SendMail(this.conf.EmailSender, recipients, this.conf.ReportingEmailSubject, func(w io.Writer) error {
 		return this.tmpl.template(classifier).Execute(w, notifications)
 	})
 }

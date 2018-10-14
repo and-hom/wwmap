@@ -12,6 +12,8 @@ import (
 	"io/ioutil"
 	"fmt"
 	"time"
+	"strings"
+	log "github.com/Sirupsen/logrus"
 )
 
 type UserInfoHandler struct {
@@ -62,6 +64,14 @@ func (this *UserInfoHandler) GetUserInfo(w http.ResponseWriter, r *http.Request)
 			Classifier:"user",
 			SendBefore:time.Now(), // send as soon as possible
 		})
+		if authProvider == dao.YANDEX {
+			this.NotificationDao.Add(dao.Notification{
+				Object:dao.IdTitle{Id:id, Title:info.Login},
+				Recipient:dao.NotificationRecipient{Provider:dao.NOTIFICATION_PROVIDER_EMAIL, Recipient:yndxEmail(info.Login)},
+				Classifier:"user-welcome",
+				SendBefore:time.Now(), // send as soon as possible
+			})
+		}
 	}
 
 	infoDto := UserInfoDto{
@@ -122,7 +132,8 @@ func (this *UserInfoHandler) SetRole(w http.ResponseWriter, r *http.Request) {
 		OnError(w, err, "Can not set role " + roleStr, http.StatusBadRequest)
 		return
 	}
-	err = this.UserDao.SetRole(userId, dao.Role(roleStr))
+
+	newRole, oldRole, err := this.UserDao.SetRole(userId, dao.Role(roleStr))
 	if err != nil {
 		OnError500(w, err, "Can not set role")
 		return
@@ -132,6 +143,22 @@ func (this *UserInfoHandler) SetRole(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		OnError500(w, err, "Can not list users")
 		return
+	}
+
+	for i := 0; i < len(users); i++ {
+		if users[i].Id == userId && users[i].AuthProvider == dao.YANDEX {
+			err := this.NotificationDao.Add(dao.Notification{
+				Object:dao.IdTitle{Id:userId, Title:users[i].Info.Login},
+				Comment:fmt.Sprintf("%s => %s", oldRole, newRole),
+				Recipient:dao.NotificationRecipient{Provider:dao.NOTIFICATION_PROVIDER_EMAIL, Recipient:yndxEmail(users[i].Info.Login)},
+				Classifier:"user-roles",
+				SendBefore:time.Now(), // send as soon as possible
+			})
+			if err != nil {
+				log.Errorf("Can not send message to user %d: %v", userId, err)
+			}
+
+		}
 	}
 
 	this.JsonAnswer(w, users)
@@ -197,4 +224,11 @@ func (this *UserInfoHandler) GetVkToken(w http.ResponseWriter, r *http.Request) 
 	}
 
 	w.Write(rb)
+}
+
+func yndxEmail(login string) string {
+	if !strings.Contains(login, "@") {
+		return login + "@yandex.ru"
+	}
+	return login
 }

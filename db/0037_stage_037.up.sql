@@ -10,7 +10,7 @@ UPDATE "notification" SET
     object_title=COALESCE((SELECT title FROM white_water_rapid WHERE white_water_rapid.id=object_id),'-');
 
 
-ALTER TABLE "notification" ADD COLUMN classifier CHARACTER VARYING(8) NOT NULL DEFAULT 'wwmap';
+ALTER TABLE "notification" ADD COLUMN classifier CHARACTER VARYING(32) NOT NULL DEFAULT 'wwmap';
 ALTER TABLE "notification" ADD COLUMN send_before timestamp NOT NULL DEFAULT now();
 
 CREATE INDEX notification_classifier_provider_recipient

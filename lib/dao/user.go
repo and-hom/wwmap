@@ -5,6 +5,7 @@ import (
 	"github.com/and-hom/wwmap/lib/dao/queries"
 	"encoding/json"
 	"github.com/pkg/errors"
+	"fmt"
 )
 
 func NewUserPostgresDao(postgresStorage PostgresStorage) UserDao {
@@ -65,8 +66,15 @@ func (this userStorage) List() ([]User, error) {
 	return result.([]User), nil
 }
 
-func (this userStorage) SetRole(userId int64, role Role) error {
-	return this.performUpdates(this.setRoleQuery, arrayMapper, []interface{}{userId, role})
+func (this userStorage) SetRole(userId int64, role Role) (Role, Role, error) {
+	cols, err := this.updateReturningColumns(this.setRoleQuery, arrayMapper, []interface{}{userId, role})
+	if err != nil {
+		return ANONYMOUS, ANONYMOUS, err
+	}
+	if len(cols) == 0 {
+		return ANONYMOUS, ANONYMOUS, fmt.Errorf("Can not update role for user %d: user not found", userId)
+	}
+	return Role(*(cols[0][0].(*string))), Role(*(cols[0][1].(*string))), nil
 }
 
 func (this userStorage) GetRole(provider AuthProvider, extId int64) (Role, error) {

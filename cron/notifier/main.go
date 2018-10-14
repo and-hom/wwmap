@@ -56,7 +56,8 @@ func (this *Notificator) DoSend() {
 
 		err = provider.Send(recipient.Classifier, notifications)
 		if err != nil {
-			log.Fatalf("Can not send notifications to %v: %v", recipient, err)
+			log.Errorf("Can not send notifications to %v: %v", recipient, err)
+			continue
 		}
 
 		ids := make([]int64, len(notifications))

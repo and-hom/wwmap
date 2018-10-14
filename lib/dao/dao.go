@@ -105,7 +105,7 @@ type UserDao interface {
 	CreateIfNotExists(User) (int64, Role , bool, error)
 	GetRole(provider AuthProvider, extId int64) (Role, error)
 	List() ([]User, error)
-	SetRole(userId int64, role Role) error
+	SetRole(userId int64, role Role) (Role, Role, error)
 }
 
 type HasProperties interface {
