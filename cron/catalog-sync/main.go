@@ -21,6 +21,7 @@ type App struct {
 	WhiteWaterDao     dao.WhiteWaterDao
 	ImgDao            dao.ImgDao
 	VoyageReportDao   dao.VoyageReportDao
+	NotificationDao   dao.NotificationDao
 	WwPassportDao     dao.WwPassportDao
 	Configuration     config.WordpressSync
 	Notifications     config.Notifications
@@ -55,6 +56,7 @@ func CreateApp() App {
 		WhiteWaterDao:dao.NewWhiteWaterPostgresDao(pgStorage),
 		ImgDao:dao.NewImgPostgresDao(pgStorage),
 		WwPassportDao:dao.NewWWPassportPostgresDao(pgStorage),
+		NotificationDao:dao.NewNotificationPostgresDao(pgStorage),
 		Configuration:configuration.Sync,
 		Notifications:configuration.Notifications,
 		stat: &ImportExportReport{},

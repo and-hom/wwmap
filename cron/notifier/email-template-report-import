@@ -1,0 +1,2 @@
+<strong>Результаты импорта отчётов</strong>
+{{range .}}<div>{{.CreatedAt}}&nbsp;{{.Comment}}</div>{{end}}

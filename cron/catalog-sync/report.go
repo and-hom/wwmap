@@ -4,12 +4,11 @@ import (
 	"github.com/and-hom/wwmap/lib/dao"
 	"strings"
 	log "github.com/Sirupsen/logrus"
-	"io"
 	"time"
 	"github.com/and-hom/wwmap/cron/catalog-sync/common"
 	"html/template"
-	"github.com/and-hom/wwmap/lib/mail"
 	"github.com/and-hom/wwmap/cron/catalog-sync/bindata"
+	"bytes"
 )
 
 const COMMON_TIME_FORMAT string = "2006-01-02T15:04:05"
@@ -17,7 +16,7 @@ const COMMON_TIME_FORMAT string = "2006-01-02T15:04:05"
 func (this *App) DoSyncReports() {
 	for _, rpf := range this.reportProviders {
 		err := rpf.Do(func(rp common.ReportProvider) error {
-			if this.sourceOnly=="" || this.sourceOnly==rp.SourceId() {
+			if this.sourceOnly == "" || this.sourceOnly == rp.SourceId() {
 				return this.doSyncReports(&rp)
 			} else {
 				return nil
@@ -117,7 +116,7 @@ func (this *App) findMatchAndStoreImages(report dao.VoyageReport, rivers []dao.R
 	log.Debugf("Bind images to ww spots for report %d", report.Id)
 	matchedImgs := []dao.Img{}
 	candidates, err := this.matchImgsToWhiteWaterPoints(report, imgs, rivers)
-	if err!=nil {
+	if err != nil {
 		return err
 	}
 	log.Debugf("%d images matched for %s %d", len(candidates), report.Source, report.Id)
@@ -189,4 +188,14 @@ func (this *App) Report(err error) {
 	if err != nil {
 		log.Fatal("Can not compile email template:\t", err)
 	}
+	buf := bytes.Buffer{}
+	if err = tmpl.Execute(&buf, *this.stat); err != nil {
+		log.Fatal("Can not process email template:\t", err)
+	}
+	this.NotificationDao.Add(dao.Notification{
+		Comment:buf.String(),
+		Recipient:dao.NotificationRecipient{Provider: dao.NOTIFICATION_PROVIDER_EMAIL, Recipient:"info@wwmap.ru"},
+		Classifier:"repor-import",
+		SendBefore:time.Now().Add(2 * time.Hour),
+	})
 }
