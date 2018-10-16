@@ -12,8 +12,12 @@ type JSONTime time.Time
 
 func (t JSONTime)MarshalJSON() ([]byte, error) {
 	//do your serializing here
-	stamp := fmt.Sprintf("\"%s\"", time.Time(t).Format("2006-01-02"))
+	stamp := fmt.Sprintf("\"%s\"", t.String())
 	return []byte(stamp), nil
+}
+
+func (t JSONTime) String() string {
+	return time.Time(t).Format("2006-01-02")
 }
 
 type IdTitle struct {
@@ -120,6 +124,7 @@ type NotificationRecipient struct {
 	Provider  NotificationProvider
 	Recipient string
 }
+
 func (this NotificationRecipient) String() string {
 	return fmt.Sprintf("%s/%s", this.Provider, this.Recipient)
 }
@@ -128,6 +133,7 @@ type NotificationRecipientWithClassifier struct {
 	NotificationRecipient
 	Classifier string
 }
+
 func (this NotificationRecipientWithClassifier) String() string {
 	return fmt.Sprintf("%v - %s", this.NotificationRecipient, this.Classifier)
 }
