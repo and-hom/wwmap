@@ -18,7 +18,7 @@ type ClusterizationParams struct {
 }
 
 type Notifications struct {
-	EmailRecipients          []string `yaml:"email_recipients"`
+	MailSettings             MailSettings `yaml:"mail"`
 	EmailSender              string `yaml:"email_sender"`
 	ReportingEmailSubject    string `yaml:"reporting_email_subject"`
 	ImportExportEmailSubject string `yaml:"import_export_email_subject"`
@@ -53,6 +53,20 @@ type BlobStorageParams struct {
 type ImgStorage struct {
 	Full    BlobStorageParams `yaml:"full"`
 	Preview BlobStorageParams `yaml:"preview"`
+}
+
+type MailSettings struct {
+	From         string `yaml:"from"`
+	Ssl          bool `yaml:"ssl"`
+	SmtpIdentity string `yaml:"smtp-identity"`
+	SmtpUser     string `yaml:"smtp-user"`
+	SmtpPassword string `yaml:"smtp-password"`
+	SmtpHost     string `yaml:"smtp-host"`
+	SmtpPort     int `yaml:"smtp-port"`
+}
+
+func (this MailSettings) SmtpHostPort() string {
+	return fmt.Sprintf("%s:%d", this.SmtpHost, this.SmtpPort)
 }
 
 type Configuration struct {

@@ -68,7 +68,7 @@ func (this *emailNotificationProvider) Send(classifier string, notifications []d
 	for i:=0;i<len(notifications);i++ {
 		recipients[i] = notifications[i].Recipient.Recipient
 	}
-	return mail.SendMail(this.conf.EmailSender, recipients, this.conf.ReportingEmailSubject, func(w io.Writer) error {
+	return mail.SendMail(this.conf.MailSettings, recipients, this.conf.ReportingEmailSubject, func(w io.Writer) error {
 		return this.tmpl.template(classifier).Execute(w, notifications)
 	})
 }

@@ -189,8 +189,4 @@ func (this *App) Report(err error) {
 	if err != nil {
 		log.Fatal("Can not compile email template:\t", err)
 	}
-
-	err = mail.SendMail(this.Notifications.EmailSender, this.Notifications.EmailRecipients, this.Notifications.ImportExportEmailSubject, func(w io.Writer) error {
-		return tmpl.Execute(w, *this.stat)
-	})
 }
