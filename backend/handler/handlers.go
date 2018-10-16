@@ -6,23 +6,25 @@ import (
 	"github.com/and-hom/wwmap/backend/passport"
 	"github.com/and-hom/wwmap/backend/referer"
 	"fmt"
+	"github.com/and-hom/wwmap/lib/notification"
 )
 
 type App struct {
 	Handler
-	Storage           Storage
-	RiverDao          RiverDao
-	WhiteWaterDao     WhiteWaterDao
-	NotificationDao   NotificationDao
-	VoyageReportDao   VoyageReportDao
-	ImgDao            ImgDao
-	UserDao           UserDao
-	CountryDao        CountryDao
-	RegionDao         RegionDao
-	AuthProviders     map[AuthProvider]passport.Passport
-	RefererStorage    referer.RefererStorage
-	ImgUrlBase        string
-	ImgUrlPreviewBase string
+	Storage            Storage
+	RiverDao           RiverDao
+	WhiteWaterDao      WhiteWaterDao
+	NotificationDao    NotificationDao
+	VoyageReportDao    VoyageReportDao
+	ImgDao             ImgDao
+	UserDao            UserDao
+	CountryDao         CountryDao
+	RegionDao          RegionDao
+	AuthProviders      map[AuthProvider]passport.Passport
+	RefererStorage     referer.RefererStorage
+	ImgUrlBase         string
+	ImgUrlPreviewBase  string
+	NotificationHelper notification.NotificationHelper
 }
 
 func (this *App) processForWeb(img *Img) {

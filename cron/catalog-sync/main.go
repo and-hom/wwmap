@@ -12,29 +12,32 @@ import (
 	"fmt"
 	"flag"
 	"strings"
+	"github.com/and-hom/wwmap/lib/notification"
 )
 
 type App struct {
-	CountryDao        dao.CountryDao
-	RegionDao         dao.RegionDao
-	RiverDao          dao.RiverDao
-	WhiteWaterDao     dao.WhiteWaterDao
-	ImgDao            dao.ImgDao
-	VoyageReportDao   dao.VoyageReportDao
-	NotificationDao   dao.NotificationDao
-	WwPassportDao     dao.WwPassportDao
-	Configuration     config.WordpressSync
-	Notifications     config.Notifications
+	CountryDao         dao.CountryDao
+	RegionDao          dao.RegionDao
+	RiverDao           dao.RiverDao
+	WhiteWaterDao      dao.WhiteWaterDao
+	ImgDao             dao.ImgDao
+	VoyageReportDao    dao.VoyageReportDao
+	NotificationDao    dao.NotificationDao
+	WwPassportDao      dao.WwPassportDao
+	Configuration      config.WordpressSync
+	Notifications      config.Notifications
 
-	ImgUrlBase        string
-	ImgUrlPreviewBase string
-	ResourceBase      string
+	ImgUrlBase         string
+	ImgUrlPreviewBase  string
+	ResourceBase       string
 
-	stat              *ImportExportReport
-	reportProviders   []common.WithReportProvider
-	catalogConnectors []common.WithCatalogConnector
+	NotificationHelper notification.NotificationHelper
 
-	sourceOnly        string
+	stat               *ImportExportReport
+	reportProviders    []common.WithReportProvider
+	catalogConnectors  []common.WithCatalogConnector
+
+	sourceOnly         string
 }
 
 func CreateApp() App {
@@ -48,6 +51,8 @@ func CreateApp() App {
 	riverPassportHtmlStorage := blob.BasicFsStorage{
 		BaseDir:configuration.RiverPassportHtmlStorage.Dir,
 	}
+	userDao := dao.NewUserPostgresDao(pgStorage)
+	notificationDao := dao.NewNotificationPostgresDao(pgStorage)
 	return App{
 		VoyageReportDao:dao.NewVoyageReportPostgresDao(pgStorage),
 		CountryDao:dao.NewCountryPostgresDao(pgStorage),
@@ -56,7 +61,7 @@ func CreateApp() App {
 		WhiteWaterDao:dao.NewWhiteWaterPostgresDao(pgStorage),
 		ImgDao:dao.NewImgPostgresDao(pgStorage),
 		WwPassportDao:dao.NewWWPassportPostgresDao(pgStorage),
-		NotificationDao:dao.NewNotificationPostgresDao(pgStorage),
+		NotificationDao:notificationDao,
 		Configuration:configuration.Sync,
 		Notifications:configuration.Notifications,
 		stat: &ImportExportReport{},
@@ -77,6 +82,11 @@ func CreateApp() App {
 		ImgUrlBase:configuration.ImgStorage.Full.UrlBase,
 		ImgUrlPreviewBase:configuration.ImgStorage.Preview.UrlBase,
 		ResourceBase:configuration.Content.ResourceBase,
+		NotificationHelper:notification.NotificationHelper{
+			UserDao:userDao,
+			NotificationDao:notificationDao,
+			FallbackEmailRecipient:configuration.Notifications.FallbackEmailRecipient,
+		},
 	}
 }
 

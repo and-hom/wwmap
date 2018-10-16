@@ -15,6 +15,7 @@ import (
 	"github.com/and-hom/wwmap/lib/blob"
 	"github.com/and-hom/wwmap/backend/handler"
 	"github.com/and-hom/wwmap/backend/clustering"
+	"github.com/and-hom/wwmap/lib/notification"
 )
 
 func main() {
@@ -70,6 +71,11 @@ func main() {
 		RefererStorage: referer.CreateDbReferrerStorage(storage),
 		ImgUrlBase:configuration.ImgStorage.Full.UrlBase,
 		ImgUrlPreviewBase:configuration.ImgStorage.Preview.UrlBase,
+		NotificationHelper:notification.NotificationHelper{
+			NotificationDao:notificationDao,
+			UserDao: userDao,
+			FallbackEmailRecipient:configuration.Notifications.FallbackEmailRecipient,
+		},
 	}
 
 	_handlers := []ApiHandler{

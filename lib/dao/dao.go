@@ -58,7 +58,7 @@ type WhiteWaterDao interface {
 }
 
 type NotificationDao interface {
-	Add(notification Notification) error
+	Add(notification ...Notification) error
 	ListUnreadRecipients(nowTime time.Time) ([]NotificationRecipientWithClassifier, error)
 	ListUnreadByRecipient(rc NotificationRecipientWithClassifier, limit int) ([]Notification, error)
 	MarkRead(notifications []int64) error
@@ -105,6 +105,7 @@ type UserDao interface {
 	CreateIfNotExists(User) (int64, Role , bool, error)
 	GetRole(provider AuthProvider, extId int64) (Role, error)
 	List() ([]User, error)
+	ListByRole(role Role) ([]User, error)
 	SetRole(userId int64, role Role) (Role, Role, error)
 }
 

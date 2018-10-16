@@ -192,10 +192,10 @@ func (this *App) Report(err error) {
 	if err = tmpl.Execute(&buf, *this.stat); err != nil {
 		log.Fatal("Can not process email template:\t", err)
 	}
-	this.NotificationDao.Add(dao.Notification{
+	this.NotificationHelper.SendToRole(dao.Notification{
 		Comment:buf.String(),
 		Recipient:dao.NotificationRecipient{Provider: dao.NOTIFICATION_PROVIDER_EMAIL, Recipient:"info@wwmap.ru"},
 		Classifier:"repor-import",
 		SendBefore:time.Now().Add(2 * time.Hour),
-	})
+	}, dao.ADMIN)
 }

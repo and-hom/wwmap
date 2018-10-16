@@ -12,8 +12,8 @@ import (
 	"io/ioutil"
 	"fmt"
 	"time"
-	"strings"
 	log "github.com/Sirupsen/logrus"
+	"github.com/and-hom/wwmap/lib/notification"
 )
 
 type UserInfoHandler struct {
@@ -56,18 +56,18 @@ func (this *UserInfoHandler) GetUserInfo(w http.ResponseWriter, r *http.Request)
 	}
 
 	if justCreated {
-		this.NotificationDao.Add(dao.Notification{
+		this.NotificationHelper.SendToRole(dao.Notification{
 			IdTitle: dao.IdTitle{Title: string(authProvider)},
 			Object: dao.IdTitle{Id:id, Title: fmt.Sprintf("%d %s (%s %s)", info.Id, info.Login, info.FirstName, info.LastName)},
 			Comment: "User created",
-			Recipient:dao.NotificationRecipient{Provider:dao.NOTIFICATION_PROVIDER_EMAIL, Recipient:"info@wwmap.ru"},
 			Classifier:"user",
 			SendBefore:time.Now(), // send as soon as possible
-		})
+		}, dao.ADMIN)
+
 		if authProvider == dao.YANDEX {
 			this.NotificationDao.Add(dao.Notification{
 				Object:dao.IdTitle{Id:id, Title:info.Login},
-				Recipient:dao.NotificationRecipient{Provider:dao.NOTIFICATION_PROVIDER_EMAIL, Recipient:yndxEmail(info.Login)},
+				Recipient:dao.NotificationRecipient{Provider:dao.NOTIFICATION_PROVIDER_EMAIL, Recipient:notification.YandexEmail(info.Login)},
 				Classifier:"user-welcome",
 				SendBefore:time.Now(), // send as soon as possible
 			})
@@ -150,7 +150,7 @@ func (this *UserInfoHandler) SetRole(w http.ResponseWriter, r *http.Request) {
 			err := this.NotificationDao.Add(dao.Notification{
 				Object:dao.IdTitle{Id:userId, Title:users[i].Info.Login},
 				Comment:fmt.Sprintf("%s => %s", oldRole, newRole),
-				Recipient:dao.NotificationRecipient{Provider:dao.NOTIFICATION_PROVIDER_EMAIL, Recipient:yndxEmail(users[i].Info.Login)},
+				Recipient:dao.NotificationRecipient{Provider:dao.NOTIFICATION_PROVIDER_EMAIL, Recipient:notification.YandexEmail(users[i].Info.Login)},
 				Classifier:"user-roles",
 				SendBefore:time.Now(), // send as soon as possible
 			})
@@ -224,11 +224,4 @@ func (this *UserInfoHandler) GetVkToken(w http.ResponseWriter, r *http.Request) 
 	}
 
 	w.Write(rb)
-}
-
-func yndxEmail(login string) string {
-	if !strings.Contains(login, "@") {
-		return login + "@yandex.ru"
-	}
-	return login
 }

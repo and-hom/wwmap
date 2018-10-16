@@ -15,15 +15,17 @@ func NewUserPostgresDao(postgresStorage PostgresStorage) UserDao {
 		getRoleQuery: queries.SqlQuery("user", "get-role-by-ext-id"),
 		setRoleQuery: queries.SqlQuery("user", "set-role"),
 		listQuery: queries.SqlQuery("user", "list"),
+		listByRoleQuery: queries.SqlQuery("user", "list-by-role"),
 	}
 }
 
 type userStorage struct {
 	PostgresStorage
-	createQuery  string
-	getRoleQuery string
-	setRoleQuery string
-	listQuery    string
+	createQuery     string
+	getRoleQuery    string
+	setRoleQuery    string
+	listQuery       string
+	listByRoleQuery string
 }
 
 func (this userStorage) CreateIfNotExists(user User) (int64, Role, bool, error) {
@@ -45,21 +47,14 @@ func (this userStorage) CreateIfNotExists(user User) (int64, Role, bool, error) 
 }
 
 func (this userStorage) List() ([]User, error) {
-	result, err := this.doFindList(this.listQuery, func(rows *sql.Rows) (User, error) {
-		user := User{}
-		infoStr := ""
-		authProvider := ""
-
-		err := rows.Scan(&user.Id, &user.ExtId, &authProvider, &user.Role, &infoStr)
-		if err != nil {
-			return user, err
-		}
-
-		err = json.Unmarshal([]byte(infoStr), &user.Info)
-		user.AuthProvider = AuthProvider(authProvider)
-
-		return user, err
-	})
+	result, err := this.doFindList(this.listQuery, userMapper)
+	if err != nil {
+		return []User{}, err
+	}
+	return result.([]User), nil
+}
+func (this userStorage) ListByRole(role Role) ([]User, error) {
+	result, err := this.doFindList(this.listByRoleQuery, userMapper, role)
 	if err != nil {
 		return []User{}, err
 	}
@@ -86,4 +81,20 @@ func (this userStorage) GetRole(provider AuthProvider, extId int64) (Role, error
 		return ANONYMOUS, nil
 	}
 	return role, err
+}
+
+func userMapper(rows *sql.Rows) (User, error) {
+	user := User{}
+	infoStr := ""
+	authProvider := ""
+
+	err := rows.Scan(&user.Id, &user.ExtId, &authProvider, &user.Role, &infoStr)
+	if err != nil {
+		return user, err
+	}
+
+	err = json.Unmarshal([]byte(infoStr), &user.Info)
+	user.AuthProvider = AuthProvider(authProvider)
+
+	return user, err
 }

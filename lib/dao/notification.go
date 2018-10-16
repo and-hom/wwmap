@@ -25,10 +25,18 @@ type notificationStorage struct {
 	markReadQuery         string
 }
 
-func (this notificationStorage) Add(notification Notification) error {
-	_, err := this.updateReturningId(this.insertQuery, arrayMapper, []interface{}{notification.Title,
-		notification.Object.Id, notification.Object.Title, notification.Comment,
-		notification.Recipient.Provider, notification.Recipient.Recipient, notification.Classifier, notification.SendBefore})
+func (this notificationStorage) Add(notifications ...Notification) error {
+	params := make([]interface{}, len(notifications))
+	for i := 0; i < len(notifications); i++ {
+		params[i] = notifications[i]
+	}
+
+	_, err := this.updateReturningId(this.insertQuery, func(entity interface{}) ([]interface{}, error) {
+		notification := entity.(Notification)
+		return []interface{}{notification.Title,
+			notification.Object.Id, notification.Object.Title, notification.Comment,
+			notification.Recipient.Provider, notification.Recipient.Recipient, notification.Classifier, notification.SendBefore}, nil
+	}, params...)
 	return err;
 }
 

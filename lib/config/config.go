@@ -20,6 +20,7 @@ type ClusterizationParams struct {
 type Notifications struct {
 	MailSettings             MailSettings `yaml:"mail"`
 	EmailSender              string `yaml:"email_sender"`
+	FallbackEmailRecipient   string `yaml:"fallback_email_recipient"`
 	ReportingEmailSubject    string `yaml:"reporting_email_subject"`
 	ImportExportEmailSubject string `yaml:"import_export_email_subject"`
 }

@@ -28,14 +28,13 @@ func (this *ReportHandler) AddReport(w http.ResponseWriter, r *http.Request) {
 		OnError(w, err, fmt.Sprintf("Can not parse object id: %s", objectIdStr), 400)
 		return
 	}
-	err = this.NotificationDao.Add(Notification{
+	err = this.NotificationHelper.SendToRole(Notification{
 		IdTitle: IdTitle{Title:title},
 		Object: IdTitle{Id:objectId, Title:objectTitle},
 		Comment: comment,
-		Recipient:NotificationRecipient{Provider:NOTIFICATION_PROVIDER_EMAIL, Recipient:"info@wwmap.ru"},
 		Classifier:"report",
 		SendBefore:time.Now().Add(2 * time.Hour), // wait 2 hours for more messages
-	})
+	}, ADMIN)
 	if err != nil {
 		OnError500(w, err, "Can not add report")
 		return

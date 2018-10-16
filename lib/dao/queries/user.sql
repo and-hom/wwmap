@@ -8,3 +8,5 @@ SELECT "role" FROM "user" WHERE auth_provider=$1 AND ext_id=$2
 UPDATE "user" SET "role"=$2 WHERE id=$1 RETURNING "role" AS new_role, (SELECT "role" FROM "user" u WHERE u.id=$1) AS old_role
 --@list
 SELECT id, ext_id, auth_provider,"role",info FROM "user" ORDER BY id ASC
+--@list-by-role
+SELECT id, ext_id, auth_provider,"role",info FROM "user" WHERE "role"=$1 ORDER BY id ASC
