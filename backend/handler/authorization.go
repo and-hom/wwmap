@@ -56,22 +56,7 @@ func (this *UserInfoHandler) GetUserInfo(w http.ResponseWriter, r *http.Request)
 	}
 
 	if justCreated {
-		this.NotificationHelper.SendToRole(dao.Notification{
-			IdTitle: dao.IdTitle{Title: string(authProvider)},
-			Object: dao.IdTitle{Id:id, Title: fmt.Sprintf("%d %s (%s %s)", info.Id, info.Login, info.FirstName, info.LastName)},
-			Comment: "User created",
-			Classifier:"user",
-			SendBefore:time.Now(), // send as soon as possible
-		}, dao.ADMIN)
-
-		if authProvider == dao.YANDEX {
-			this.NotificationDao.Add(dao.Notification{
-				Object:dao.IdTitle{Id:id, Title:info.Login},
-				Recipient:dao.NotificationRecipient{Provider:dao.NOTIFICATION_PROVIDER_EMAIL, Recipient:notification.YandexEmail(info.Login)},
-				Classifier:"user-welcome",
-				SendBefore:time.Now(), // send as soon as possible
-			})
-		}
+		this.sendWelcomeMessages(authProvider, id, info)
 	}
 
 	infoDto := UserInfoDto{
@@ -147,17 +132,7 @@ func (this *UserInfoHandler) SetRole(w http.ResponseWriter, r *http.Request) {
 
 	for i := 0; i < len(users); i++ {
 		if users[i].Id == userId && users[i].AuthProvider == dao.YANDEX {
-			err := this.NotificationDao.Add(dao.Notification{
-				Object:dao.IdTitle{Id:userId, Title:users[i].Info.Login},
-				Comment:fmt.Sprintf("%s => %s", oldRole, newRole),
-				Recipient:dao.NotificationRecipient{Provider:dao.NOTIFICATION_PROVIDER_EMAIL, Recipient:notification.YandexEmail(users[i].Info.Login)},
-				Classifier:"user-roles",
-				SendBefore:time.Now(), // send as soon as possible
-			})
-			if err != nil {
-				log.Errorf("Can not send message to user %d: %v", userId, err)
-			}
-
+			this.sendChangeRoleMessage(users[i].AuthProvider, users[i].Id, users[i].Info, oldRole, newRole)
 		}
 	}
 
@@ -224,4 +199,36 @@ func (this *UserInfoHandler) GetVkToken(w http.ResponseWriter, r *http.Request) 
 	}
 
 	w.Write(rb)
+}
+
+func (this *UserInfoHandler) sendChangeRoleMessage(authProvider dao.AuthProvider, userId int64, info passport.UserInfo, oldRole dao.Role, newRole dao.Role) {
+	err := this.NotificationDao.Add(dao.Notification{
+		Object:dao.IdTitle{Id:userId, Title:info.Login},
+		Comment:fmt.Sprintf("%s => %s", oldRole, newRole),
+		Recipient:dao.NotificationRecipient{Provider:dao.NOTIFICATION_PROVIDER_EMAIL, Recipient:notification.YandexEmail(info.Login)},
+		Classifier:"user-roles",
+		SendBefore:time.Now(), // send as soon as possible
+	})
+	if err != nil {
+		log.Errorf("Can not send message to user %d: %v", userId, err)
+	}
+}
+
+func (this *UserInfoHandler) sendWelcomeMessages(authProvider dao.AuthProvider, id int64, info passport.UserInfo) {
+	this.NotificationHelper.SendToRole(dao.Notification{
+		IdTitle: dao.IdTitle{Title: string(authProvider)},
+		Object: dao.IdTitle{Id:id, Title: fmt.Sprintf("%d %s (%s %s)", info.Id, info.Login, info.FirstName, info.LastName)},
+		Comment: "User created",
+		Classifier:"user",
+		SendBefore:time.Now(), // send as soon as possible
+	}, dao.ADMIN)
+
+	if authProvider == dao.YANDEX {
+		this.NotificationDao.Add(dao.Notification{
+			Object:dao.IdTitle{Id:id, Title:info.Login},
+			Recipient:dao.NotificationRecipient{Provider:dao.NOTIFICATION_PROVIDER_EMAIL, Recipient:notification.YandexEmail(info.Login)},
+			Classifier:"user-welcome",
+			SendBefore:time.Now(), // send as soon as possible
+		})
+	}
 }
