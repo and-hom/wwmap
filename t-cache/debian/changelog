@@ -1,3 +1,10 @@
+wwmap-t-cache (0.0.3) unstable; urgency=medium
+
+  * #40 Use empty png for missing tiles
+  * Set log level in configuration
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sun, 14 Oct 2018 22:21:19 +0300
+
 wwmap-t-cache (0.0.2) unstable; urgency=medium
 
   * Tile config changed. Use standard template engine with ariphmetical operations

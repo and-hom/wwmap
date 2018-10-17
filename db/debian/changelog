@@ -1,3 +1,9 @@
+wwmap-db (0.0.16) unstable; urgency=medium
+
+  * #146 Notify me and user on new user. Notify user on role changed (yandex only)
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sun, 14 Oct 2018 22:18:07 +0300
+
 wwmap-db (0.0.15) unstable; urgency=medium
 
   * #84 Spot auto ordering fixed
