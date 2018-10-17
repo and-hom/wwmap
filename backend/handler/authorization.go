@@ -201,7 +201,7 @@ func (this *UserInfoHandler) GetVkToken(w http.ResponseWriter, r *http.Request) 
 	w.Write(rb)
 }
 
-func (this *UserInfoHandler) sendChangeRoleMessage(authProvider dao.AuthProvider, userId int64, info passport.UserInfo, oldRole dao.Role, newRole dao.Role) {
+func (this *UserInfoHandler) sendChangeRoleMessage(authProvider dao.AuthProvider, userId int64, info dao.UserInfo, oldRole dao.Role, newRole dao.Role) {
 	err := this.NotificationDao.Add(dao.Notification{
 		Object:dao.IdTitle{Id:userId, Title:info.Login},
 		Comment:fmt.Sprintf("%s => %s", oldRole, newRole),
