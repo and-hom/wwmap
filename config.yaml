@@ -9,11 +9,16 @@ clusterization:
 
 
 notifications:
-  email_recipients:
-    - "and.hom@gmail.com"
-  email_sender: "and.hom@gmail.com"
-  reporting_email_subject: "Есть новые сообщения о неточностях"
-  import_export_email_subject: "Отчёт об импорте-экспорте каталога"
+  reporting_email_subject: "wwmap.ru"
+  fallback_email_recipient: "info@wwmap.ru"
+  mail:
+    from: "info@wwmap.ru"
+    ssl: true
+    smtp-user: "info@wwmap.ru"
+    smtp-password: "fdnjvfnbpfwbz+6"
+    smtp-host: "smtp.yandex.ru"
+    smtp-port: 465
+
 
 api:
   bind_to: ":7007"
@@ -29,8 +34,10 @@ tile-cache:
       - "http://maps.melda.ru/pub/ggc/{{if lt .z 12}}2km.png{{else}}{{if lt .z 13}}1km.png{{else}}250m.png{{end}}{{end}}/z{{sum .z 1}}/{{div .x 1024}}/x{{.x}}/{{div .y 1024}}/y{{.y}}.png"
     marshruty-ru:
       - "http://maps.marshruty.ru/ml.ashx?al=1&x={{.x}}&y={{.y}}&z={{.z}}"
+
 content:
   resource_base: "http://wwmap.ru"
+
 img-storage:
   full:
     dir: "/var/lib/wwmap/backend/images/full"
