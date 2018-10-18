@@ -3,8 +3,6 @@ package handler
 import (
 	"net/http"
 	"fmt"
-	"strconv"
-	. "github.com/and-hom/wwmap/lib/geo"
 	. "github.com/and-hom/wwmap/lib/http"
 	. "github.com/and-hom/wwmap/lib/handler"
 	"github.com/and-hom/wwmap/lib/dao"
@@ -13,39 +11,16 @@ import (
 
 type RiverHandler struct {
 	App
-	ResourceBase string
-	RiverPassportPdfUrlBase string
+	ResourceBase             string
+	RiverPassportPdfUrlBase  string
 	RiverPassportHtmlUrlBase string
 }
 
 func (this *RiverHandler) Init() {
-	this.Register("/nearest-rivers", HandlerFunctions{Get: this.GetNearestRivers})
 	this.Register("/visible-rivers", HandlerFunctions{Get: this.GetVisibleRivers})
 }
 
 const MAX_REPORTS_PER_SOURCE = 5
-
-func (this *RiverHandler) GetNearestRivers(w http.ResponseWriter, r *http.Request) {
-	lat_s := r.FormValue("lat")
-	lat, err := strconv.ParseFloat(lat_s, 64)
-	if err != nil {
-		OnError(w, err, fmt.Sprintf("Can not parse lat parameter: %s", lat_s), 400)
-		return
-	}
-	lon_s := r.FormValue("lon")
-	lon, err := strconv.ParseFloat(lon_s, 64)
-	if err != nil {
-		OnError(w, err, fmt.Sprintf("Can not parse lon parameter: %s", lon_s), 400)
-		return
-	}
-	point := Point{Lat:lat, Lon:lon}
-	rivers, err := this.RiverDao.NearestRivers(point, 5)
-	if err != nil {
-		OnError500(w, err, "Can not select rivers")
-		return
-	}
-	w.Write([]byte(this.JsonStr(rivers, "[]")))
-}
 
 type VoyageReportDto struct {
 	Id            int64 `json:"id"`
@@ -59,8 +34,8 @@ type VoyageReportDto struct {
 type RiverListDto struct {
 	dao.RiverTitle
 	Reports []VoyageReportDto `json:"reports"`
-	PdfUrl	string `json:"pdf"`
-	HtmlUrl	string `json:"html"`
+	PdfUrl  string `json:"pdf"`
+	HtmlUrl string `json:"html"`
 }
 
 func (this *RiverHandler) GetVisibleRivers(w http.ResponseWriter, req *http.Request) {
@@ -109,7 +84,7 @@ func (this *RiverHandler) GetVisibleRivers(w http.ResponseWriter, req *http.Requ
 }
 
 func (this *RiverHandler) getRiverPassportUrl(river *dao.RiverTitle, base string) string {
-	export, found :=  river.Props["export_pdf"]
+	export, found := river.Props["export_pdf"]
 	if found && export.(bool) {
 		return fmt.Sprintf(base, river.Id)
 	}

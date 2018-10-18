@@ -14,7 +14,8 @@ const MAX_CLUSTERS int64 = 8192
 const MAX_CLUSTER_ID int64 = int64(math.MaxInt32)
 const CLUSTER_CATEGORY_DEFINITING_POINTS_COUNT int = 3
 
-func mkFeature(point WhiteWaterPointWithRiverTitle, withDescription bool, resourcesBase string, processImgForWeb func(img *Img)) Feature {
+func mkFeature(point WhiteWaterPointWithRiverTitle, river RiverTitle, withDescription bool,
+resourcesBase string, processImgForWeb func(img *Img), linkMaker LinkMaker) Feature {
 	var description = ""
 	if withDescription {
 		description = point.ShortDesc
@@ -36,10 +37,11 @@ func mkFeature(point WhiteWaterPointWithRiverTitle, withDescription bool, resour
 		Id: point.Id,
 
 		Title: point.Title,
-		Link: point.Link,
+		Link: linkMaker.Make(point.WhiteWaterPoint,river),
 		ShortDesc: description,
 		RiverTitle: point.RiverTitle,
 		Images: imgs,
+
 	}
 	if point.Category.Category > 0 {
 		properties.Category = &point.Category
@@ -154,7 +156,8 @@ func mkCluster(Id clustering.ClusterId, points []WhiteWaterPointWithRiverTitle) 
 	}
 }
 
-func WhiteWaterPointsToYmaps(clusterMaker clustering.ClusterMaker, rivers []RiverTitle, bbox Bbox, zoom int, resourcesBase string, skipId int64, processImgForWeb func(img *Img)) ([]Feature, error) {
+func WhiteWaterPointsToYmaps(clusterMaker clustering.ClusterMaker, rivers []RiverTitle, bbox Bbox, zoom int,
+resourcesBase string, skipId int64, processImgForWeb func(img *Img), linkMaker LinkMaker) ([]Feature, error) {
 	result := make([]Feature, 0)
 	for _, river := range rivers {
 		riverClusters, err := clusterMaker.Get(river.Id, zoom, bbox)
@@ -167,7 +170,7 @@ func WhiteWaterPointsToYmaps(clusterMaker clustering.ClusterMaker, rivers []Rive
 			case WhiteWaterPointWithRiverTitle:
 				wwp := obj.(WhiteWaterPointWithRiverTitle)
 				if wwp.Id != skipId {
-					result = append(result, mkFeature(wwp, true, resourcesBase, processImgForWeb))
+					result = append(result, mkFeature(wwp, river, true, resourcesBase, processImgForWeb, linkMaker))
 				}
 			case clustering.Cluster:
 				result = append(result, mkCluster(id, obj.(clustering.Cluster).Points))

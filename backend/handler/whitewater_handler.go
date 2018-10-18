@@ -60,7 +60,8 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 		return
 	}
 
-	features, err := ymaps.WhiteWaterPointsToYmaps(this.ClusterMaker, rivers, bbox, zoom, this.ResourceBase, skip, this.processForWeb)
+	features, err := ymaps.WhiteWaterPointsToYmaps(this.ClusterMaker, rivers, bbox, zoom,
+		this.ResourceBase, skip, this.processForWeb, getLinkMaker(req.FormValue("link_type")))
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not cluster: %s", bbox.String()))
 		return
@@ -68,6 +69,19 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 	featureCollection := MkFeatureCollection(features)
 
 	w.Write(this.JsonpAnswer(callback, featureCollection, "{}"))
+}
+
+func getLinkMaker(linkType string) ymaps.LinkMaker {
+	switch linkType {
+	case "none":
+		return ymaps.NoneLinkMaker{}
+	case "wwmap":
+		return ymaps.WwmapLinkMaker{}
+	case "huskytm":
+		return ymaps.HuskytmLinkMaker{}
+	default:
+		return ymaps.FromSpotLinkMaker{}
+	}
 }
 
 func (this *WhiteWaterHandler) InsertWhiteWaterPoints(w http.ResponseWriter, r *http.Request) {

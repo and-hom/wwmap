@@ -1,11 +1,12 @@
 class WWMap {
-  constructor(divId, bubbleTemplate, riverList, tutorialPopup) {
+  constructor(divId, bubbleTemplate, riverList, tutorialPopup, catalogLinkType) {
     this.divId = divId;
     this.bubbleTemplate = bubbleTemplate;
 
     this.riverList = riverList;
 
     this.tutorialPopup = tutorialPopup
+    this.catalogLinkType = catalogLinkType
 
     addCachedLayer('osm#standard', 'OSM', 'OpenStreetMap contributors, CC-BY-SA', 'osm')
     addLayer('google#satellite', 'Спутник Google', 'Изображения © DigitalGlobe,CNES / Airbus, 2018,Картографические данные © Google, 2018', GOOGLE_SAT_TILES)
@@ -97,7 +98,7 @@ class WWMap {
             setLastPositionZoomType(this.yMap.getCenter(), this.yMap.getZoom(), this.yMap.getType())
         });
 
-        var objectManager = new ymaps.RemoteObjectManager(apiBase + '/ymaps-tile-ww?bbox=%b&zoom=%z', {
+        var objectManager = new ymaps.RemoteObjectManager(apiBase + '/ymaps-tile-ww?bbox=%b&zoom=%z&link_type=' + this.catalogLinkType, {
             clusterHasBalloon: false,
             geoObjectOpenBalloonOnClick: false,
             geoObjectBalloonContentLayout: ymaps.templateLayoutFactory.createClass(this.bubbleTemplate),
@@ -286,8 +287,18 @@ function initMailtoLinks() {
     $('.email-link').text(user+'@'+domain)
 }
 
+const CATALOG_LINK_TYPES = [
+    'none', // do not use spot link from bubble
+    'from_spot',  // use link from spot properties
+    'wwmap', // use link to wwmap.ru catalog
+    'huskytm' // use link to huskytm.ru catalog (upload from wwmap.ru)
+    ]
 
-function initWWMap(mapId, riversListId) {
+function initWWMap(mapId, riversListId, catalogLinkType) {
+    if (CATALOG_LINK_TYPES.indexOf(foo) <= -1) {
+        throw "Unknown catalog link type. Available are: " + CATALOG_LINK_TYPES
+    }
+
     // initialize popup windows
     reportPopup = new WWMapPopup(MAP_FRAGMENTS_URL, 'report_popup', apiBase + "/report",
         "Запрос отправлен. Я прочитаю его по мере наличия свободного времени", "Что-то пошло не так...")
@@ -302,7 +313,7 @@ function initWWMap(mapId, riversListId) {
     // init and show map
     ymaps.ready(function() {
         loadFragment(MAP_FRAGMENTS_URL, 'bubble_template', (bubbleContent) => {
-            wwMap = new WWMap(mapId, extractInnerHtml(bubbleContent), riverList, tutorialPopup)
+            wwMap = new WWMap(mapId, extractInnerHtml(bubbleContent), riverList, tutorialPopup, catalogLinkType)
             wwMap.init()
         })
     });

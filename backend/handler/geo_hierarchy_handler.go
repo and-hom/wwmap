@@ -60,25 +60,6 @@ type RiverDto struct {
 	Visible     bool `json:"visible"`
 }
 
-func (this *GeoHierarchyHandler) getRegion(id int64) dao.Region {
-	if this.regions == nil {
-		this.regions = make(map[int64]dao.Region)
-	}
-
-	region, found := this.regions[id]
-	if found {
-		return region
-	} else {
-		log.Debugf("Region id=%d not found in cache. Select.", id)
-		region, err := this.RegionDao.Get(id)
-		if err != nil {
-			log.Errorf("Can not get region by id :", id, err)
-			return dao.Region{Id:0, CountryId:0, Title:"-"}
-		}
-		this.regions[id] = region
-		return region
-	}
-}
 
 func (this *GeoHierarchyHandler) ListCountries(w http.ResponseWriter, r *http.Request) {
 	countries, err := this.CountryDao.List()
@@ -322,7 +303,7 @@ func (this *GeoHierarchyHandler) SaveRiver(w http.ResponseWriter, r *http.Reques
 				Id:river.Id,
 				Title:river.Title,
 			},
-			RegionId:regionId,
+			Region: dao.Region{Id:regionId},
 			Aliases:river.Aliases,
 		},
 		Description:river.Description,
@@ -416,17 +397,11 @@ func (this *GeoHierarchyHandler) writeRiver(riverId int64, w http.ResponseWriter
 		return
 	}
 
-	region, err := this.RegionDao.Get(river.RegionId)
-	if err != nil {
-		OnError500(w, err, fmt.Sprintf("Can not get region for river %d", riverId))
-		return
-	}
-
 	riverWithRegion := RiverDto{
 		Id:river.Id,
 		Title:river.Title,
 		Aliases:river.Aliases,
-		Region:region,
+		Region:river.Region,
 		Description:river.Description,
 		Visible: river.Visible,
 	}
@@ -451,7 +426,7 @@ func (this *GeoHierarchyHandler) FilterRivers(w http.ResponseWriter, r *http.Req
 			Id:river.Id,
 			Title:river.Title,
 			Aliases:river.Aliases,
-			Region:this.getRegion(river.RegionId),
+			Region:river.Region,
 		}
 	}
 	this.JsonAnswer(w, dtos)
