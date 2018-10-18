@@ -13,7 +13,7 @@ import (
 
 const SOURCE = "pdf"
 
-func GetCatalogConnector(pdfStorage, htmlStorage blob.BlobStorage) (common.CatalogConnector, error) {
+func GetCatalogConnector(pdfStorage, htmlStorage blob.BlobStorage, pageLinkTemplate string) (common.CatalogConnector, error) {
 	t, err := common.LoadTemplates(templates.MustAsset)
 	if err != nil {
 		return nil, err
@@ -24,14 +24,16 @@ func GetCatalogConnector(pdfStorage, htmlStorage blob.BlobStorage) (common.Catal
 		pdfStorage:pdfStorage,
 		htmlStorage:htmlStorage,
 		spotBuf:[]common.SpotPageDto{},
+		pageLinkTemplate:pageLinkTemplate,
 	}, nil
 }
 
 type PdfCatalogConnector struct {
-	pdfStorage   blob.BlobStorage
-	htmlStorage   blob.BlobStorage
-	templates common.Templates
-	spotBuf   []common.SpotPageDto
+	pdfStorage       blob.BlobStorage
+	htmlStorage      blob.BlobStorage
+	templates        common.Templates
+	spotBuf          []common.SpotPageDto
+	pageLinkTemplate string
 }
 
 func (this *PdfCatalogConnector) SourceId() string {
@@ -43,7 +45,7 @@ func (this *PdfCatalogConnector) Close() error {
 }
 
 func (this *PdfCatalogConnector) CreateEmptyPageIfNotExistsAndReturnId(id int64, parent int, pageId int, title string) (int, string, bool, error) {
-	return int(id), "pdf", true, nil
+	return int(id), fmt.Sprintf(this.pageLinkTemplate, id), true, nil
 }
 
 func (this *PdfCatalogConnector) WriteSpotPage(page common.SpotPageDto) error {

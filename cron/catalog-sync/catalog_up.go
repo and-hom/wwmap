@@ -56,6 +56,15 @@ func (this DummyPropertyManager) GetBoolProperty(name string, id int64) (bool, e
 func (this DummyPropertyManager) SetBoolProperty(name string, id int64, value bool) error {
 	return nil
 }
+func (this DummyPropertyManager) GetStringProperty(name string, id int64) (string, error) {
+	return "", nil
+}
+func (this DummyPropertyManager) SetStringProperty(name string, id int64, value string) error {
+	return nil
+}
+func (this DummyPropertyManager) RemoveProperty(name string, id int64) error {
+	return nil
+}
 func (this *App) DoWriteCatalog() {
 	for _, rpf := range this.catalogConnectors {
 		err := rpf.Do(func(cc common.CatalogConnector) error {
@@ -74,8 +83,6 @@ func (this *App) DoWriteCatalog() {
 func (this *App) doWriteCatalog(catalogConnector *common.CatalogConnector) error {
 	fakeRegion := dao.Region{Id:0, Title:"-"}
 	log.Info("Create missing ww passports")
-
-	exportedPropName := "export_" + (*catalogConnector).SourceId()
 
 	countries, err := this.CountryDao.List()
 	if err != nil {
@@ -139,15 +146,8 @@ func (this *App) doWriteCatalog(catalogConnector *common.CatalogConnector) error
 			for _, river := range regionRivers {
 				log.Infof("Upload river %s/%s/%s", country.Title, region.Title, river.Title)
 				riverPageLink, err := this.uploadRiver(catalogConnector, country, region, river, rootPageLink, countryPageLink, regionPageLink, regionPageId)
-
-				exportOk := err == nil && riverPageLink != ""
-				log.Infof("Mark as exported: %v", exportOk)
-				err2 := this.RiverDao.Props().SetBoolProperty(exportedPropName, river.Id, exportOk)
 				if err != nil {
 					return err
-				}
-				if err2 != nil {
-					log.Errorf("Can not mark river %d as exported: %v", river.Id, err2)
 				}
 				if riverPageLink != "" {
 					riverLinks = append(riverLinks, common.LinkOnPage{Title:river.Title, Url:riverPageLink})
@@ -171,14 +171,8 @@ func (this *App) doWriteCatalog(catalogConnector *common.CatalogConnector) error
 			log.Infof("Upload river %s/%s", country.Title, river.Title)
 
 			riverPageLink, err := this.uploadRiver(catalogConnector, country, fakeRegion, river, rootPageLink, countryPageLink, "", countryPageId)
-			exportOk := err == nil && riverPageLink != ""
-			log.Infof("Mark as exported: %v", exportOk)
-			err2 := this.RiverDao.Props().SetBoolProperty(exportedPropName, river.Id, exportOk)
 			if err != nil {
 				return err
-			}
-			if err2 != nil {
-				log.Errorf("Can not mark river %d as exported: %v", river.Id, err2)
 			}
 			if riverPageLink != "" {
 				countryRiverLinks = append(countryRiverLinks, common.LinkOnPage{Title:river.Title, Url:riverPageLink})
@@ -251,6 +245,29 @@ rootPageLink, countryPageLink, regionPageLink string, parentPageId int) (string,
 		MainImage:noImage(0),
 		Reports:reports,
 	})
+
+
+	exportedPropName := "export_" + (*catalogConnector).SourceId()
+	pageLinkPropName := "page_link_" + (*catalogConnector).SourceId()
+
+	exportOk := err == nil && riverPageLink != ""
+	log.Infof("Mark as exported: %v", exportOk)
+	logOnlyError := this.RiverDao.Props().SetBoolProperty(exportedPropName, river.Id, exportOk)
+	if logOnlyError != nil {
+		log.Errorf("Can not mark river %d as exported: %v", river.Id, logOnlyError)
+	}
+	if exportOk {
+		logOnlyError = this.RiverDao.Props().SetStringProperty(pageLinkPropName, river.Id, riverPageLink)
+		if logOnlyError !=nil {
+			log.Errorf("Can not set river %d page link: %v", river.Id, logOnlyError)
+		}
+	} else {
+		logOnlyError = this.RiverDao.Props().RemoveProperty(pageLinkPropName, river.Id)
+		if logOnlyError !=nil {
+			log.Errorf("Can not unset river %d page link: %v", river.Id, logOnlyError)
+		}
+	}
+
 	if err != nil {
 		log.Errorf("Can not write river page %d", river.Id)
 		return "", err
