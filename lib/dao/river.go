@@ -16,7 +16,6 @@ func NewRiverPostgresDao(postgresStorage PostgresStorage) RiverDao {
 		PostgresStorage: postgresStorage,
 		PropsManager:PropertyManagerImpl{table:queries.SqlQuery("river", "table"), dao:&postgresStorage},
 		findByTagsQuery: queries.SqlQuery("river", "find-by-tags"),
-		nearestQuery: queries.SqlQuery("river", "nearest"),
 		insideBoundsQuery: queries.SqlQuery("river", "inside-bounds"),
 		byIdQuery:queries.SqlQuery("river", "by-id"),
 		listByCountryQuery:queries.SqlQuery("river", "by-country"),
@@ -35,7 +34,6 @@ type riverStorage struct {
 	PostgresStorage
 	PropsManager            PropertyManager
 	findByTagsQuery         string
-	nearestQuery            string
 	insideBoundsQuery       string
 	byIdQuery               string
 	listByCountryQuery      string
@@ -51,14 +49,6 @@ type riverStorage struct {
 
 func (this riverStorage) FindTitles(titles []string) ([]RiverTitle, error) {
 	return this.listRiverTitles(this.findByTagsQuery, pq.Array(titles))
-}
-
-func (this riverStorage) NearestRivers(point geo.Point, limit int) ([]RiverTitle, error) {
-	pointBytes, err := json.Marshal(geo.NewPgGeoPoint(point))
-	if err != nil {
-		return []RiverTitle{}, err
-	}
-	return this.listRiverTitles(this.nearestQuery, string(pointBytes), limit)
 }
 
 func (this riverStorage) ListRiversWithBounds(bbox geo.Bbox, limit int, showUnpublished bool) ([]RiverTitle, error) {
@@ -109,7 +99,7 @@ func (this riverStorage) Insert(river River) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	return this.insertReturningId(this.insertQuery, river.RegionId, river.Title, string(aliasesB), river.Description)
+	return this.insertReturningId(this.insertQuery, river.Region.Id, river.Title, string(aliasesB), river.Description)
 }
 
 func (this riverStorage) Save(rivers ...River) error {
@@ -125,7 +115,7 @@ func (this riverStorage) Save(rivers ...River) error {
 		}
 		log.Info(_river.Description)
 		log.Info(reflect.TypeOf(_river.Description))
-		return []interface{}{_river.Id, _river.RegionId, _river.Title, string(aliasesB), _river.Description}, nil
+		return []interface{}{_river.Id, _river.Region.Id, _river.Title, string(aliasesB), _river.Description}, nil
 	}, vars...)
 }
 
@@ -136,7 +126,7 @@ func (this riverStorage) listRiverTitles(query string, queryParams ...interface{
 			boundsStr := sql.NullString{}
 			aliases := sql.NullString{}
 			props := ""
-			err := rows.Scan(&riverTitle.Id, &riverTitle.RegionId, &riverTitle.Title, &boundsStr, &aliases, &props)
+			err := rows.Scan(&riverTitle.Id, &riverTitle.Region.Id, &riverTitle.Region.CountryId, &riverTitle.Title, &riverTitle.Region.Fake, &riverTitle.Region.Title, &boundsStr, &aliases, &props)
 			if err != nil {
 				return RiverTitle{}, err
 			}
@@ -207,7 +197,7 @@ func point2rect(pgPoint PgPoint) [][]geo.Point {
 
 func (this riverStorage) Remove(id int64, tx interface{}) error {
 	log.Infof("Remove river %d", id)
-	return this.performUpdatesWithinTxOptionally(tx, this.deleteQuery, idMapper, id)
+	return this.performUpdatesWithinTxOptionally(tx, this.deleteQuery, IdMapper, id)
 }
 
 func (this riverStorage) Props() PropertyManager {
@@ -216,7 +206,7 @@ func (this riverStorage) Props() PropertyManager {
 
 func (this riverStorage) SetVisible(id int64, visible bool) (error) {
 	fmt.Println("visible", visible)
-	return this.performUpdates(this.setVisibleQuery, arrayMapper, []interface{}{id, visible})
+	return this.performUpdates(this.setVisibleQuery, ArrayMapper, []interface{}{id, visible})
 }
 
 func riverMapperFull(rows *sql.Rows) (River, error) {
@@ -225,7 +215,7 @@ func riverMapperFull(rows *sql.Rows) (River, error) {
 	aliases := sql.NullString{}
 	props := ""
 	spotCounters := ""
-	err := rows.Scan(&river.Id, &river.RegionId, &river.Title, &boundsStr, &aliases, &river.Description, &river.Visible, &props, &spotCounters)
+	err := rows.Scan(&river.Id, &river.Region.Id, &river.Region.CountryId, &river.Title, &river.Region.Title, &river.Region.Fake, &boundsStr, &aliases, &river.Description, &river.Visible, &props, &spotCounters)
 	if err != nil {
 		return river, err
 	}

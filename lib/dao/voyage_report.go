@@ -81,7 +81,7 @@ func (this voyageReportStorage) ForEach(source string, callback func(report *Voy
 }
 
 func (this voyageReportStorage) AssociateWithRiver(voyageReportId, riverId int64) error {
-	return this.performUpdates(this.upsertRiverLinkQuery, arrayMapper, []interface{}{voyageReportId, riverId})
+	return this.performUpdates(this.upsertRiverLinkQuery, ArrayMapper, []interface{}{voyageReportId, riverId})
 }
 
 func (this voyageReportStorage) List(riverId int64, limitByGroup int) ([]VoyageReport, error) {
@@ -95,7 +95,7 @@ func (this voyageReportStorage) List(riverId int64, limitByGroup int) ([]VoyageR
 
 func (this voyageReportStorage) RemoveRiverLink(id int64, tx interface{}) error {
 	log.Infof("Remove spot %d", id)
-	return this.performUpdatesWithinTxOptionally(tx, this.deleteRiverLinkQuery, idMapper, id)
+	return this.performUpdatesWithinTxOptionally(tx, this.deleteRiverLinkQuery, IdMapper, id)
 }
 
 func readReportFromRows(rows *sql.Rows) (VoyageReport, error) {

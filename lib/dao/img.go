@@ -117,7 +117,7 @@ func (this imgStorage) GetMainForSpot(spotId int64) (Img, bool, error) {
 
 func (this imgStorage) InsertLocal(wwId int64, _type ImageType, source string, urlBase string, previewUrlBase string, datePublished time.Time) (Img, error) {
 	params := []interface{}{wwId, _type, source, datePublished}
-	vals, err := this.updateReturningColumns(this.insertLocalQuery, arrayMapper, params)
+	vals, err := this.updateReturningColumns(this.insertLocalQuery, ArrayMapper, params)
 	if err != nil {
 		return Img{}, err
 	}
@@ -145,11 +145,11 @@ func (this imgStorage) InsertLocal(wwId int64, _type ImageType, source string, u
 
 func (this imgStorage) Remove(id int64, tx interface{}) error {
 	log.Infof("Remove image %d", id)
-	return this.performUpdatesWithinTxOptionally(tx, this.deleteQuery, idMapper, id)
+	return this.performUpdatesWithinTxOptionally(tx, this.deleteQuery, IdMapper, id)
 }
 
 func (this imgStorage) SetEnabled(id int64, enabled bool) error {
-	return this.performUpdates(this.setEnabledQuery, arrayMapper, []interface{}{enabled, id})
+	return this.performUpdates(this.setEnabledQuery, ArrayMapper, []interface{}{enabled, id})
 }
 
 func (this imgStorage) toInterface(imgs ...Img) []interface{} {
@@ -161,17 +161,17 @@ func (this imgStorage) toInterface(imgs ...Img) []interface{} {
 }
 
 func (this imgStorage) SetMain(spotId int64, id int64) error {
-	return this.performUpdates(this.setMainQuery, arrayMapper, []interface{}{spotId, id})
+	return this.performUpdates(this.setMainQuery, ArrayMapper, []interface{}{spotId, id})
 }
 
 func (this imgStorage) DropMainForSpot(spotId int64) error {
-	return this.performUpdates(this.dropMainForSpotQuery, idMapper, spotId)
+	return this.performUpdates(this.dropMainForSpotQuery, IdMapper, spotId)
 }
 
 func (this imgStorage) RemoveBySpot(spotId int64, tx interface{}) error {
-	return this.performUpdatesWithinTxOptionally(tx, this.deleteForSpot, idMapper, spotId)
+	return this.performUpdatesWithinTxOptionally(tx, this.deleteForSpot, IdMapper, spotId)
 }
 
 func (this imgStorage) RemoveByRiver(riverId int64, tx interface{}) error {
-	return this.performUpdatesWithinTxOptionally(tx, this.deleteForRiver, idMapper, riverId)
+	return this.performUpdatesWithinTxOptionally(tx, this.deleteForRiver, IdMapper, riverId)
 }

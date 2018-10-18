@@ -81,7 +81,7 @@ func (this *PostgresStorage) performUpdatesWithinTxOptionally(tx interface{}, qu
 		if !ok {
 			return fmt.Errorf("Unsupported tx type: %v", reflect.TypeOf(tx))
 		}
-		return txHolder.performUpdates(query, idMapper, values...)
+		return txHolder.performUpdates(query, IdMapper, values...)
 	}
-	return this.performUpdates(query, idMapper, values...)
+	return this.performUpdates(query, IdMapper, values...)
 }

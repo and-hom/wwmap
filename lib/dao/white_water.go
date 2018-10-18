@@ -336,12 +336,12 @@ func (this whiteWaterStorage) update(query string, whiteWaterPoints ...WhiteWate
 
 func (this whiteWaterStorage) Remove(id int64, tx interface{}) error {
 	log.Infof("Remove spot %d", id)
-	return this.performUpdatesWithinTxOptionally(tx, this.deleteQuery, idMapper, id)
+	return this.performUpdatesWithinTxOptionally(tx, this.deleteQuery, IdMapper, id)
 }
 
 func (this whiteWaterStorage) RemoveByRiver(id int64, tx interface{}) error {
 	log.Infof("Remove spots by river id", id)
-	return this.performUpdatesWithinTxOptionally(tx, this.deleteForRiverQuery, idMapper, id)
+	return this.performUpdatesWithinTxOptionally(tx, this.deleteForRiverQuery, IdMapper, id)
 }
 
 func (this whiteWaterStorage) GetGeomCenterByRiver(riverId int64) (geo.Point, error) {
@@ -417,5 +417,5 @@ func (this whiteWaterStorage) UpdateOrderIdx(idx map[int64]int) error {
 	for id, val := range idx {
 		params = append(params, []interface{}{id, val, now})
 	}
-	return this.performUpdates(this.updateOrderIdxQuery, arrayMapper, params...)
+	return this.performUpdates(this.updateOrderIdxQuery, ArrayMapper, params...)
 }

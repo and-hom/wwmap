@@ -32,11 +32,11 @@ type SpotCounters struct {
 
 type RiverTitle struct {
 	IdTitle
-	OsmId    int64 `json:"osm_id"`
-	RegionId int64 `json:"region_id"`
-	Bounds   Bbox `json:"bounds"`
-	Aliases  []string `json:"aliases"`
-	Props    map[string]interface{} `json:"props"`
+	OsmId   int64 `json:"osm_id"`
+	Region  Region `json:"region"`
+	Bounds  Bbox `json:"bounds"`
+	Aliases []string `json:"aliases"`
+	Props   map[string]interface{} `json:"props"`
 }
 
 type River struct {

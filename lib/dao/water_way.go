@@ -138,7 +138,7 @@ func scanWaterWay(rows *sql.Rows) (WaterWay, error) {
 
 
 func (this waterWayStorage) UnlinkRiver(id int64, tx interface{}) error {
-	return this.performUpdatesWithinTxOptionally(tx, this.unlinkRiverQuery, idMapper, id)
+	return this.performUpdatesWithinTxOptionally(tx, this.unlinkRiverQuery, IdMapper, id)
 }
 
 const DETECTION_MIN_DISTANCE_METERS = 30

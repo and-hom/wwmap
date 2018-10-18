@@ -33,7 +33,7 @@ func (this userStorage) CreateIfNotExists(user User) (int64, Role, bool, error) 
 	if err != nil {
 		return 0, ANONYMOUS, false, err
 	}
-	cols, err := this.updateReturningColumns(this.createQuery, arrayMapper, []interface{}{user.ExtId, string(user.AuthProvider), user.Role, string(userInfo)})
+	cols, err := this.updateReturningColumns(this.createQuery, ArrayMapper, []interface{}{user.ExtId, string(user.AuthProvider), user.Role, string(userInfo)})
 	if err != nil {
 		return 0, ANONYMOUS, false, err
 	}
@@ -62,7 +62,7 @@ func (this userStorage) ListByRole(role Role) ([]User, error) {
 }
 
 func (this userStorage) SetRole(userId int64, role Role) (Role, Role, error) {
-	cols, err := this.updateReturningColumns(this.setRoleQuery, arrayMapper, []interface{}{userId, role})
+	cols, err := this.updateReturningColumns(this.setRoleQuery, ArrayMapper, []interface{}{userId, role})
 	if err != nil {
 		return ANONYMOUS, ANONYMOUS, err
 	}
