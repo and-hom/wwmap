@@ -7,8 +7,6 @@ import (
 	. "github.com/and-hom/wwmap/lib/dao"
 	. "github.com/and-hom/wwmap/lib/handler"
 	"github.com/and-hom/wwmap/lib/config"
-	"github.com/gorilla/handlers"
-	"os"
 	"github.com/and-hom/wwmap/backend/passport"
 	"time"
 	"github.com/and-hom/wwmap/backend/referer"
@@ -24,7 +22,7 @@ func main() {
 	configuration := config.Load("")
 	configuration.ChangeLogLevel()
 
-	storage := NewPostgresStorage(configuration.DbConnString)
+	storage := NewPostgresStorage(configuration.Db)
 
 	riverDao := NewRiverPostgresDao(storage)
 	voyageReportDao := NewVoyageReportPostgresDao(storage)
@@ -110,7 +108,7 @@ func main() {
 
 	log.Infof("Starting http server on %s", configuration.Api.BindTo)
 	http.Handle("/", r)
-	err := http.ListenAndServe(configuration.Api.BindTo, handlers.LoggingHandler(os.Stdout, http.DefaultServeMux))
+	err := http.ListenAndServe(configuration.Api.BindTo, http.DefaultServeMux)
 	if err != nil {
 		log.Fatalf("Can not start server: %v", err)
 	}

@@ -9,6 +9,7 @@ import (
 	"reflect"
 	. "github.com/and-hom/wwmap/lib/geo"
 	"fmt"
+	"github.com/and-hom/wwmap/lib/config"
 )
 
 type Storage interface {
@@ -102,7 +103,7 @@ type WwPassportDao interface {
 }
 
 type UserDao interface {
-	CreateIfNotExists(User) (int64, Role , bool, error)
+	CreateIfNotExists(User) (int64, Role, bool, error)
 	GetRole(provider AuthProvider, extId int64) (Role, error)
 	List() ([]User, error)
 	ListByRole(role Role) ([]User, error)
@@ -137,11 +138,14 @@ type PostgresStorage struct {
 	db *sql.DB
 }
 
-func NewPostgresStorage(connStr string) PostgresStorage {
-	db, err := sql.Open("postgres", connStr)
+func NewPostgresStorage(c config.Db) PostgresStorage {
+	db, err := sql.Open("postgres", c.ConnString)
 	if err != nil {
 		log.Fatalf("Can not connect to postgres: %v", err)
 	}
+	db.SetConnMaxLifetime(c.MaxConnLifetime)
+	db.SetMaxOpenConns(c.MaxOpenConn)
+	db.SetMaxIdleConns(c.MaxIddleConn)
 
 	return PostgresStorage{
 		db:db,
@@ -377,7 +381,7 @@ func (this PropertyManagerImpl) GetIntProperty(name string, id int64) (int, erro
 		err := rows.Scan(&i)
 		return i, err
 	}
-	i, found,err:=this.getProperty(name, "int", rowMapper, id)
+	i, found, err := this.getProperty(name, "int", rowMapper, id)
 	if err != nil {
 		return 0, err
 	}
@@ -397,7 +401,7 @@ func (this PropertyManagerImpl) GetBoolProperty(name string, id int64) (bool, er
 		err := rows.Scan(&i)
 		return i, err
 	}
-	i, found,err:=this.getProperty(name, "bool", rowMapper, id)
+	i, found, err := this.getProperty(name, "bool", rowMapper, id)
 	if err != nil {
 		return false, err
 	}

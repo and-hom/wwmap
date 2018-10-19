@@ -18,7 +18,7 @@ func main() {
 	}
 	defer r.Close()
 
-	storage := dao.NewPostgresStorage(configuration.DbConnString)
+	storage := dao.NewPostgresStorage(configuration.Db)
 	whiteWaterDao := dao.NewWhiteWaterPostgresDao(storage)
 	store := func(wpts[]dao.WhiteWaterPoint) {
 		err := whiteWaterDao.InsertWhiteWaterPoints(wpts...)

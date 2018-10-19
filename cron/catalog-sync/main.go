@@ -44,7 +44,7 @@ func CreateApp() App {
 	configuration := config.Load("")
 	configuration.ChangeLogLevel()
 
-	pgStorage := dao.NewPostgresStorage(configuration.DbConnString)
+	pgStorage := dao.NewPostgresStorage(configuration.Db)
 	riverPassportPdfStorage := blob.BasicFsStorage{
 		BaseDir:configuration.RiverPassportPdfStorage.Dir,
 	}

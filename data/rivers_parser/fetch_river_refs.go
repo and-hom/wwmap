@@ -41,7 +41,7 @@ func main() {
 	configuration := config.Load("")
 	configuration.ChangeLogLevel()
 
-	storage := dao.NewPostgresStorage(configuration.DbConnString)
+	storage := dao.NewPostgresStorage(configuration.Db)
 	waterWayDao := dao.NewWaterWayPostgresDao(storage)
 	fname := os.Args[1]
 
