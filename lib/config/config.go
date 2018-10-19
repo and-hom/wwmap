@@ -70,8 +70,15 @@ func (this MailSettings) SmtpHostPort() string {
 	return fmt.Sprintf("%s:%d", this.SmtpHost, this.SmtpPort)
 }
 
+type Db struct {
+	ConnString      string `yaml:"connection-string"`
+	MaxOpenConn     int `yaml:"max-open-conn"`
+	MaxIddleConn    int `yaml:"max-iddle-conn"`
+	MaxConnLifetime time.Duration `yaml:"max-conn-lifetime"`
+}
+
 type Configuration struct {
-	DbConnString             string `yaml:"db-connection-string"`
+	Db                       Db `yaml:"db"`
 	ClusterizationParams     ClusterizationParams `yaml:"clusterization"`
 	Notifications            Notifications `yaml:"notifications"`
 	Api                      Api `yaml:"api"`
