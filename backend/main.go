@@ -14,6 +14,8 @@ import (
 	"github.com/and-hom/wwmap/backend/handler"
 	"github.com/and-hom/wwmap/backend/clustering"
 	"github.com/and-hom/wwmap/lib/notification"
+	"os"
+	"github.com/gorilla/handlers"
 )
 
 func main() {
@@ -108,8 +110,21 @@ func main() {
 
 	log.Infof("Starting http server on %s", configuration.Api.BindTo)
 	http.Handle("/", r)
-	err := http.ListenAndServe(configuration.Api.BindTo, http.DefaultServeMux)
+
+	err := http.ListenAndServe(configuration.Api.BindTo, createHttpHandler(configuration))
 	if err != nil {
 		log.Fatalf("Can not start server: %v", err)
 	}
+}
+
+func createHttpHandler(configuration config.Configuration) http.Handler {
+	var h http.Handler = http.DefaultServeMux
+	logLevel, err := configuration.LogLevel.ToLogrus()
+	if err != nil {
+		log.Fatalf("Can not parse log level %s", configuration.LogLevel)
+	}
+	if logLevel == log.DebugLevel {
+		h = handlers.LoggingHandler(os.Stdout, h)
+	}
+	return h
 }

@@ -77,6 +77,12 @@ type Db struct {
 	MaxConnLifetime time.Duration `yaml:"max-conn-lifetime"`
 }
 
+type LogLevel string
+
+func (this LogLevel) ToLogrus() (log.Level, error) {
+	return log.ParseLevel(string(this))
+}
+
 type Configuration struct {
 	Db                       Db `yaml:"db"`
 	ClusterizationParams     ClusterizationParams `yaml:"clusterization"`
@@ -88,14 +94,14 @@ type Configuration struct {
 	ImgStorage               ImgStorage `yaml:"img-storage"`
 	RiverPassportPdfStorage  BlobStorageParams `yaml:"river-passport-pdf-storage"`
 	RiverPassportHtmlStorage BlobStorageParams `yaml:"river-passport-html-storage"`
-	LogLevel                 string `yaml:"log-level"`
+	LogLevel                 LogLevel `yaml:"log-level"`
 }
 
 func (this *Configuration) ChangeLogLevel() {
 	if this.LogLevel == "" {
 		return
 	}
-	level, err := log.ParseLevel(this.LogLevel)
+	level, err := this.LogLevel.ToLogrus()
 	if err != nil {
 		log.Fatalf("Can not parse log level %s: %v", this.LogLevel, err)
 	}
