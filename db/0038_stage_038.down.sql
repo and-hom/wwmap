@@ -1,0 +1,1 @@
+DROP INDEX white_water_rapid_point_index;

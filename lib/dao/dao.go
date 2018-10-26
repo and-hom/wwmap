@@ -97,6 +97,10 @@ type ImgDao interface {
 	RemoveByRiver(spotId int64, tx interface{}) error
 }
 
+type TileDao interface {
+	ListRiversWithBounds(bbox Bbox, showUnpublished bool, imgLimit int) ([]RiverWithSpots, error)
+}
+
 type WwPassportDao interface {
 	Upsert(wwPassport ...WWPassport) error
 	GetLastId(source string) (interface{}, error)
@@ -150,6 +154,10 @@ func NewPostgresStorage(c config.Db) PostgresStorage {
 	return PostgresStorage{
 		db:db,
 	}
+}
+
+func NewPostgresStorageForDb(db *sql.DB) PostgresStorage {
+	return PostgresStorage{db}
 }
 
 func nullIf0(x int64) sql.NullInt64 {
