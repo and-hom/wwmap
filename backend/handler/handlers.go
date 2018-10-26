@@ -13,6 +13,7 @@ type App struct {
 	Handler
 	Storage            Storage
 	RiverDao           RiverDao
+	TileDao            TileDao
 	WhiteWaterDao      WhiteWaterDao
 	NotificationDao    NotificationDao
 	VoyageReportDao    VoyageReportDao

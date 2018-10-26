@@ -34,9 +34,9 @@ func main() {
 	userDao := NewUserPostgresDao(storage)
 	countryDao := NewCountryPostgresDao(storage)
 	regionDao := NewRegionPostgresDao(storage)
+	tileDao := NewTilePostgresDao(storage)
 
-	clusterMaker := clustering.NewClusterMaker(whiteWaterDao, imgDao,
-		configuration.ClusterizationParams)
+	clusterMaker := clustering.NewClusterMaker(configuration.ClusterizationParams)
 
 	imgStorage := blob.BasicFsStorage{
 		BaseDir:configuration.ImgStorage.Full.Dir,
@@ -64,6 +64,7 @@ func main() {
 		UserDao: userDao,
 		CountryDao: countryDao,
 		RegionDao: regionDao,
+		TileDao:tileDao,
 		AuthProviders: map[AuthProvider]passport.Passport{
 			YANDEX: passport.Yandex(15 * time.Minute),
 			VK:     passport.Vk(15 * time.Minute),

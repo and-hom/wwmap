@@ -2,75 +2,60 @@ package clustering
 
 import (
 	"github.com/and-hom/wwmap/lib/geo"
-	"sync"
 	"github.com/and-hom/wwmap/lib/dao"
 	"math"
 	log "github.com/Sirupsen/logrus"
 	"reflect"
 	"time"
 	"github.com/and-hom/wwmap/lib/config"
+	"gopkg.in/dc0d/tinykv.v4"
+	"fmt"
 )
-
-const TTL_SEC = 600
-
-const PREVIEWS_COUNT int = 20
 
 type RiverClusters map[ClusterId]interface{}
 
-type CacheItem struct {
-	clusters  RiverClusters
-	createdAt time.Time
-}
-
-func NewClusterMaker(whiteWaterDao dao.WhiteWaterDao, imgDao dao.ImgDao, clusterizationParams config.ClusterizationParams) ClusterMaker {
+func NewClusterMaker(clusterizationParams config.ClusterizationParams) ClusterMaker {
+	cache := tinykv.New(time.Millisecond)
 	return ClusterMaker{
-		WhiteWaterDao:whiteWaterDao,
-		ImgDao:imgDao,
 		ClusterizationParams:clusterizationParams,
+		cache: &cache,
 	}
 }
 
 type ClusterMaker struct {
-	cache                sync.Map
-	mutex                sync.Mutex
 	WhiteWaterDao        dao.WhiteWaterDao
 	ImgDao               dao.ImgDao
 	ClusterizationParams config.ClusterizationParams
+	cache                *tinykv.KV
 }
 
-func (this *ClusterMaker) Get(riverId int64, zoom int, bbox geo.Bbox) (RiverClusters, error) {
-	byRiv, _ := this.cache.LoadOrStore(riverId, sync.Map{})
-	byRiver := byRiv.(sync.Map)
+func (this *ClusterMaker) Get(river dao.RiverWithSpots, zoom int, bbox geo.Bbox) (RiverClusters, error) {
+	cacheKey := fmt.Sprintf("%d-%d", river.Id, zoom)
 
-	rivCl, foundInCache := byRiver.Load(zoom)
-	if !foundInCache || rivCl.(CacheItem).createdAt.Add(TTL_SEC * time.Second).Before(time.Now()) {
-		log.Debugf("Clusters for river %d for zoom %d not found in cache", riverId, zoom)
-		this.mutex.Lock()
-		rivCl, foundInCache = byRiver.Load(zoom)
-		if !foundInCache {
-			c, err := this.doCluster(riverId, zoom)
-			if err != nil {
-				return c, err
-			}
-			rivCl = CacheItem{
-				clusters:c,
-				createdAt:time.Now(),
-			}
-			byRiver.Store(zoom, rivCl)
+	cl, foundInCache := (*this.cache).Get(cacheKey)
+	var clusters RiverClusters
+
+	if !foundInCache {
+		log.Debugf("Clusters for river %d for zoom %d not found in cache", river.Id, zoom)
+		var err error
+		clusters, err = this.doCluster(river, zoom)
+		if err != nil {
+			return clusters, err
 		}
-		this.mutex.Unlock()
+		(*this.cache).Put(cacheKey, clusters, tinykv.ExpiresAfter(15 * time.Second))
+	} else {
+		clusters = cl.(RiverClusters)
 	}
 
-	riverClusters := rivCl.(CacheItem).clusters
-	return this.filter(riverClusters, bbox), nil
+	return this.filter(clusters, bbox), nil
 }
 
 func (this *ClusterMaker) filter(riverClusters RiverClusters, bbox geo.Bbox) RiverClusters {
 	result := make(RiverClusters)
 	for clusterId, obj := range riverClusters {
 		switch obj.(type) {
-		case dao.WhiteWaterPointWithRiverTitle:
-			if bbox.Contains(obj.(dao.WhiteWaterPointWithRiverTitle).Point) {
+		case dao.Spot:
+			if bbox.Contains(obj.(dao.Spot).Point) {
 				result[clusterId] = obj
 			}
 		case Cluster:
@@ -85,32 +70,20 @@ func (this *ClusterMaker) filter(riverClusters RiverClusters, bbox geo.Bbox) Riv
 	return result
 }
 
-func (this *ClusterMaker) doCluster(riverId int64, zoom int) (RiverClusters, error) {
+func (this *ClusterMaker) doCluster(river dao.RiverWithSpots, zoom int) (RiverClusters, error) {
 	result := make(RiverClusters)
-	points, err := this.WhiteWaterDao.ListByRiver(riverId)
-	if err != nil {
-		return result, err
-	}
-	for i := 0; i < len(points); i++ {
-		imgs, err := this.ImgDao.List(points[i].Id, PREVIEWS_COUNT, dao.IMAGE_TYPE_IMAGE, true)
-		if err != nil {
-			log.Warnf("Can not read whitewater point images for point %d: %s", points[i].Id, err.Error())
-			continue
-		}
-		points[i].Images = imgs
-	}
 
-	riverHasSinglePoint := len(points) == 1
-	actualMinDist, actualMaxDist := this.minDistance(points)
+	riverHasSinglePoint := len(river.Spots) == 1
+	actualMinDist, actualMaxDist := this.minDistance(river.Spots)
 	riverClusters := []Cluster{}
 	clusteredPointsCount := 0
 
 	PointsLoop:
-	for i := 0; i < len(points); i++ {
+	for i := 0; i < len(river.Spots); i++ {
 		if actualMinDist < this.barrierDistance(zoom) || actualMaxDist < this.clusteringMinDistance(zoom) {
 			for j := 0; j < len(riverClusters); j++ {
-				if riverClusters[j].Center.DistanceTo(points[i].Point) < this.clusteringMinDistance(zoom) {
-					riverClusters[j].Points = append(riverClusters[j].Points, points[i])
+				if riverClusters[j].Center.DistanceTo(river.Spots[i].Point) < this.clusteringMinDistance(zoom) {
+					riverClusters[j].Points = append(riverClusters[j].Points, river.Spots[i])
 					riverClusters[j].RecalculateCenter()
 					clusteredPointsCount++
 					continue PointsLoop
@@ -118,8 +91,8 @@ func (this *ClusterMaker) doCluster(riverId int64, zoom int) (RiverClusters, err
 			}
 		}
 		riverClusters = append(riverClusters, Cluster{
-			Center:points[i].Point,
-			Points:[]dao.WhiteWaterPointWithRiverTitle{points[i], },
+			Center:river.Spots[i].Point,
+			Points:[]dao.Spot{river.Spots[i], },
 		})
 	}
 
@@ -130,12 +103,12 @@ func (this *ClusterMaker) doCluster(riverId int64, zoom int) (RiverClusters, err
 		}
 	}
 
-	if float64(clusteredPointsCount) / float64(len(points)) < this.ClusterizationParams.MinCLusteredPointsRatio || clusterCount > this.ClusterizationParams.MaxClustersPerRiver {
-		riverClusters = make([]Cluster, len(points))
-		for i := 0; i < len(points); i++ {
+	if float64(clusteredPointsCount) / float64(len(river.Spots)) < this.ClusterizationParams.MinCLusteredPointsRatio || clusterCount > this.ClusterizationParams.MaxClustersPerRiver {
+		riverClusters = make([]Cluster, len(river.Spots))
+		for i := 0; i < len(river.Spots); i++ {
 			riverClusters[i] = Cluster{
-				Center:points[i].Point,
-				Points:[]dao.WhiteWaterPointWithRiverTitle{points[i], },
+				Center:river.Spots[i].Point,
+				Points:[]dao.Spot{river.Spots[i], },
 			}
 		}
 	}
@@ -143,7 +116,7 @@ func (this *ClusterMaker) doCluster(riverId int64, zoom int) (RiverClusters, err
 	for idx, cluster := range riverClusters {
 		if len(cluster.Points) > 1 || riverHasSinglePoint && zoom <= this.ClusterizationParams.SinglePointClusteringMaxZoom {
 			clusterId := ClusterId{
-				RiverId:riverId,
+				RiverId:river.Id,
 				Id: idx,
 				Title: "Cluster",
 				Single: len(riverClusters) == 1,
@@ -151,7 +124,7 @@ func (this *ClusterMaker) doCluster(riverId int64, zoom int) (RiverClusters, err
 			result[clusterId] = cluster
 		} else {
 			clusterId := ClusterId{
-				RiverId:riverId,
+				RiverId:river.Id,
 				Id: idx,
 				Title: "Cluster",
 				Single: len(riverClusters) == 1,
@@ -163,7 +136,7 @@ func (this *ClusterMaker) doCluster(riverId int64, zoom int) (RiverClusters, err
 	return result, nil
 }
 
-func (this *ClusterMaker) minDistance(points []dao.WhiteWaterPointWithRiverTitle) (float64, float64) {
+func (this *ClusterMaker) minDistance(points []dao.Spot) (float64, float64) {
 	actualMinDist := math.MaxFloat64
 	actualMaxDist := 0.0
 
@@ -188,7 +161,6 @@ func (this *ClusterMaker) clusteringMinDistance(zoom int) float64 {
 	return this.ClusterizationParams.MinDistRatio * math.Pow(2.0, -float64(zoom))
 }
 
-
 type ClusterId struct {
 	RiverId int64
 	Id      int
@@ -198,7 +170,7 @@ type ClusterId struct {
 
 type Cluster struct {
 	Center geo.Point
-	Points []dao.WhiteWaterPointWithRiverTitle
+	Points []dao.Spot
 }
 
 func (this *Cluster) RecalculateCenter() {
