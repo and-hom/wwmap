@@ -46,6 +46,21 @@ type River struct {
 	SpotCounters SpotCounters `json:"spot_counters"`
 }
 
+type Spot struct {
+	IdTitle
+	Point       Point
+	Category    model.SportCategory
+	Description string
+	Images      []Img
+	Link        string
+	Props       map[string]interface{}
+}
+
+type RiverWithSpots struct {
+	IdTitle
+	Spots []Spot
+}
+
 type WaterWay struct {
 	Id      int64 `json:"id"`
 	OsmId   int64 `json:"osm_id"`

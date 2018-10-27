@@ -13,7 +13,7 @@ type App struct {
 
 func CreateApp() App {
 	configuration := config.Load("")
-	pgStorage := dao.NewPostgresStorage(configuration.DbConnString)
+	pgStorage := dao.NewPostgresStorage(configuration.Db)
 	return App{
 		WhiteWaterDao:dao.NewWhiteWaterPostgresDao(pgStorage),
 		WaterWayDao:dao.NewWaterWayPostgresDao(pgStorage),

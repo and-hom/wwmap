@@ -14,11 +14,10 @@ const MAX_CLUSTERS int64 = 8192
 const MAX_CLUSTER_ID int64 = int64(math.MaxInt32)
 const CLUSTER_CATEGORY_DEFINITING_POINTS_COUNT int = 3
 
-func mkFeature(point WhiteWaterPointWithRiverTitle, river RiverTitle, withDescription bool,
-resourcesBase string, processImgForWeb func(img *Img), linkMaker LinkMaker) Feature {
+func mkFeature(point Spot, withDescription bool, resourcesBase string, processImgForWeb func(img *Img), riverTitle string, linkMaker LinkMaker) Feature {
 	var description = ""
 	if withDescription {
-		description = point.ShortDesc
+		description = point.Description
 	}
 
 	imgs := make([]Preview, len(point.Images))
@@ -39,7 +38,7 @@ resourcesBase string, processImgForWeb func(img *Img), linkMaker LinkMaker) Feat
 		Title: point.Title,
 		Link: linkMaker.Make(point.WhiteWaterPoint,river),
 		ShortDesc: description,
-		RiverTitle: point.RiverTitle,
+		RiverTitle: riverTitle,
 		Images: imgs,
 
 	}
@@ -71,7 +70,7 @@ func CatImg(resourcesBase string, cat model.SportCategory) string {
 	}
 }
 
-func ClusterGeom(points []WhiteWaterPointWithRiverTitle) Bbox {
+func ClusterGeom(points []Spot) Bbox {
 	var minLat = float64(360)
 	var minLon = float64(360)
 	var maxLat = -float64(360)
@@ -94,7 +93,7 @@ func ClusterGeom(points []WhiteWaterPointWithRiverTitle) Bbox {
 	}
 }
 
-func calculateClusterCategory(points []WhiteWaterPointWithRiverTitle) int {
+func calculateClusterCategory(points []Spot) int {
 	cntByCat := make(map[int]int)
 	categorizedPointsCount := 0
 	for i := 0; i < len(points); i++ {
@@ -136,9 +135,8 @@ func categoryClusterIcon(category int) string {
 	}
 }
 
-func mkCluster(Id clustering.ClusterId, points []WhiteWaterPointWithRiverTitle) Feature {
+func mkCluster(Id clustering.ClusterId, points []Spot, riverTitle string) Feature {
 	bounds := ClusterGeom(points)
-	iconText := points[0].RiverTitle
 
 	return Feature{
 		Id: MAX_CLUSTER_ID - rand.Int63n(MAX_CLUSTERS),
@@ -147,7 +145,7 @@ func mkCluster(Id clustering.ClusterId, points []WhiteWaterPointWithRiverTitle) 
 		Bbox: bounds.WithMargins(0.05),
 		Number: len(points),
 		Properties:FeatureProperties{
-			IconContent: iconText,
+			IconContent: riverTitle,
 
 			Title: Id.Title,
 		}, Options: FeatureOptions{
@@ -156,24 +154,24 @@ func mkCluster(Id clustering.ClusterId, points []WhiteWaterPointWithRiverTitle) 
 	}
 }
 
-func WhiteWaterPointsToYmaps(clusterMaker clustering.ClusterMaker, rivers []RiverTitle, bbox Bbox, zoom int,
+func WhiteWaterPointsToYmaps(clusterMaker clustering.ClusterMaker, rivers []RiverWithSpots, bbox Bbox, zoom int,
 resourcesBase string, skipId int64, processImgForWeb func(img *Img), linkMaker LinkMaker) ([]Feature, error) {
 	result := make([]Feature, 0)
 	for _, river := range rivers {
-		riverClusters, err := clusterMaker.Get(river.Id, zoom, bbox)
+		riverClusters, err := clusterMaker.Get(river, zoom, bbox)
 		if err != nil {
 			return []Feature{}, nil
 		}
 
 		for id, obj := range riverClusters {
 			switch obj.(type) {
-			case WhiteWaterPointWithRiverTitle:
-				wwp := obj.(WhiteWaterPointWithRiverTitle)
-				if wwp.Id != skipId {
-					result = append(result, mkFeature(wwp, river, true, resourcesBase, processImgForWeb, linkMaker))
+			case Spot:
+				spot := obj.(Spot)
+				if spot.Id != skipId {
+					result = append(result, mkFeature(spot, true, resourcesBase, processImgForWeb, river.Title))
 				}
 			case clustering.Cluster:
-				result = append(result, mkCluster(id, obj.(clustering.Cluster).Points))
+				result = append(result, mkCluster(id, obj.(clustering.Cluster).Points, river.Title))
 			}
 		}
 	}

@@ -9,6 +9,7 @@ import (
 	"reflect"
 	. "github.com/and-hom/wwmap/lib/geo"
 	"fmt"
+	"github.com/and-hom/wwmap/lib/config"
 )
 
 type Storage interface {
@@ -95,13 +96,17 @@ type ImgDao interface {
 	RemoveByRiver(spotId int64, tx interface{}) error
 }
 
+type TileDao interface {
+	ListRiversWithBounds(bbox Bbox, showUnpublished bool, imgLimit int) ([]RiverWithSpots, error)
+}
+
 type WwPassportDao interface {
 	Upsert(wwPassport ...WWPassport) error
 	GetLastId(source string) (interface{}, error)
 }
 
 type UserDao interface {
-	CreateIfNotExists(User) (int64, Role , bool, error)
+	CreateIfNotExists(User) (int64, Role, bool, error)
 	GetRole(provider AuthProvider, extId int64) (Role, error)
 	List() ([]User, error)
 	ListByRole(role Role) ([]User, error)
@@ -136,15 +141,22 @@ type PostgresStorage struct {
 	db *sql.DB
 }
 
-func NewPostgresStorage(connStr string) PostgresStorage {
-	db, err := sql.Open("postgres", connStr)
+func NewPostgresStorage(c config.Db) PostgresStorage {
+	db, err := sql.Open("postgres", c.ConnString)
 	if err != nil {
 		log.Fatalf("Can not connect to postgres: %v", err)
 	}
+	db.SetConnMaxLifetime(c.MaxConnLifetime)
+	db.SetMaxOpenConns(c.MaxOpenConn)
+	db.SetMaxIdleConns(c.MaxIddleConn)
 
 	return PostgresStorage{
 		db:db,
 	}
+}
+
+func NewPostgresStorageForDb(db *sql.DB) PostgresStorage {
+	return PostgresStorage{db}
 }
 
 func nullIf0(x int64) sql.NullInt64 {

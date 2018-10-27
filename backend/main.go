@@ -7,8 +7,6 @@ import (
 	. "github.com/and-hom/wwmap/lib/dao"
 	. "github.com/and-hom/wwmap/lib/handler"
 	"github.com/and-hom/wwmap/lib/config"
-	"github.com/gorilla/handlers"
-	"os"
 	"github.com/and-hom/wwmap/backend/passport"
 	"time"
 	"github.com/and-hom/wwmap/backend/referer"
@@ -16,6 +14,8 @@ import (
 	"github.com/and-hom/wwmap/backend/handler"
 	"github.com/and-hom/wwmap/backend/clustering"
 	"github.com/and-hom/wwmap/lib/notification"
+	"os"
+	"github.com/gorilla/handlers"
 )
 
 func main() {
@@ -24,7 +24,7 @@ func main() {
 	configuration := config.Load("")
 	configuration.ChangeLogLevel()
 
-	storage := NewPostgresStorage(configuration.DbConnString)
+	storage := NewPostgresStorage(configuration.Db)
 
 	riverDao := NewRiverPostgresDao(storage)
 	voyageReportDao := NewVoyageReportPostgresDao(storage)
@@ -34,9 +34,9 @@ func main() {
 	userDao := NewUserPostgresDao(storage)
 	countryDao := NewCountryPostgresDao(storage)
 	regionDao := NewRegionPostgresDao(storage)
+	tileDao := NewTilePostgresDao(storage)
 
-	clusterMaker := clustering.NewClusterMaker(whiteWaterDao, imgDao,
-		configuration.ClusterizationParams)
+	clusterMaker := clustering.NewClusterMaker(configuration.ClusterizationParams)
 
 	imgStorage := blob.BasicFsStorage{
 		BaseDir:configuration.ImgStorage.Full.Dir,
@@ -64,6 +64,7 @@ func main() {
 		UserDao: userDao,
 		CountryDao: countryDao,
 		RegionDao: regionDao,
+		TileDao:tileDao,
 		AuthProviders: map[AuthProvider]passport.Passport{
 			YANDEX: passport.Yandex(15 * time.Minute),
 			VK:     passport.Vk(15 * time.Minute),
@@ -110,8 +111,21 @@ func main() {
 
 	log.Infof("Starting http server on %s", configuration.Api.BindTo)
 	http.Handle("/", r)
-	err := http.ListenAndServe(configuration.Api.BindTo, handlers.LoggingHandler(os.Stdout, http.DefaultServeMux))
+
+	err := http.ListenAndServe(configuration.Api.BindTo, createHttpHandler(configuration))
 	if err != nil {
 		log.Fatalf("Can not start server: %v", err)
 	}
+}
+
+func createHttpHandler(configuration config.Configuration) http.Handler {
+	var h http.Handler = http.DefaultServeMux
+	logLevel, err := configuration.LogLevel.ToLogrus()
+	if err != nil {
+		log.Fatalf("Can not parse log level %s", configuration.LogLevel)
+	}
+	if logLevel == log.DebugLevel {
+		h = handlers.LoggingHandler(os.Stdout, h)
+	}
+	return h
 }

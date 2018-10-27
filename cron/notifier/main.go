@@ -14,7 +14,7 @@ func main() {
 	log.Infof("Starting wwmap notification sender")
 	configuration := config.Load("")
 	configuration.ChangeLogLevel()
-	storage := dao.NewPostgresStorage(configuration.DbConnString)
+	storage := dao.NewPostgresStorage(configuration.Db)
 
 	notificator := Notificator{
 		Conf:configuration.Notifications,

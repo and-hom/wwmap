@@ -44,7 +44,7 @@ func CreateApp() App {
 	configuration := config.Load("")
 	configuration.ChangeLogLevel()
 
-	pgStorage := dao.NewPostgresStorage(configuration.DbConnString)
+	pgStorage := dao.NewPostgresStorage(configuration.Db)
 	riverPassportPdfStorage := blob.BasicFsStorage{
 		BaseDir:configuration.RiverPassportPdfStorage.Dir,
 	}
@@ -123,7 +123,7 @@ func parseFlags(app App) (Stage, string, error) {
 	for id, _ := range sourceIdsMap {
 		sourceIds = append(sourceIds, id)
 	}
-	source := flag.String("source", "", "Run only selected source. Available are: " + strings.Join(sourceIds, ", "))
+	source := *(flag.String("source", "", "Run only selected source. Available are: " + strings.Join(sourceIds, ", ")))
 
 	flag.Parse()
 
@@ -132,12 +132,14 @@ func parseFlags(app App) (Stage, string, error) {
 		return Stage(""), "", err
 	}
 
-	_, found := sourceIdsMap[*source]
-	if !found {
-		return Stage(""), "", fmt.Errorf("Unknown source " + *source + ". Available are: " + strings.Join(sourceIds, ","))
+	if source != "" {
+		_, found := sourceIdsMap[source]
+		if !found {
+			return Stage(""), "", fmt.Errorf("Unknown source " + source + ". Available are: " + strings.Join(sourceIds, ","))
+		}
 	}
 
-	return stage, *source, err
+	return stage, source, err
 
 }
 

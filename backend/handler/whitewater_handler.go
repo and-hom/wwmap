@@ -9,7 +9,6 @@ import (
 	. "github.com/and-hom/wwmap/lib/geo"
 	. "github.com/and-hom/wwmap/lib/http"
 	. "github.com/and-hom/wwmap/lib/handler"
-	"math"
 	"strconv"
 	"github.com/and-hom/wwmap/backend/clustering"
 	"github.com/and-hom/wwmap/backend/ymaps"
@@ -20,6 +19,8 @@ type WhiteWaterHandler struct {
 	ResourceBase string
 	ClusterMaker clustering.ClusterMaker
 }
+
+const PREVIEWS_COUNT int = 20
 
 func (this *WhiteWaterHandler) Init() {
 	this.Register("/ymaps-tile-ww", HandlerFunctions{Get:this.TileWhiteWaterHandler})
@@ -54,7 +55,7 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 		}
 	}
 
-	rivers, err := this.RiverDao.ListRiversWithBounds(bbox, math.MaxInt32, allowed)
+	rivers, err := this.TileDao.ListRiversWithBounds(bbox, allowed, PREVIEWS_COUNT)
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not read whitewater points for bbox %s", bbox.String()))
 		return

@@ -70,8 +70,21 @@ func (this MailSettings) SmtpHostPort() string {
 	return fmt.Sprintf("%s:%d", this.SmtpHost, this.SmtpPort)
 }
 
+type Db struct {
+	ConnString      string `yaml:"connection-string"`
+	MaxOpenConn     int `yaml:"max-open-conn"`
+	MaxIddleConn    int `yaml:"max-iddle-conn"`
+	MaxConnLifetime time.Duration `yaml:"max-conn-lifetime"`
+}
+
+type LogLevel string
+
+func (this LogLevel) ToLogrus() (log.Level, error) {
+	return log.ParseLevel(string(this))
+}
+
 type Configuration struct {
-	DbConnString             string `yaml:"db-connection-string"`
+	Db                       Db `yaml:"db"`
 	ClusterizationParams     ClusterizationParams `yaml:"clusterization"`
 	Notifications            Notifications `yaml:"notifications"`
 	Api                      Api `yaml:"api"`
@@ -81,14 +94,14 @@ type Configuration struct {
 	ImgStorage               ImgStorage `yaml:"img-storage"`
 	RiverPassportPdfStorage  BlobStorageParams `yaml:"river-passport-pdf-storage"`
 	RiverPassportHtmlStorage BlobStorageParams `yaml:"river-passport-html-storage"`
-	LogLevel                 string `yaml:"log-level"`
+	LogLevel                 LogLevel `yaml:"log-level"`
 }
 
 func (this *Configuration) ChangeLogLevel() {
 	if this.LogLevel == "" {
 		return
 	}
-	level, err := log.ParseLevel(this.LogLevel)
+	level, err := this.LogLevel.ToLogrus()
 	if err != nil {
 		log.Fatalf("Can not parse log level %s: %v", this.LogLevel, err)
 	}
