@@ -33,7 +33,7 @@ SELECT river.id, region_id, region.country_id, river.title, region.title AS regi
         INNER JOIN region ON river.region_id=region.id
 WHERE (river.visible OR $6) AND exists
     (SELECT 1 FROM white_water_rapid WHERE white_water_rapid.river_id=river.id AND point && ST_MakeEnvelope($1,$2,$3,$4))
-GROUP BY river.id ORDER BY popularity DESC LIMIT $5
+GROUP BY river.id, region_id, region.country_id, region.title, region.fake ORDER BY popularity DESC LIMIT $5
 
 --@by-id
 SELECT river.id,region_id, region.country_id,title, region.title AS region_title, fake AS region_fake,NULL,river.aliases AS aliases, description, visible, props, @@spot-counters@@

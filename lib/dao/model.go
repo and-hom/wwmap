@@ -58,7 +58,9 @@ type Spot struct {
 
 type RiverWithSpots struct {
 	IdTitle
-	Spots []Spot
+	Spots     []Spot
+	RegionId  int64
+	CountryId int64
 }
 
 type WaterWay struct {
@@ -70,6 +72,9 @@ type WaterWay struct {
 	RiverId int64 `json:"river_id"`
 	Comment string `json:"comment"`
 }
+
+const EXPORT_PROP_PREFIX = "export_"
+const PAGE_LINK_PROP_PREFIX = "page_link_"
 
 type WhiteWaterPoint struct {
 	IdTitle

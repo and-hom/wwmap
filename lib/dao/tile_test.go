@@ -24,7 +24,7 @@ func TestTileDaoZeroRows(t *testing.T) {
 }
 
 func TestTileDaoSingleRiverSingleSpotNoImg(t *testing.T) {
-	tileDao, db := initDao(t, []driver.Value{1, "Хара-Мурин", 1, "8", POINT_JSON, "4a", "http://aaa/bbb", "{}", -1, "", "", "", "", time.Unix(0, 0), ""})
+	tileDao, db := initDao(t, []driver.Value{1, "Хара-Мурин", 1, 1, 1, "8", POINT_JSON, "4a", "http://aaa/bbb", "{}", -1, "", "", "", "", time.Unix(0, 0), ""})
 	defer db.Close()
 
 	found, err := tileDao.ListRiversWithBounds(geo.Bbox{}, false, 1)
@@ -35,7 +35,7 @@ func TestTileDaoSingleRiverSingleSpotNoImg(t *testing.T) {
 }
 
 func TestTileDaoSingleRiverSingleSpot(t *testing.T) {
-	tileDao, db := initDao(t, []driver.Value{1, "Хара-Мурин", 1, "8", POINT_JSON, "4a", "http://aaa/bbb", "{}", 1, "wwmap", "1", "", "", time.Unix(0, 0), "image"})
+	tileDao, db := initDao(t, []driver.Value{1, "Хара-Мурин", 1, 1, 1, "8", POINT_JSON, "4a", "http://aaa/bbb", "{}", 1, "wwmap", "1", "", "", time.Unix(0, 0), "image"})
 	defer db.Close()
 
 	found, err := tileDao.ListRiversWithBounds(geo.Bbox{}, false, 1)
@@ -47,10 +47,10 @@ func TestTileDaoSingleRiverSingleSpot(t *testing.T) {
 
 func TestTileDaoTwoRiversTwoSpots(t *testing.T) {
 	tileDao, db := initDao(t,
-		[]driver.Value{1, "Хара-Мурин", 1, "8", POINT_JSON, "4a", "http://aaa/1", "{}", 1, "wwmap", "1", "", "", time.Unix(0, 0), "image"},
-		[]driver.Value{1, "Хара-Мурин", 1, "8", POINT_JSON, "4a", "http://aaa/1", "{}", 2, "wwmap", "1", "", "", time.Unix(0, 0), "image"},
-		[]driver.Value{1, "Хара-Мурин", 2, "12", POINT_JSON, "4a", "http://aaa/2", "{}", -1, "wwmap", "1", "", "", time.Unix(0, 0), "image"},
-		[]driver.Value{2, "Жомболок", 3, "Катапульта", POINT_JSON, "5", "http://aaa/3", "{}", 4, "wwmap", "1", "", "", time.Unix(0, 0), "image"},
+		[]driver.Value{1, "Хара-Мурин", 1, 1, 1, "8", POINT_JSON, "4a", "http://aaa/1", "{}", 1, "wwmap", "1", "", "", time.Unix(0, 0), "image"},
+		[]driver.Value{1, "Хара-Мурин", 1, 1, 1, "8", POINT_JSON, "4a", "http://aaa/1", "{}", 2, "wwmap", "1", "", "", time.Unix(0, 0), "image"},
+		[]driver.Value{1, "Хара-Мурин", 1, 1, 2, "12", POINT_JSON, "4a", "http://aaa/2", "{}", -1, "wwmap", "1", "", "", time.Unix(0, 0), "image"},
+		[]driver.Value{2, "Жомболок", 1, 1, 3, "Катапульта", POINT_JSON, "5", "http://aaa/3", "{}", 4, "wwmap", "1", "", "", time.Unix(0, 0), "image"},
 	)
 	defer db.Close()
 
@@ -110,7 +110,7 @@ func initDao(t *testing.T, rowsData ...[]driver.Value) (dao.TileDao, *sql.DB) {
 }
 
 func rowsHeader() *sqlmock.Rows {
-	return sqlmock.NewRows([]string{"river_id", "river_title",
+	return sqlmock.NewRows([]string{"river_id", "river_title", "region_id", "country_id",
 		"spot_id", "spot_title", "point", "category", "link", "props",
 		"img_id", "img_source", "img_remote_id", "img_url", "img_preview_url", "img_date_published", "img_type"})
 }

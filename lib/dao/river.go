@@ -126,7 +126,7 @@ func (this riverStorage) listRiverTitles(query string, queryParams ...interface{
 			boundsStr := sql.NullString{}
 			aliases := sql.NullString{}
 			props := ""
-			err := rows.Scan(&riverTitle.Id, &riverTitle.Region.Id, &riverTitle.Region.CountryId, &riverTitle.Title, &riverTitle.Region.Fake, &riverTitle.Region.Title, &boundsStr, &aliases, &props)
+			err := rows.Scan(&riverTitle.Id, &riverTitle.Region.Id, &riverTitle.Region.CountryId, &riverTitle.Title, &riverTitle.Region.Title, &riverTitle.Region.Fake, &boundsStr, &aliases, &props)
 			if err != nil {
 				return RiverTitle{}, err
 			}

@@ -295,7 +295,7 @@ const CATALOG_LINK_TYPES = [
     ]
 
 function initWWMap(mapId, riversListId, catalogLinkType) {
-    if (CATALOG_LINK_TYPES.indexOf(foo) <= -1) {
+    if (CATALOG_LINK_TYPES.indexOf(catalogLinkType) <= -1) {
         throw "Unknown catalog link type. Available are: " + CATALOG_LINK_TYPES
     }
 

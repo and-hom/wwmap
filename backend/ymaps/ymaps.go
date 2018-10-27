@@ -14,7 +14,8 @@ const MAX_CLUSTERS int64 = 8192
 const MAX_CLUSTER_ID int64 = int64(math.MaxInt32)
 const CLUSTER_CATEGORY_DEFINITING_POINTS_COUNT int = 3
 
-func mkFeature(point Spot, withDescription bool, resourcesBase string, processImgForWeb func(img *Img), riverTitle string, linkMaker LinkMaker) Feature {
+func mkFeature(point Spot, river RiverWithSpots, withDescription bool, resourcesBase string,
+processImgForWeb func(img *Img), linkMaker LinkMaker) Feature {
 	var description = ""
 	if withDescription {
 		description = point.Description
@@ -36,9 +37,9 @@ func mkFeature(point Spot, withDescription bool, resourcesBase string, processIm
 		Id: point.Id,
 
 		Title: point.Title,
-		Link: linkMaker.Make(point.WhiteWaterPoint,river),
+		Link: linkMaker.Make(point, river),
 		ShortDesc: description,
-		RiverTitle: riverTitle,
+		RiverTitle: river.Title,
 		Images: imgs,
 
 	}
@@ -168,7 +169,7 @@ resourcesBase string, skipId int64, processImgForWeb func(img *Img), linkMaker L
 			case Spot:
 				spot := obj.(Spot)
 				if spot.Id != skipId {
-					result = append(result, mkFeature(spot, true, resourcesBase, processImgForWeb, river.Title))
+					result = append(result, mkFeature(spot, river, true, resourcesBase, processImgForWeb, linkMaker))
 				}
 			case clustering.Cluster:
 				result = append(result, mkCluster(id, obj.(clustering.Cluster).Points, river.Title))

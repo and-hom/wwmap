@@ -68,7 +68,7 @@ func (this DummyPropertyManager) RemoveProperty(name string, id int64) error {
 func (this *App) DoWriteCatalog() {
 	for _, rpf := range this.catalogConnectors {
 		err := rpf.Do(func(cc common.CatalogConnector) error {
-			if this.sourceOnly=="" || this.sourceOnly==cc.SourceId() {
+			if this.sourceOnly == "" || this.sourceOnly == cc.SourceId() {
 				return this.doWriteCatalog(&cc)
 			} else {
 				return nil
@@ -246,26 +246,13 @@ rootPageLink, countryPageLink, regionPageLink string, parentPageId int) (string,
 		Reports:reports,
 	})
 
-
-	exportedPropName := "export_" + (*catalogConnector).SourceId()
-	pageLinkPropName := "page_link_" + (*catalogConnector).SourceId()
+	exportedPropName := dao.EXPORT_PROP_PREFIX + (*catalogConnector).SourceId()
 
 	exportOk := err == nil && riverPageLink != ""
 	log.Infof("Mark as exported: %v", exportOk)
 	logOnlyError := this.RiverDao.Props().SetBoolProperty(exportedPropName, river.Id, exportOk)
 	if logOnlyError != nil {
 		log.Errorf("Can not mark river %d as exported: %v", river.Id, logOnlyError)
-	}
-	if exportOk {
-		logOnlyError = this.RiverDao.Props().SetStringProperty(pageLinkPropName, river.Id, riverPageLink)
-		if logOnlyError !=nil {
-			log.Errorf("Can not set river %d page link: %v", river.Id, logOnlyError)
-		}
-	} else {
-		logOnlyError = this.RiverDao.Props().RemoveProperty(pageLinkPropName, river.Id)
-		if logOnlyError !=nil {
-			log.Errorf("Can not unset river %d page link: %v", river.Id, logOnlyError)
-		}
 	}
 
 	if err != nil {
@@ -293,9 +280,9 @@ func (this *App) reports(riverId int64) ([]common.VoyageReportLink, error) {
 	return result, nil
 }
 
-func (this *App) createBlankPageIfNotExists(catalogConnector *common.CatalogConnector, dao dao.HasProperties, id int64, title string, parentId int) (int, string, error) {
+func (this *App) createBlankPageIfNotExists(catalogConnector *common.CatalogConnector, propsDao dao.HasProperties, id int64, title string, parentId int) (int, string, error) {
 	page_id_prop_name := (*catalogConnector).SourceId() + "_page_id"
-	pageId, err := dao.Props().GetIntProperty(page_id_prop_name, id)
+	pageId, err := propsDao.Props().GetIntProperty(page_id_prop_name, id)
 	if err != nil {
 		log.Errorf("Can not get page id for entity %d:%s", id, title)
 		return 0, "", err
@@ -307,11 +294,14 @@ func (this *App) createBlankPageIfNotExists(catalogConnector *common.CatalogConn
 	}
 	if created {
 		log.Infof("Created page id=%d for %d - %s", childPageId, id, title)
-		err := dao.Props().SetIntProperty(page_id_prop_name, id, childPageId)
+		err := propsDao.Props().SetIntProperty(page_id_prop_name, id, childPageId)
 		if err != nil {
 			log.Errorf("Can not set page id for entity %d:%s", id, title)
 			return 0, "", err
 		}
+	}
+	if link != "" && err == nil {
+		propsDao.Props().SetStringProperty(dao.PAGE_LINK_PROP_PREFIX + (*catalogConnector).SourceId(), id, link)
 	}
 	return childPageId, link, nil
 }
