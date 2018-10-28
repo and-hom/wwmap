@@ -27,13 +27,12 @@ func (this *tileStorage) ListRiversWithBounds(bbox geo.Bbox, showUnpublished boo
 
 	rivers := make([]RiverWithSpots, 0)
 
-	river := RiverWithSpots{}
-	spot := Spot{}
-	img := Img{}
-
 	lastSpotId := int64(-1)
 
 	for rows.Next() {
+		river := RiverWithSpots{}
+		spot := Spot{}
+		img := Img{}
 
 		pointStr := ""
 		categoryStr := ""

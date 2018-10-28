@@ -47,10 +47,10 @@ func TestTileDaoSingleRiverSingleSpot(t *testing.T) {
 
 func TestTileDaoTwoRiversTwoSpots(t *testing.T) {
 	tileDao, db := initDao(t,
-		[]driver.Value{1, "Хара-Мурин", 1, 1, 1, "8", POINT_JSON, "4a", "http://aaa/1", "{}", 1, "wwmap", "1", "", "", time.Unix(0, 0), "image"},
-		[]driver.Value{1, "Хара-Мурин", 1, 1, 1, "8", POINT_JSON, "4a", "http://aaa/1", "{}", 2, "wwmap", "1", "", "", time.Unix(0, 0), "image"},
-		[]driver.Value{1, "Хара-Мурин", 1, 1, 2, "12", POINT_JSON, "4a", "http://aaa/2", "{}", -1, "wwmap", "1", "", "", time.Unix(0, 0), "image"},
-		[]driver.Value{2, "Жомболок", 1, 1, 3, "Катапульта", POINT_JSON, "5", "http://aaa/3", "{}", 4, "wwmap", "1", "", "", time.Unix(0, 0), "image"},
+		[]driver.Value{1, "Хара-Мурин", 1, 1, 1, "8", POINT_JSON, "4a", "http://aaa/1", "{\"a\":1}", 1, "wwmap", "1", "", "", time.Unix(0, 0), "image"},
+		[]driver.Value{1, "Хара-Мурин", 1, 1, 1, "8", POINT_JSON, "4a", "http://aaa/1", "{\"a\":1}", 2, "wwmap", "1", "", "", time.Unix(0, 0), "image"},
+		[]driver.Value{1, "Хара-Мурин", 1, 1, 2, "12", POINT_JSON, "4a", "http://aaa/2", "{\"b\":2}", -1, "wwmap", "1", "", "", time.Unix(0, 0), "image"},
+		[]driver.Value{2, "Жомболок", 1, 1, 3, "Катапульта", POINT_JSON, "5", "http://aaa/3", "{\"c\":3}", 4, "wwmap", "1", "", "", time.Unix(0, 0), "image"},
 	)
 	defer db.Close()
 
@@ -70,6 +70,9 @@ func TestTileDaoTwoRiversTwoSpots(t *testing.T) {
 	assert.Equal(t, 100.121941666667, spot00.Point.Lon)
 	assert.Equal(t, model.SportCategory{Category:4, Sub:"a"}, spot00.Category)
 	assert.Equal(t, 2, len(spot00.Images))
+	c, ok := spot00.Props["a"]
+	assert.True(t, ok)
+	assert.Equal(t, c, float64(1))
 
 	spot01 := river0.Spots[1]
 	assert.Equal(t, int64(2), spot01.Id)
@@ -78,6 +81,9 @@ func TestTileDaoTwoRiversTwoSpots(t *testing.T) {
 	assert.Equal(t, 100.121941666667, spot01.Point.Lon)
 	assert.Equal(t, model.SportCategory{Category:4, Sub:"a"}, spot01.Category)
 	assert.Equal(t, 0, len(spot01.Images))
+	b, ok := spot01.Props["b"]
+	assert.True(t, ok)
+	assert.Equal(t, b, float64(2))
 
 	river1 := found[1]
 	assert.Equal(t, int64(2), river1.Id)
@@ -91,6 +97,9 @@ func TestTileDaoTwoRiversTwoSpots(t *testing.T) {
 	assert.Equal(t, 100.121941666667, spot10.Point.Lon)
 	assert.Equal(t, model.SportCategory{Category:5, Sub:""}, spot10.Category)
 	assert.Equal(t, 1, len(spot10.Images))
+	cc, ok := spot10.Props["c"]
+	assert.True(t, ok)
+	assert.Equal(t, cc, float64(3))
 }
 
 func initDao(t *testing.T, rowsData ...[]driver.Value) (dao.TileDao, *sql.DB) {
