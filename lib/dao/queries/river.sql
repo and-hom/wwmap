@@ -36,8 +36,8 @@ WHERE (river.visible OR $6) AND exists
 GROUP BY river.id, region_id, region.country_id, region.title, region.fake ORDER BY popularity DESC LIMIT $5
 
 --@by-id
-SELECT river.id,region_id, region.country_id,title, region.title AS region_title, fake AS region_fake,NULL,river.aliases AS aliases, description, visible, props, @@spot-counters@@
- FROM river INNER JOIN region ON river.region_id=region.id WHERE id=$1
+SELECT river.id,region_id, region.country_id,river.title, region.title AS region_title, fake AS region_fake,NULL,river.aliases AS aliases, description, visible, river.props, @@spot-counters@@
+ FROM river INNER JOIN region ON river.region_id=region.id WHERE river.id=$1
 
 --@by-region
 SELECT river.id, region_id, region.country_id, river.title, region.title AS region_title, fake AS region_fake, NULL, river.aliases, river.props
