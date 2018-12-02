@@ -10,7 +10,7 @@ import (
 )
 
 const MAX_ATTACHED_IMGS = 300
-const MISSING_IMAGE = "https://wwmap.ru/img/no-photo.png"
+const MISSING_IMAGE = ""
 
 func filterRegions(regions []dao.Region) []dao.Region {
 	result := make([]dao.Region, 0, len(regions))

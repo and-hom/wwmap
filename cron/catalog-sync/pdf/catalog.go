@@ -8,6 +8,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/lib/blob"
 	"strings"
+	"os"
 	"github.com/SebastiaanKlippert/go-wkhtmltopdf"
 )
 
@@ -90,9 +91,13 @@ func (this *PdfCatalogConnector) writePage(pageId int, body string, title string
 	pdfGenerator.MarginRight.Set(10)
 	pdfGenerator.Title.Set(title)
 
+	cacheDir := os.TempDir() + "/wwmap-wkhtml-cache"
+	os.MkdirAll(cacheDir, os.ModePerm)
 
 	pr := wkhtmltopdf.NewPageReader(strings.NewReader(body))
-	pr.JavascriptDelay.Set(5000)
+	pr.NoStopSlowScripts.Set(true)
+	pr.WindowStatus.Set("LOAD_FINISHED")
+	pr.CacheDir.Set(cacheDir)
 	pr.LoadErrorHandling.Set("ignore")
 	pr.LoadMediaErrorHandling.Set("ignore")
 	pdfGenerator.AddPage(pr)

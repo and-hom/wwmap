@@ -10,11 +10,12 @@
             <h3>Пороги (к./с.)</h3>
             <ul style="list-style-type:disc">
                 {{range .Spots}}
-                <li style="color:{{ccol .Spot.Category}};"><span style="color:black;">{{.Spot.Title}}&nbsp;({{spotCatStr .Spot}})</span></li>
+                <li style="color:{{ccol .Spot.Category}};"><span style="color:black;">{{.Spot.Title}}&nbsp;({{spotCatStr .Spot}})</span>
+                </li>
                 {{end}}
             </ul>
         </td>
-        <td>
+        <td valign="top">
             <div id="map" style="width:500px; height: 450px;float: right;"></div>
         </td>
     </tr>
@@ -22,6 +23,59 @@
 
 
 <script type="text/javascript">
+    mapCnt = 0;
+
+    function loadStarted() {
+        mapCnt += 1
+    }
+
+    function loadFinished(myMap) {
+        var layer = myMap.layers.get(0).get(0);
+        // Отслеживаем событие окончания отрисовки тайлов.
+        waitForTilesLoad(layer).then(function() {
+        mapCnt -= 1
+            if (mapCnt==0) {
+                window.setTimeout(function() {
+                    window.status = 'LOAD_FINISHED'
+                },10000);
+            }
+        });
+    }
+
+    // Получить слой, содержащий тайлы.
+    function getTileContainer(layer) {
+        for (var k in layer) {
+            if (layer.hasOwnProperty(k)) {
+                if (
+                    layer[k] instanceof ymaps.layer.tileContainer.CanvasContainer
+                    || layer[k] instanceof ymaps.layer.tileContainer.DomContainer
+                ) {
+                    return layer[k];
+                }
+            }
+        }
+        return null;
+    }
+
+    // Определить, все ли тайлы загружены. Возвращает Promise.
+    function waitForTilesLoad(layer) {
+        return new ymaps.vow.Promise(function (resolve, reject) {
+            var tc = getTileContainer(layer), readyAll = true;
+            tc.tiles.each(function (tile, number) {
+                if (!tile.isReady()) {
+                    readyAll = false;
+                }
+            });
+            if (readyAll) {
+                resolve();
+            } else {
+                tc.events.once("ready", function() {
+                    resolve();
+                });
+            }
+        });
+    }
+    loadStarted()
     ymaps.ready(function() {
                 addCachedLayer('osm#standard', 'OSM', 'OpenStreetMap contributors, CC-BY-SA', 'osm')
                 {{ $spotCount := len .Spots }}
@@ -48,9 +102,11 @@
                         clusterHasBalloon: false,
                     });
                 myMap.geoObjects.add(objectManager);
+                loadFinished(myMap);
             })
 
     function spotMap(spotId, point, mapType, zoom) {
+        loadStarted()
         ymaps.ready(function() {
                     addCachedLayer('osm#standard', 'OSM', 'OpenStreetMap contributors, CC-BY-SA', 'osm')
                     addLayer('google#satellite', 'Спутник Google', 'Изображения © DigitalGlobe,CNES / Airbus, 2018,Картографические данные © Google, 2018', GOOGLE_SAT_TILES)
@@ -71,8 +127,10 @@
                             clusterHasBalloon: false,
                         });
                     myMap.geoObjects.add(objectManager);
+                    loadFinished(myMap);
                 })
     }
+
 </script>
 
 <h3>Отчёты</h3>
@@ -84,62 +142,71 @@
 
 {{range .Spots}}
 <hr/>
-<h2 id="spot{{.Spot.Id}}">{{.Spot.Title}}</h2>
-<table style="border:0px; width: 100%;">
-    <tr>
-        <td colspan="2" style="width:70%;">{{.Spot.ShortDesc}}</td>
-        <td rowspan="2">
-            <img style="width:200px;" src="{{.MainImage.Url}}"/>
-        </td>
-    </tr>
-    <tr>
-        <td colspan="2">
-            <strong>Ориентиры:</strong><br/>
-            {{.Spot.Orient}}
-        </td>
-    </tr>
-    <tr>
-        <td><strong>Уровень воды</strong></td>
-        <td><strong>Тех. описание</strong></td>
-        <td rowspan="7">
-            <strong>Расположение: </strong>
-            <div id="map{{.Spot.Id}}" style="width:300px; height: 300px;"></div>
-            <div class="short-div">
-                <strong>Координаты:</strong><br/>&nbsp;<strong>Широта:</strong>&nbsp;{{printf "%.7f" .Spot.Point.Lat}}
-                <br/>&nbsp;<strong>Долгота:</strong>&nbsp;{{printf "%.7f" .Spot.Point.Lon}}
-                <br/>
-                <div><strong>К.с. нв/св/вв:</strong>&nbsp;{{catStr .Spot.LowWaterCategory}}/{{catStr .Spot.MediumWaterCategory}}/{{catStr .Spot.HighWaterCategory}}
+<div style="page-break-inside: avoid;">
+    <h2 id="spot{{.Spot.Id}}">{{.Spot.Title}}</h2>
+    <table style="border:0px; width: 100%;">
+        <tr>
+            <td colspan="2" style="width:70%;">{{.Spot.ShortDesc}}</td>
+            <td rowspan="2">
+                {{ if .MainImage.Url }}
+                <img style="width:200px;" src="{{.MainImage.Url}}"/>
+                {{ end }}
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <strong>Ориентиры:</strong><br/>
+                {{.Spot.Orient}}
+            </td>
+        </tr>
+        <tr>
+            <td><strong>Уровень воды</strong></td>
+            <td><strong>Тех. описание</strong></td>
+            <td rowspan="7">
+                <strong>Расположение: </strong>
+                <div id="map{{.Spot.Id}}" style="width:300px; height: 300px;"></div>
+                <div class="short-div">
+                    <strong>Координаты:</strong><br/>&nbsp;<strong>Широта:</strong>
+                    &nbsp;{{printf "%.7f" .Spot.Point.Lat}}
+                    <br/>&nbsp;<strong>Долгота:</strong>
+                    &nbsp;{{printf "%.7f" .Spot.Point.Lon}}
+                    <br/>
+                    <div><strong>К.с. нв/св/вв:</strong>
+                        &nbsp;{{catStr .Spot.LowWaterCategory}}/{{catStr .Spot.MediumWaterCategory}}/{{catStr .Spot.HighWaterCategory}}
+                    </div>
+                    <div><strong>К.с. по классификатору:</strong>
+                        &nbsp;{{catStr .Spot.Category}}</div>
                 </div>
-                <div><strong>К.с. по классификатору:</strong>&nbsp;{{catStr .Spot.Category}}</div>
-            </div>
-        </td>
-    </tr>
-    <tr>
-        <td><strong>Низкая вода</strong></td>
-        <td>{{.Spot.LowWaterDescription}}</td>
-    </tr>
-    <tr>
-        <td><strong>Средняя вода</strong></td>
-        <td>{{.Spot.MediumWaterDescription}}</td>
-    </tr>
-    <tr>
-        <td><strong>Высокая вода</strong></td>
-        <td>{{.Spot.HighWaterDescription}}</td>
-    </tr>
-    <tr>
-        <td colspan="2">
-            <strong>Подход/выход</strong>
-            {{.Spot.Approach}}
-        </td>
-    </tr>
-    <tr>
-        <td colspan="2">
-            <strong>Страховка</strong>
-            {{.Spot.Safety}}
-        </td>
-    </tr>
-</table>
-<script type="text/javascript">
+            </td>
+        </tr>
+        <tr>
+            <td><strong>Низкая вода</strong></td>
+            <td>{{.Spot.LowWaterDescription}}</td>
+        </tr>
+        <tr>
+            <td><strong>Средняя вода</strong></td>
+            <td>{{.Spot.MediumWaterDescription}}</td>
+        </tr>
+        <tr>
+            <td><strong>Высокая вода</strong></td>
+            <td>{{.Spot.HighWaterDescription}}</td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <strong>Подход/выход</strong>
+                {{.Spot.Approach}}
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <strong>Страховка</strong>
+                {{.Spot.Safety}}
+            </td>
+        </tr>
+    </table>
+    <script type="text/javascript">
     spotMap("{{.Spot.Id}}", {{.Spot.Point}}, "{{coalesce_string_prop "pdf_map_type" "yandex#satellite" .Spot.Props .River.Props}}", {{coalesce_int_prop "pdf_map_zoom" 16 .Spot.Props .River.Props}})
-</script>
+
+    </script>
+</div>
 {{end}}
