@@ -87,8 +87,12 @@
                                         <strong>Порядок следования:</strong><a href="#"><img src="img/question_16.png"></a>
                                         <div><label for="auto-order">Автоматически</label>
                                         <input id="auto-order" type="checkbox" v-model="spot.automatic_ordering"></input></div>
+                                        <div style="font-size: 60%; font-color: grey;">Если препятствия не отсортированны, не будет сгенерированно
+                                                                                    PDF-описание.</div>
                                         <transition name="fade">
-                                            <div v-if="!spot.automatic_ordering"><label for="auto-order" style="display:block;"><strong>Индекс препятствия</strong><br/>
+                                            <div v-if="spot.automatic_ordering" style="font-size: 60%; font-color: grey;">Автосортировка
+                                            на основе треков из <a href="https://www.openstreetmap.org/">OSM</a> срабатывает ежесуточно ночью.</div>
+                                            <div v-else><label for="auto-order" style="display:block;"><strong>Индекс препятствия</strong><br/>
                                             <div style="font-size: 60%; font-color: grey;">Чем меньше, тем выше по течению (раньше)</div></label>
                                             <input v-model="spot.order_index" type="number"></input></div>
                                         </transition>
