@@ -45,6 +45,16 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 		}
 	}
 
+	onlyIdStr := req.FormValue("only")
+	onlyId := int64(0)
+	if onlyIdStr != "" {
+		onlyId, err = strconv.ParseInt(onlyIdStr, 10, 64)
+		if err != nil {
+			OnError500(w, err, fmt.Sprintf("Can not parse only id %s", skipIdStr))
+			return
+		}
+	}
+
 	token := req.FormValue("token")
 	allowed := false
 	if token != "" {
@@ -55,18 +65,51 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 		}
 	}
 
-	rivers, err := this.TileDao.ListRiversWithBounds(bbox, allowed, PREVIEWS_COUNT)
-	if err != nil {
-		OnError500(w, err, fmt.Sprintf("Can not read whitewater points for bbox %s", bbox.String()))
-		return
+	var features []Feature
+
+	if onlyId == 0 {
+		rivers, err := this.TileDao.ListRiversWithBounds(bbox, allowed, PREVIEWS_COUNT)
+		if err != nil {
+			OnError500(w, err, fmt.Sprintf("Can not read whitewater points for bbox %s", bbox.String()))
+			return
+		}
+
+		features, err = ymaps.WhiteWaterPointsToYmaps(this.ClusterMaker, rivers, bbox, zoom,
+			this.ResourceBase, skip, this.processForWeb, getLinkMaker(req.FormValue("link_type")))
+		if err != nil {
+			OnError500(w, err, fmt.Sprintf("Can not cluster: %s", bbox.String()))
+			return
+		}
+	} else {
+		spot, err := this.WhiteWaterDao.Find(onlyId)
+		if err != nil {
+			OnError500(w, err, fmt.Sprintf("Can not find whitewater point for id %d", onlyId))
+			return
+		}
+		sp := Spot{
+			IdTitle:spot.IdTitle,
+			Description:spot.ShortDesc,
+			Link:spot.Link,
+			Point:spot.Point,
+			Images:spot.Images,
+			Category:spot.Category,
+		}
+
+		river, err := this.RiverDao.Find(spot.RiverId)
+		if err != nil {
+			OnError500(w, err, fmt.Sprintf("Can not find river for id %d", spot.RiverId))
+			return
+		}
+		rws := RiverWithSpots{
+			IdTitle: river.IdTitle,
+			CountryId:river.Region.CountryId,
+			RegionId:river.Region.Id,
+			Spots:[]Spot{},
+		}
+
+		features, err = ymaps.SingleWhiteWaterPointToYmaps(sp, rws, this.ResourceBase, this.processForWeb, getLinkMaker(req.FormValue("link_type")))
 	}
 
-	features, err := ymaps.WhiteWaterPointsToYmaps(this.ClusterMaker, rivers, bbox, zoom,
-		this.ResourceBase, skip, this.processForWeb, getLinkMaker(req.FormValue("link_type")))
-	if err != nil {
-		OnError500(w, err, fmt.Sprintf("Can not cluster: %s", bbox.String()))
-		return
-	}
 	featureCollection := MkFeatureCollection(features)
 
 	w.Write(this.JsonpAnswer(callback, featureCollection, "{}"))
