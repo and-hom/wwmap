@@ -3,6 +3,7 @@ package common
 import (
 	"html/template"
 	"fmt"
+	"math"
 	"bytes"
 	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/lib/dao"
@@ -72,6 +73,7 @@ func (this *templates) WithDecorator(t *template.Template, data interface{}) (st
 }
 
 func LoadTemplates(load func(name string) []byte) (Templates, error) {
+	const nbsp = '\u00A0'
 	funcMap := template.FuncMap{
 		"inc": func(i int) int {
 			return i + 1
@@ -132,6 +134,24 @@ func LoadTemplates(load func(name string) []byte) (Templates, error) {
 				}
 			}
 			return _default
+		},
+		"lat":func(lat float64) string {
+			var abbr string
+			if lat > 0 {
+				abbr = "с.ш."
+			} else {
+				abbr = "ю.ш."
+			}
+			return fmt.Sprintf("%.7f%c%s", math.Abs(lat),nbsp, abbr)
+		},
+		"lon":func(lon float64) string {
+			var abbr string
+			if lon > 0 {
+				abbr = "в.д."
+			} else {
+				abbr = "з.д."
+			}
+			return fmt.Sprintf("%.7f%c%s", math.Abs(lon),nbsp, abbr)
 		},
 	}
 	t := templates{}
