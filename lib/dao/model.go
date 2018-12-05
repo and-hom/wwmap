@@ -108,6 +108,7 @@ type WhiteWaterPointFull struct {
 	LastAutomaticOrdering  time.Time `json:"last_automatic_ordering"`
 
 	Aliases                []string `json:"aliases"`
+	Props    map[string]interface{} `json:"props"`
 }
 
 type WhiteWaterPointWithRiverTitle struct {

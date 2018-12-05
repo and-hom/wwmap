@@ -1,11 +1,138 @@
+<script type="text/javascript" src="https://api-maps.yandex.ru/2.1/?lang=ru_RU"></script>
+<script type="text/javascript" src="https://wwmap.ru/js/config.js"></script>
+<script type="text/javascript" src="https://wwmap.ru/js/map.v2.js"></script>
+
 <h1>{{.River.Title}}</h1>
 {{.River.Description}}
-<h3>Пороги (к./с.)</h3>
-<ul style="list-style-type:none">
-    {{range .Spots}}
-    <li><a href="#spot{{.Spot.Id}}">{{.Spot.Title}}&nbsp;({{spotCatStr .Spot}})</a></li>
-    {{end}}
-</ul>
+<table style="border:0px;withh:100%;">
+    <tr>
+        <td style="width:70%;">
+            <h3>Пороги (к./с.)</h3>
+            <ul style="list-style-type:disc">
+                {{range .Spots}}
+                <li style="color:{{ccol .Spot.Category}};"><span style="color:black;">{{.Spot.Title}}&nbsp;({{spotCatStr .Spot}})</span>
+                </li>
+                {{end}}
+            </ul>
+        </td>
+        <td valign="top">
+            <div id="map" style="width:500px; height: 450px;float: right;"></div>
+        </td>
+    </tr>
+</table>
+
+
+<script type="text/javascript">
+    mapCnt = 0;
+
+    function loadStarted() {
+        mapCnt += 1
+    }
+
+    function loadFinished(myMap) {
+        var layer = myMap.layers.get(0).get(0);
+        // Отслеживаем событие окончания отрисовки тайлов.
+        waitForTilesLoad(layer).then(function() {
+        mapCnt -= 1
+            if (mapCnt==0) {
+                window.setTimeout(function() {
+                    window.status = 'LOAD_FINISHED'
+                },10000);
+            }
+        });
+    }
+
+    // Получить слой, содержащий тайлы.
+    function getTileContainer(layer) {
+        for (var k in layer) {
+            if (layer.hasOwnProperty(k)) {
+                if (
+                    layer[k] instanceof ymaps.layer.tileContainer.CanvasContainer
+                    || layer[k] instanceof ymaps.layer.tileContainer.DomContainer
+                ) {
+                    return layer[k];
+                }
+            }
+        }
+        return null;
+    }
+
+    // Определить, все ли тайлы загружены. Возвращает Promise.
+    function waitForTilesLoad(layer) {
+        return new ymaps.vow.Promise(function (resolve, reject) {
+            var tc = getTileContainer(layer), readyAll = true;
+            tc.tiles.each(function (tile, number) {
+                if (!tile.isReady()) {
+                    readyAll = false;
+                }
+            });
+            if (readyAll) {
+                resolve();
+            } else {
+                tc.events.once("ready", function() {
+                    resolve();
+                });
+            }
+        });
+    }
+    loadStarted()
+    ymaps.ready(function() {
+                addCachedLayer('osm#standard', 'OSM', 'OpenStreetMap contributors, CC-BY-SA', 'osm')
+                {{ $spotCount := len .Spots }}
+                {{ if eq $spotCount 1 }}
+                {{ $spot := index .Spots 0 }}
+                var myMap = new ymaps.Map("map", {
+                    center: {{$spot.Spot.Point}},
+                    zoom: 15,
+                    type: "osm#standard",
+                    controls: ["zoomControl"],
+                });
+                {{else}}
+                var myMap = new ymaps.Map("map", {
+                    bounds: {{ .River.Bounds.WithMargins 0.2 }},
+                    type: "osm#standard",
+                    controls: ["zoomControl"],
+                });
+                {{end}}
+                var objectManager = new ymaps.RemoteObjectManager('https://wwmap.ru/api/ymaps-tile-ww?bbox=%b&zoom=%z', {
+                        clusterHasBalloon: false,
+                        geoObjectOpenBalloonOnClick: false,
+                        geoObjectStrokeWidth: 3,
+                        splitRequests: true,
+                        clusterHasBalloon: false,
+                    });
+                myMap.geoObjects.add(objectManager);
+                loadFinished(myMap);
+            })
+
+    function spotMap(spotId, point, mapType, zoom) {
+        loadStarted()
+        ymaps.ready(function() {
+                    addCachedLayer('osm#standard', 'OSM', 'OpenStreetMap contributors, CC-BY-SA', 'osm')
+                    addLayer('google#satellite', 'Спутник Google', 'Изображения © DigitalGlobe,CNES / Airbus, 2018,Картографические данные © Google, 2018', GOOGLE_SAT_TILES)
+                    addCachedLayer('ggc#standard', 'Топографическая карта', '', 'ggc', 0, 15)
+
+                    divId = "map" + spotId
+                    var myMap = new ymaps.Map(divId, {
+                        center: point,
+                        zoom: zoom,
+                        type: mapType,
+                        controls: ["zoomControl"],
+                    });
+                    var objectManager = new ymaps.RemoteObjectManager('https://wwmap.ru/api/ymaps-tile-ww?bbox=%b&zoom=%z&only=' + spotId, {
+                            clusterHasBalloon: false,
+                            geoObjectOpenBalloonOnClick: false,
+                            geoObjectStrokeWidth: 3,
+                            splitRequests: true,
+                            clusterHasBalloon: false,
+                        });
+                    myMap.geoObjects.add(objectManager);
+                    loadFinished(myMap);
+                })
+    }
+
+</script>
+
 <h3>Отчёты</h3>
 <ul style="list-style-type:none">
     {{range .Reports}}
@@ -15,59 +142,73 @@
 
 {{range .Spots}}
 <hr/>
-<h2 id="spot{{.Spot.Id}}">{{.Spot.Title}}</h2>
-<table style="border:0px; width: 100%;">
-    <tr>
-        <td colspan="2" style="width:70%;">{{.Spot.ShortDesc}}</td>
-        <td rowspan="2">
-            <img style="width:200px;" src="{{.MainImage.Url}}"/>
-        </td>
-    </tr>
-    <tr>
-        <td colspan="2">
+<div style="page-break-inside: avoid;">
+    <h2 id="spot{{.Spot.Id}}">{{.Spot.Title}}</h2>
+    <div style="overflow-y:auto;overflow-x:hidden;">
+        <div style="float:right;">
+            <div id="map{{.Spot.Id}}" style="width:300px; height: 300px; margin-left: 15px;"></div>
+        </div>
+        <div style="width: 100%;">
+            {{.Spot.ShortDesc}}
+        </div>
+        <div style="width: 100%;">
+            <strong>Координаты:</strong>&nbsp;{{lat .Spot.Point.Lat}}&nbsp;{{lon .Spot.Point.Lon}}
+            <br/>
+            <div><strong>К.с. нв/св/вв:</strong>
+                &nbsp;{{catStr .Spot.LowWaterCategory}}/{{catStr .Spot.MediumWaterCategory}}/{{catStr .Spot.HighWaterCategory}}
+            </div>
+            <div><strong>К.с. по классификатору:</strong>
+                &nbsp;{{catStr .Spot.Category}}</div>
+        </div>
+        {{ if .Spot.Orient}}
+        <div style="width: 100%;">
             <strong>Ориентиры:</strong><br/>
             {{.Spot.Orient}}
-        </td>
-    </tr>
-    <tr>
-        <td><strong>Уровень воды</strong></td>
-        <td><strong>Тех. описание</strong></td>
-        <td rowspan="7">
-            <strong>Расположение: </strong>
-            <div style="width:100%" id="wwmap">Тут будет карта</div>
-            <div class="short-div">
-                <strong>Координаты:</strong><br/><strong>Широта:</strong>&nbsp;{{.Spot.Point.Lat}}
-                <br/><strong>Долгота:</strong>&nbsp;{{.Spot.Point.Lon}}
-                <br/>
-                <div><strong>К.с. нв/св/вв:</strong>&nbsp;{{catStr .Spot.LowWaterCategory}}/{{catStr .Spot.MediumWaterCategory}}/{{catStr .Spot.HighWaterCategory}}
-                </div>
-                <div><strong>К.с. по классификатору:</strong>&nbsp;{{catStr .Spot.Category}}</div>
-            </div>
-        </td>
-    </tr>
-    <tr>
-        <td><strong>Низкая вода</strong></td>
-        <td>{{.Spot.LowWaterDescription}}</td>
-    </tr>
-    <tr>
-        <td><strong>Средняя вода</strong></td>
-        <td>{{.Spot.MediumWaterDescription}}</td>
-    </tr>
-    <tr>
-        <td><strong>Высокая вода</strong></td>
-        <td>{{.Spot.HighWaterDescription}}</td>
-    </tr>
-    <tr>
-        <td colspan="2">
+        </div>
+        {{end}}
+        {{ if or .Spot.LowWaterDescription .Spot.MediumWaterDescription .Spot.HighWaterDescription }}
+        <div style="width: 100%;">
+            <table style="padding-top: 7px;">
+                <tr style="height:0px;">
+                    <td style="padding-right:8px;"><strong>Уровень воды</strong></td>
+                    <td><strong>Тех. описание</strong></td>
+                </tr>
+                <tr style="height:0px;">
+                    <td><strong>Низкая вода</strong></td>
+                    <td>{{.Spot.LowWaterDescription}}</td>
+                </tr>
+                <tr style="height:0px;">
+                    <td><strong>Средняя вода</strong></td>
+                    <td>{{.Spot.MediumWaterDescription}}</td>
+                </tr>
+                <tr style="height:0px;">
+                    <td><strong>Высокая вода</strong></td>
+                    <td>{{.Spot.HighWaterDescription}}</td>
+                </tr>
+            </table>
+        </div>
+        {{end}}
+        {{ if .Spot.Approach }}
+        <div style="width: 100%;">
             <strong>Подход/выход</strong>
             {{.Spot.Approach}}
-        </td>
-    </tr>
-    <tr>
-        <td colspan="2">
+        </div>
+        {{end}}
+        {{ if .Spot.Safety }}
+        <div style="width: 100%; text-align: justify;">
             <strong>Страховка</strong>
             {{.Spot.Safety}}
-        </td>
-    </tr>
-</table>
+        </div>
+        {{end}}
+        <div style="width: 100%; padding-top:12px;">
+        {{range .Imgs}}
+            <img src="{{.Url}}" style="max-width:400px;max-height:300px;height:auto;width:auto;padding:2px;"/>
+        {{end}}
+        </div>
+    </div>
+    <script type="text/javascript">
+    spotMap("{{.Spot.Id}}", {{.Spot.Point}}, "{{coalesce_string_prop "pdf_map_type" "yandex#satellite" .Spot.Props .River.Props}}", {{coalesce_int_prop "pdf_map_zoom" 16 .Spot.Props .River.Props}})
+
+    </script>
+</div>
 {{end}}

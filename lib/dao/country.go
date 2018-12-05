@@ -26,7 +26,7 @@ func (this countryStorage) List() ([]Country, error) {
 		return result, err
 	})
 	if err != nil {
-		return []Country{}, nil
+		return []Country{}, err
 	}
 	return lst.([]Country), nil
 }

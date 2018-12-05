@@ -26,119 +26,157 @@
             </div>
         </div>
 
-        <input v-if="editMode" v-model.trim="river.title" style="display:block"/>
-        <h1 v-else>{{ river.title }}</h1>
-        <dl>
-            <dt>Показывать на карте:</dt>
-            <dd>
-                <span style="padding-left:40px;" v-if="river.visible">Да</span>
-                <span style="padding-left:40px;" v-else>Нет</span>&nbsp;&nbsp;&nbsp;
-                <button type="button" class="btn btn-info" v-if="canEdit() && !editMode && !river.visible" v-on:click="setVisible(true); hideError();">
-                    Показывать на карте
-                </button>
-                <button type="button" class="btn btn-info" v-if="canEdit() && !editMode && river.visible" v-on:click="setVisible(false); hideError();">
-                    Скрыть на карте
-                </button>
-                <div  style="padding-left:40px;font-size:70%;color:grey">Нужно, когда мы не хотим выставлять наполовину размеченную и описанную реку.
-                Если добавляешь часть порогов, а остальные планируешь на потом, не делай реку видимой на карте.</div>
-            </dd>
-            <dt v-if="river.region.id>0">Регион:</dt>
-            <dd v-if="river.region.id>0">
-                <div v-if="editMode">
-                    <select v-model="river.region.id">
-                        <option v-for="region in regions()" v-bind:value="region.id">{{region.title}}</option>
-                    </select>
-                </div>
-                <div v-else style="padding-left:40px;">
-                    <div v-if="river.region.fake">{{country.title}}</div>
-                    <div v-else>{{river.region.title}}</div>
-                </div>
-            </dd>
-            <dt>Описание:</dt>
-            <dd>
-                <textarea v-if="editMode" v-bind:text-content="river.aliases"
-                          rows="10" cols="120"
-                          style="resize: none; margin-left:40px;" v-model="river.description"></textarea>
-                <div v-else style="padding-left:40px;">
-                    {{river.description}}
-                </div>
+        <div v-if="editMode" class="spot-editor-panel" style="padding-top:15px;">
+                    <b-tabs>
+                        <b-tab title="Главное" active>
+                            <input v-model.trim="river.title" style="display:block"/>
+                            <dl>
+                                <dt>Показывать на карте:</dt>
+                                <dd>
+                                    <span style="padding-left:40px;" v-if="river.visible">Да</span>
+                                    <span style="padding-left:40px;" v-else>Нет</span>&nbsp;&nbsp;&nbsp;
+                                    <button type="button" class="btn btn-info" v-if="canEdit() && !editMode && !river.visible" v-on:click="setVisible(true); hideError();">
+                                        Показывать на карте
+                                    </button>
+                                    <button type="button" class="btn btn-info" v-if="canEdit() && !editMode && river.visible" v-on:click="setVisible(false); hideError();">
+                                        Скрыть на карте
+                                    </button>
+                                    <div  style="padding-left:40px;font-size:70%;color:grey">Нужно, когда мы не хотим выставлять наполовину размеченную и описанную реку.
+                                    Если добавляешь часть порогов, а остальные планируешь на потом, не делай реку видимой на карте.</div>
+                                </dd>
+                                <dt v-if="river.region.id>0">Регион:</dt>
+                                <dd v-if="river.region.id>0">
+                                    <select v-model="river.region.id">
+                                        <option v-for="region in regions()" v-bind:value="region.id">{{region.title}}</option>
+                                    </select>
+                                </dd>
+                                <dt>Описание:</dt>
+                                <dd>
+                                    <textarea v-bind:text-content="river.aliases"
+                                              rows="10" cols="120"
+                                              style="resize: none; margin-left:40px;" v-model="river.description"></textarea>
+                                </dd>
+                                <dt>Другие варианты названия для автоматического поиска отчётов:</dt>
+                                <dd>
+                                    <textarea v-bind:text-content="river.aliases"
+                                              v-on:input="river.aliases = parseAliases($event.target.value)"
+                                              rows="10" cols="120"
+                                              style="resize: none; margin-left:40px;">{{ river.aliases.join('\n') }}</textarea>
+                                </dd>
+                            </dl>
+                        </b-tab>
+                        <b-tab title="Системные параметры" active>
+                            <span class="wwmap-system-hint" style="padding-top: 10px;">Тут собраны настройки разных системных вещей для этой реки</span>
+                            <props :p="river.props"/>
+                        </b-tab>
+                    </b-tabs>
+        </div>
+        <div v-else class="spot-display">
+            <h1>{{ river.title }}</h1>
+            <dl>
+                <dt>Показывать на карте:</dt>
+                <dd>
+                    <span style="padding-left:40px;" v-if="river.visible">Да</span>
+                    <span style="padding-left:40px;" v-else>Нет</span>&nbsp;&nbsp;&nbsp;
+                    <button type="button" class="btn btn-info" v-if="canEdit() && !editMode && !river.visible" v-on:click="setVisible(true); hideError();">
+                        Показывать на карте
+                    </button>
+                    <button type="button" class="btn btn-info" v-if="canEdit() && !editMode && river.visible" v-on:click="setVisible(false); hideError();">
+                        Скрыть на карте
+                    </button>
+                    <div  style="padding-left:40px;font-size:70%;color:grey">Нужно, когда мы не хотим выставлять наполовину размеченную и описанную реку.
+                    Если добавляешь часть порогов, а остальные планируешь на потом, не делай реку видимой на карте.</div>
+                </dd>
+                <dt v-if="river.region.id>0">Регион:</dt>
+                <dd v-if="river.region.id>0">
+                    <div style="padding-left:40px;">
+                        <div v-if="river.region.fake">{{country.title}}</div>
+                        <div v-else>{{river.region.title}}</div>
+                    </div>
+                </dd>
+                <dt>Описание:</dt>
+                <dd>
+                    <div style="padding-left:40px;">
+                        {{river.description}}
+                    </div>
 
-            </dd>
-            <dt>Другие варианты названия для автоматического поиска отчётов:</dt>
-            <dd>
-                <textarea v-if="editMode" v-bind:text-content="river.aliases"
-                          v-on:input="river.aliases = parseAliases($event.target.value)"
-                          rows="10" cols="120"
-                          style="resize: none; margin-left:40px;">{{ river.aliases.join('\n') }}</textarea>
-                <ul v-else>
-                    <li v-for="alias in river.aliases">{{alias}}</li>
-                </ul>
-            </dd>
-            <dt>Отчёты:</dt>
-            <dd>
-                <ul>
-                    <li v-for="report in reports"><a target="_blank" :href="report.url">{{report.title}}</a></li>
-                </ul>
-            </dd>
-        </dl>
-        <div v-if="canEdit() && river.id && !editMode">
-            <template>
-                <div class="example-drag">
-                    <div class="upload">
-                        <ul v-if="files.length">
-                            <li v-for="(file, index) in files" :key="file.id">
-                                <span>{{file.name}}</span> -
-                                <span>{{file.size}}</span> -
-                                <span v-if="file.error">{{file.error}}</span>
-                                <span v-else-if="file.success">success</span>
-                                <span v-else-if="file.active">active</span>
-                                <span v-else-if="file.active">active</span>
-                                <span v-else></span>
-                            </li>
-                        </ul>
+                </dd>
+                <dt>Другие варианты названия для автоматического поиска отчётов:</dt>
+                <dd>
+                    <ul>
+                        <li v-for="alias in river.aliases">{{alias}}</li>
+                    </ul>
+                </dd>
+                <dt>Отчёты:</dt>
+                <dd>
+                    <ul>
+                        <li v-for="report in reports"><a target="_blank" :href="report.url">{{report.title}}</a></li>
+                    </ul>
+                </dd>
+            </dl>
 
-                        <div v-show="$refs.upload && $refs.upload.dropActive" class="drop-active">
-                            <h3>Drop files to upload</h3>
-                        </div>
+            <div v-if="canEdit() && river.id">
+                <template>
+                    <div class="example-drag">
+                        <div class="upload">
+                            <ul v-if="files.length">
+                                <li v-for="(file, index) in files" :key="file.id">
+                                    <span>{{file.name}}</span> -
+                                    <span>{{file.size}}</span> -
+                                    <span v-if="file.error">{{file.error}}</span>
+                                    <span v-else-if="file.success">success</span>
+                                    <span v-else-if="file.active">active</span>
+                                    <span v-else-if="file.active">active</span>
+                                    <span v-else></span>
+                                </li>
+                            </ul>
 
-                        <div class="example-btn">
-                            <file-upload
-                                    class="btn btn-primary"
-                                    :post-action="uploadPath"
-                                    extensions="gpx"
-                                    :multiple="false"
-                                    :drop="false"
-                                    :drop-directory="false"
-                                    v-model="files"
-                                    ref="uploadGpx">
-                                <i class="fa fa-plus"></i>
-                                Выберите GPX-файл с точками препятствий.
-                            </file-upload>
-                            <button type="button" class="btn btn-success" v-if="!$refs.uploadGpx || !$refs.uploadGpx.active"
-                                    @click.prevent="$refs.uploadGpx.active = true">
-                                <i class="fa fa-arrow-up" aria-hidden="true"></i>
-                                Начать загрузку
-                            </button>
-                            <button type="button" class="btn btn-danger" v-else
-                                    @click.prevent="$refs.uploadGpx.active = false">
-                                <i class="fa fa-stop" aria-hidden="true"></i>
-                                Stop Upload
-                            </button>
+                            <div v-show="$refs.upload && $refs.upload.dropActive" class="drop-active">
+                                <h3>Drop files to upload</h3>
+                            </div>
+
+                            <div class="example-btn">
+                                <file-upload
+                                        class="btn btn-primary"
+                                        :post-action="uploadPath"
+                                        extensions="gpx"
+                                        :multiple="false"
+                                        :drop="false"
+                                        :drop-directory="false"
+                                        v-model="files"
+                                        ref="uploadGpx">
+                                    <i class="fa fa-plus"></i>
+                                    Выберите GPX-файл с точками препятствий.
+                                </file-upload>
+                                <button type="button" class="btn btn-success" v-if="!$refs.uploadGpx || !$refs.uploadGpx.active"
+                                        @click.prevent="$refs.uploadGpx.active = true">
+                                    <i class="fa fa-arrow-up" aria-hidden="true"></i>
+                                    Начать загрузку
+                                </button>
+                                <button type="button" class="btn btn-danger" v-else
+                                        @click.prevent="$refs.uploadGpx.active = false">
+                                    <i class="fa fa-stop" aria-hidden="true"></i>
+                                    Stop Upload
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </template>
+                </template>
+            </div>
         </div>
+
     </div>
 </template>
 
 <script>
     module.exports = {
-        props: ['river', 'reports', 'country', 'region'],
+        props: ['initialRiver', 'reports', 'country', 'region'],
         components: {
           FileUpload: VueUploadComponent
         },
         updated: function() {
+            this.resetToInitialIfRequired()
+
             if(this.$refs.uploadGpx && this.$refs.uploadGpx.value.length && this.$refs.uploadGpx.uploaded) {
                 if (this.imagesOutOfDate) {
                     setTimeout(() => {
@@ -150,8 +188,31 @@
                 }
             }
         },
+        created: function() {
+            this.resetToInitialIfRequired()
+        },
+        computed: {
+                uploadPath: function() { return backendApiBase + "/river/" + this.river.id +"/gpx"},
+        },
         data:function() {
             return {
+
+                river: null,
+                previousRiverId: this.initialRiver.id,
+                shouldReInit:function(){
+                    return this.river==null || this.previousRiverId != this.initialRiver.id && this.initialRiver.id > 0
+                },
+                resetToInitialIfRequired:function() {
+                    if (this.shouldReInit()) {
+                        this.previousRiverId = this.initialRiver.id
+                        this.river = this.initialRiver
+
+                        this.prevRegionId = nvlReturningId(this.river.region)
+                        this.prevRegionFake = this.river.region.fake
+                        this.prevCountryId = this.river.region.country_id
+                    }
+                },
+
                 // for editor
                 userInfo: getAuthorizedUserInfoOrNull(),
                 canEdit: function(){
@@ -161,6 +222,7 @@
                 errMsg:null,
                 askForRemove: true,
                 save:function() {
+                    console.log(this.river.props)
                     updated = saveRiver(this.river)
                     if (updated) {
                         var prev = this.river
@@ -221,7 +283,6 @@
                 // end of editor
 
                 files: [],
-                uploadPath: backendApiBase + "/river/" + this.river.id +"/gpx",
                 add_spot: function() {
                     app.spoteditorstate.visible = false
                     app.rivereditorstate.visible = false;
@@ -235,6 +296,7 @@
                         automatic_ordering: true,
                         point:getRiverCenter(this.river.id),
                         aliases:[],
+                        props:{},
                     }
                     app.spoteditorstate.country = this.country
                     app.spoteditorstate.region = this.region
@@ -259,9 +321,9 @@
                 parseAliases:function(strVal) {
                     return strVal.split('\n').map(function(x) {return x.trim()}).filter(function(x){return x.length>0})
                 },
-                prevRegionId: nvlReturningId(this.river.region),
-                prevRegionFake: this.river.region.fake,
-                prevCountryId: this.river.region.country_id,
+                prevRegionId: 0,
+                prevRegionFake: null,
+                prevCountryId: 0,
             }
         }
     }

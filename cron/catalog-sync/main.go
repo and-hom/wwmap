@@ -123,9 +123,12 @@ func parseFlags(app App) (Stage, string, error) {
 	for id, _ := range sourceIdsMap {
 		sourceIds = append(sourceIds, id)
 	}
-	source := *(flag.String("source", "", "Run only selected source. Available are: " + strings.Join(sourceIds, ", ")))
+	sourcePtr := flag.String("source", "", "Run only selected source. Available are: " + strings.Join(sourceIds, ", "))
 
 	flag.Parse()
+	log.Debug("stage=", *stageStr)
+	log.Debug("source=", *sourcePtr)
+	source := *sourcePtr
 
 	stage, err := parseStage(*stageStr)
 	if err != nil {
@@ -147,8 +150,7 @@ func main() {
 	log.Infof("Starting wwmap")
 	app := CreateApp()
 
-	stage, source, err :=
-		parseFlags(app);
+	stage, source, err := parseFlags(app);
 	if err != nil {
 		log.Fatal(err)
 	}

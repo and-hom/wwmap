@@ -180,6 +180,10 @@ resourcesBase string, skipId int64, processImgForWeb func(img *Img), linkMaker L
 	return result, nil
 }
 
+func SingleWhiteWaterPointToYmaps(spot Spot,river RiverWithSpots, resourcesBase string, processImgForWeb func(img *Img), linkMaker LinkMaker) ([]Feature, error) {
+	return []Feature{mkFeature(spot, river, true, resourcesBase, processImgForWeb, linkMaker),}, nil
+}
+
 func min(x, y int) int {
 	if x < y {
 		return x

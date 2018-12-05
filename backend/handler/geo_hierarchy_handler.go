@@ -58,6 +58,7 @@ type RiverDto struct {
 	Region      dao.Region `json:"region"`
 	Description string `json:"description,omitempty"`
 	Visible     bool `json:"visible"`
+	Props       map[string]interface{} `json:"props"`
 }
 
 
@@ -305,6 +306,7 @@ func (this *GeoHierarchyHandler) SaveRiver(w http.ResponseWriter, r *http.Reques
 			},
 			Region: dao.Region{Id:regionId},
 			Aliases:river.Aliases,
+			Props: river.Props,
 		},
 		Description:river.Description,
 	}
@@ -404,6 +406,7 @@ func (this *GeoHierarchyHandler) writeRiver(riverId int64, w http.ResponseWriter
 		Region:river.Region,
 		Description:river.Description,
 		Visible: river.Visible,
+		Props:river.Props,
 	}
 	this.JsonAnswer(w, riverWithRegion)
 }
@@ -427,6 +430,7 @@ func (this *GeoHierarchyHandler) FilterRivers(w http.ResponseWriter, r *http.Req
 			Title:river.Title,
 			Aliases:river.Aliases,
 			Region:river.Region,
+			Props:river.Props,
 		}
 	}
 	this.JsonAnswer(w, dtos)
