@@ -144,75 +144,68 @@
 <hr/>
 <div style="page-break-inside: avoid;">
     <h2 id="spot{{.Spot.Id}}">{{.Spot.Title}}</h2>
-    <table style="border:0px; width: 100%;">
-        <tr style="height:0px;">
-            <td colspan="2" style="width:70%;">{{.Spot.ShortDesc}}</td>
-            <td rowspan="9">
-                {{ if .MainImage.Url }}
-                <img style="width:300px;" src="{{.MainImage.Url}}"/>
-                {{ end }}
-                <strong>Расположение: </strong>
-                <div id="map{{.Spot.Id}}" style="width:300px; height: 300px;"></div>
-            </td>
-        </tr>
-        <tr style="height:0px;">
-            <td colspan="2">
-                <strong>Координаты:</strong>&nbsp;{{lat .Spot.Point.Lat}}&nbsp;{{lon .Spot.Point.Lon}}
-                <br/>
-                <div><strong>К.с. нв/св/вв:</strong>
-                    &nbsp;{{catStr .Spot.LowWaterCategory}}/{{catStr .Spot.MediumWaterCategory}}/{{catStr .Spot.HighWaterCategory}}
-                </div>
-                <div><strong>К.с. по классификатору:</strong>
-                    &nbsp;{{catStr .Spot.Category}}</div>
-            </td>
-        </tr>
+    <div style="overflow-y:auto;overflow-x:hidden;">
+        <div style="float:right;">
+            <div id="map{{.Spot.Id}}" style="width:300px; height: 300px; margin-left: 15px;"></div>
+        </div>
+        <div style="width: 100%;">
+            {{.Spot.ShortDesc}}
+        </div>
+        <div style="width: 100%;">
+            <strong>Координаты:</strong>&nbsp;{{lat .Spot.Point.Lat}}&nbsp;{{lon .Spot.Point.Lon}}
+            <br/>
+            <div><strong>К.с. нв/св/вв:</strong>
+                &nbsp;{{catStr .Spot.LowWaterCategory}}/{{catStr .Spot.MediumWaterCategory}}/{{catStr .Spot.HighWaterCategory}}
+            </div>
+            <div><strong>К.с. по классификатору:</strong>
+                &nbsp;{{catStr .Spot.Category}}</div>
+        </div>
         {{ if .Spot.Orient}}
-        <tr style="height:0px;">
-            <td colspan="2">
-                <strong>Ориентиры:</strong><br/>
-                {{.Spot.Orient}}
-            </td>
-        </tr>
-        {{ end }}
+        <div style="width: 100%;">
+            <strong>Ориентиры:</strong><br/>
+            {{.Spot.Orient}}
+        </div>
+        {{end}}
         {{ if or .Spot.LowWaterDescription .Spot.MediumWaterDescription .Spot.HighWaterDescription }}
-        <tr style="height:0px;">
-            <td><strong>Уровень воды</strong></td>
-            <td><strong>Тех. описание</strong></td>
-        </tr>
-        <tr style="height:0px;">
-            <td><strong>Низкая вода</strong></td>
-            <td>{{.Spot.LowWaterDescription}}</td>
-        </tr>
-        <tr style="height:0px;">
-            <td><strong>Средняя вода</strong></td>
-            <td>{{.Spot.MediumWaterDescription}}</td>
-        </tr>
-        <tr style="height:0px;">
-            <td><strong>Высокая вода</strong></td>
-            <td>{{.Spot.HighWaterDescription}}</td>
-        </tr>
-        {{ end }}
+        <div style="width: 100%;">
+            <table style="padding-top: 7px;">
+                <tr style="height:0px;">
+                    <td style="padding-right:8px;"><strong>Уровень воды</strong></td>
+                    <td><strong>Тех. описание</strong></td>
+                </tr>
+                <tr style="height:0px;">
+                    <td><strong>Низкая вода</strong></td>
+                    <td>{{.Spot.LowWaterDescription}}</td>
+                </tr>
+                <tr style="height:0px;">
+                    <td><strong>Средняя вода</strong></td>
+                    <td>{{.Spot.MediumWaterDescription}}</td>
+                </tr>
+                <tr style="height:0px;">
+                    <td><strong>Высокая вода</strong></td>
+                    <td>{{.Spot.HighWaterDescription}}</td>
+                </tr>
+            </table>
+        </div>
+        {{end}}
         {{ if .Spot.Approach }}
-        <tr style="height:0px;">
-            <td colspan="2">
-                <strong>Подход/выход</strong>
-                {{.Spot.Approach}}
-            </td>
-        </tr>
-        {{ end }}
+        <div style="width: 100%;">
+            <strong>Подход/выход</strong>
+            {{.Spot.Approach}}
+        </div>
+        {{end}}
         {{ if .Spot.Safety }}
-        <tr style="height:0px;">
-            <td colspan="2">
-                <strong>Страховка</strong>
-                {{.Spot.Safety}}
-            </td>
-        </tr>
-        {{ end }}
-        <tr>
-            <td colspan="2">
-            </td>
-        </tr>
-    </table>
+        <div style="width: 100%; text-align: justify;">
+            <strong>Страховка</strong>
+            {{.Spot.Safety}}
+        </div>
+        {{end}}
+        <div style="width: 100%; padding-top:12px;">
+        {{range .Imgs}}
+            <img src="{{.Url}}" style="max-width:400px;max-height:300px;height:auto;width:auto;padding:2px;"/>
+        {{end}}
+        </div>
+    </div>
     <script type="text/javascript">
     spotMap("{{.Spot.Id}}", {{.Spot.Point}}, "{{coalesce_string_prop "pdf_map_type" "yandex#satellite" .Spot.Props .River.Props}}", {{coalesce_int_prop "pdf_map_zoom" 16 .Spot.Props .River.Props}})
 

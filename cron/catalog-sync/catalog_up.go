@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-const MAX_ATTACHED_IMGS = 300
+const MAX_ATTACHED_IMGS = 5
 const MISSING_IMAGE = ""
 
 func filterRegions(regions []dao.Region) []dao.Region {
@@ -326,17 +326,28 @@ func (this *App) writeSpots(catalogConnector *common.CatalogConnector, parentPag
 		log.Infof("Upload spot %s/%s", river.Title, spot.Title)
 		spotPageId, spotPageLink, err := this.createBlankPageIfNotExists(catalogConnector, this.WhiteWaterDao, spot.Id, spot.Title, riverPageId)
 		if err != nil {
-			log.Errorf("Can not get attached images for %d", spot.Id)
+			log.Errorf("Can not get attached images for %d: %v", spot.Id, err)
 			return 0, "", []common.SpotLink{}, false, err
 		}
 		imgs, err := this.ImgDao.List(spot.Id, MAX_ATTACHED_IMGS, dao.IMAGE_TYPE_IMAGE, true)
 		if err != nil {
-			log.Errorf("Can not get attached images for %d", spot.Id)
+			log.Errorf("Can not get attached images for %d: %v", spot.Id, err)
 			return 0, "", []common.SpotLink{}, false, err
 		}
+		schemas, err := this.ImgDao.List(spot.Id, MAX_ATTACHED_IMGS, dao.IMAGE_TYPE_SCHEMA, true)
+		if err != nil {
+			log.Errorf("Can not get attached schemas for %d: %v", spot.Id, err)
+			return 0, "", []common.SpotLink{}, false, err
+		}
+		imgs = append(imgs, schemas...)
+
+		for i:=0;i<len(imgs);i++ {
+			this.processForWeb(&imgs[i])
+		}
+
 		mainImg, err := this.mainImage(spot, imgs)
 		if err != nil {
-			log.Errorf("Can not get main image for spot %d", spot.Id)
+			log.Errorf("Can not get main image for spot %d: %v", spot.Id, err)
 			return 0, "", []common.SpotLink{}, false, err
 		}
 		err = (*catalogConnector).WriteSpotPage(common.SpotPageDto{
