@@ -14,8 +14,10 @@ func main() {
 	configuration := config.Load("")
 	configuration.ChangeLogLevel()
 
-	storage := NewPostgresStorage(configuration.DbConnString)
+	storage := NewPostgresStorage(configuration.Db)
 	refererDao := NewRefererPostgresDao(storage)
-	refererDao.RemoveOlderThen(REMOVE_TTL)
-
+	err := refererDao.RemoveOlderThen(REMOVE_TTL)
+	if err!=nil {
+		log.Fatal(err)
+	}
 }

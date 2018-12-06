@@ -31,7 +31,7 @@ type WwmapLinkMaker struct {
 
 func (this WwmapLinkMaker)Make(spot dao.Spot, river dao.RiverWithSpots) string {
 	regionId := river.RegionId
-	return fmt.Sprintf("https://wwmap.ru/editor.htm#%d#%d#%d#%d", river.CountryId, regionId, river.Id, spot.Id)
+	return fmt.Sprintf("https://wwmap.ru/editor.htm#%d,%d,%d,%d", river.CountryId, regionId, river.Id, spot.Id)
 }
 
 type HuskytmLinkMaker struct {

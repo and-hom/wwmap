@@ -65,7 +65,7 @@
                                 </dd>
                             </dl>
                         </b-tab>
-                        <b-tab title="Системные параметры" active>
+                        <b-tab title="Системные параметры">
                             <span class="wwmap-system-hint" style="padding-top: 10px;">Тут собраны настройки разных системных вещей для этой реки</span>
                             <props :p="river.props"/>
                         </b-tab>
