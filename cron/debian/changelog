@@ -1,3 +1,14 @@
+wwmap-cron (0.0.16) unstable; urgency=medium
+
+  * #75 PDF look improvements
+  * #149 Store page link in props on export
+  * #151 Connection pool configuration fix
+  * #152 Fix: run catalog import/export without -source flag
+  * Run separate cron tasks for huskytm, tlib and pdf
+  * Command line flags parsing fixed
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Thu, 06 Dec 2018 21:22:31 +0300
+
 wwmap-cron (0.0.15) unstable; urgency=medium
 
   * #101 Huskytm pages look fix

@@ -1,3 +1,9 @@
+wwmap-db (0.0.17) unstable; urgency=medium
+
+  * #113 Performance improvements
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Thu, 06 Dec 2018 21:26:54 +0300
+
 wwmap-db (0.0.16) unstable; urgency=medium
 
   * #146 Notify me and user on new user. Notify user on role changed (yandex only)

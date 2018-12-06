@@ -1,3 +1,13 @@
+wwmap-backend (0.0.30) unstable; urgency=medium
+
+  * #75 Parameter &only=<id> to show single spot on map
+  * #113 Performance issues
+  * #149 Customized spot links on map
+  * #151 Connection pool configuration fixed
+  * Turn request logging on only if log level is debug
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Thu, 06 Dec 2018 21:33:09 +0300
+
 wwmap-backend (0.0.29) unstable; urgency=medium
 
   * #146 Notify me and user on new user. Notify user on role changed (yandex only)
