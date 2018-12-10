@@ -1,126 +1,124 @@
-class WWMap {
-  constructor(divId, bubbleTemplate, riverList, tutorialPopup, catalogLinkType) {
-    this.divId = divId;
-    this.bubbleTemplate = bubbleTemplate;
+function WWMap(divId, bubbleTemplate, riverList, tutorialPopup, catalogLinkType) {
+  this.divId = divId;
+  this.bubbleTemplate = bubbleTemplate;
 
-    this.riverList = riverList;
+  this.riverList = riverList;
 
-    this.tutorialPopup = tutorialPopup
-    this.catalogLinkType = catalogLinkType
+  this.tutorialPopup = tutorialPopup
+  this.catalogLinkType = catalogLinkType
 
-    addCachedLayer('osm#standard', 'OSM', 'OpenStreetMap contributors, CC-BY-SA', 'osm')
-    addLayer('google#satellite', 'Спутник Google', 'Изображения © DigitalGlobe,CNES / Airbus, 2018,Картографические данные © Google, 2018', GOOGLE_SAT_TILES)
-    addCachedLayer('ggc#standard', 'Топографическая карта', '', 'ggc', 0, 15)
-//        addLayer('marshruty.ru#genshtab', 'Маршруты.ру', 'marshruty.ru', MARSHRUTY_RU_TILES, 8)
-  }
-
-  loadRivers(bounds) {
-    if (this.riverList) {
-        $.get(apiBase + "/visible-rivers?bbox=" + bounds.join(','), (data) => {
-                    var dataObj = {
-                        "rivers" : JSON.parse(data),
-                        "apiUrl": apiBase + "/gpx/river",
-                        "apiBase": apiBase
-                    }
-                    for (i in dataObj.rivers) {
-                        if(dataObj.rivers[i].bounds) {
-                            dataObj.rivers[i].bounds =  JSON.stringify(dataObj.rivers[i].bounds)
-                        }
-                    }
-                    this.riverList.update(dataObj)
-                });
-    }
-  }
-  
-  createHelpBtn() {
-        var helpButton = new ymaps.control.Button({
-            data: {
-                image: 'http://wwmap.ru/img/help.png'
-            },
-            options: {
-                selectOnClick: false
-            }
-        });
-        helpButton.events.add('click', (e) => {
-           this.tutorialPopup.show()
-        });
-        return helpButton
-  }
-
-    init(mapDivId) {
-        var positionAndZoom = getLastPositionAndZoom()
-
-        this.yMap = new ymaps.Map(this.divId, {
-            center: positionAndZoom.position,
-            zoom: positionAndZoom.zoom,
-            controls: ["zoomControl", "fullscreenControl"],
-            type: positionAndZoom.type
-        });
-
-
-        this.yMap.controls.add(
-            new ymaps.control.TypeSelector([
-                'osm#standard',
-                'ggc#standard',
-                'yandex#satellite',
-                'google#satellite',
-                ]
-            )
-        );
-
-        var LegendClass = createLegendClass()
-        this.yMap.controls.add(new LegendClass(), {
-            float: 'none',
-            position: {
-                top: 10,
-                left: 10
-            }});
-
-        if (this.tutorialPopup) {
-            this.yMap.controls.add(this.createHelpBtn(), {
-                float: 'none',
-                position: {
-                    top: 5,
-                    left: 240
-                }});
-        }
-
-        this.yMap.events.add('click', (e) => {
-            this.yMap.balloon.close()
-        });
-
-        this.yMap.events.add('boundschange', (e) => {
-            setLastPositionZoomType(this.yMap.getCenter(), this.yMap.getZoom(), this.yMap.getType())
-            this.loadRivers(e.get("newBounds"))
-        });
-
-        this.yMap.events.add('typechange', (e) => {
-            setLastPositionZoomType(this.yMap.getCenter(), this.yMap.getZoom(), this.yMap.getType())
-        });
-
-        var objectManager = new ymaps.RemoteObjectManager(apiBase + '/ymaps-tile-ww?bbox=%b&zoom=%z&link_type=' + this.catalogLinkType, {
-            clusterHasBalloon: false,
-            geoObjectOpenBalloonOnClick: false,
-            geoObjectBalloonContentLayout: ymaps.templateLayoutFactory.createClass(this.bubbleTemplate),
-            geoObjectStrokeWidth: 3,
-            splitRequests: true,
-
-            clusterHasBalloon: false,
-        });
-
-        objectManager.objects.events.add(['click'], function (e) {
-            objectManager.objects.balloon.open(e.get('objectId'));
-        });
-
-        this.yMap.geoObjects.add(objectManager);
-
-        this.loadRivers(this.yMap.getBounds())
-    }
-
-    setBounds(bounds, opts) {
-        this.yMap.setBounds(bounds, opts)
-    }
+  addCachedLayer('osm#standard', 'OSM', 'OpenStreetMap contributors, CC-BY-SA', 'osm')
+  addLayer('google#satellite', 'Спутник Google', 'Изображения © DigitalGlobe,CNES / Airbus, 2018,Картографические данные © Google, 2018', GOOGLE_SAT_TILES)
+  addCachedLayer('ggc#standard', 'Топографическая карта', '', 'ggc', 0, 15)
+  //      addLayer('marshruty.ru#genshtab', 'Маршруты.ру', 'marshruty.ru', MARSHRUTY_RU_TILES, 8)
 }
+
+WWMap.prototype.loadRivers = function(bounds) {
+  if (this.riverList) {
+      $.get(apiBase + "/visible-rivers?bbox=" + bounds.join(','), function (data) {
+                  var dataObj = {
+                      "rivers" : JSON.parse(data),
+                      "apiUrl": apiBase + "/gpx/river",
+                      "apiBase": apiBase
+                  }
+                  for (i in dataObj.rivers) {
+                      if(dataObj.rivers[i].bounds) {
+                          dataObj.rivers[i].bounds =  JSON.stringify(dataObj.rivers[i].bounds)
+                      }
+                  }
+                  this.riverList.update(dataObj)
+              });
+  }
+}
+
+WWMap.prototype.createHelpBtn = function() {
+      var helpButton = new ymaps.control.Button({
+          data: {
+              image: 'http://wwmap.ru/img/help.png'
+          },
+          options: {
+              selectOnClick: false
+          }
+      });
+      helpButton.events.add('click', function (e){
+         this.tutorialPopup.show()
+      });
+      return helpButton
+}
+
+WWMap.prototype.init = function(mapDivId) {
+      var positionAndZoom = getLastPositionAndZoom()
+
+      this.yMap = new ymaps.Map(this.divId, {
+          center: positionAndZoom.position,
+          zoom: positionAndZoom.zoom,
+          controls: ["zoomControl", "fullscreenControl"],
+          type: positionAndZoom.type
+      });
+
+
+      this.yMap.controls.add(
+          new ymaps.control.TypeSelector([
+              'osm#standard',
+              'ggc#standard',
+              'yandex#satellite',
+              'google#satellite',
+              ]
+          )
+      );
+
+      var LegendClass = createLegendClass()
+      this.yMap.controls.add(new LegendClass(), {
+          float: 'none',
+          position: {
+              top: 10,
+              left: 10
+          }});
+
+      if (this.tutorialPopup) {
+          this.yMap.controls.add(this.createHelpBtn(), {
+              float: 'none',
+              position: {
+                  top: 5,
+                  left: 240
+              }});
+      }
+
+      this.yMap.events.add('click', function (e){
+          this.yMap.balloon.close()
+      });
+
+      this.yMap.events.add('boundschange', function (e){
+          setLastPositionZoomType(this.yMap.getCenter(), this.yMap.getZoom(), this.yMap.getType())
+          this.loadRivers(e.get("newBounds"))
+      });
+
+      this.yMap.events.add('typechange', function (e){
+          setLastPositionZoomType(this.yMap.getCenter(), this.yMap.getZoom(), this.yMap.getType())
+      });
+
+      var objectManager = new ymaps.RemoteObjectManager(apiBase + '/ymaps-tile-ww?bbox=%b&zoom=%z&link_type=' + this.catalogLinkType, {
+          clusterHasBalloon: false,
+          geoObjectOpenBalloonOnClick: false,
+          geoObjectBalloonContentLayout: ymaps.templateLayoutFactory.createClass(this.bubbleTemplate),
+          geoObjectStrokeWidth: 3,
+          splitRequests: true,
+
+          clusterHasBalloon: false,
+      });
+
+      objectManager.objects.events.add(['click'], function (e) {
+          objectManager.objects.balloon.open(e.get('objectId'));
+      });
+
+      this.yMap.geoObjects.add(objectManager);
+
+      this.loadRivers(this.yMap.getBounds())
+  }
+
+WWMap.prototype.setBounds = function(bounds, opts) {
+      this.yMap.setBounds(bounds, opts)
+  }
 
 function addCachedLayer(key, name, copyright, mapId, lower_scale, upper_scale) {
     return addLayer(key, name, copyright, CACHED_TILES_TEMPLATE.replace('###', mapId), lower_scale, upper_scale)
@@ -186,8 +184,7 @@ function createLegendClass() {
     return Legend
 }
 
-class WWMapPopup {
-  constructor(templateUrl, divId, submitUrl, okMsg, failMsg) {
+function WWMapPopup(templateUrl, divId, submitUrl, okMsg, failMsg) {
     this.divId = divId;
     this.templateUrl = templateUrl;
     this.submitUrl = submitUrl;
@@ -198,11 +195,11 @@ class WWMapPopup {
     this.div = $("#"+this.divId)
   }
 
-  show(afterShowF) {
-    loadFragment(this.templateUrl, this.divId, (templateText) => {
+WWMapPopup.prototype.show = function(afterShowF) {
+    loadFragment(this.templateUrl, this.divId, function(templateText) {
         this.div.html(templateText)
-        $("#" + this.divId + " input[name=cancel]").click(() => this.hide());
-        $("#" + this.divId + " input[type=submit]").click(() => this.submit_form());
+        $("#" + this.divId + " input[name=cancel]").click(this.hide);
+        $("#" + this.divId + " input[type=submit]").click(this.submit_form);
         if (afterShowF) {
             afterShowF()
         }
@@ -211,28 +208,28 @@ class WWMapPopup {
     })
   }
 
-  hide() {
+WWMapPopup.prototype.hide = function() {
     this.div.html('')
     this.div.removeClass("wwmap-show");
   }
 
-  submit_form() {
+WWMapPopup.prototype.submit_form = function() {
     var form = $( "#" + this.divId + " form" )
     $.post(this.submitUrl, form.serialize() )
-            .done((data) => {
+            .done(function(data) {
                 window.alert(this.okMsg);
                 this.hide()
                 form.trigger('reset')
-            })  .fail(() => {
+            })  .fail(function() {
                 window.alert(this.failMsg);
             });
             return false;
   }
-}
+
 
 function loadFragment(url, fromId, onLoad) {
     var virtualElement = $('<div id="loaded-content"></div>')
-    virtualElement.load( url + ' #' + fromId, () => {
+    virtualElement.load( url + ' #' + fromId, function() {
         onLoad(virtualElement.html())
     });
 }
@@ -250,19 +247,18 @@ function show_map_at(bounds) {
 }
 
 function show_report_popup(id, title, riverTitle){
-    reportPopup.show(() => {
+    reportPopup.show(function() {
       $("#report_popup #object_id").val(id)
       $("#report_popup #object_title").val(title)
       $("#report_popup #title").val(riverTitle)
     })
 }
 
-class RiverList {
-    constructor(divId, templateDivId, fromTemplates) {
+function RiverList(divId, templateDivId, fromTemplates) {
         this.divId = divId
 
         if (fromTemplates) {
-            loadFragment(MAP_FRAGMENTS_URL, templateDivId, (templateText) => {
+            loadFragment(MAP_FRAGMENTS_URL, templateDivId, function(templateText) {
                 $('body').prepend(templateText)
                 this.templateDiv = $('#'+templateDivId)
             })
@@ -271,13 +267,12 @@ class RiverList {
         }
     }
 
-    update(rivers) {
+RiverList.prototype.update = function(rivers) {
         if (this.templateDiv) {
             var html = this.templateDiv.tmpl(rivers).html()
             $('#' + this.divId).html(html)
         }
     }
-}
 
 function initMailtoLinks() {
     // initialize all mailto links: robots do not perform js, so this links will not be detected by robots
@@ -312,7 +307,7 @@ function initWWMap(mapId, riversListId, catalogLinkType) {
 
     // init and show map
     ymaps.ready(function() {
-        loadFragment(MAP_FRAGMENTS_URL, 'bubble_template', (bubbleContent) => {
+        loadFragment(MAP_FRAGMENTS_URL, 'bubble_template', function(bubbleContent) {
             wwMap = new WWMap(mapId, extractInnerHtml(bubbleContent), riverList, tutorialPopup, catalogLinkType)
             wwMap.init()
         })
