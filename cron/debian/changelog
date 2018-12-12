@@ -1,3 +1,9 @@
+wwmap-cron (0.0.17) unstable; urgency=medium
+
+  * #154 Pdf rendering disabled - html only
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Wed, 12 Dec 2018 20:26:08 +0300
+
 wwmap-cron (0.0.16) unstable; urgency=medium
 
   * #75 PDF look improvements
