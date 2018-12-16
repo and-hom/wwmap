@@ -48,15 +48,22 @@ WWMap.prototype.createHelpBtn = function () {
     return helpButton
 };
 
-WWMap.prototype.init = function () {
+WWMap.prototype.init = function (mapDivId) {
     var positionAndZoom = getLastPositionAndZoom();
 
-    this.yMap = new ymaps.Map(this.divId, {
-        center: positionAndZoom.position,
-        zoom: positionAndZoom.zoom,
-        controls: ["zoomControl", "fullscreenControl"],
-        type: positionAndZoom.type
-    });
+    var yMap;
+    try {
+        yMap = new ymaps.Map(this.divId, {
+            center: positionAndZoom.position,
+            zoom: positionAndZoom.zoom,
+            controls: ["zoomControl", "fullscreenControl"],
+            type: positionAndZoom.type
+        });
+    } catch (err) {
+        setLastPositionZoomType(defaultPosition(), defaultZoom(), defaultMapType());
+        throw err
+    }
+    this.yMap = yMap;
 
 
     this.yMap.controls.add(

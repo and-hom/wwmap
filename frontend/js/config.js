@@ -1,25 +1,29 @@
-const LAST_POS_COOKIE_NAME = "last-map-pos";
-const LAST_ZOOM_COOKIE_NAME = "last-map-zoom";
-const LAST_MAP_TYPE_COOKIE_NAME = "last-map-type";
+LAST_POS_COOKIE_NAME = "last-map-pos";
+LAST_ZOOM_COOKIE_NAME = "last-map-zoom";
+LAST_MAP_TYPE_COOKIE_NAME = "last-map-type";
 
 // environment dependent section
-const apiBase = "http://localhost:7007";
+apiBase = "http://localhost:7007";
 // end
 
-const CACHED_TILES_TEMPLATE = 'http://wwmap.ru/maps/###/%z/%x/%y.png';
+CACHED_TILES_TEMPLATE = 'http://wwmap.ru/maps/###/%z/%x/%y.png';
 
-const GOOGLE_SAT_TILES = 'http://khms' + Math.floor(Math.random()) % 4 + '.google.com/kh/v=818&src=app&x=%x&y=%y&z=%z&s=Gal';
-const THUNDERFOREST_OUTDOOR_TILES = 'http://a.tile.thunderforest.com/outdoors/%z/%x/%y.png';
-const THUNDERFOREST_LANDSCAPE_TILES = 'http://a.tile.thunderforest.com/landscape/%z/%x/%y.png';
+GOOGLE_SAT_TILES = 'http://khms' + Math.floor(Math.random()) % 4 + '.google.com/kh/v=818&src=app&x=%x&y=%y&z=%z&s=Gal';
+THUNDERFOREST_OUTDOOR_TILES = 'http://a.tile.thunderforest.com/outdoors/%z/%x/%y.png';
+THUNDERFOREST_LANDSCAPE_TILES = 'http://a.tile.thunderforest.com/landscape/%z/%x/%y.png';
 
-const MAP_FRAGMENTS_URL = 'https://wwmap.ru/map-components/map-html-components.htm'
+MAP_FRAGMENTS_URL = 'https://wwmap.ru/map-components/map-html-components.htm';
+
+function defaultPosition() {
+    return [78, 46];
+}
 
 function getLastPosition() {
     lastPos = $.cookie(LAST_POS_COOKIE_NAME);
     if (lastPos) {
         return JSON.parse(lastPos)
     } else {
-        return [78, 46]
+        return defaultPosition()
     }
 }
 
@@ -27,12 +31,16 @@ function setLastPosition(pos) {
     $.cookie(LAST_POS_COOKIE_NAME, JSON.stringify(pos), {path: '/'})
 }
 
+function defaultZoom() {
+    return 3;
+}
+
 function getLastZoom() {
     lastZoom = $.cookie(LAST_ZOOM_COOKIE_NAME);
     if (lastZoom) {
         return JSON.parse(lastZoom)
     } else {
-        return 3
+        return defaultZoom()
     }
 }
 
@@ -83,12 +91,16 @@ function getLastPositionAndZoom() {
     }
 }
 
+function defaultMapType() {
+    return "osm#standard";
+}
+
 function getLastMapType() {
     lastMapType = $.cookie(LAST_MAP_TYPE_COOKIE_NAME);
     if (lastMapType) {
         return JSON.parse(lastMapType)
     } else {
-        return "osm#standard"
+        return defaultMapType()
     }
 }
 
