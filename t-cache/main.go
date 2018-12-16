@@ -1,27 +1,27 @@
 package main
 
 import (
-	log "github.com/Sirupsen/logrus"
-	"github.com/gorilla/mux"
-	"net/http"
-	"os"
-	"github.com/and-hom/wwmap/lib/config"
-	. "github.com/and-hom/wwmap/lib/http"
-	. "github.com/and-hom/wwmap/lib/handler"
-	"io"
-	"math/rand"
-	"text/template"
-	"github.com/pkg/errors"
-	"path/filepath"
-	"io/ioutil"
-	"time"
-	"sync"
-	"fmt"
 	"bytes"
-	"strconv"
+	"fmt"
+	log "github.com/Sirupsen/logrus"
+	"github.com/and-hom/wwmap/lib/config"
+	. "github.com/and-hom/wwmap/lib/handler"
+	. "github.com/and-hom/wwmap/lib/http"
+	"github.com/gorilla/mux"
+	"github.com/pkg/errors"
 	"image"
 	"image/color"
 	"image/png"
+	"io"
+	"io/ioutil"
+	"math/rand"
+	"net/http"
+	"os"
+	"path/filepath"
+	"strconv"
+	"sync"
+	"text/template"
+	"time"
 )
 
 var GMT_LOC, _ = time.LoadLocation("UTC")
@@ -108,13 +108,15 @@ func (this *DataHandler) Init() {
 	this.Register("/{type}/{z}/{x}/{y}.png", HandlerFunctions{Get:this.tile, Head: this.tile})
 }
 
-func (this *DataHandler) generateDefaultImg() {
-	log.Info("Generate empty png for missing tiles")
-	img := image.NewRGBA(image.Rect(0, 0, 1, 1))
-	img.Set(0, 0, color.RGBA{0, 0, 0, 0})
-	buf := bytes.Buffer{}
-	png.Encode(&buf, img)
-	this.defaultData = buf.Bytes()
+func (this *DataHandler) initDefaultImageIfNecessary() {
+	if this.defaultData == nil {
+		log.Info("Generate empty png for missing tiles")
+		img := image.NewRGBA(image.Rect(0, 0, 1, 1))
+		img.Set(0, 0, color.RGBA{0, 0, 0, 0})
+		buf := bytes.Buffer{}
+		png.Encode(&buf, img)
+		this.defaultData = buf.Bytes()
+	}
 }
 
 func (this *DataHandler) fetchUrlToTmpFile(w http.ResponseWriter, url string) (string, error) {
@@ -152,9 +154,7 @@ func (this *DataHandler) fetchUrlToTmpFile(w http.ResponseWriter, url string) (s
 			return "", err
 		}
 	} else {
-		if this.defaultData == nil {
-			this.generateDefaultImg()
-		}
+			this.initDefaultImageIfNecessary()
 		log.Info("Use empty image for missing tile")
 		w.Write(this.defaultData)
 	}
