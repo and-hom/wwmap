@@ -182,7 +182,8 @@ func ParseBounds(boundsStr string) (geo.Bbox, error) {
 }
 
 func point2rect(pgPoint PgPoint) [][]geo.Point {
-	p := pgPoint.GetPoint()
+	// do not flip twice
+	p := pgPoint.Coordinates
 	return [][]geo.Point{[]geo.Point{
 		{
 			Lat: p.Lat - 0.0001,
