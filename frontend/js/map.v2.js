@@ -1,3 +1,80 @@
+function WWMapSearchProvider() {
+
+}
+
+WWMapSearchProvider.prototype.geocode = function (request, options) {
+    var deferred = new ymaps.vow.defer(),
+        geoObjects = new ymaps.GeoObjectCollection(),
+        // Сколько результатов нужно пропустить.
+        offset = options.skip || 0,
+        // Количество возвращаемых результатов.
+        limit = options.results || 20;
+
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", apiBase + "/search", false);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.send(request);
+    var respData = JSON.parse(xhr.response);
+    
+    for (var i = 0, l = respData.spots.length; i < l; i++) {
+        var spot = respData.spots[i];
+
+        geoObjects.add(new ymaps.Placemark(spot.point, {
+            name: spot.title,
+            description: spot.river_title,
+            balloonContentBody: '<p>' + spot.title + ' (' + spot.river_title + ')' + '</p>',
+            boundedBy: [addToPoint(spot.point, -0.003), addToPoint(spot.point, 0.003)]
+        },{
+            iconLayout: 'default#image',
+            iconImageHref: respData.resource_base + '/img/empty-px.png',
+            iconImageSize: [1, 1],
+            iconImageOffset: [-1, -1],
+
+            id: spot.id
+        }));
+    }
+    
+    for (var i = 0, l = respData.rivers.length; i < l; i++) {
+        var river = respData.rivers[i];
+
+        geoObjects.add(new ymaps.Placemark(center(river.bounds), {
+            name: river.title,
+            description: river.region.title,
+            balloonContentBody: '<p>' + river.title + '</p>',
+            boundedBy: river.bounds
+        },{
+            iconLayout: 'default#image',
+            iconImageHref: respData.resource_base + '/img/empty-px.png',
+            iconImageSize: [1, 1],
+            iconImageOffset: [-1, -1],
+
+            id: river.id
+        }));
+    }
+
+    deferred.resolve({
+        geoObjects: geoObjects,
+        metaData: {
+            geocoder: {
+                request: request,
+                found: geoObjects.getLength(),
+                results: limit,
+                skip: offset
+            }
+        }
+    });
+
+    return deferred.promise();
+};
+
+function addToPoint(p, x) {
+    return [p[0] + x, p[1] + x]
+}
+
+function center(bounds) {
+    return [(bounds[0][0] + bounds[1][0]) / 2, (bounds[0][1] + bounds[1][1]) / 2]
+}
+
 function WWMap(divId, bubbleTemplate, riverList, tutorialPopup, catalogLinkType) {
     this.divId = divId;
     this.bubbleTemplate = bubbleTemplate;
@@ -76,24 +153,23 @@ WWMap.prototype.init = function (mapDivId) {
         )
     );
 
-    var LegendClass = createLegendClass();
-    this.yMap.controls.add(new LegendClass(), {
-        float: 'none',
-        position: {
-            top: 10,
-            left: 10
+    this.yMap.controls.add(new ymaps.control.SearchControl({
+        options: {
+            provider: new WWMapSearchProvider(),
+            placeholderContent: 'Река или порог'
         }
-    });
+    }));
 
     if (this.tutorialPopup) {
         this.yMap.controls.add(this.createHelpBtn(), {
-            float: 'none',
-            position: {
-                top: 5,
-                left: 240
-            }
+            float: 'left'
         });
     }
+
+    var LegendClass = createLegendClass();
+    this.yMap.controls.add(new LegendClass(), {
+        float: 'left'
+    });
 
     var t = this;
     this.yMap.events.add('click', function (e) {
@@ -252,14 +328,6 @@ function extractInnerHtml(str) {
     return $(str).html()
 }
 
-
-function show_map_at(bounds) {
-    wwMap.setBounds(bounds, {
-        checkZoomRange: true,
-        duration: 200
-    })
-}
-
 function show_report_popup(id, title, riverTitle) {
     reportPopup.show(function () {
         $("#report_popup #object_id").val(id);
@@ -305,6 +373,15 @@ CATALOG_LINK_TYPES = [
     'huskytm' // use link to huskytm.ru catalog (upload from wwmap.ru)
 ];
 
+var wwMap;
+
+function show_map_at(bounds) {
+    wwMap.setBounds(bounds, {
+        checkZoomRange: true,
+        duration: 200
+    })
+}
+
 function initWWMap(mapId, riversListId, catalogLinkType) {
     if (catalogLinkType && CATALOG_LINK_TYPES.indexOf(catalogLinkType) <= -1) {
         throw "Unknown catalog link type. Available are: " + CATALOG_LINK_TYPES
@@ -324,7 +401,7 @@ function initWWMap(mapId, riversListId, catalogLinkType) {
     // init and show map
     ymaps.ready(function () {
         loadFragment(MAP_FRAGMENTS_URL, 'bubble_template', function (bubbleContent) {
-            var wwMap = new WWMap(mapId, extractInnerHtml(bubbleContent), riverList, tutorialPopup, catalogLinkType);
+            wwMap = new WWMap(mapId, extractInnerHtml(bubbleContent), riverList, tutorialPopup, catalogLinkType);
             wwMap.init()
         })
     });

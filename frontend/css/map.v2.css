@@ -105,6 +105,10 @@
 .wwmap-river-menu .wwmap-legend {
 ;}
 
+.wwmap-legend {
+    padding: 5px;
+}
+
 .wwmap-legend div {
     display: inline;
     padding: 3px;

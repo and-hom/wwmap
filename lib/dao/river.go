@@ -27,6 +27,7 @@ func NewRiverPostgresDao(postgresStorage PostgresStorage) RiverDao {
 		updateQuery:queries.SqlQuery("river", "update"),
 		deleteQuery:queries.SqlQuery("river", "delete"),
 		setVisibleQuery:queries.SqlQuery("river", "set-visible"),
+		findByTitlePartQuery:queries.SqlQuery("river", "by-title-part"),
 	}
 }
 
@@ -45,6 +46,7 @@ type riverStorage struct {
 	updateQuery             string
 	deleteQuery             string
 	setVisibleQuery         string
+	findByTitlePartQuery         string
 }
 
 func (this riverStorage) FindTitles(titles []string) ([]RiverTitle, error) {
@@ -53,6 +55,10 @@ func (this riverStorage) FindTitles(titles []string) ([]RiverTitle, error) {
 
 func (this riverStorage) ListRiversWithBounds(bbox geo.Bbox, limit int, showUnpublished bool) ([]RiverTitle, error) {
 	return this.listRiverTitles(this.insideBoundsQuery, bbox.Y1, bbox.X1, bbox.Y2, bbox.X2, limit, showUnpublished)
+}
+
+func (this riverStorage) FindByTitlePart(tPart string, limit, offset int) ([]RiverTitle, error) {
+	return this.listRiverTitles(this.findByTitlePartQuery, tPart, tPart, limit, offset)
 }
 
 func (this riverStorage) Find(id int64) (River, error) {

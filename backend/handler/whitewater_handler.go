@@ -1,17 +1,17 @@
 package handler
 
 import (
-	"net/http"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	. "github.com/and-hom/wwmap/lib/dao"
-	. "github.com/and-hom/wwmap/lib/geo"
-	. "github.com/and-hom/wwmap/lib/http"
-	. "github.com/and-hom/wwmap/lib/handler"
-	"strconv"
 	"github.com/and-hom/wwmap/backend/clustering"
 	"github.com/and-hom/wwmap/backend/ymaps"
+	. "github.com/and-hom/wwmap/lib/dao"
+	. "github.com/and-hom/wwmap/lib/geo"
+	. "github.com/and-hom/wwmap/lib/handler"
+	. "github.com/and-hom/wwmap/lib/http"
+	"io/ioutil"
+	"net/http"
+	"strconv"
 )
 
 type WhiteWaterHandler struct {
@@ -23,8 +23,9 @@ type WhiteWaterHandler struct {
 const PREVIEWS_COUNT int = 20
 
 func (this *WhiteWaterHandler) Init() {
-	this.Register("/ymaps-tile-ww", HandlerFunctions{Get:this.TileWhiteWaterHandler})
-	this.Register("/whitewater", HandlerFunctions{Post: this.InsertWhiteWaterPoints, Put:this.InsertWhiteWaterPoints})
+	this.Register("/ymaps-tile-ww", HandlerFunctions{Get: this.TileWhiteWaterHandler})
+	this.Register("/whitewater", HandlerFunctions{Post: this.InsertWhiteWaterPoints, Put: this.InsertWhiteWaterPoints})
+	this.Register("/search", HandlerFunctions{Post: this.search})
 }
 
 func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req *http.Request) {
@@ -87,12 +88,12 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 			return
 		}
 		sp := Spot{
-			IdTitle:spot.IdTitle,
-			Description:spot.ShortDesc,
-			Link:spot.Link,
-			Point:spot.Point,
-			Images:spot.Images,
-			Category:spot.Category,
+			IdTitle:     spot.IdTitle,
+			Description: spot.ShortDesc,
+			Link:        spot.Link,
+			Point:       spot.Point,
+			Images:      spot.Images,
+			Category:    spot.Category,
 		}
 
 		river, err := this.RiverDao.Find(spot.RiverId)
@@ -101,10 +102,10 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 			return
 		}
 		rws := RiverWithSpots{
-			IdTitle: river.IdTitle,
-			CountryId:river.Region.CountryId,
-			RegionId:river.Region.Id,
-			Spots:[]Spot{},
+			IdTitle:   river.IdTitle,
+			CountryId: river.Region.CountryId,
+			RegionId:  river.Region.Id,
+			Spots:     []Spot{},
 		}
 
 		features, err = ymaps.SingleWhiteWaterPointToYmaps(sp, rws, this.ResourceBase, this.processForWeb, getLinkMaker(req.FormValue("link_type")))
@@ -164,4 +165,47 @@ func (this *WhiteWaterHandler) parseWhiteWaterPointsForm(w http.ResponseWriter, 
 		return []WhiteWaterPoint{}, err
 	}
 	return points, nil
+}
+
+func (this *WhiteWaterHandler) search(w http.ResponseWriter, r *http.Request) {
+	requestBody, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		OnError500(w, err, "Can not read body")
+		return
+	}
+
+	spots, err := this.WhiteWaterDao.FindByTitlePart(string(requestBody), 30, 0)
+	if err != nil {
+		OnError500(w, err, "Can not select spots")
+		return
+	}
+	rivers, err := this.RiverDao.FindByTitlePart(string(requestBody), 30, 0)
+	if err != nil {
+		OnError500(w, err, "Can not select spots")
+		return
+	}
+
+	resp := SearchResp{
+		Spots:        spots,
+		Rivers:       rivers,
+		ResourceBase: this.ResourceBase,
+	}
+
+	respBytes, err := json.Marshal(resp)
+	if err != nil {
+		OnError500(w, err, "Can not marshal response")
+		return
+	}
+
+	_, err = w.Write(respBytes)
+	if err != nil {
+		OnError500(w, err, "Can not write response")
+		return
+	}
+}
+
+type SearchResp struct {
+	Spots        []WhiteWaterPointWithRiverTitle `json:"spots"`
+	Rivers       []RiverTitle                    `json:"rivers"`
+	ResourceBase string                          `json:"resource_base"`
 }

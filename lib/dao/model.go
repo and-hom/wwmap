@@ -113,8 +113,8 @@ type WhiteWaterPointFull struct {
 
 type WhiteWaterPointWithRiverTitle struct {
 	WhiteWaterPoint
-	RiverTitle string
-	Images     []Img
+	RiverTitle string `json:"river_title"`
+	Images     []Img `json:"images"`
 }
 
 type PointRef struct {

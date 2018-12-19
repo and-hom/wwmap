@@ -35,6 +35,7 @@ type RiverDao interface {
 	Insert(river River) (int64, error)
 	Save(river ...River) error
 	SetVisible(id int64, visible bool) (error)
+	FindByTitlePart(tPart string, limit, offset int) ([]RiverTitle, error)
 }
 
 type WhiteWaterDao interface {
@@ -55,6 +56,7 @@ type WhiteWaterDao interface {
 	AutoOrderingRiverIds() ([]int64, error)
 	DistanceFromBeginning(riverId int64, path []Point) (map[int64]int, error)
 	UpdateOrderIdx(idx map[int64]int) error
+	FindByTitlePart(tPart string, limit, offset int) ([]WhiteWaterPointWithRiverTitle, error)
 }
 
 type NotificationDao interface {

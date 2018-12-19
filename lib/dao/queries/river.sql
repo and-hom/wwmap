@@ -80,3 +80,16 @@ DELETE FROM river WHERE id=$1
 
 --@set-visible
 UPDATE river SET visible=$2 WHERE id=$1
+
+--@by-title-part
+SELECT river.id, region_id, region.country_id, river.title, region.title AS region_title, fake AS region_fake, ST_AsGeoJSON(ST_Extent(white_water_rapid.point)), river.aliases, river.props
+    FROM @@table@@
+        INNER JOIN white_water_rapid ON river.id=white_water_rapid.river_id
+        INNER JOIN region ON river.region_id=region.id
+WHERE @@table@@.id=ANY(
+    SELECT DISTINCT id FROM
+    (SELECT id, title, CASE aliases WHEN '[]' THEN NULL ELSE jsonb_array_elements_text(aliases) END AS alias FROM @@table@@) sq
+    WHERE  title ilike '%'||$1||'%' OR alias ilike '%'||$2||'%'
+    )
+GROUP BY river.id, region_id, region.country_id, region.title, region.fake
+LIMIT $3 OFFSET $4

@@ -34,6 +34,7 @@ func NewWhiteWaterPostgresDao(postgresStorage PostgresStorage) WhiteWaterDao {
 		autoOrderingRiverIdsQuery: queries.SqlQuery("white-water", "auto-ordering-river-ids"),
 		distanceFromBeginningQuery: queries.SqlQuery("white-water", "distance-from-beginning"),
 		updateOrderIdxQuery: queries.SqlQuery("white-water", "update-order-idx"),
+		findByTitlePartQuery: queries.SqlQuery("white-water", "by-title-part"),
 	}
 }
 
@@ -44,6 +45,7 @@ type whiteWaterStorage struct {
 	listByRiverQuery           string
 	listByRiverFullQuery       string
 	listByRiverAndTitleQuery   string
+	findByTitlePartQuery   string
 	insertQuery                string
 	insertFullQuery            string
 	updateQuery                string
@@ -72,6 +74,10 @@ func (this whiteWaterStorage) ListByRiverFull(id int64) ([]WhiteWaterPointFull, 
 
 func (this whiteWaterStorage) ListByRiverAndTitle(riverId int64, title string) ([]WhiteWaterPointWithRiverTitle, error) {
 	return this.list(this.listByRiverAndTitleQuery, riverId, title)
+}
+
+func (this whiteWaterStorage) FindByTitlePart(tPart string, limit, offset int) ([]WhiteWaterPointWithRiverTitle, error) {
+	return this.list(this.findByTitlePartQuery, tPart, tPart, limit, offset)
 }
 
 func (this whiteWaterStorage) Find(id int64) (WhiteWaterPointWithRiverTitle, error) {

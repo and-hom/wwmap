@@ -50,6 +50,16 @@ FROM @@table@@  LEFT OUTER JOIN river ON @@table@@.river_id=river.id
 WHERE river_id=$1
 ORDER BY order_index ASC
 
+--@by-title-part
+SELECT @@select-columns@@
+FROM @@table@@  LEFT OUTER JOIN river ON @@table@@.river_id=river.id
+WHERE @@table@@.id=ANY(
+    SELECT DISTINCT id FROM
+        (SELECT id, title, CASE aliases WHEN '[]' THEN NULL ELSE jsonb_array_elements_text(aliases) END AS alias FROM @@table@@) sq
+      WHERE  title ilike '%'||$1||'%' OR alias ilike '%'||$2||'%'
+    )
+LIMIT $3 OFFSET $4
+
 --@by-river-full
 SELECT @@select-columns-full@@
 FROM @@table@@  LEFT OUTER JOIN river ON @@table@@.river_id=river.id
