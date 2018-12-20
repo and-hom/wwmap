@@ -1,40 +1,41 @@
 package dao
 
 import (
-	log "github.com/Sirupsen/logrus"
 	"database/sql"
 	"encoding/json"
+	"fmt"
+	log "github.com/Sirupsen/logrus"
+	"github.com/and-hom/wwmap/lib/dao/queries"
 	"github.com/and-hom/wwmap/lib/geo"
 	"github.com/and-hom/wwmap/lib/model"
-	"strings"
-	"github.com/and-hom/wwmap/lib/dao/queries"
-	"fmt"
-	"github.com/lib/pq"
 	"github.com/and-hom/wwmap/lib/util"
+	"github.com/lib/pq"
+	"regexp"
+	"strings"
 	"time"
 )
 
 func NewWhiteWaterPostgresDao(postgresStorage PostgresStorage) WhiteWaterDao {
 	return whiteWaterStorage{
-		PostgresStorage:postgresStorage,
-		PropsManager:PropertyManagerImpl{table:queries.SqlQuery("white-water", "table"), dao:&postgresStorage},
-		listByBoxQuery: queries.SqlQuery("white-water", "by-box"),
-		listByRiverQuery: queries.SqlQuery("white-water", "by-river"),
-		listByRiverFullQuery: queries.SqlQuery("white-water", "by-river-full"),
-		listByRiverAndTitleQuery: queries.SqlQuery("white-water", "by-river-and-title"),
-		insertQuery: queries.SqlQuery("white-water", "insert"),
-		insertFullQuery: queries.SqlQuery("white-water", "insert-full"),
-		updateQuery: queries.SqlQuery("white-water", "update"),
-		byIdQuery: queries.SqlQuery("white-water", "by-id"),
-		byIdFullQuery: queries.SqlQuery("white-water", "by-id-full"),
-		updateFullQuery: queries.SqlQuery("white-water", "update-full"),
-		deleteQuery: queries.SqlQuery("white-water", "delete"),
-		deleteForRiverQuery: queries.SqlQuery("white-water", "delete-for-river"),
-		geomCenterByRiverQuery: queries.SqlQuery("white-water", "geom-center-by-river"),
-		autoOrderingRiverIdsQuery: queries.SqlQuery("white-water", "auto-ordering-river-ids"),
+		PostgresStorage:            postgresStorage,
+		PropsManager:               PropertyManagerImpl{table: queries.SqlQuery("white-water", "table"), dao: &postgresStorage},
+		listByBoxQuery:             queries.SqlQuery("white-water", "by-box"),
+		listByRiverQuery:           queries.SqlQuery("white-water", "by-river"),
+		listByRiverFullQuery:       queries.SqlQuery("white-water", "by-river-full"),
+		listByRiverAndTitleQuery:   queries.SqlQuery("white-water", "by-river-and-title"),
+		insertQuery:                queries.SqlQuery("white-water", "insert"),
+		insertFullQuery:            queries.SqlQuery("white-water", "insert-full"),
+		updateQuery:                queries.SqlQuery("white-water", "update"),
+		byIdQuery:                  queries.SqlQuery("white-water", "by-id"),
+		byIdFullQuery:              queries.SqlQuery("white-water", "by-id-full"),
+		updateFullQuery:            queries.SqlQuery("white-water", "update-full"),
+		deleteQuery:                queries.SqlQuery("white-water", "delete"),
+		deleteForRiverQuery:        queries.SqlQuery("white-water", "delete-for-river"),
+		geomCenterByRiverQuery:     queries.SqlQuery("white-water", "geom-center-by-river"),
+		autoOrderingRiverIdsQuery:  queries.SqlQuery("white-water", "auto-ordering-river-ids"),
 		distanceFromBeginningQuery: queries.SqlQuery("white-water", "distance-from-beginning"),
-		updateOrderIdxQuery: queries.SqlQuery("white-water", "update-order-idx"),
-		findByTitlePartQuery: queries.SqlQuery("white-water", "by-title-part"),
+		updateOrderIdxQuery:        queries.SqlQuery("white-water", "update-order-idx"),
+		findByTitlePartQuery:       queries.SqlQuery("white-water", "by-title-part"),
 	}
 }
 
@@ -45,7 +46,7 @@ type whiteWaterStorage struct {
 	listByRiverQuery           string
 	listByRiverFullQuery       string
 	listByRiverAndTitleQuery   string
-	findByTitlePartQuery   string
+	findByTitlePartQuery       string
 	insertQuery                string
 	insertFullQuery            string
 	updateQuery                string
@@ -76,8 +77,11 @@ func (this whiteWaterStorage) ListByRiverAndTitle(riverId int64, title string) (
 	return this.list(this.listByRiverAndTitleQuery, riverId, title)
 }
 
+var eYoRepl = regexp.MustCompile(`(?i)ё`)
+
 func (this whiteWaterStorage) FindByTitlePart(tPart string, limit, offset int) ([]WhiteWaterPointWithRiverTitle, error) {
-	return this.list(this.findByTitlePartQuery, tPart, tPart, limit, offset)
+	tPart = eYoRepl.ReplaceAllLiteralString(tPart, "е")
+	return this.list(this.findByTitlePartQuery, pq.Array(strings.Fields(tPart)), limit, offset)
 }
 
 func (this whiteWaterStorage) Find(id int64) (WhiteWaterPointWithRiverTitle, error) {
@@ -182,7 +186,7 @@ func (this whiteWaterStorage) list(query string, vars ...interface{}) ([]WhiteWa
 			}
 			return whiteWaterPoint, nil
 		}, vars...)
-	if (err != nil ) {
+	if (err != nil) {
 		return []WhiteWaterPointWithRiverTitle{}, err
 	}
 	return result.([]WhiteWaterPointWithRiverTitle), nil
@@ -190,7 +194,7 @@ func (this whiteWaterStorage) list(query string, vars ...interface{}) ([]WhiteWa
 
 func (this whiteWaterStorage) listFull(query string, vars ...interface{}) ([]WhiteWaterPointFull, error) {
 	result, err := this.doFindList(query, scanWwPointFull, vars...)
-	if (err != nil ) {
+	if (err != nil) {
 		return []WhiteWaterPointFull{}, err
 	}
 	return result.([]WhiteWaterPointFull), nil
@@ -308,14 +312,14 @@ func scanWwPoint(rows *sql.Rows, additionalVars ...interface{}) (WhiteWaterPoint
 
 	return WhiteWaterPoint{
 		IdTitle: IdTitle{
-			Id:id,
+			Id:    id,
 			Title: title,
 		},
-		RiverId:getOrElse(riverId, -1),
-		Point: pgPoint.GetPoint(),
-		Category: category,
+		RiverId:   getOrElse(riverId, -1),
+		Point:     pgPoint.GetPoint(),
+		Category:  category,
 		ShortDesc: shortDesc.String,
-		Link: link.String,
+		Link:      link.String,
 	}, nil
 }
 
@@ -405,9 +409,13 @@ func (this whiteWaterStorage) AutoOrderingRiverIds() ([]int64, error) {
 	return r.([]int64), err
 }
 
-type idDistPair struct{ int64; int }
+type idDistPair struct {
+	int64;
+	int
+}
 
 const ORDERING_MIN_DISTANCE_METERS = 30
+
 func (this whiteWaterStorage) DistanceFromBeginning(riverId int64, path []geo.Point) (map[int64]int, error) {
 	result := make(map[int64]int)
 	pathB, err := json.Marshal(geo.NewLineString(path))

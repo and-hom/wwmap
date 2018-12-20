@@ -1,0 +1,1 @@
+DROP FUNCTION wwmap_search(txt character varying, queries character varying[]);
