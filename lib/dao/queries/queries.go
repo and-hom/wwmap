@@ -59,7 +59,7 @@ func getQueriesOfFile(file string) map[string]string {
 	return queriesOfFile
 }
 
-const SUB_QUERY_REPLACE = "\\@\\@(.*?)\\@\\@"
+const SUB_QUERY_REPLACE = "___(.*?)___"
 
 var subQueryReplacer = regexp.MustCompile(SUB_QUERY_REPLACE)
 

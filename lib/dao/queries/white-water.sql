@@ -1,8 +1,8 @@
 --@table
 white_water_rapid
 --@select-columns
-    @@table@@.id AS id,
-    @@table@@.title AS title,
+    ___table___.id AS id,
+    ___table___.title AS title,
     ST_AsGeoJSON(point) as point,
     category,
     short_description,
@@ -11,8 +11,8 @@ white_water_rapid
     river.title as river_title
 
 --@select-columns-full
-    @@table@@.id AS id,
-    @@table@@.title AS title,
+    ___table___.id AS id,
+    ___table___.title AS title,
     ST_AsGeoJSON(point) as point,
     category,
     short_description,
@@ -35,64 +35,64 @@ white_water_rapid
     auto_ordering,
     last_auto_ordering,
 
-    @@table@@.aliases,
-    @@table@@.props
+    ___table___.aliases,
+    ___table___.props
 
 
 --@by-box
-SELECT @@select-columns@@
-FROM @@table@@  LEFT OUTER JOIN river ON @@table@@.river_id=river.id
+SELECT ___select-columns___
+FROM ___table___  LEFT OUTER JOIN river ON ___table___.river_id=river.id
 WHERE point && ST_MakeEnvelope($1,$2,$3,$4)
 
 --@by-river
-SELECT @@select-columns@@
-FROM @@table@@  LEFT OUTER JOIN river ON @@table@@.river_id=river.id
+SELECT ___select-columns___
+FROM ___table___  LEFT OUTER JOIN river ON ___table___.river_id=river.id
 WHERE river_id=$1
 ORDER BY order_index ASC
 
 --@by-title-part
-SELECT @@select-columns@@
-FROM @@table@@  LEFT OUTER JOIN river ON @@table@@.river_id=river.id
-WHERE @@table@@.id=ANY(
+SELECT ___select-columns___
+FROM ___table___  LEFT OUTER JOIN river ON ___table___.river_id=river.id
+WHERE ___table___.id=ANY(
     SELECT DISTINCT id FROM
-        (SELECT id, title, CASE aliases WHEN '[]' THEN NULL ELSE jsonb_array_elements_text(aliases) END AS alias FROM @@table@@) sq
+        (SELECT id, title, CASE aliases WHEN '[]' THEN NULL ELSE jsonb_array_elements_text(aliases) END AS alias FROM ___table___) sq
       WHERE  title ilike '%'||$1||'%' OR alias ilike '%'||$2||'%'
     )
 LIMIT $3 OFFSET $4
 
 --@by-river-full
-SELECT @@select-columns-full@@
-FROM @@table@@  LEFT OUTER JOIN river ON @@table@@.river_id=river.id
+SELECT ___select-columns-full___
+FROM ___table___  LEFT OUTER JOIN river ON ___table___.river_id=river.id
 WHERE river_id=$1
 ORDER BY order_index ASC
 
 --@by-river-and-title
-SELECT @@select-columns@@
-FROM @@table@@  LEFT OUTER JOIN river ON @@table@@.river_id=river.id
+SELECT ___select-columns___
+FROM ___table___  LEFT OUTER JOIN river ON ___table___.river_id=river.id
 WHERE river_id=$1 AND title=$2
 
 --@insert
-INSERT INTO @@table@@(title,category,point,short_description, link, river_id)
+INSERT INTO ___table___(title,category,point,short_description, link, river_id)
 		VALUES ($2, $3, ST_GeomFromGeoJSON($4), $5, $6, $7)
 
 --@update
-UPDATE @@table@@ SET title=$2,category=$3, point=ST_GeomFromGeoJSON($4), short_description=$5, link=$6, river_id=$7
+UPDATE ___table___ SET title=$2,category=$3, point=ST_GeomFromGeoJSON($4), short_description=$5, link=$6, river_id=$7
     WHERE id=$1
 
 --@by-id
-SELECT @@select-columns@@
-FROM @@table@@
-INNER JOIN river ON @@table@@.river_id=river.id
-    WHERE @@table@@.id=$1
+SELECT ___select-columns___
+FROM ___table___
+INNER JOIN river ON ___table___.river_id=river.id
+    WHERE ___table___.id=$1
 
 --@by-id-full
-SELECT @@select-columns-full@@
-FROM @@table@@
-INNER JOIN river ON @@table@@.river_id=river.id
-    WHERE @@table@@.id=$1
+SELECT ___select-columns-full___
+FROM ___table___
+INNER JOIN river ON ___table___.river_id=river.id
+    WHERE ___table___.id=$1
 
 --@insert-full
-INSERT INTO @@table@@(title,category, point, short_description, link, river_id,
+INSERT INTO ___table___(title,category, point, short_description, link, river_id,
     lw_category, lw_description,
     mw_category, mw_description,
     hw_category, hw_description,
@@ -102,7 +102,7 @@ INSERT INTO @@table@@(title,category, point, short_description, link, river_id,
     $16,$17,$18, $19) RETURNING id
     
 --@update-full
-UPDATE @@table@@ SET title=$2,category=$3, point=ST_GeomFromGeoJSON($4), short_description=$5, link=$6, river_id=$7,
+UPDATE ___table___ SET title=$2,category=$3, point=ST_GeomFromGeoJSON($4), short_description=$5, link=$6, river_id=$7,
     lw_category=$8, lw_description=$9,
     mw_category=$10, mw_description=$11,
     hw_category=$12, hw_description=$13,
@@ -113,26 +113,26 @@ UPDATE @@table@@ SET title=$2,category=$3, point=ST_GeomFromGeoJSON($4), short_d
     WHERE id=$1
 
 --@delete
-DELETE FROM @@table@@ WHERE id=$1
+DELETE FROM ___table___ WHERE id=$1
 
 --@delete-for-river
-DELETE FROM @@table@@ WHERE river_id=$1
+DELETE FROM ___table___ WHERE river_id=$1
 
 --@geom-center-by-river
 SELECT center FROM (
-    SELECT ST_AsGeoJSON(ST_Centroid(ST_Collect(point))) center FROM @@table@@ WHERE river_id=$1
+    SELECT ST_AsGeoJSON(ST_Centroid(ST_Collect(point))) center FROM ___table___ WHERE river_id=$1
 ) sq WHERE center IS NOT NULL
 
 
 --@auto-ordering-river-ids
-SELECT river_id FROM @@table@@
+SELECT river_id FROM ___table___
     WHERE auto_ordering and river_id IS NOT NULL
     GROUP BY river_id
     HAVING count(1)>1 AND count(distinct last_auto_ordering) + sum(CASE WHEN last_auto_ordering IS NULL THEN 1 ELSE 0 END) > 1
 
 --@distance-from-beginning
 WITH p AS (select ST_GeomFromGeoJSON($2) AS path),
-	wwpts AS (SELECT id,point FROM @@table@@ WHERE auto_ordering AND river_id=$1)
+	wwpts AS (SELECT id,point FROM ___table___ WHERE auto_ordering AND river_id=$1)
 SELECT wwpts.id, ST_Length(ST_LineSubstring(
         path,
         ST_LineLocatePoint(path, ST_StartPoint(path)),
@@ -142,4 +142,4 @@ SELECT wwpts.id, ST_Length(ST_LineSubstring(
         ORDER BY 2
 
 --@update-order-idx
-UPDATE @@table@@ SET order_index=$2,last_auto_ordering=$3  WHERE id=$1
+UPDATE ___table___ SET order_index=$2,last_auto_ordering=$3  WHERE id=$1
