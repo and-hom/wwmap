@@ -11,58 +11,66 @@ WWMapSearchProvider.prototype.geocode = function (request, options) {
         limit = options.results || 20;
 
     var xhr = new XMLHttpRequest();
-    xhr.open("POST", apiBase + "/search", false);
+    xhr.open("POST", apiBase + "/search", true);
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.send(request);
-    var respData = JSON.parse(xhr.response);
-    
-    for (var i = 0, l = respData.spots.length; i < l; i++) {
-        var spot = respData.spots[i];
+    xhr.onload = function(e) {
+        if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+                var respData = JSON.parse(xhr.responseText);
 
-        geoObjects.add(new ymaps.Placemark(spot.point, {
-            name: spot.title,
-            description: spot.river_title,
-            balloonContentBody: '<p>' + spot.title + ' (' + spot.river_title + ')' + '</p>',
-            boundedBy: [addToPoint(spot.point, -0.003), addToPoint(spot.point, 0.003)]
-        },{
-            iconLayout: 'default#image',
-            iconImageHref: respData.resource_base + '/img/empty-px.png',
-            iconImageSize: [1, 1],
-            iconImageOffset: [-1, -1],
+                for (var i = 0, l = respData.spots.length; i < l; i++) {
+                    var spot = respData.spots[i];
 
-            id: spot.id
-        }));
-    }
-    
-    for (var i = 0, l = respData.rivers.length; i < l; i++) {
-        var river = respData.rivers[i];
+                    geoObjects.add(new ymaps.Placemark(spot.point, {
+                        name: spot.title,
+                        description: spot.river_title,
+                        balloonContentBody: '<p>' + spot.title + ' (' + spot.river_title + ')' + '</p>',
+                        boundedBy: [addToPoint(spot.point, -0.003), addToPoint(spot.point, 0.003)]
+                    },{
+                        iconLayout: 'default#image',
+                        iconImageHref: respData.resource_base + '/img/empty-px.png',
+                        iconImageSize: [1, 1],
+                        iconImageOffset: [-1, -1],
 
-        geoObjects.add(new ymaps.Placemark(center(river.bounds), {
-            name: river.title,
-            description: river.region.title,
-            balloonContentBody: '<p>' + river.title + '</p>',
-            boundedBy: river.bounds
-        },{
-            iconLayout: 'default#image',
-            iconImageHref: respData.resource_base + '/img/empty-px.png',
-            iconImageSize: [1, 1],
-            iconImageOffset: [-1, -1],
+                        id: spot.id
+                    }));
+                }
 
-            id: river.id
-        }));
-    }
+                for (var i = 0, l = respData.rivers.length; i < l; i++) {
+                    var river = respData.rivers[i];
 
-    deferred.resolve({
-        geoObjects: geoObjects,
-        metaData: {
-            geocoder: {
-                request: request,
-                found: geoObjects.getLength(),
-                results: limit,
-                skip: offset
+                    geoObjects.add(new ymaps.Placemark(center(river.bounds), {
+                        name: river.title,
+                        description: river.region.title,
+                        balloonContentBody: '<p>' + river.title + '</p>',
+                        boundedBy: river.bounds
+                    },{
+                        iconLayout: 'default#image',
+                        iconImageHref: respData.resource_base + '/img/empty-px.png',
+                        iconImageSize: [1, 1],
+                        iconImageOffset: [-1, -1],
+
+                        id: river.id
+                    }));
+                }
+
+                deferred.resolve({
+                    geoObjects: geoObjects,
+                    metaData: {
+                        geocoder: {
+                            request: request,
+                            found: geoObjects.getLength(),
+                            results: limit,
+                            skip: offset
+                        }
+                    }
+                });
+            } else {
+                throw xhr.responseText
             }
         }
-    });
+    };
 
     return deferred.promise();
 };
