@@ -1,3 +1,10 @@
+wwmap-db (0.0.18) unstable; urgency=medium
+
+  * #92 plpgsql function to calculate how many elements of array does string contain
+  * db migrations fixed: fix conn string after config refactoring
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Fri, 21 Dec 2018 21:44:44 +0300
+
 wwmap-db (0.0.17) unstable; urgency=medium
 
   * #113 Performance improvements

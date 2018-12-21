@@ -1,3 +1,11 @@
+wwmap-frontend (0.0.29) UNRELEASED; urgency=medium
+
+  * #92 Search control on map to find spot or river (own search method on backend)
+  * #155 Fixed map fail on slow div initialization
+  * #157 Ruler control on map
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Fri, 21 Dec 2018 21:45:04 +0300
+
 wwmap-frontend (0.0.28) unstable; urgency=medium
 
   * #154 Pdf rendering disabled - html only
