@@ -47,19 +47,29 @@
         </div>
     </page>
 </div>
+
 <script type="text/javascript">
-    initWWMap("wwmap-container", "wwmap-rivers", "wwmap");
     $(document).ready(function() {
 
-     Vue.component('auth', httpVueLoader('components/auth.vue'))
-     Vue.component('page', httpVueLoader('components/page.vue'))
+     Vue.component('auth', httpVueLoader('components/auth.vue'));
+     Vue.component('page', httpVueLoader('components/page.vue'));
 
      var app = new Vue({
         el: '#vue-app',
         data: {
-        }
-    })
+        },
+        mounted: loadMapWhenDivIsReady
+    });
   });
+
+  function loadMapWhenDivIsReady() {
+      if($('#wwmap-container').outerWidth()) {
+          initWWMap("wwmap-container", "wwmap-rivers", "wwmap")
+      } else {
+          console.log("#div-container is not ready yet: has no offsetWidth");
+          setTimeout(loadMapWhenDivIsReady, 100);
+      }
+  }
 
 </script>
 </body>
