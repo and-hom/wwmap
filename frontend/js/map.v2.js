@@ -179,6 +179,10 @@ WWMap.prototype.init = function (mapDivId) {
         float: 'left'
     });
 
+    this.yMap.controls.add('rulerControl', {
+        scaleLine: true
+    });
+
     var t = this;
     this.yMap.events.add('click', function (e) {
         t.yMap.balloon.close()
