@@ -1,4 +1,4 @@
 #!/bin/sh
 
-export CONN_STR=`grep db-connection-string /etc/wwmap/config.yaml | cut -d '"' -f 2`
+export CONN_STR=`grep connection-string /etc/wwmap/config.yaml | cut -d '"' -f 2`
 migrate -database "$CONN_STR" -source file:///var/lib/wwmap/db/ $@
