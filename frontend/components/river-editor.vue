@@ -179,8 +179,9 @@
 
             if(this.$refs.uploadGpx && this.$refs.uploadGpx.value.length && this.$refs.uploadGpx.uploaded) {
                 if (this.imagesOutOfDate) {
-                    setTimeout(() => {
-                        this.refresh()
+                    var t = this;
+                    setTimeout(function() {
+                        t.refresh()
                     }, 700);
                     this.imagesOutOfDate = false
                 } else {

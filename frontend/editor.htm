@@ -12,11 +12,12 @@
     <link type="text/css" rel="stylesheet" href="css/bootstrap.min.css"/>
     <link type="text/css" rel="stylesheet" href="css/bootstrap-vue.css"/>
 
+    <script type="text/javascript" src="js-editor/polyfill.min.js"></script>
+    <script type="text/javascript" src="js-editor/tether.min.js"></script>
     <script type="text/javascript" src="js-editor/jquery-3.2.1.slim.min.js"></script>
     <script type="text/javascript" src="js-editor/bootstrap.min.js"></script>
     <script type="text/javascript" src="js-editor/vue.js"></script>
     <script type="text/javascript" src="js-editor/vue-select.js"></script>
-    <script type="text/javascript" src="js-editor/polyfill.min.js"></script>
     <script type="text/javascript" src="js-editor/bootstrap-vue.js"></script>
 
     <!--gallery-->
@@ -96,7 +97,7 @@
 
 
     function getById(arr,id) {
-        var filtered = arr.filter(x => x.id==id)
+        var filtered = arr.filter(function(x) {return x.id==id});
         if (filtered.length>0) {
             return filtered[0]
         }

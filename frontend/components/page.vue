@@ -82,10 +82,10 @@
 
                     userInfo = getAuthorizedUserInfoOrNull()
                     if (userInfo==null || userInfo.roles==null) {
-                        return page.allow.filter(r => r=='ANONYMOUS').length>0
+                        return page.allow.filter(function(r) {return r=='ANONYMOUS'}).length>0
                     }
 
-                    return page.allow.filter(r => userInfo.roles.includes(r)).length>0
+                    return page.allow.filter(function(r) {return userInfo.roles.includes(r)}).length>0
                 },
                 pageTitle: function(page) {
                     if (typeof page === 'string' || page instanceof String) {

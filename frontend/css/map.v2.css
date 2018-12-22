@@ -120,47 +120,47 @@
     content: 'Неизв. кс';
 }
 .wwmap-legend .cat0 {
-    background: #bbbbbb88;
+    background: rgba(187, 187, 187, 0.54);
 }
 
 .wwmap-legend .cat1:before {
     content: '1кс';
 }
 .wwmap-legend .cat1 {
-    background: #00fff988
+    background: rgba(0, 255, 249, 0.54);
 }
 
 .wwmap-legend .cat2:before {
     content: '2кс';
 }
 .wwmap-legend .cat2 {
-    background: #3cff0088;
+    background: rgba(60, 255, 0, 0.54);
 }
 
 .wwmap-legend .cat3:before {
     content: '3кс';
 }
 .wwmap-legend .cat3 {
-    background: #fcff1788;
+    background: rgba(252, 255, 23, 0.54);
 }
 
 .wwmap-legend .cat4:before {
     content: '4кс';
 }
 .wwmap-legend .cat4 {
-    background: #ffb10088;
+    background: rgba(255, 177, 0, 0.54);
 }
 
 .wwmap-legend .cat5:before {
     content: '5кс';
 }
 .wwmap-legend .cat5 {
-    background: #ff000088;
+    background: rgba(255, 0, 0, 0.54);
 }
 
 .wwmap-legend .cat6:before {
     content: '6кс';
 }
 .wwmap-legend .cat6 {
-    background: #cc000088;
+    background: rgba(204, 0, 0, 0.54);
 }

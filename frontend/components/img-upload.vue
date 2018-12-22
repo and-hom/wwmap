@@ -78,8 +78,9 @@
         },
         updated: function() {
             if(this.$refs[this.type] && this.$refs[this.type].value.length && this.$refs[this.type].uploaded) {
-                setTimeout(() => {
-                    this.refresh()
+                var t = this;
+                setTimeout(function() {
+                    t.refresh()
                 }, 700);
             }
         },

@@ -242,7 +242,7 @@
             <div v-if="schemas.length">
                 <h2>Схемы</h2>
                 <div>
-                    <gallery id="schemas-gallery" :images="schemas.map(x => x.url)" :index="schIndex" @close="schIndex = null"></gallery>
+                    <gallery id="schemas-gallery" :images="schemas.map(function(x) {return x.url})" :index="schIndex" @close="schIndex = null"></gallery>
                     <div
                             class="image wwmap-gallery-cell"
                             v-for="schema, schemaIndex in schemas"
@@ -254,7 +254,7 @@
             <div v-if="images.length">
                 <h2>Фото галерея</h2>
                 <div>
-                    <gallery id="image-gallery" :images="images.map(x => x.url)" :index="imgIndex" @close="imgIndex = null"></gallery>
+                    <gallery id="image-gallery" :images="images.map(function(x) {return x.url})" :index="imgIndex" @close="imgIndex = null"></gallery>
                     <div
                             class="image wwmap-gallery-cell"
                             v-for="image, imageIndex in images"
@@ -277,7 +277,7 @@
                 var component = this
                 fetch(
                   `${backendApiBase}/river?q=${search}`
-                ).then(res => {
+                ).then(function(res) {
                     res.json().then(function(json){
                         component.options = json
                     });
