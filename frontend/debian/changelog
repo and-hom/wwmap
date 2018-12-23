@@ -1,4 +1,10 @@
-wwmap-frontend (0.0.29) UNRELEASED; urgency=medium
+wwmap-frontend (0.0.30) unstable; urgency=medium
+
+  * Misc changes fir IE11 compatibility
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sat, 22 Dec 2018 12:22:45 +0300
+
+wwmap-frontend (0.0.29) unstable; urgency=medium
 
   * #92 Search control on map to find spot or river (own search method on backend)
   * #155 Fixed map fail on slow div initialization
