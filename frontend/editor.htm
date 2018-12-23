@@ -19,6 +19,7 @@
     <script type="text/javascript" src="js-editor/vue.js"></script>
     <script type="text/javascript" src="js-editor/vue-select.js"></script>
     <script type="text/javascript" src="js-editor/bootstrap-vue.js"></script>
+    <script type="text/javascript" src="js-editor/sensors.js"></script>
 
     <!--gallery-->
     <link rel="stylesheet" type="text/css" href="css/blueimp-gallery.min.css">
@@ -60,7 +61,9 @@
                     <div>
                         <river-editor v-if="rivereditorstate.visible" v-bind:initial-river="rivereditorstate.river"
                                       v-bind:reports="rivereditorstate.reports"
-                                      v-bind:country="rivereditorstate.country" v-bind:region="rivereditorstate.region"/>
+                                      v-bind:country="rivereditorstate.country"
+                                      v-bind:region="rivereditorstate.region"
+                                      v:sensors="sensors"/>
                     </div>
                     <div>
                         <spot-editor v-if="spoteditorstate.visible" v-bind:initial-spot="spoteditorstate.spot"
@@ -192,6 +195,7 @@
           selectedRegion: getActiveId(REGION_ACTIVE_ENTITY_LEVEL),
           selectedRiver: getActiveId(RIVER_ACTIVE_ENTITY_LEVEL),
           selectedSpot: getActiveId(SPOT_ACTIVE_ENTITY_LEVEL),
+          sensors: sensors
         }
     })
 

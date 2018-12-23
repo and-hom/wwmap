@@ -67,7 +67,27 @@
                         </b-tab>
                         <b-tab title="Системные параметры">
                             <span class="wwmap-system-hint" style="padding-top: 10px;">Тут собраны настройки разных системных вещей для этой реки</span>
-                            <props :p="river.props"/>
+                            <props :p="river.props">
+                                <div class="row">
+                                    <div class="col-3">
+                                        <strong>Гидропост <a href="http://gis.vodinfo.ru/informer/">gis.vodinfo.ru/informer</a></strong>
+                                    </div>
+                                    <div class="col-9">
+                                         <v-select v-model="activeSensor" label="title" :options="sensors"
+                                         @input="onSelectSensor" >
+                                             <template slot="no-options">
+                                                 Начните печатать название гидропоста
+                                             </template>
+                                             <template slot="option" slot-scope="option">
+                                                     {{ option.id }}&nbsp;&dash;&nbsp;{{ option.title }}
+                                             </template>
+                                             <template slot="selected-option" scope="option">
+                                                     {{ option.id }}&nbsp;&dash;&nbsp;{{ option.title }}
+                                             </template>
+                                         </v-select>
+                                    </div>
+                                </div>
+                            </props>
                         </b-tab>
                     </b-tabs>
         </div>
@@ -205,12 +225,15 @@
                 },
                 resetToInitialIfRequired:function() {
                     if (this.shouldReInit()) {
-                        this.previousRiverId = this.initialRiver.id
-                        this.river = this.initialRiver
+                        this.previousRiverId = this.initialRiver.id;
+                        this.river = this.initialRiver;
 
-                        this.prevRegionId = nvlReturningId(this.river.region)
-                        this.prevRegionFake = this.river.region.fake
-                        this.prevCountryId = this.river.region.country_id
+                        this.prevRegionId = nvlReturningId(this.river.region);
+                        this.prevRegionFake = this.river.region.fake;
+                        this.prevCountryId = this.river.region.country_id;
+
+                        var r = this.river;
+                        this.activeSensor = this.sensors.filter(function(s){return s.id==r.props.vodinfo_sensor})[0]
                     }
                 },
 
@@ -325,7 +348,12 @@
                 prevRegionId: 0,
                 prevRegionFake: null,
                 prevCountryId: 0,
+                sensors: app.sensors,
+                activeSensor: {id: 75402, title: "г.Звенигород [р. Москва]"}
             }
+        },
+        methods: {
+            onSelectSensor: function(x) { this.river.props.vodinfo_sensor = x.id }
         }
     }
 

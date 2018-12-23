@@ -164,3 +164,11 @@
     font-size: 60%;
     font-color: grey;
 }
+
+.wwmap-river-techincal-props select {
+    width: 400px;
+}
+
+.wwmap-river-techincal-props .v-select {
+    width: 400px;
+}
