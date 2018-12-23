@@ -93,6 +93,7 @@
         </div>
         <div v-else class="spot-display">
             <h1>{{ river.title }}</h1>
+            <img border='0' style="float:right;" :src="informerUrl()">
             <dl>
                 <dt>Показывать на карте:</dt>
                 <dd>
@@ -349,7 +350,8 @@
                 prevRegionFake: null,
                 prevCountryId: 0,
                 sensors: app.sensors,
-                activeSensor: {id: 75402, title: "г.Звенигород [р. Москва]"}
+                activeSensor: {id: 75402, title: "г.Звенигород [р. Москва]"},
+                informerUrl: function() {return this.river.props.vodinfo_sensor ? "http://gis.vodinfo.ru/informer/draw/v2_" + this.river.props.vodinfo_sensor + "_400_300_30_ffffff_110_8_7_H_none.png" : null}
             }
         },
         methods: {
