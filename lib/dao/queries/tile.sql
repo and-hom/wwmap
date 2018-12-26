@@ -2,7 +2,8 @@
 WITH river_ids AS (
     SELECT DISTINCT river_id AS id FROM white_water_rapid WHERE  point && ST_MakeEnvelope($1,$2,$3,$4))
 SELECT (river).id, (river).title, CASE (region).fake WHEN TRUE THEN 0 ELSE (region).id END, (region).country_id,
-        (white_water_rapid).id, (white_water_rapid).title, ST_AsGeoJSON((white_water_rapid).point), (white_water_rapid).category, (white_water_rapid).link, (white_water_rapid).props,
+        (white_water_rapid).id, (white_water_rapid).title, (white_water_rapid).short_description,
+        ST_AsGeoJSON((white_water_rapid).point), (white_water_rapid).category, (white_water_rapid).link, (white_water_rapid).props,
         COALESCE((image).id, -1), COALESCE((image).source, ''), COALESCE((image).remote_id, ''), COALESCE((image).url, ''), COALESCE((image).preview_url, ''),
         COALESCE((image).date_published, to_timestamp(0)), COALESCE((image)."type", '')
 FROM (

@@ -39,7 +39,7 @@ func (this *tileStorage) ListRiversWithBounds(bbox geo.Bbox, showUnpublished boo
 		propsStr := ""
 
 		err := rows.Scan(&river.Id, &river.Title, &river.RegionId, &river.CountryId,
-			&spot.Id, &spot.Title, &pointStr, &categoryStr, &spot.Link, &propsStr,
+			&spot.Id, &spot.Title, &spot.Description, &pointStr, &categoryStr, &spot.Link, &propsStr,
 			&img.Id, &img.Source, &img.RemoteId, &img.Url, &img.PreviewUrl, &img.DatePublished, &img.Type)
 
 		if err != nil {
