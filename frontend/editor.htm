@@ -116,14 +116,19 @@
         Vue.set(region, "rivers", getRiversByRegion(countryId, id))
     }
 
-    function showRiverTree(countryId, regionId, id) {
-        var river
-        if (regionId && regionId>0) {
-            var region = getById(app.treePath[countryId].regions, regionId)
+    function getRiverFromTree(countryId, regionId, id) {
+        var river;
+        if (regionId && regionId > 0) {
+            var region = getById(app.treePath[countryId].regions, regionId);
             river = getById(region.rivers, id)
         } else {
             river = getById(app.treePath[countryId].rivers, id)
         }
+        return river;
+    }
+
+    function showRiverTree(countryId, regionId, id) {
+        var river = getRiverFromTree(countryId, regionId, id);
         Vue.set(river, "spots", getSpots(id))
     }
 

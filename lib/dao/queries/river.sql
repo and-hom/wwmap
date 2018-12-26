@@ -21,13 +21,14 @@ SELECT ___table___.id id, ST_AsGeoJSON(ST_Extent(white_water_rapid.point)) bound
     GROUP BY ___table___.id
 
 --@find-by-tags
-SELECT sq.id, region_id, region.country_id, title, region.title AS region_title, fake AS region_fake, NULL, NULL, '{}' FROM (
+SELECT sq.id, region_id, region.country_id, title, region.title AS region_title, fake AS region_fake, NULL, NULL, '{}', visible FROM (
 		SELECT id,region_id, title, CASE aliases WHEN '[]' THEN NULL ELSE jsonb_array_elements_text(aliases) END AS alias FROM ___table___) sq
 		INNER JOIN region ON sq.region_id=region.id
 WHERE title ilike ANY($1) OR alias ilike ANY($1)
 
 --@inside-bounds
-SELECT river.id, region_id, region.country_id, river.title, region.title AS region_title, fake AS region_fake, ST_AsGeoJSON(ST_Extent(white_water_rapid.point)), river.aliases, river.props
+SELECT river.id, region_id, region.country_id, river.title, region.title AS region_title, fake AS region_fake,
+       ST_AsGeoJSON(ST_Extent(white_water_rapid.point)), river.aliases, river.props, visible
     FROM ___table___
         INNER JOIN white_water_rapid ON river.id=white_water_rapid.river_id
         INNER JOIN region ON river.region_id=region.id
@@ -40,7 +41,8 @@ SELECT river.id,region_id, region.country_id,river.title, region.title AS region
  FROM river INNER JOIN region ON river.region_id=region.id WHERE river.id=$1
 
 --@by-region
-SELECT river.id, region_id, region.country_id, river.title, region.title AS region_title, fake AS region_fake, NULL, river.aliases, river.props
+SELECT river.id, region_id, region.country_id, river.title, region.title AS region_title, fake AS region_fake, NULL,
+       river.aliases, river.props, river.visible
     FROM river INNER JOIN region ON river.region_id=region.id WHERE region.id=$1
     ORDER BY CASE river.title WHEN '-' THEN NULL ELSE river.title END ASC
 
@@ -53,7 +55,8 @@ SELECT river.id, region_id, region.country_id, river.title, region.title AS regi
     ORDER BY CASE river.title WHEN '-' THEN NULL ELSE river.title END ASC
 
 --@by-country
-SELECT river.id as id, region_id, region.country_id, river.title, region.title AS region_title, fake AS region_fake, NULL, river.aliases as aliases, river.props
+SELECT river.id as id, region_id, region.country_id, river.title, region.title AS region_title, fake AS region_fake, NULL,
+       river.aliases as aliases, river.props, river.visible
     FROM river INNER JOIN region ON river.region_id=region.id WHERE region.fake AND region.country_id=$1
     ORDER BY CASE river.title WHEN '-' THEN NULL ELSE river.title END ASC
 
@@ -67,7 +70,7 @@ SELECT river.id as id, region_id, region.country_id, river.title, region.title A
     ORDER BY CASE river.title WHEN '-' THEN NULL ELSE river.title END ASC
 
 --@by-first-letters
-SELECT id, region_id, 0, title, "", NULL, aliases, props FROM river WHERE title ilike $1||'%' LIMIT $2
+SELECT id, region_id, 0, title, "", NULL, aliases, props, visible FROM river WHERE title ilike $1||'%' LIMIT $2
 
 --@update
 UPDATE river SET region_id=$2, title=$3, aliases=$4, description=$5, props=$6 WHERE id=$1
@@ -82,7 +85,8 @@ DELETE FROM river WHERE id=$1
 UPDATE river SET visible=$2 WHERE id=$1
 
 --@by-title-part
-SELECT river.id, region_id, region.country_id, river.title, region.title AS region_title, fake AS region_fake, ST_AsGeoJSON(ST_Extent(white_water_rapid.point)), river.aliases, river.props
+SELECT river.id, region_id, region.country_id, river.title, region.title AS region_title, fake AS region_fake,
+       ST_AsGeoJSON(ST_Extent(white_water_rapid.point)), river.aliases, river.props, visible
     FROM ___table___
         INNER JOIN white_water_rapid ON river.id=white_water_rapid.river_id
         INNER JOIN region ON river.region_id=region.id

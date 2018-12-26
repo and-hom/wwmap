@@ -37,12 +37,12 @@ type RiverTitle struct {
 	Bounds  Bbox `json:"bounds"`
 	Aliases []string `json:"aliases"`
 	Props   map[string]interface{} `json:"props"`
+	Visible      bool `json:"visible"`
 }
 
 type River struct {
 	RiverTitle
 	Description  string `json:"description"`
-	Visible      bool `json:"visible"`
 	SpotCounters SpotCounters `json:"spot_counters"`
 }
 

@@ -1,6 +1,6 @@
 <template>
-    <li class="menu-item river-menu-item"><a href="javascript:void(0);" v-on:click='changeExpandState();selectRiver();'
-                                             :class="riverClass()">{{ river.title }}</a>
+    <li class="menu-item river-menu-item"><a href="javascript:void(0);" v-on:click='changeExpandState(); selectRiver();'
+                                             :class="riverClass()"><img v-if="!river.visible" style="margin-right: 6px;" src="img/invisible.png"/>{{ river.title }}</a>
         <ul>
             <li class="menu-item spot-menu-item" v-on:click.stop="selectSpot(spot)"
                 v-for="spot in river.spots"><a href="javascript:void(0);"

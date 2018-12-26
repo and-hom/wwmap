@@ -258,7 +258,13 @@
                     this.hideError()
                 },
                 setVisible: function(visible) {
-                    this.river = setRiverVisible(this.river.id, visible)
+                    this.river = setRiverVisible(this.river.id, visible);
+                    // set "visible" property to global storage to set icon in the left-side tree using reactivity of vue.js
+                    var regionId = this.river.region.id;
+                    if (this.river.region.fake) {
+                        regionId = -1
+                    }
+                    getRiverFromTree(this.river.region.country_id, regionId, this.river.id).visible = this.river.visible;
                 },
                 remove: function() {
                     this.hideError()
