@@ -11,6 +11,7 @@ import (
 	"github.com/and-hom/wwmap/lib/dao"
 	"net/url"
 	"github.com/and-hom/wwmap/backend/passport"
+	"strings"
 )
 
 func (this *App) bboxFormValue(w http.ResponseWriter, req *http.Request) (geo.Bbox, error) {
@@ -128,7 +129,10 @@ func (this *App) collectReferer(r *http.Request) {
 		log.Warnf("Invalid referer: %s", referer)
 		return
 	}
-	if refererUrl.Hostname() == "localhost" || refererUrl.Hostname() == "wwmap.ru" {
+	if refererUrl.Hostname() == "localhost" ||
+		refererUrl.Hostname() == "wwmap.ru" ||
+		strings.Contains(refererUrl.Hostname(), "yandex") ||
+		strings.Contains(refererUrl.Hostname(), "vk.com") {
 		return
 	}
 
