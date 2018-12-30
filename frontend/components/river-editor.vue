@@ -41,7 +41,7 @@
                                     <button type="button" class="btn btn-info" v-if="canEdit() && !editMode && river.visible" v-on:click="setVisible(false); hideError();">
                                         Скрыть на карте
                                     </button>
-                                    <div  style="padding-left:40px;font-size:70%;color:grey">Нужно, когда мы не хотим выставлять наполовину размеченную и описанную реку.
+                                    <div style="padding-left:40px;font-size:70%;color:grey">Нужно, когда мы не хотим выставлять наполовину размеченную и описанную реку.
                                     Если добавляешь часть порогов, а остальные планируешь на потом, не делай реку видимой на карте.</div>
                                 </dd>
                                 <dt v-if="river.region.id>0">Регион:</dt>
@@ -105,8 +105,9 @@
                     <button type="button" class="btn btn-info" v-if="canEdit() && !editMode && river.visible" v-on:click="setVisible(false); hideError();">
                         Скрыть на карте
                     </button>
-                    <div  style="padding-left:40px;font-size:70%;color:grey">Нужно, когда мы не хотим выставлять наполовину размеченную и описанную реку.
+                    <div  v-if="canEdit()" style="padding-left:40px;font-size:70%;color:grey">Нужно, когда мы не хотим выставлять наполовину размеченную и описанную реку.
                     Если добавляешь часть порогов, а остальные планируешь на потом, не делай реку видимой на карте.</div>
+                    <div v-else></div>
                 </dd>
                 <dt v-if="river.region.id>0">Регион:</dt>
                 <dd v-if="river.region.id>0">
