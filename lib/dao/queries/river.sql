@@ -21,10 +21,10 @@ SELECT ___table___.id id, ST_AsGeoJSON(ST_Extent(white_water_rapid.point)) bound
     GROUP BY ___table___.id
 
 --@find-by-tags
-SELECT sq.id, region_id, region.country_id, title, region.title AS region_title, fake AS region_fake, NULL, NULL, '{}', visible FROM (
+SELECT sq.id, region_id, region.country_id, sq.title, region.title AS region_title, fake AS region_fake, NULL, NULL, '{}', visible FROM (
 		SELECT id,region_id, title, CASE aliases WHEN '[]' THEN NULL ELSE jsonb_array_elements_text(aliases) END AS alias FROM ___table___) sq
 		INNER JOIN region ON sq.region_id=region.id
-WHERE title ilike ANY($1) OR alias ilike ANY($1)
+WHERE sq.title ilike ANY($1) OR alias ilike ANY($1)
 
 --@inside-bounds
 SELECT river.id, region_id, region.country_id, river.title, region.title AS region_title, fake AS region_fake,

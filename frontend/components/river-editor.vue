@@ -41,7 +41,7 @@
                                     <button type="button" class="btn btn-info" v-if="canEdit() && !editMode && river.visible" v-on:click="setVisible(false); hideError();">
                                         Скрыть на карте
                                     </button>
-                                    <div  style="padding-left:40px;font-size:70%;color:grey">Нужно, когда мы не хотим выставлять наполовину размеченную и описанную реку.
+                                    <div style="padding-left:40px;font-size:70%;color:grey">Нужно, когда мы не хотим выставлять наполовину размеченную и описанную реку.
                                     Если добавляешь часть порогов, а остальные планируешь на потом, не делай реку видимой на карте.</div>
                                 </dd>
                                 <dt v-if="river.region.id>0">Регион:</dt>
@@ -67,12 +67,33 @@
                         </b-tab>
                         <b-tab title="Системные параметры">
                             <span class="wwmap-system-hint" style="padding-top: 10px;">Тут собраны настройки разных системных вещей для этой реки</span>
-                            <props :p="river.props"/>
+                            <props :p="river.props">
+                                <div class="row">
+                                    <div class="col-3">
+                                        <strong>Гидропост <a href="http://gis.vodinfo.ru/informer/">gis.vodinfo.ru/informer</a></strong>
+                                    </div>
+                                    <div class="col-9">
+                                         <v-select v-model="activeSensor" label="title" :options="sensors"
+                                         @input="onSelectSensor" >
+                                             <template slot="no-options">
+                                                 Начните печатать название гидропоста
+                                             </template>
+                                             <template slot="option" slot-scope="option">
+                                                     {{ option.id }}&nbsp;&dash;&nbsp;{{ option.title }}
+                                             </template>
+                                             <template slot="selected-option" scope="option">
+                                                     {{ option.id }}&nbsp;&dash;&nbsp;{{ option.title }}
+                                             </template>
+                                         </v-select>
+                                    </div>
+                                </div>
+                            </props>
                         </b-tab>
                     </b-tabs>
         </div>
         <div v-else class="spot-display">
             <h1>{{ river.title }}</h1>
+            <img border='0' style="float:right;" :src="informerUrl()">
             <dl>
                 <dt>Показывать на карте:</dt>
                 <dd>
@@ -84,8 +105,9 @@
                     <button type="button" class="btn btn-info" v-if="canEdit() && !editMode && river.visible" v-on:click="setVisible(false); hideError();">
                         Скрыть на карте
                     </button>
-                    <div  style="padding-left:40px;font-size:70%;color:grey">Нужно, когда мы не хотим выставлять наполовину размеченную и описанную реку.
+                    <div  v-if="canEdit()" style="padding-left:40px;font-size:70%;color:grey">Нужно, когда мы не хотим выставлять наполовину размеченную и описанную реку.
                     Если добавляешь часть порогов, а остальные планируешь на потом, не делай реку видимой на карте.</div>
+                    <div v-else></div>
                 </dd>
                 <dt v-if="river.region.id>0">Регион:</dt>
                 <dd v-if="river.region.id>0">
@@ -205,12 +227,15 @@
                 },
                 resetToInitialIfRequired:function() {
                     if (this.shouldReInit()) {
-                        this.previousRiverId = this.initialRiver.id
-                        this.river = this.initialRiver
+                        this.previousRiverId = this.initialRiver.id;
+                        this.river = this.initialRiver;
 
-                        this.prevRegionId = nvlReturningId(this.river.region)
-                        this.prevRegionFake = this.river.region.fake
-                        this.prevCountryId = this.river.region.country_id
+                        this.prevRegionId = nvlReturningId(this.river.region);
+                        this.prevRegionFake = this.river.region.fake;
+                        this.prevCountryId = this.river.region.country_id;
+
+                        var r = this.river;
+                        this.activeSensor = this.sensors.filter(function(s){return s.id==r.props.vodinfo_sensor})[0]
                     }
                 },
 
@@ -331,7 +356,13 @@
                 prevRegionId: 0,
                 prevRegionFake: null,
                 prevCountryId: 0,
+                sensors: app.sensors,
+                activeSensor: {id: 75402, title: "г.Звенигород [р. Москва]"},
+                informerUrl: function() {return this.river.props.vodinfo_sensor ? "http://gis.vodinfo.ru/informer/draw/v2_" + this.river.props.vodinfo_sensor + "_400_300_30_ffffff_110_8_7_H_none.png" : null}
             }
+        },
+        methods: {
+            onSelectSensor: function(x) { this.river.props.vodinfo_sensor = x.id }
         }
     }
 
