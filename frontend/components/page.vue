@@ -13,8 +13,42 @@
         <auth></auth>
     </nav>
     <slot></slot>
+    <footer class="footer">
+        <div class="container wwmap-footer">
+            Версия бэкенда:&nbsp;{{backVersion}}&nbsp;&nbsp;Версия фронтенда:&nbsp;{{frontVersion}}
+        </div>
+    </footer>
 </div>
+
 </template>
+<style type="text/css">
+    html {
+        position: relative;
+        min-height: 100%;
+    }
+    body {
+        /* Margin bottom by footer height */
+        margin-bottom: 60px;
+    }
+    .footer {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        height: 60px;
+        line-height: 60px; /* Vertically center the text there */
+        background-color: #f5f5f5;
+    }
+
+    body > .wwmap-footer {
+        padding: 60px 15px 0;
+    }
+
+    .footer > .wwmap-footer {
+        padding-right: 15px;
+        padding-left: 15px;
+        margin-left: 0;
+    }
+</style>
 
 <script>
     module.exports = {
@@ -114,6 +148,8 @@
                     }
                     return "dropdown-item"
                 },
+                backVersion: getBackendVersion(),
+                frontVersion: frontendVersion
             }
         },
     }

@@ -2,9 +2,11 @@
 %:
 	dh $@
 
+DEB_VERSION = $(shell dpkg-parsechangelog --show-field Version)
+
 build:
 	cd ../lib/dao/queries; $(HOME)/.go/bin/go-bindata -pkg queries .
-	GOPATH="$(HOME)/.go" go build
+	GOPATH="$(HOME)/.go" go build -ldflags "-X main.version=$(DEB_VERSION)"
 
 override_dh_auto_install:
 	install -D -m 0755 backend $$(pwd)/debian/wwmap-backend/usr/bin/wwmap-backend

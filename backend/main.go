@@ -18,6 +18,8 @@ import (
 	"github.com/gorilla/handlers"
 )
 
+var version string = "development"
+
 func main() {
 	log.Infof("Starting wwmap")
 
@@ -103,6 +105,7 @@ func main() {
 			PreviewImgStorage: imgPreviewStorage,
 		},
 		&handler.RefSitesHandler{app},
+		handler.CreateSystemHandler(&app, version),
 	}
 
 	for _, h := range _handlers {

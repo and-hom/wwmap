@@ -1,4 +1,5 @@
-const backendApiBase = "http://localhost:7007";
+backendApiBase = "http://localhost:7007";
+frontendVersion = "development";
 
 function sendRequest(url , _type, auth) {
     var xhr = new XMLHttpRequest();
@@ -55,4 +56,8 @@ function addAuth(xhr, auth) {
         return
     }
     xhr.setRequestHeader("Authorization", authHeaderVal(sourceAndToken));
+}
+
+function getBackendVersion() {
+    return doGetJsonSync(backendApiBase + "/version")
 }

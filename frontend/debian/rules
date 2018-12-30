@@ -2,6 +2,8 @@
 %:
 	dh $@
 
+DEB_VERSION = $(shell dpkg-parsechangelog --show-field Version)
+
 override_dh_auto_install:
 	install -d $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/img/report_sources
 	install -d $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/img/flags
@@ -28,6 +30,8 @@ override_dh_auto_install:
 	    $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/js/config.js
 
 	sed -i 's#backendApiBase = ".*"#backendApiBase = "https://wwmap.ru/editor-api"#g' \
+	    $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/js-editor/api.js
+	sed -i 's#frontendVersion = ".*"#frontendVersion = "$(DEB_VERSION)"#g' \
 	    $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/js-editor/api.js
 
 
