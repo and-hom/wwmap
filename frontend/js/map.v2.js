@@ -344,7 +344,14 @@ function show_report_popup(id, title, riverTitle) {
     reportPopup.show(function () {
         $("#report_popup #object_id").val(id);
         $("#report_popup #object_title").val(title);
-        $("#report_popup #title").val(riverTitle)
+        $("#report_popup #title").val(riverTitle);
+
+        if (typeof getWwmapUserLogin == 'function') {
+            var login = getWwmapUserLogin();
+            if (login) {
+                $("#report_popup #user").val(login);
+            }
+        }
     })
 }
 

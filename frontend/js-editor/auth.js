@@ -115,6 +115,14 @@ function getAuthorizedUserInfoOrNull() {
     }
 }
 
+function getWwmapUserLogin() {
+    var user = getAuthorizedUserInfoOrNull();
+    if (user) {
+        return user.login
+    }
+    return null
+}
+
 function authHeaderVal(sourceAndToken) {
     return sourceAndToken.source + " " + sourceAndToken.token
 }

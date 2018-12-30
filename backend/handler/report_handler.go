@@ -23,17 +23,21 @@ func (this *ReportHandler) AddReport(w http.ResponseWriter, r *http.Request) {
 	objectIdStr := r.FormValue("object_id")
 	objectTitle := r.FormValue("object_title")
 	comment := r.FormValue("comment")
+	user := r.FormValue("user")
 	objectId, err := strconv.ParseInt(objectIdStr, 10, 64)
 	if err != nil {
 		OnError(w, err, fmt.Sprintf("Can not parse object id: %s", objectIdStr), 400)
 		return
 	}
+	if user!="" {
+		comment = fmt.Sprintf("%s: %s", user, comment)
+	}
 	err = this.NotificationHelper.SendToRole(Notification{
-		IdTitle: IdTitle{Title:title},
-		Object: IdTitle{Id:objectId, Title:objectTitle},
-		Comment: comment,
-		Classifier:"report",
-		SendBefore:time.Now().Add(2 * time.Hour), // wait 2 hours for more messages
+		IdTitle:    IdTitle{Title:title},
+		Object:     IdTitle{Id:objectId, Title:objectTitle},
+		Comment:    comment,
+		Classifier: "report",
+		SendBefore: time.Now().Add(2 * time.Hour), // wait 2 hours for more messages
 	}, ADMIN)
 	if err != nil {
 		OnError500(w, err, "Can not add report")
