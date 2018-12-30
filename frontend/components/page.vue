@@ -13,7 +13,7 @@
         <auth></auth>
     </nav>
     <slot></slot>
-    <footer class="footer">
+    <footer v-if="showFooter" class="footer">
         <div class="container wwmap-footer">
             Версия бэкенда:&nbsp;{{backVersion}}&nbsp;&nbsp;Версия фронтенда:&nbsp;{{frontVersion}}
         </div>
@@ -53,6 +53,12 @@
 <script>
     module.exports = {
         props: ['link'],
+        computed: {
+            showFooter: function() {
+                var userinfo = getAuthorizedUserInfoOrNull()
+                return userinfo && ['EDITOR', 'ADMIN'].filter(function(r) {return userInfo.roles.includes(r)}).length>0
+            }
+        },
         data: function () {
             return {
                 pages: [
@@ -114,7 +120,7 @@
                         return true
                     }
 
-                    userInfo = getAuthorizedUserInfoOrNull()
+                    var userInfo = getAuthorizedUserInfoOrNull()
                     if (userInfo==null || userInfo.roles==null) {
                         return page.allow.filter(function(r) {return r=='ANONYMOUS'}).length>0
                     }
