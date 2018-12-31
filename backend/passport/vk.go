@@ -1,14 +1,13 @@
 package passport
 
 import (
-	"time"
-	"gopkg.in/dc0d/tinykv.v4"
 	"encoding/json"
-	"net/http"
-	"io/ioutil"
-	log "github.com/Sirupsen/logrus"
 	"fmt"
-	"errors"
+	log "github.com/Sirupsen/logrus"
+	"gopkg.in/dc0d/tinykv.v4"
+	"io/ioutil"
+	"net/http"
+	"time"
 )
 
 type userInfo struct {
@@ -83,7 +82,7 @@ func (this *VkPassport)ResolveUserInfo(token string) (UserInfo, error) {
 	if (len(vkResult.Response) == 0) {
 		msg := fmt.Sprintf("No user entries found: %s", string(bytes))
 		log.Error(msg)
-		return UserInfo{}, errors.New(msg)
+		return UserInfo{}, UnauthorizedError{msg}
 	}
 	result := vkResult.Response[0].toUserInfo()
 	(*this.cache).Put(token, result)

@@ -22,9 +22,12 @@ type Passport interface {
 }
 
 type UnauthorizedError struct {
-
+	msg string
 }
 
 func (this UnauthorizedError) Error() string {
-	return "Unauthorized"
+	if this.msg == "" {
+		return "Unauthorized"
+	}
+	return "Unauthorized: " + this.msg
 }
