@@ -76,7 +76,7 @@ func (this *HuskytmCatalogConnector) CreateEmptyPageIfNotExistsAndReturnId(id in
 	} else if err != nil {
 		return 0, "", false, err
 	}
-	return p.ID, p.Link, false, nil
+	return pageId, p.Link, false, nil
 }
 
 func (this *HuskytmCatalogConnector) createPage(parent int, title string) (int, string, error) {
@@ -121,9 +121,10 @@ func (this *HuskytmCatalogConnector) writePage(pageId int, tmpl func(data interf
 	}
 
 	page := wp.Page{
-		Title:  wp.Title{Raw:title},
-		Author:        this.me,
-		Content:wp.Content{Raw:body},
+		Title:   wp.Title{Raw: title},
+		Author:  this.me,
+		Content: wp.Content{Raw: body},
+		Status:  "publish",
 	}
 
 	this.rateLimit.WaitIfNecessary()
@@ -134,12 +135,16 @@ func (this *HuskytmCatalogConnector) writePage(pageId int, tmpl func(data interf
 			bodyStr = string(b)
 		}
 		statusCode := 0
-		if r!=nil {
+		if r != nil {
 			statusCode = r.StatusCode
 		}
 
 		log.Errorf("Connection failed. Code: %d Body: %s", statusCode, bodyStr)
 		return err
+	} else if r.StatusCode != http.StatusOK {
+		return fmt.Errorf("Write page %d failed with status %d", pageId, r.StatusCode)
+	} else {
+		log.Infof("Page for %s successfully writen. id=%d url=%s", title, page.ID, page.Link)
 	}
 
 	return nil

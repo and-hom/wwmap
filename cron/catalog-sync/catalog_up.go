@@ -144,7 +144,6 @@ func (this *App) doWriteCatalog(catalogConnector *common.CatalogConnector) error
 
 			riverLinks := []common.LinkOnPage{}
 			for _, river := range regionRivers {
-				log.Infof("Upload river %s/%s/%s", country.Title, region.Title, river.Title)
 				riverPageLink, err := this.uploadRiver(catalogConnector, country, region, river, rootPageLink, countryPageLink, regionPageLink, regionPageId)
 				if err != nil {
 					return err
@@ -302,6 +301,8 @@ func (this *App) createBlankPageIfNotExists(catalogConnector *common.CatalogConn
 	}
 	if link != "" && err == nil {
 		propsDao.Props().SetStringProperty(dao.PAGE_LINK_PROP_PREFIX + (*catalogConnector).SourceId(), id, link)
+	} else {
+		log.Warnf("Link for %s was not set", title)
 	}
 	return childPageId, link, nil
 }
