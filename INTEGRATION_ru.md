@@ -4,12 +4,17 @@
 
 _Например, в wordpress есть специальный плагин, чтобы подключить свой css к отдельной странице. Остальное возможно в рамках редактирования html страницы_
 
-1. Подключаем css отсюда: https://wwmap.ru/css/map.v2.css
+1. Подключаем css отсюда: 
+    * https://wwmap.ru/css/map.v2.css
+    * https://wwmap.ru/css/lightbox.min.css
 2. Подключаем javascript
 ```
     <script type="text/javascript" src="https://wwmap.ru/js/jquery-3.1.1.min.js"></script>
     <script type="text/javascript" src="https://wwmap.ru/js/jquery.tmpl.js"></script>
     <script type="text/javascript" src="https://wwmap.ru/js/jquery.cookie.js"></script>
+    
+    <!-- этот скрипт нужен тольео для работы галереи фотографий во всплывающем окне порога на карте, как и css с таким же именем -->
+    <script type="text/javascript" src="https://wwmap.ru/js/lightbox.min.js"></script>
     <script type="text/javascript" src="https://api-maps.yandex.ru/2.1/?lang=ru_RU"></script>
 
     <script type="text/javascript" src="https://wwmap.ru/js/config.js"></script>

@@ -7,6 +7,7 @@ DEB_VERSION = $(shell dpkg-parsechangelog --show-field Version)
 override_dh_auto_install:
 	install -d $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/img/report_sources
 	install -d $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/img/flags
+	install -d $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/img/lightbox
 	install -d $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/js
 	install -d $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/js-editor
 	install -d $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/css
@@ -17,6 +18,7 @@ override_dh_auto_install:
 	install -D -m 0644 img/*.png $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/img/
 	install -D -m 0644 img/report_sources/*.png $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/img/report_sources
 	install -D -m 0644 img/flags/*.png $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/img/flags/
+	install -D -m 0644 img/lightbox/* $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/img/lightbox/
 	install -D -m 0644 js/* $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/js/
 	install -D -m 0644 js-editor/* $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/js-editor/
 	install -D -m 0644 css/* $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/css/

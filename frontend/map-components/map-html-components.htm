@@ -60,8 +60,8 @@
         {%if properties.river_title%}<div><strong>Река:</strong>&nbsp;{{properties.river_title}}</div>{%endif%}
         <div>{{properties.short_description}}</div>
         {%if properties.images %}&nbsp;<br/>
-        <div class="gallery-div" style="height:auto; width: 100%; overflow-x: scroll; overflow-y: hidden;white-space: nowrap;">
-            {% for img in properties.images %} <img style="display: inline; width:150px;" src="{{img.preview_url}}"/> {% endfor %}
+        <div class="wwmap-gallery-div">
+            {% for img in properties.images %} <a data-lightbox="img-set-{{properties.id}}" target="_blank" href="{{img.url}}"><img src="{{img.preview_url}}"/></a> {% endfor %}
         </div>
         {% endif %}
     </div>
