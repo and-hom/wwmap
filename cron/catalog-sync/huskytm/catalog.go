@@ -1,15 +1,15 @@
 package huskytm
 
 import (
-	"github.com/and-hom/wwmap/lib/dao"
+	"fmt"
+	log "github.com/Sirupsen/logrus"
 	wp "github.com/and-hom/go-wordpress"
 	"github.com/and-hom/wwmap/cron/catalog-sync/common"
 	"github.com/and-hom/wwmap/cron/catalog-sync/huskytm/templates"
-	"fmt"
-	"net/http"
-	log "github.com/Sirupsen/logrus"
-	"time"
+	"github.com/and-hom/wwmap/lib/dao"
 	"github.com/and-hom/wwmap/lib/util"
+	"net/http"
+	"time"
 )
 
 func GetCatalogConnector(login, password string, minDeltaBetweenRequests time.Duration) (common.CatalogConnector, error) {
@@ -129,7 +129,16 @@ func (this *HuskytmCatalogConnector) writePage(pageId int, tmpl func(data interf
 	this.rateLimit.WaitIfNecessary()
 	_, r, b, err := this.client.Pages().Update(pageId, &page)
 	if err != nil {
-		log.Errorf("Connection failed. Code: %d Body: %s", r.StatusCode, string(b))
+		bodyStr := ""
+		if b != nil {
+			bodyStr = string(b)
+		}
+		statusCode := 0
+		if r!=nil {
+			statusCode = r.StatusCode
+		}
+
+		log.Errorf("Connection failed. Code: %d Body: %s", statusCode, bodyStr)
 		return err
 	}
 
