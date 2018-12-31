@@ -1,18 +1,17 @@
 <div class="wwmap-popuptext" id="report_popup">
     <form>
-        <label for="object_id">ID</label>
-        <input type="text" id="object_id" name="object_id" readonly style="margin-bottom:10px;"/><br/>
+        <input type="hidden" id="object_id" name="object_id"/>
         <label for="object_title">Порог</label>
         <input type="text" id="object_title" name="object_title" readonly style="margin-bottom:10px;"/><br/>
         <label for="title">Река</label>
         <input type="text" id="title" name="title" readonly style="margin-bottom:10px;"/><br/>
         <input type="hidden" id="user" name="user"/>
 
-        <label for="comment" style="width:400px">Исправления происходят в ручном режиме и после проверки. Пожалуйста,
+        <label for="comment" style="width:100%; padding-right: 10px;">Исправления происходят в ручном режиме и после проверки. Пожалуйста,
             расскажите коротко,
             что не так. Будет полезным добавить источники информации (отчёты, например) и указать реальные координаты
             точки.
-            <strong>Оставьте e-mail, ссылку на профиль Вконтакте или что-нибудь ещё для обратной связи</strong> на случай, если у меня возникнет вопрос.</label><br/>
+            <strong>Оставьте прямо в тексте e-mail, ссылку на профиль Вконтакте или что-нибудь ещё для обратной связи</strong> на случай, если у меня возникнет вопрос.</label><br/>
         <textarea id="comment" name="comment" rows="20" maxlength="4000"
                   style="margin-top:10px; margin-bottom:20px; " autofocus></textarea>
         <input type="submit" value="Отправить" width="600px; align: center;"/>
