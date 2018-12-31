@@ -1,3 +1,14 @@
+wwmap-frontend (0.0.31) unstable; urgency=medium
+
+  * #138 Photo gallery in spot bubble on map
+  * #148 Show backend and frontend version on UI
+  * #150 Show level sensor picture on the editor page
+  * #159 Show invisible icon for hidden river in the editor tree
+  * #160 Image border in gallery on spot page
+  * Reporting dialog fix: hide id field, store user id if possible, look improved
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Mon, 31 Dec 2018 20:08:42 +0300
+
 wwmap-frontend (0.0.30) unstable; urgency=medium
 
   * Misc changes fir IE11 compatibility

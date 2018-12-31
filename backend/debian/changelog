@@ -1,4 +1,12 @@
-wwmap-backend (0.0.31) UNRELEASED; urgency=medium
+wwmap-backend (0.0.32) unstable; urgency=medium
+
+  * #148 Show backend and frontend version on UI
+  * Exclude yandex and vk from referrer list (oauth link)
+  * Reporting dialog fix: store user id if possible
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Mon, 31 Dec 2018 20:13:14 +0300
+
+wwmap-backend (0.0.31) unstable; urgency=medium
 
   * #92 Search of spots and rivers by name
 

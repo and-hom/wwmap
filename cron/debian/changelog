@@ -1,3 +1,10 @@
+wwmap-cron (0.0.18) unstable; urgency=medium
+
+  * #150 water level sensor informer added to huskytm export and to pdf
+  * SQL fixed
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Mon, 31 Dec 2018 20:14:51 +0300
+
 wwmap-cron (0.0.17) unstable; urgency=medium
 
   * #154 Pdf rendering disabled - html only
