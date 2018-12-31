@@ -1,19 +1,16 @@
 <script type="text/javascript" src="https://api-maps.yandex.ru/2.1/?lang=ru_RU"></script>
 <script type="text/javascript" src="https://wwmap.ru/js/config.js"></script>
 <script type="text/javascript" src="https://wwmap.ru/js/map.v2.js"></script>
-<script type="text/javascript" src="https://wwmap.ru/js/lightbox.min.js"></script>
-
-
-<style>
+<script type="text/javascript" src="https://wwmap.ru/js/lightbox.min.js"></script><style>
     .wwmap-gallery img {
         margin: 2px;
     }
     .wwmap-gallery a {
         display:inline;
     }
-</style>
-
-<a href="{{.RootPageLink}}" style="font-size:80%;">Каталог водных препятствий</a><br/>&nbsp;&nbsp;<a
+</style><a style="float:right" target="_blank"
+           href="https://wwmap.ru/editor.htm#{{.Country.Id}},{{.Region.Id}},{{.River.Id}},{{.Spot.Id}}">Редактировать на wwmap.ru</a><a
+        href="{{.RootPageLink}}" style="font-size:80%;">Каталог водных препятствий</a><br/>&nbsp;&nbsp;<a
         href="{{.CountryPageLink}}" style="font-size:80%;">{{.Country.Title}}</a><br/>&nbsp;&nbsp;&nbsp;&nbsp;<a
         href="{{.RegionPageLink}}" style="font-size:80%;">{{.Region.Title}}</a><br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a
         href="{{.RiverPageLink}}" style="font-size:80%;">{{.River.Title}}</a>
@@ -76,6 +73,10 @@
 <h2>Галерея</h2>
 <div class="wwmap-gallery">{{range .Imgs}}<a
             data-lightbox="img-set" target="_blank" href="{{.Url}}"><img src="{{.PreviewUrl}}"/></a>{{end}}</div>
+
+<div style="color: darkgrey;">Эта страница создана автоматически роботом карты. Редактировать данные можно <a target="_blank"
+                                                                                                                             href="https://wwmap.ru/editor.htm#{{.Country.Id}},{{.Region.Id}},{{.River.Id}},{{.Spot.Id}}">тут</a></div>
+
 
 <script type="text/javascript">
     function addStyle(style) {// CSS trick

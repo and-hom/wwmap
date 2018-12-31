@@ -1,11 +1,11 @@
 <script type="text/javascript" src="https://api-maps.yandex.ru/2.1/?lang=ru_RU"></script>
 <script type="text/javascript" src="https://wwmap.ru/js/config.js"></script>
 <script type="text/javascript" src="https://wwmap.ru/js/map.v2.js"></script>
-
-<a href="{{.RootPageLink}}" style="font-size:80%;">Каталог водных препятствий</a><br/>&nbsp;&nbsp;<a
+<a style="float:right" target="_blank"
+   href="https://wwmap.ru/editor.htm#{{.Country.Id}},{{.Region.Id}},{{.River.Id}}">Редактировать на wwmap.ru</a><a
+        href="{{.RootPageLink}}" style="font-size:80%;">Каталог водных препятствий</a><br/>&nbsp;&nbsp;<a
         href="{{.CountryPageLink}}" style="font-size:80%;">{{.Country.Title}}</a><br/>&nbsp;&nbsp;&nbsp;&nbsp;<a
         href="{{.RegionPageLink}}" style="font-size:80%;">{{.Region.Title}}</a>
-
 <table style="border:0px;">
     <tr>
         <td colspan="3">
@@ -40,6 +40,9 @@
     </tr>
     {{end}}
 </table>
+
+<div style="color: darkgrey;">Эта страница создана автоматически роботом карты. Редактировать данные можно <a target="_blank"
+                                                                                                                             href="https://wwmap.ru/editor.htm#{{.Country.Id}},{{.Region.Id}},{{.River.Id}}">тут</a></div>
 
 <script type="text/javascript">
     ymaps.ready(function() {
