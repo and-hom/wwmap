@@ -109,7 +109,7 @@ type WwPassportDao interface {
 
 type UserDao interface {
 	CreateIfNotExists(User) (int64, Role, bool, error)
-	GetRole(provider AuthProvider, extId int64) (Role, error)
+	GetRole(provider AuthProvider, extId string) (Role, error)
 	List() ([]User, error)
 	ListByRole(role Role) ([]User, error)
 	SetRole(userId int64, role Role) (Role, Role, error)
@@ -180,24 +180,6 @@ func getOrElse(val sql.NullInt64, _default int64) int64 {
 	} else {
 		return _default
 	}
-}
-
-// Deprecated. Use doFindAndReturn
-func (this *PostgresStorage) doFind(query string, callback func(rows *sql.Rows) error, args ...interface{}) (bool, error) {
-	rows, err := this.db.Query(query, args...)
-	if err != nil {
-		return false, err
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		err = callback(rows)
-		if err != nil {
-			return false, err
-		}
-		return true, nil
-	}
-	return false, nil
 }
 
 func (this *PostgresStorage) doFindAndReturn(query string, callback interface{}, args ...interface{}) (interface{}, bool, error) {

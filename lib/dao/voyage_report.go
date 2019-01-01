@@ -58,13 +58,16 @@ func (this voyageReportStorage) UpsertVoyageReports(reports ...VoyageReport) ([]
 }
 
 func (this voyageReportStorage) GetLastId(source string) (interface{}, error) {
-	lastDate := time.Unix(0, 0)
-	_, err := this.doFind(this.getLastIdQuery, func(rows *sql.Rows) error {
-		rows.Scan(&lastDate)
-		return nil
+	lastDate, found, err := this.doFindAndReturn(this.getLastIdQuery, func(rows *sql.Rows) (time.Time, error) {
+		lastDate := time.Unix(0, 0)
+		err := rows.Scan(&lastDate)
+		return lastDate, err
 	}, source)
 	if err != nil {
 		return nil, err
+	}
+	if !found {
+		return time.Unix(0, 0), nil
 	}
 	return lastDate, nil
 }

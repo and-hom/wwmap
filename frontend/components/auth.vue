@@ -6,7 +6,7 @@
     </div>
     <div class="auth" v-else>
         <div>Здравствуйте! Для редактирования надо</div>
-        авторизоваться через <a href="javascript:forceRedirectYndx();">Яндекс</a> или <a href="javascript:forceRedirectVk();">ВК</a>
+        авторизоваться через <a href="javascript:forceRedirectYndx();">Яндекс</a>, <a href="javascript:forceRedirectGoogle();">Google</a> или <a href="javascript:forceRedirectVk();">ВК</a>
     </div>
 </template>
 

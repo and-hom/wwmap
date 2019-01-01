@@ -10,11 +10,11 @@ type UserInfo struct {
 	LastName        string `json:"last_name"`
 	DisplayName     string `json:"display_name"`
 	RealName        string `json:"real_name"`
-	IsAvatarEmpty   bool `json:"is_avatar_empty"`
+	IsAvatarEmpty   bool   `json:"is_avatar_empty"`
 	DefaultAvatarId string `json:"default_avatar_id"`
 	Login           string `json:"login"`
-	Sex             Sex `json:"sex"`
-	Id              int64 `json:"id,string"`
+	Sex             Sex    `json:"sex"`
+	Id              string `json:"id,string"`
 }
 
 type Passport interface {

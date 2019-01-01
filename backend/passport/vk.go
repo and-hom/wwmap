@@ -14,7 +14,7 @@ type userInfo struct {
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
 	Nickname  string `json:"nickname"`
-	Id        int64 `json:"id"`
+	Id        int64  `json:"id"`
 }
 
 type Resp struct {
@@ -27,18 +27,18 @@ func (this userInfo) toUserInfo() UserInfo {
 		login = fmt.Sprintf("%d", this.Id)
 	}
 	return UserInfo{
-		Id:this.Id,
-		Login:login,
-		FirstName:this.FirstName,
-		LastName:this.LastName,
+		Id:        fmt.Sprint("%d", this.Id),
+		Login:     login,
+		FirstName: this.FirstName,
+		LastName:  this.LastName,
 	}
 }
 
 func Vk(cacheExpireTime time.Duration) Passport {
 	kv := tinykv.New(cacheExpireTime)
 	return &VkPassport{
-		client:&http.Client{},
-		cache:&kv,
+		client: &http.Client{},
+		cache:  &kv,
 	}
 }
 
@@ -47,7 +47,7 @@ type VkPassport struct {
 	cache  *tinykv.KV
 }
 
-func (this *VkPassport)ResolveUserInfo(token string) (UserInfo, error) {
+func (this *VkPassport) ResolveUserInfo(token string) (UserInfo, error) {
 	if info, found := (*this.cache).Get(token); found {
 		return info.(UserInfo), nil
 	}

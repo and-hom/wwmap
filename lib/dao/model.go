@@ -264,11 +264,25 @@ type UserInfo struct {
 type AuthProvider string
 
 const YANDEX AuthProvider = "yandex"
+const GOOGLE AuthProvider = "google"
 const VK AuthProvider = "vk"
+
+func (this AuthProvider) HumanName() string {
+	switch this {
+	case YANDEX:
+		return "Яндекс"
+	case GOOGLE:
+		return "Google"
+	case VK:
+		return "ВКонтакте"
+	default:
+		return string(this)
+	}
+}
 
 type User struct {
 	Id           int64 `json:"id"`
-	ExtId        int64 `json:"ext_id"`
+	ExtId        string `json:"ext_id"`
 	AuthProvider AuthProvider  `json:"auth_provider"`
 	Role         Role `json:"role"`
 	Info         UserInfo `json:"info"`

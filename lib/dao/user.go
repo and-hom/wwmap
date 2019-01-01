@@ -72,15 +72,18 @@ func (this userStorage) SetRole(userId int64, role Role) (Role, Role, error) {
 	return Role(*(cols[0][0].(*string))), Role(*(cols[0][1].(*string))), nil
 }
 
-func (this userStorage) GetRole(provider AuthProvider, extId int64) (Role, error) {
-	role := USER
-	found, err := this.doFind(this.getRoleQuery, func(rows *sql.Rows) error {
+func (this userStorage) GetRole(provider AuthProvider, extId string) (Role, error) {
+	role, found, err := this.doFindAndReturn(this.getRoleQuery, func(rows *sql.Rows) error {
+		role := USER
 		return rows.Scan(&role)
 	}, string(provider), extId)
+	if err!=nil {
+		return ANONYMOUS, err
+	}
 	if !found {
 		return ANONYMOUS, nil
 	}
-	return role, err
+	return role.(Role), err
 }
 
 func userMapper(rows *sql.Rows) (User, error) {

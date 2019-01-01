@@ -217,15 +217,16 @@ func (this *UserInfoHandler) sendChangeRoleMessage(authProvider dao.AuthProvider
 func (this *UserInfoHandler) sendWelcomeMessages(authProvider dao.AuthProvider, id int64, info passport.UserInfo) {
 	this.NotificationHelper.SendToRole(dao.Notification{
 		IdTitle: dao.IdTitle{Title: string(authProvider)},
-		Object: dao.IdTitle{Id:id, Title: fmt.Sprintf("%d %s (%s %s)", info.Id, info.Login, info.FirstName, info.LastName)},
+		Object: dao.IdTitle{Id:id, Title: fmt.Sprintf("%s %s (%s %s)", info.Id, info.Login, info.FirstName, info.LastName)},
 		Comment: "User created",
 		Classifier:"user",
 		SendBefore:time.Now(), // send as soon as possible
 	}, dao.ADMIN)
 
-	if authProvider == dao.YANDEX {
+	if authProvider == dao.YANDEX || authProvider == dao.GOOGLE {
 		this.NotificationDao.Add(dao.Notification{
-			Object:dao.IdTitle{Id:id, Title:info.Login},
+			IdTitle: dao.IdTitle{Title: string(authProvider)},
+			Object:dao.IdTitle{Id:id, Title:string(info.Login)},
 			Recipient:dao.NotificationRecipient{Provider:dao.NOTIFICATION_PROVIDER_EMAIL, Recipient:notification.YandexEmail(info.Login)},
 			Classifier:"user-welcome",
 			SendBefore:time.Now(), // send as soon as possible

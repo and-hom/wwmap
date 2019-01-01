@@ -1,15 +1,21 @@
 package main
 
 import (
-	"github.com/and-hom/wwmap/lib/dao"
-	"html/template"
-	"github.com/and-hom/wwmap/lib/config"
-	"io"
-	"github.com/and-hom/wwmap/lib/mail"
-	log "github.com/Sirupsen/logrus"
 	"bytes"
+	log "github.com/Sirupsen/logrus"
+	"github.com/and-hom/wwmap/lib/config"
+	"github.com/and-hom/wwmap/lib/dao"
+	"github.com/and-hom/wwmap/lib/mail"
 	"github.com/pkg/errors"
+	"html/template"
+	"io"
 )
+
+var templateFuncMap = template.FuncMap{
+	"authProvider": func(authProviderStr string) string {
+		return dao.AuthProvider(authProviderStr).HumanName()
+	},
+}
 
 type NotificationProvider interface {
 	Send(classifier string, notifications []dao.Notification) error
@@ -17,7 +23,7 @@ type NotificationProvider interface {
 
 func NewLoggingNotificationProvider() NotificationProvider {
 	templateData := MustAsset("logging-template")
-	tmpl, err := template.New("report-email").Parse(string(templateData))
+	tmpl, err := template.New("report-email").Funcs(templateFuncMap).Parse(string(templateData))
 	if err != nil {
 		log.Fatal("Can not compile email template:\t", err)
 	}
@@ -43,7 +49,7 @@ func (this *loggingNotificationProvider) Send(classifier string, notifications [
 
 func NewEmailNotificationProvider(conf config.Notifications) NotificationProvider {
 	templateData := MustAsset("email-template")
-	tmpl, err := template.New("report-email").Parse(string(templateData))
+	tmpl, err := template.New("report-email").Funcs(templateFuncMap).Parse(string(templateData))
 	if err != nil {
 		log.Fatal("Can not compile email template:\t", err)
 	}
@@ -82,7 +88,8 @@ type vkNotificationProvider struct {
 }
 
 func (this *vkNotificationProvider) Send(classifier string, notifications []dao.Notification) error {
-	return errors.New("VK provider is not implemented yet")
+	log.Error("VK provider is not implemented yet")
+	return nil
 }
 
 type TemplateCache struct {
@@ -106,7 +113,7 @@ func (this *TemplateCache) template(classifier string) *template.Template {
 			this.templates[classifier] = nil
 			return this._default
 		}
-		tmpl, err = template.New(templateName).Parse(string(b))
+		tmpl, err = template.New(templateName).Funcs(templateFuncMap).Parse(string(b))
 		if err != nil {
 			log.Errorf("Can not compile template for cassifier %s: %v", classifier, err)
 			this.templates[classifier] = nil

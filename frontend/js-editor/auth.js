@@ -1,4 +1,5 @@
 YNDX_AUTH_URL = "https://oauth.yandex.ru/authorize?response_type=token&client_id=f50947e6ab4944e1b1c14f2a21f76271"
+GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth?client_id=61884443528-vfpuce81u3ka0aithbpjn405avkjqrt9.apps.googleusercontent.com&redirect_uri=https%3A%2F%2Fwwmap.ru%2Fredirector-google.htm&response_type=token&scope=profile%20email"
 VK_AUTH_URL = "https://oauth.vk.com/authorize?client_id=6703809&display=page&redirect_uri=https://wwmap.ru/redirector-vk.htm"
 SOURCE_FIELD = 'auth_source'
 TOKEN_FIELD = 'auth_token'
@@ -29,6 +30,10 @@ function forceRedirectYndx() {
     window.location.href = YNDX_AUTH_URL + "&state=" + encodeURIComponent(window.location.href)
 }
 
+function forceRedirectGoogle() {
+    window.location.href = GOOGLE_AUTH_URL + "&state=" + encodeURIComponent(window.location.href)
+}
+
 function forceRedirectVk() {
     window.location.href = VK_AUTH_URL + "&state=" + encodeURIComponent(window.location.href)
 }
@@ -54,13 +59,13 @@ function parseParams(paramsStr) {
     return params;
 }
 
-function extractTokenYndx() {
-    var hash = window.location.hash
+function extractFieldFromHash(tokenParamName) {
+    var hash = window.location.hash;
     if (hash) {
-        hash = hash.substr(1)
-        params = parseParams(hash)
-        if (params['access_token']) {
-            return params['access_token']
+        hash = hash.substr(1);
+        params = parseParams(hash);
+        if (params[tokenParamName]) {
+            return params[tokenParamName]
         }
     }
     return null
@@ -80,10 +85,10 @@ function getUserInfo(source, token) {
     return null
 }
 
-function storeTokenFromRequest() {
-    token = extractTokenYndx()
+function storeTokenFromRequest(authSource) {
+    token = extractFieldFromHash('access_token');
     if (token) {
-        setSourceAndToken('yandex', token)
+        setSourceAndToken(authSource, token)
     }
 }
 
@@ -96,9 +101,6 @@ function getAuthorizedUserInfoOrNull() {
     }
 
     sourceAndToken = getSourceAndToken()
-//    if (!sourceAndToken) {
-//        token = extractTokenYndx()
-//    }
     if (sourceAndToken) {
 //        setSourceAndToken(sourceAndToken.source, sourceAndToken.token)
         try {

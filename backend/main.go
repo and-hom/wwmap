@@ -69,6 +69,7 @@ func main() {
 		TileDao:tileDao,
 		AuthProviders: map[AuthProvider]passport.Passport{
 			YANDEX: passport.Yandex(15 * time.Minute),
+			GOOGLE:     passport.Google(15 * time.Minute),
 			VK:     passport.Vk(15 * time.Minute),
 		},
 		RefererStorage: referer.CreateDbReferrerStorage(storage),
