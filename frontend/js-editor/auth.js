@@ -50,16 +50,15 @@ function clearToken() {
 }
 
 function parseParams(paramsStr) {
-    paramsArr = paramsStr.split('&')
-    params = {}
+    var paramsArr = paramsStr.split('&');
+    var params = {};
     for (var i=0; i < paramsArr.length; i++) {
-        keyValue = paramsArr[i].split('=')
+        var keyValue = paramsArr[i].split('=');
         if( keyValue.length < 2 ) {
             continue
         }
-        key = keyValue[0]
-        value = keyValue[1]
-        params[key] = value
+        var key = keyValue[0];
+        params[key] = keyValue[1];
     }
     return params;
 }
@@ -68,7 +67,7 @@ function extractFieldFromHash(tokenParamName) {
     var hash = window.location.hash;
     if (hash) {
         hash = hash.substr(1);
-        params = parseParams(hash);
+        var params = parseParams(hash);
         if (params[tokenParamName]) {
             return params[tokenParamName]
         }
@@ -84,7 +83,7 @@ function getUserInfo(source, token) {
     var xhr = new XMLHttpRequest();
     xhr.open('GET', backendApiBase + '/user-info?provider=' + source + "&token=" + token, false);
     xhr.send();
-    if (xhr.status == 200) {
+    if (xhr.status === 200) {
         return JSON.parse(xhr.response)
     }
     return null
