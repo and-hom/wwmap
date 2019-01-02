@@ -97,7 +97,7 @@
             availableRoles: ["ADMIN","EDITOR", "USER"],
             userInfo: getAuthorizedUserInfoOrNull(),
             admin: function() {
-                userInfo = getAuthorizedUserInfoOrNull()
+                var userInfo = getAuthorizedUserInfoOrNull();
                 return userInfo && userInfo.roles && userInfo.roles.indexOf("ADMIN") > -1;
             },
             roleClass: function(user) {

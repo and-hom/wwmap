@@ -55,8 +55,8 @@
         props: ['link'],
         computed: {
             showFooter: function() {
-                var userinfo = getAuthorizedUserInfoOrNull()
-                return userinfo && ['EDITOR', 'ADMIN'].filter(function(r) {return userInfo.roles.includes(r)}).length>0
+                var userInfo = getAuthorizedUserInfoOrNull();
+                return userInfo && ['EDITOR', 'ADMIN'].filter(function(r) {return userInfo.roles.includes(r)}).length>0
             }
         },
         data: function () {
