@@ -38,6 +38,8 @@ function setSourceAndToken(source, token, expires_at) {
     window.localStorage[TOKEN_FIELD] = token;
     if (expires_at) {
         window.localStorage[EXPIRES_AT_FIELD] = expires_at;
+    } else {
+        window.localStorage.removeItem(EXPIRES_AT_FIELD);
     }
 }
 
@@ -117,7 +119,6 @@ function getAuthorizedUserInfoOrNull() {
             VK_AUTH.redirectIfMatch(sourceAndToken.source);
         }
 
-//        setSourceAndToken(sourceAndToken.source, sourceAndToken.token)
         try {
             var userInfo = getUserInfo(sourceAndToken.source, sourceAndToken.token);
             cachedUserInfo = userInfo;

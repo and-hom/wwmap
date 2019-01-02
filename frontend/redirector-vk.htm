@@ -31,9 +31,9 @@
             throw ''
         }
 
-        token = acquireTokenVk(code)
-        if (token) {
-            setSourceAndToken('vk', token)
+        var authObj = acquireTokenVk(code);
+        if (authObj) {
+            setSourceAndToken('vk', authObj.access_token, expirationTs(authObj.expires_in))
         }
 
         window.location.href = decodeURIComponent(state)

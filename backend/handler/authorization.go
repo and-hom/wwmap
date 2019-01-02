@@ -192,7 +192,7 @@ func (this *UserInfoHandler) GetVkToken(w http.ResponseWriter, r *http.Request) 
 		OnError(w, nil, answer.ErrDesc, http.StatusUnauthorized)
 	}
 
-	rb, err := json.Marshal(answer.AccessToken)
+	rb, err := json.Marshal(answer)
 	if err != nil {
 		OnError500(w, err, "Can not marshal response")
 		return
