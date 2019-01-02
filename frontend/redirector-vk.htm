@@ -9,31 +9,31 @@
     Если вы видите это сообщение, включите javascript
 </div>
     <script type="text/javascript">
-        document.getElementById("nojs").innerHTML = ""
+        document.getElementById("nojs").innerHTML = "";
         var urlParams = new URLSearchParams(window.location.search);
-        var state = urlParams.get('state')
-        var code = urlParams.get('code')
-        var error = urlParams.get('error')
-        var error_description = urlParams.get('error_description')
+        var state = urlParams.get('state');
+        var code = urlParams.get('code');
+        var error = urlParams.get('error');
+        var error_description = urlParams.get('error_description');
 
         if (error || error_description) {
-            document.write(error)
-            document.write('\n')
-            document.write(error_description)
+            document.write(error);
+            document.write('\n');
+            document.write(error_description);
             throw ''
         }
         if (!state){
-            document.write('Пропущен параметр state')
+            document.write('Пропущен параметр state');
             throw ''
         }
         if (!code){
-            document.write('Пропущен параметр code')
+            document.write('Пропущен параметр code');
             throw ''
         }
 
         var authObj = acquireTokenVk(code);
         if (authObj) {
-            setSourceAndToken('vk', authObj.access_token, expirationTs(authObj.expires_in))
+            startWwmapSession('vk', authObj.access_token)
         }
 
         window.location.href = decodeURIComponent(state)

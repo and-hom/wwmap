@@ -14,7 +14,7 @@ type UserInfo struct {
 	DefaultAvatarId string `json:"default_avatar_id"`
 	Login           string `json:"login"`
 	Sex             Sex    `json:"sex"`
-	Id              string `json:"id,string"`
+	Id              string `json:"id"`
 }
 
 type Passport interface {

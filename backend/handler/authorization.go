@@ -1,19 +1,20 @@
 package handler
 
 import (
-	"net/http"
-	. "github.com/and-hom/wwmap/lib/http"
-	. "github.com/and-hom/wwmap/lib/handler"
-	"github.com/and-hom/wwmap/lib/dao"
 	"encoding/json"
-	"github.com/and-hom/wwmap/backend/passport"
-	"github.com/gorilla/mux"
-	"strconv"
-	"io/ioutil"
 	"fmt"
-	"time"
 	log "github.com/Sirupsen/logrus"
+	"github.com/and-hom/wwmap/backend/passport"
+	"github.com/and-hom/wwmap/lib/dao"
+	. "github.com/and-hom/wwmap/lib/handler"
+	. "github.com/and-hom/wwmap/lib/http"
 	"github.com/and-hom/wwmap/lib/notification"
+	"github.com/gorilla/mux"
+	"io/ioutil"
+	"net/http"
+	"strconv"
+	"time"
+	"github.com/google/uuid"
 )
 
 type UserInfoHandler struct {
@@ -22,34 +23,32 @@ type UserInfoHandler struct {
 
 type UserInfoDto struct {
 	AuthProvider dao.AuthProvider `json:"auth_provider"`
-	Login        string `json:"login"`
-	FirstName    string `json:"first_name"`
-	LastName     string `json:"last_name"`
-	Roles        []dao.Role `json:"roles"`
+	Login        string           `json:"login"`
+	FirstName    string           `json:"first_name"`
+	LastName     string           `json:"last_name"`
+	Roles        []dao.Role       `json:"roles"`
+	SessionId    string           `json:"session_id"`
 }
 
 func (this *UserInfoHandler) Init() {
 	this.Register("/user-info", HandlerFunctions{Get: this.GetUserInfo})
+	this.Register("/session-start", HandlerFunctions{Get: this.SessionStart})
 	this.Register("/auth-test", HandlerFunctions{Get: this.TestAuth})
 	this.Register("/user", HandlerFunctions{Get: this.ListUsers})
 	this.Register("/user/{userId}/role", HandlerFunctions{Post: this.SetRole})
 	this.Register("/vk/token", HandlerFunctions{Get: this.GetVkToken})
 }
 
-func (this *UserInfoHandler) GetUserInfo(w http.ResponseWriter, r *http.Request) {
+func (this *UserInfoHandler) SessionStart(w http.ResponseWriter, r *http.Request) {
 	authProvider, info, err := this.App.GetUserInfo(r)
-	if err != nil {
-		onPassportErr(err, w, "Can not get user info from request")
-		return
-	}
-
-	p, info, err := this.App.GetUserInfo(r)
 	if err != nil {
 		onPassportErr(err, w, fmt.Sprintf("Can not do request to auth provider: %s", authProvider))
 		return
 	}
 
-	id, role, justCreated, err := this.CreateMissingUser(r, authProvider, info)
+	newSessionId := uuid.New().String()
+
+	id, role, sessionId, justCreated, err := this.CreateMissingUser(r, authProvider, info, newSessionId)
 	if err != nil {
 		onPassportErr(err, w, "Can not create user!")
 		return
@@ -64,7 +63,8 @@ func (this *UserInfoHandler) GetUserInfo(w http.ResponseWriter, r *http.Request)
 		LastName:info.LastName,
 		Login:info.Login,
 		Roles:[]dao.Role{role},
-		AuthProvider: p,
+		AuthProvider: authProvider,
+		SessionId: sessionId,
 	}
 
 	bytes, err := json.Marshal(infoDto)
@@ -72,7 +72,38 @@ func (this *UserInfoHandler) GetUserInfo(w http.ResponseWriter, r *http.Request)
 		OnError500(w, err, "Can not create response")
 		return
 	}
-	w.Write(bytes)
+	_, err = w.Write(bytes)
+	if err != nil {
+		OnError500(w, err, "Can not write response")
+	}
+}
+
+func (this *UserInfoHandler) GetUserInfo(w http.ResponseWriter, r *http.Request) {
+	sessionId := r.FormValue("session_id")
+	user, err := this.UserDao.GetBySession(sessionId)
+	if err != nil {
+		onPassportErr(err, w, "Can not get user info!")
+		return
+	}
+
+	infoDto := UserInfoDto{
+		FirstName:user.Info.FirstName,
+		LastName:user.Info.LastName,
+		Login:user.Info.Login,
+		Roles:[]dao.Role{user.Role},
+		AuthProvider: user.AuthProvider,
+		SessionId: user.SessionId,
+	}
+
+	bytes, err := json.Marshal(infoDto)
+	if err != nil {
+		OnError500(w, err, "Can not create response")
+		return
+	}
+	_, err = w.Write(bytes)
+	if err != nil {
+		OnError500(w, err, "Can not write response")
+	}
 }
 
 func (this *UserInfoHandler) ListUsers(w http.ResponseWriter, r *http.Request) {
@@ -107,7 +138,7 @@ func (this *UserInfoHandler) SetRole(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	roleStr := ""
-	json.Unmarshal(bodyBytes, &roleStr)
+	err = json.Unmarshal(bodyBytes, &roleStr)
 	if err != nil {
 		OnError500(w, err, "Can not unmarshall role: " + string(bodyBytes))
 		return

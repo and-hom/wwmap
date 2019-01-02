@@ -108,11 +108,12 @@ type WwPassportDao interface {
 }
 
 type UserDao interface {
-	CreateIfNotExists(User) (int64, Role, bool, error)
+	CreateIfNotExists(User) (int64, Role, string, bool, error)
 	GetRole(provider AuthProvider, extId string) (Role, error)
 	List() ([]User, error)
 	ListByRole(role Role) ([]User, error)
 	SetRole(userId int64, role Role) (Role, Role, error)
+	GetBySession(sessionId string) (User, error)
 }
 
 type HasProperties interface {

@@ -1,7 +1,7 @@
 <template>
     <div class="auth" v-if="userInfo">
         <div>Привет, {{userInfo.first_name}}&nbsp;{{userInfo.last_name}}!</div>
-        <a href="javascript:clearToken(); location.reload();">Выход</a>
+        <a href="javascript:clearSessionId(); location.reload();">Выход</a>
         <div style="float:right; color: grey; font-size:60%;"><strong>{{userInfo.auth_provider}}/</strong>{{userInfo.login}}</div>
     </div>
     <div class="auth" v-else>

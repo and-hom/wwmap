@@ -1,6 +1,7 @@
 <html>
 <head>
     <meta charset="utf-8"/>
+    <script type="text/javascript" src="js-editor/api.js"></script>
     <script type="text/javascript" src="js-editor/auth.js"></script>
 </head>
 <body>
@@ -8,13 +9,13 @@
     Если вы видите это сообщение, включите javascript
 </div>
     <script type="text/javascript">
-        document.getElementById("nojs").innerHTML = ""
-        var hash = window.location.hash
+        document.getElementById("nojs").innerHTML = "";
+        var hash = window.location.hash;
         if (hash) {
-            hash = hash.substr(1)
-            params = parseParams(hash)
+            hash = hash.substr(1);
+            params = parseParams(hash);
             if (params['state']) {
-                storeTokenFromRequest('yandex')
+                getTokenFromRequestAndStartWwmapSession('yandex');
                 window.location.href = decodeURIComponent(params['state'])
             } else {
                 document.write('Пропущен параметр state')
