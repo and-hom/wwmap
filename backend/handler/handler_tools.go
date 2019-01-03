@@ -1,17 +1,17 @@
 package handler
 
 import (
-	log "github.com/Sirupsen/logrus"
-	"github.com/and-hom/wwmap/lib/handler"
-	"net/http"
 	"fmt"
-	"os"
-	"github.com/and-hom/wwmap/lib/geo"
-	. "github.com/and-hom/wwmap/lib/http"
-	"strconv"
-	"github.com/and-hom/wwmap/lib/dao"
-	"net/url"
+	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/backend/passport"
+	"github.com/and-hom/wwmap/lib/dao"
+	"github.com/and-hom/wwmap/lib/geo"
+	"github.com/and-hom/wwmap/lib/handler"
+	. "github.com/and-hom/wwmap/lib/http"
+	"net/http"
+	"net/url"
+	"os"
+	"strconv"
 	"strings"
 )
 
@@ -114,17 +114,17 @@ func (this *App) GetUserInfo(r *http.Request) (dao.AuthProvider, passport.UserIn
 }
 
 func (this *App) CheckRoleAllowed(r *http.Request, allowedRoles ...dao.Role) (bool, error) {
-	authProvider, info, err := this.GetUserInfo(r)
+	sessionId := r.FormValue("session_id")
+	if sessionId == "" {
+		sessionId = r.Header.Get("Authorization")
+	}
+	user, err := this.UserDao.GetBySession(sessionId)
 	if err != nil {
 		return false, err
 	}
 
-	role, err := this.UserDao.GetRole(authProvider, info.Id)
-	if err != nil {
-		return false, err
-	}
 	for i := 0; i < len(allowedRoles); i++ {
-		if allowedRoles[i] == role {
+		if allowedRoles[i] == user.Role {
 			return true, nil
 		}
 	}

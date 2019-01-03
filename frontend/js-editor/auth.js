@@ -117,12 +117,3 @@ function getWwmapUserLogin() {
     }
     return null
 }
-
-function authHeaderVal(sourceAndToken) {
-    var userInfo = getAuthorizedUserInfoOrNull();
-    if (userInfo) {
-        return "Token " + userInfo.token
-    } else {
-        return null
-    }
-}

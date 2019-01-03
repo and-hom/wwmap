@@ -79,9 +79,9 @@
                         skip = this.spot.id
                     }
                     url = backendApiBase + '/ymaps-tile-ww?bbox=%b&zoom=%z&skip=' + skip
-                    st = getSourceAndToken()
+                    st = getWwmapSessionId();
                     if (st) {
-                        url += '&token=' + st.token + '&provider=' + st.source
+                        url += '&session_id=' + st
                     }
                     return url
                 },

@@ -58,9 +58,9 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 		}
 	}
 
-	token := req.FormValue("token")
+	sessionId := req.FormValue("session_id")
 	allowed := false
-	if token != "" {
+	if sessionId != "" {
 		allowed, err = this.CheckRoleAllowed(req, dao.ADMIN, dao.EDITOR)
 		if err != nil {
 			OnError500(w, err, "Can not get user info for token")

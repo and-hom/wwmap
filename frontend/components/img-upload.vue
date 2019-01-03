@@ -88,7 +88,7 @@
             headers:function(){
                 if (this.auth) {
                     return {
-                        Authorization: authHeaderVal(getSourceAndToken()),
+                        Authorization: getWwmapSessionId(),
                     }
                 }
                 return {}

@@ -51,9 +51,9 @@ function addAuth(xhr, auth) {
     if (!auth) {
         return
     }
-    var sourceAndToken = getSourceAndToken();
-    if (sourceAndToken) {
-        xhr.setRequestHeader("Authorization", authHeaderVal(sourceAndToken));
+    var sessionId = getWwmapSessionId();
+    if (sessionId) {
+        xhr.setRequestHeader("Authorization", sessionId);
     }
 }
 
