@@ -7,7 +7,7 @@ function config() {
     python -c 'import yaml; print(yaml.load(open("/etc/wwmap/config.yaml","r"))'$1')'
 }
 
-CONN_STR=`config '["db-connection-string"]'`
+CONN_STR=`config '["db"]["connection-string"]'`
 YA_EMAIL=`config '["backup"]["email"]'`
 YA_PASSWORD=`config '["backup"]["password"]'`
 
