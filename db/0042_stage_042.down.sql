@@ -1,0 +1,1 @@
+DROP INDEX image_main_image;
