@@ -78,6 +78,7 @@
         },
         updated: function() {
             if(this.$refs[this.type] && this.$refs[this.type].value.length && this.$refs[this.type].uploaded) {
+
                 var t = this;
                 setTimeout(function() {
                     t.refresh()
@@ -97,6 +98,7 @@
         data:function() {
             return {
                 files: [],
+                filesSum: "",
                 uploadPath: function() { return backendApiBase + "/spot/" + this.spot.id +"/img?type=" + this.type },
                 removeImage: function(imgId) {
                     this.images = removeImage(this.spot.id, imgId, this.type);
@@ -115,7 +117,16 @@
                     }
                 },
                 refresh:function() {
-                    this.images = getImages(this.spot.id, this.type)
+                    var images = getImages(this.spot.id, this.type);
+
+                    // Workaround #140 do not refresh the same images list. It produces update event and then refresh and then update and then.....
+                    var filesSum = images.map(function (x) {
+                        return x.id
+                    }).join("#");
+                    if (this.filesSum !== filesSum) {
+                        this.filesSum = filesSum;
+                        this.images = images;
+                    }
                 },
                 imageClass:function(image) {
                     if(image.enabled==false) {
