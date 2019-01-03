@@ -1,5 +1,9 @@
 log-level: "info"
-db-connection-string: "postgres://wwmap:WWMAP_POSTGRES_PASSWORD@localhost:5432/wwmap?sslmode=require"
+db:
+  connection-string: "postgres://wwmap:WWMAP_POSTGRES_PASSWORD@localhost:5432/wwmap?sslmode=require"
+  max-open-conn: 5
+  max-iddle-conn: 5
+  max-conn-lifetime: "5m"
 clusterization:
   barrier_ratio: 2
   min_dist_ratio: 50
