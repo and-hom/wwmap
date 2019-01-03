@@ -27,7 +27,7 @@ func (this userInfo) toUserInfo() UserInfo {
 		login = fmt.Sprintf("%d", this.Id)
 	}
 	return UserInfo{
-		Id:        fmt.Sprint("%d", this.Id),
+		Id:        fmt.Sprintf("%d", this.Id),
 		Login:     login,
 		FirstName: this.FirstName,
 		LastName:  this.LastName,
