@@ -1,23 +1,23 @@
 package handler
 
 import (
-	"net/http"
-	. "github.com/and-hom/wwmap/lib/http"
-	. "github.com/and-hom/wwmap/lib/handler"
 	"encoding/json"
-	"github.com/gorilla/mux"
-	"strconv"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
+	"github.com/and-hom/wwmap/lib/blob"
 	"github.com/and-hom/wwmap/lib/dao"
-	"io/ioutil"
+	"github.com/and-hom/wwmap/lib/geo"
+	. "github.com/and-hom/wwmap/lib/handler"
+	. "github.com/and-hom/wwmap/lib/http"
+	"github.com/and-hom/wwmap/lib/model"
 	"github.com/and-hom/wwmap/lib/util"
+	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 	"github.com/ptrv/go-gpx"
-	"github.com/and-hom/wwmap/lib/geo"
-	"github.com/and-hom/wwmap/lib/model"
-	"github.com/and-hom/wwmap/lib/blob"
 	"io"
+	"io/ioutil"
+	"net/http"
+	"strconv"
 )
 
 type GeoHierarchyHandler struct {
@@ -30,25 +30,34 @@ type GeoHierarchyHandler struct {
 }
 
 func (this *GeoHierarchyHandler) Init() {
-	this.Register("/country", HandlerFunctions{Get: this.ListCountries, })
-	this.Register("/country/{countryId}/region", HandlerFunctions{Get:this.ListRegions})
-	this.Register("/country/{countryId}/region/{regionId}/river", HandlerFunctions{Get:this.ListRegionRivers})
-	this.Register("/country/{countryId}/river", HandlerFunctions{Get:this.ListCountryRivers})
+	this.Register("/country", HandlerFunctions{Get: this.ListCountries,})
+	this.Register("/country/{countryId}/region", HandlerFunctions{Get: this.ListRegions})
+	this.Register("/country/{countryId}/region/{regionId}/river", HandlerFunctions{Get: this.ListRegionRivers})
+	this.Register("/country/{countryId}/river", HandlerFunctions{Get: this.ListCountryRivers})
 
-	this.Register("/region", HandlerFunctions{Get:this.ListAllRegions})
-	this.Register("/region/{regionId}", HandlerFunctions{Get:this.GetRegion})
+	this.Register("/region", HandlerFunctions{Get: this.ListAllRegions})
+	this.Register("/region/{regionId}", HandlerFunctions{Get: this.GetRegion})
 
-	this.Register("/river", HandlerFunctions{Get:this.FilterRivers})
-	this.Register("/river/{riverId}", HandlerFunctions{Get:this.GetRiver, Put:this.SaveRiver, Post:this.SaveRiver, Delete:this.RemoveRiver})
-	this.Register("/river/{riverId}/reports", HandlerFunctions{Get:this.ListRiverReports})
-	this.Register("/river/{riverId}/spots", HandlerFunctions{Get:this.ListSpots})
-	this.Register("/river/{riverId}/center", HandlerFunctions{Get:this.GetRiverCenter})
-	this.Register("/river/{riverId}/gpx", HandlerFunctions{Post:this.UploadGpx, Put:this.UploadGpx})
-	this.Register("/river/{riverId}/pdf", HandlerFunctions{Get:this.GetRiverPassportPdf})
-	this.Register("/river/{riverId}/html", HandlerFunctions{Get:this.GetRiverPassportHtml})
-	this.Register("/river/{riverId}/visible", HandlerFunctions{Post:this.SetRiverVisible, Put:this.SetRiverVisible})
-
-	this.Register("/spot/{spotId}", HandlerFunctions{Get:this.GetSpot, Post:this.SaveSpot, Put:this.SaveSpot, Delete:this.RemoveSpot})
+	this.Register("/river", HandlerFunctions{Get: this.FilterRivers})
+	this.Register("/river/{riverId}", HandlerFunctions{Get: this.GetRiver,
+		Put:    this.ForRoles(this.SaveRiver, dao.ADMIN, dao.EDITOR),
+		Post:   this.ForRoles(this.SaveRiver, dao.ADMIN, dao.EDITOR),
+		Delete: this.ForRoles(this.RemoveRiver, dao.ADMIN, dao.EDITOR),})
+	this.Register("/river/{riverId}/reports", HandlerFunctions{Get: this.ListRiverReports})
+	this.Register("/river/{riverId}/spots", HandlerFunctions{Get: this.ListSpots})
+	this.Register("/river/{riverId}/center", HandlerFunctions{Get: this.GetRiverCenter})
+	this.Register("/river/{riverId}/gpx", HandlerFunctions{Post:
+	this.ForRoles(this.UploadGpx, dao.ADMIN, dao.EDITOR),
+		Put: this.ForRoles(this.UploadGpx, dao.ADMIN, dao.EDITOR)})
+	this.Register("/river/{riverId}/pdf", HandlerFunctions{Get: this.GetRiverPassportPdf})
+	this.Register("/river/{riverId}/html", HandlerFunctions{Get: this.GetRiverPassportHtml})
+	this.Register("/river/{riverId}/visible", HandlerFunctions{
+		Post: this.ForRoles(this.SetRiverVisible, dao.ADMIN, dao.EDITOR),
+		Put:  this.ForRoles(this.SetRiverVisible, dao.ADMIN, dao.EDITOR)})
+	this.Register("/spot/{spotId}", HandlerFunctions{Get: this.GetSpot,
+		Post:   this.ForRoles(this.SaveSpot, dao.ADMIN, dao.EDITOR),
+		Put:    this.ForRoles(this.SaveSpot, dao.ADMIN, dao.EDITOR),
+		Delete: this.ForRoles(this.RemoveSpot, dao.ADMIN, dao.EDITOR)})
 }
 
 type RiverDto struct {
@@ -262,10 +271,6 @@ func (this *GeoHierarchyHandler) GetRiver(w http.ResponseWriter, r *http.Request
 }
 
 func (this *GeoHierarchyHandler) SaveRiver(w http.ResponseWriter, r *http.Request) {
-	if !this.CheckRoleAllowedAndMakeResponse(w, r, dao.ADMIN, dao.EDITOR) {
-		return
-	}
-
 	bodyBytes, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		OnError500(w, err, "Can not read request body")
@@ -327,10 +332,6 @@ func (this *GeoHierarchyHandler) SaveRiver(w http.ResponseWriter, r *http.Reques
 }
 
 func (this *GeoHierarchyHandler) SetRiverVisible(w http.ResponseWriter, r *http.Request) {
-	if !this.CheckRoleAllowedAndMakeResponse(w, r, dao.ADMIN, dao.EDITOR) {
-		return
-	}
-
 	pathParams := mux.Vars(r)
 	riverId, err := strconv.ParseInt(pathParams["riverId"], 10, 64)
 	if err != nil {
@@ -352,10 +353,6 @@ func (this *GeoHierarchyHandler) SetRiverVisible(w http.ResponseWriter, r *http.
 }
 
 func (this *GeoHierarchyHandler) RemoveRiver(w http.ResponseWriter, r *http.Request) {
-	if !this.CheckRoleAllowedAndMakeResponse(w, r, dao.ADMIN, dao.EDITOR) {
-		return
-	}
-
 	pathParams := mux.Vars(r)
 	riverId, err := strconv.ParseInt(pathParams["riverId"], 10, 64)
 	if err != nil {
@@ -448,10 +445,6 @@ func (this *GeoHierarchyHandler) GetSpot(w http.ResponseWriter, r *http.Request)
 }
 
 func (this *GeoHierarchyHandler) SaveSpot(w http.ResponseWriter, r *http.Request) {
-	if !this.CheckRoleAllowedAndMakeResponse(w, r, dao.ADMIN, dao.EDITOR) {
-		return
-	}
-
 	bodyBytes, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		OnError500(w, err, "Can not read request body")
@@ -485,10 +478,6 @@ func (this *GeoHierarchyHandler) SaveSpot(w http.ResponseWriter, r *http.Request
 }
 
 func (this *GeoHierarchyHandler) RemoveSpot(w http.ResponseWriter, r *http.Request) {
-	if !this.CheckRoleAllowedAndMakeResponse(w, r, dao.ADMIN, dao.EDITOR) {
-		return
-	}
-
 	pathParams := mux.Vars(r)
 	spotIdStr := pathParams["spotId"]
 	spotId, err := strconv.ParseInt(spotIdStr, 10, 64)

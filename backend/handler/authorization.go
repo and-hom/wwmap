@@ -9,12 +9,12 @@ import (
 	. "github.com/and-hom/wwmap/lib/handler"
 	. "github.com/and-hom/wwmap/lib/http"
 	"github.com/and-hom/wwmap/lib/notification"
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"time"
-	"github.com/google/uuid"
 )
 
 type UserInfoHandler struct {
@@ -34,8 +34,8 @@ func (this *UserInfoHandler) Init() {
 	this.Register("/user-info", HandlerFunctions{Get: this.GetUserInfo})
 	this.Register("/session-start", HandlerFunctions{Get: this.SessionStart})
 	this.Register("/auth-test", HandlerFunctions{Get: this.TestAuth})
-	this.Register("/user", HandlerFunctions{Get: this.ListUsers})
-	this.Register("/user/{userId}/role", HandlerFunctions{Post: this.SetRole})
+	this.Register("/user", HandlerFunctions{Get: this.ForRoles(this.ListUsers, dao.ADMIN)})
+	this.Register("/user/{userId}/role", HandlerFunctions{Post: this.ForRoles(this.SetRole, dao.ADMIN)})
 	this.Register("/vk/token", HandlerFunctions{Get: this.GetVkToken})
 }
 
@@ -59,12 +59,12 @@ func (this *UserInfoHandler) SessionStart(w http.ResponseWriter, r *http.Request
 	}
 
 	infoDto := UserInfoDto{
-		FirstName:info.FirstName,
-		LastName:info.LastName,
-		Login:info.Login,
-		Roles:[]dao.Role{role},
+		FirstName:    info.FirstName,
+		LastName:     info.LastName,
+		Login:        info.Login,
+		Roles:        []dao.Role{role},
 		AuthProvider: authProvider,
-		SessionId: sessionId,
+		SessionId:    sessionId,
 	}
 
 	bytes, err := json.Marshal(infoDto)
@@ -87,12 +87,12 @@ func (this *UserInfoHandler) GetUserInfo(w http.ResponseWriter, r *http.Request)
 	}
 
 	infoDto := UserInfoDto{
-		FirstName:user.Info.FirstName,
-		LastName:user.Info.LastName,
-		Login:user.Info.Login,
-		Roles:[]dao.Role{user.Role},
+		FirstName:    user.Info.FirstName,
+		LastName:     user.Info.LastName,
+		Login:        user.Info.Login,
+		Roles:        []dao.Role{user.Role},
 		AuthProvider: user.AuthProvider,
-		SessionId: user.SessionId,
+		SessionId:    user.SessionId,
 	}
 
 	bytes, err := json.Marshal(infoDto)
@@ -107,10 +107,6 @@ func (this *UserInfoHandler) GetUserInfo(w http.ResponseWriter, r *http.Request)
 }
 
 func (this *UserInfoHandler) ListUsers(w http.ResponseWriter, r *http.Request) {
-	if !this.CheckRoleAllowedAndMakeResponse(w, r, dao.ADMIN) {
-		return
-	}
-
 	users, err := this.UserDao.List()
 	if err != nil {
 		OnError500(w, err, "Can not list users")
@@ -121,10 +117,6 @@ func (this *UserInfoHandler) ListUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func (this *UserInfoHandler) SetRole(w http.ResponseWriter, r *http.Request) {
-	if !this.CheckRoleAllowedAndMakeResponse(w, r, dao.ADMIN) {
-		return
-	}
-
 	pathParams := mux.Vars(r)
 	userId, err := strconv.ParseInt(pathParams["userId"], 10, 64)
 	if err != nil {
@@ -140,12 +132,12 @@ func (this *UserInfoHandler) SetRole(w http.ResponseWriter, r *http.Request) {
 	roleStr := ""
 	err = json.Unmarshal(bodyBytes, &roleStr)
 	if err != nil {
-		OnError500(w, err, "Can not unmarshall role: " + string(bodyBytes))
+		OnError500(w, err, "Can not unmarshall role: "+string(bodyBytes))
 		return
 	}
 
 	if roleStr != string(dao.ADMIN) && roleStr != string(dao.EDITOR) && roleStr != string(dao.USER) {
-		OnError(w, err, "Can not set role " + roleStr, http.StatusBadRequest)
+		OnError(w, err, "Can not set role "+roleStr, http.StatusBadRequest)
 		return
 	}
 
@@ -192,8 +184,8 @@ func onPassportErr(err error, w http.ResponseWriter, msg string) {
 
 type VkTokenAnswer struct {
 	AccessToken string `json:"access_token"`
-	Expires     int `json:"expires_in"`
-	Uid         int64 `json:"uid"`
+	Expires     int    `json:"expires_in"`
+	Uid         int64  `json:"uid"`
 	ErrDesc     string `json:"error_description"`
 }
 
@@ -234,11 +226,11 @@ func (this *UserInfoHandler) GetVkToken(w http.ResponseWriter, r *http.Request) 
 
 func (this *UserInfoHandler) sendChangeRoleMessage(authProvider dao.AuthProvider, userId int64, info dao.UserInfo, oldRole dao.Role, newRole dao.Role) {
 	err := this.NotificationDao.Add(dao.Notification{
-		Object:dao.IdTitle{Id:userId, Title:info.Login},
-		Comment:fmt.Sprintf("%s => %s", oldRole, newRole),
-		Recipient:dao.NotificationRecipient{Provider:dao.NOTIFICATION_PROVIDER_EMAIL, Recipient:notification.YandexEmail(info.Login)},
-		Classifier:"user-roles",
-		SendBefore:time.Now(), // send as soon as possible
+		Object:     dao.IdTitle{Id: userId, Title: info.Login},
+		Comment:    fmt.Sprintf("%s => %s", oldRole, newRole),
+		Recipient:  dao.NotificationRecipient{Provider: dao.NOTIFICATION_PROVIDER_EMAIL, Recipient: notification.YandexEmail(info.Login)},
+		Classifier: "user-roles",
+		SendBefore: time.Now(), // send as soon as possible
 	})
 	if err != nil {
 		log.Errorf("Can not send message to user %d: %v", userId, err)
@@ -247,20 +239,20 @@ func (this *UserInfoHandler) sendChangeRoleMessage(authProvider dao.AuthProvider
 
 func (this *UserInfoHandler) sendWelcomeMessages(authProvider dao.AuthProvider, id int64, info passport.UserInfo) {
 	this.NotificationHelper.SendToRole(dao.Notification{
-		IdTitle: dao.IdTitle{Title: string(authProvider)},
-		Object: dao.IdTitle{Id:id, Title: fmt.Sprintf("%s %s (%s %s)", info.Id, info.Login, info.FirstName, info.LastName)},
-		Comment: "User created",
-		Classifier:"user",
-		SendBefore:time.Now(), // send as soon as possible
+		IdTitle:    dao.IdTitle{Title: string(authProvider)},
+		Object:     dao.IdTitle{Id: id, Title: fmt.Sprintf("%s %s (%s %s)", info.Id, info.Login, info.FirstName, info.LastName)},
+		Comment:    "User created",
+		Classifier: "user",
+		SendBefore: time.Now(), // send as soon as possible
 	}, dao.ADMIN)
 
 	if authProvider == dao.YANDEX || authProvider == dao.GOOGLE {
 		this.NotificationDao.Add(dao.Notification{
-			IdTitle: dao.IdTitle{Title: string(authProvider)},
-			Object:dao.IdTitle{Id:id, Title:string(info.Login)},
-			Recipient:dao.NotificationRecipient{Provider:dao.NOTIFICATION_PROVIDER_EMAIL, Recipient:notification.YandexEmail(info.Login)},
-			Classifier:"user-welcome",
-			SendBefore:time.Now(), // send as soon as possible
+			IdTitle:    dao.IdTitle{Title: string(authProvider)},
+			Object:     dao.IdTitle{Id: id, Title: string(info.Login)},
+			Recipient:  dao.NotificationRecipient{Provider: dao.NOTIFICATION_PROVIDER_EMAIL, Recipient: notification.YandexEmail(info.Login)},
+			Classifier: "user-welcome",
+			SendBefore: time.Now(), // send as soon as possible
 		})
 	}
 }

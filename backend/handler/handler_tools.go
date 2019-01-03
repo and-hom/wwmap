@@ -2,6 +2,7 @@ package handler
 
 import (
 	log "github.com/Sirupsen/logrus"
+	"github.com/and-hom/wwmap/lib/handler"
 	"net/http"
 	"fmt"
 	"os"
@@ -69,6 +70,18 @@ func (this *App) CreateMissingUser(r *http.Request, authProvider dao.AuthProvide
 		},
 		SessionId: sessionId,
 	})
+}
+
+func (this *App) ForRoles(payload handler.HandlerFunction, roles ...dao.Role) handler.HandlerFunction {
+	if len(roles)==0 {
+		return payload
+	}
+	return func(writer http.ResponseWriter, request *http.Request) {
+		if !this.CheckRoleAllowedAndMakeResponse(writer, request, roles...) {
+			return
+		}
+		payload(writer, request)
+	}
 }
 
 func (this *App) CheckRoleAllowedAndMakeResponse(w http.ResponseWriter, r *http.Request, allowedRoles ...dao.Role) bool {

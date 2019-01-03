@@ -1,26 +1,26 @@
 package handler
 
 import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/lib/blob"
-	"net/http"
-	. "github.com/and-hom/wwmap/lib/http"
+	"github.com/and-hom/wwmap/lib/dao"
 	. "github.com/and-hom/wwmap/lib/handler"
+	. "github.com/and-hom/wwmap/lib/http"
+	"github.com/and-hom/wwmap/lib/util"
 	"github.com/gorilla/mux"
+	"golang.org/x/image/draw"
+	"image"
+	_ "image/gif"
+	_ "image/jpeg"
+	"image/png"
+	"io"
+	"io/ioutil"
+	"net/http"
 	"strconv"
 	"time"
-	"io"
-	"image"
-	"golang.org/x/image/draw"
-	"image/png"
-	_ "image/jpeg"
-	_ "image/gif"
-	"bytes"
-	"fmt"
-	"github.com/and-hom/wwmap/lib/dao"
-	"github.com/Sirupsen/logrus"
-	"encoding/json"
-	"io/ioutil"
-	"github.com/and-hom/wwmap/lib/util"
 )
 
 const (
@@ -38,11 +38,17 @@ type ImgHandler struct {
 };
 
 func (this *ImgHandler) Init() {
-	this.Register("/spot/{spotId}/img", HandlerFunctions{Get: this.GetImages, Post:this.Upload, Put:this.Upload})
-	this.Register("/spot/{spotId}/img/{imgId}", HandlerFunctions{Get:this.GetImage, Delete: this.Delete})
+	this.Register("/spot/{spotId}/img", HandlerFunctions{Get: this.GetImages,
+		Post: this.ForRoles(this.Upload, dao.ADMIN, dao.EDITOR),
+		Put:  this.ForRoles(this.Upload, dao.ADMIN, dao.EDITOR)})
+	this.Register("/spot/{spotId}/img/{imgId}", HandlerFunctions{Get: this.GetImage,
+		Delete: this.ForRoles(this.Delete, dao.ADMIN, dao.EDITOR)})
 	this.Register("/spot/{spotId}/img/{imgId}/preview", HandlerFunctions{Get: this.GetImagePreview})
-	this.Register("/spot/{spotId}/img/{imgId}/enabled", HandlerFunctions{Post:this.SetEnabled})
-	this.Register("/spot/{spotId}/preview", HandlerFunctions{Get: this.GetPreview, Post:this.SetPreview, Delete:this.DropPreview})
+	this.Register("/spot/{spotId}/img/{imgId}/enabled", HandlerFunctions{
+		Post: this.ForRoles(this.SetEnabled, dao.ADMIN, dao.EDITOR)})
+	this.Register("/spot/{spotId}/preview", HandlerFunctions{Get: this.GetPreview,
+		Post:   this.ForRoles(this.SetPreview, dao.ADMIN, dao.EDITOR),
+		Delete: this.ForRoles(this.DropPreview, dao.ADMIN, dao.EDITOR)})
 }
 
 func (this *ImgHandler) GetImages(w http.ResponseWriter, req *http.Request) {
@@ -79,10 +85,6 @@ func (this *ImgHandler) GetImagePreview(w http.ResponseWriter, req *http.Request
 }
 
 func (this *ImgHandler) Upload(w http.ResponseWriter, req *http.Request) {
-	if !this.CheckRoleAllowedAndMakeResponse(w, req, dao.ADMIN, dao.EDITOR) {
-		return
-	}
-
 	pathParams := mux.Vars(req)
 	spotId, err := strconv.ParseInt(pathParams["spotId"], 10, 64)
 	if err != nil {
@@ -167,10 +169,6 @@ func compress(sourceImage image.Image, src io.ReadSeeker, maxW, maxH int, resize
 }
 
 func (this *ImgHandler) Delete(w http.ResponseWriter, req *http.Request) {
-	if !this.CheckRoleAllowedAndMakeResponse(w, req, dao.ADMIN, dao.EDITOR) {
-		return
-	}
-
 	pathParams := mux.Vars(req)
 	spotId, err := strconv.ParseInt(pathParams["spotId"], 10, 64)
 	if err != nil {
@@ -203,10 +201,6 @@ func (this *ImgHandler) Delete(w http.ResponseWriter, req *http.Request) {
 }
 
 func (this *ImgHandler) SetEnabled(w http.ResponseWriter, req *http.Request) {
-	if !this.CheckRoleAllowedAndMakeResponse(w, req, dao.ADMIN, dao.EDITOR) {
-		return
-	}
-
 	pathParams := mux.Vars(req)
 	spotId, err := strconv.ParseInt(pathParams["spotId"], 10, 64)
 	if err != nil {
@@ -238,10 +232,6 @@ func (this *ImgHandler) SetEnabled(w http.ResponseWriter, req *http.Request) {
 }
 
 func (this *ImgHandler) SetPreview(w http.ResponseWriter, req *http.Request) {
-	if !this.CheckRoleAllowedAndMakeResponse(w, req, dao.ADMIN, dao.EDITOR) {
-		return
-	}
-
 	pathParams := mux.Vars(req)
 	spotId, err := strconv.ParseInt(pathParams["spotId"], 10, 64)
 	if err != nil {
@@ -277,10 +267,6 @@ func (this *ImgHandler) SetPreview(w http.ResponseWriter, req *http.Request) {
 }
 
 func (this *ImgHandler) DropPreview(w http.ResponseWriter, req *http.Request) {
-	if !this.CheckRoleAllowedAndMakeResponse(w, req, dao.ADMIN, dao.EDITOR) {
-		return
-	}
-
 	pathParams := mux.Vars(req)
 	spotId, err := strconv.ParseInt(pathParams["spotId"], 10, 64)
 	if err != nil {

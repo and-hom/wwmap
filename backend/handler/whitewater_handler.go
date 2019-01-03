@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/and-hom/wwmap/backend/clustering"
 	"github.com/and-hom/wwmap/backend/ymaps"
-	. "github.com/and-hom/wwmap/lib/dao"
+	"github.com/and-hom/wwmap/lib/dao"
 	. "github.com/and-hom/wwmap/lib/geo"
 	. "github.com/and-hom/wwmap/lib/handler"
 	. "github.com/and-hom/wwmap/lib/http"
@@ -24,7 +24,9 @@ const PREVIEWS_COUNT int = 20
 
 func (this *WhiteWaterHandler) Init() {
 	this.Register("/ymaps-tile-ww", HandlerFunctions{Get: this.TileWhiteWaterHandler})
-	this.Register("/whitewater", HandlerFunctions{Post: this.InsertWhiteWaterPoints, Put: this.InsertWhiteWaterPoints})
+	this.Register("/whitewater", HandlerFunctions{
+		Post: this.ForRoles(this.InsertWhiteWaterPoints, dao.ADMIN, dao.EDITOR),
+		Put: this.ForRoles(this.InsertWhiteWaterPoints, dao.ADMIN, dao.EDITOR)})
 	this.Register("/search", HandlerFunctions{Post: this.search})
 }
 
@@ -59,7 +61,7 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 	token := req.FormValue("token")
 	allowed := false
 	if token != "" {
-		allowed, err = this.CheckRoleAllowed(req, ADMIN, EDITOR)
+		allowed, err = this.CheckRoleAllowed(req, dao.ADMIN, dao.EDITOR)
 		if err != nil {
 			OnError500(w, err, "Can not get user info for token")
 			return
@@ -87,7 +89,7 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 			OnError500(w, err, fmt.Sprintf("Can not find whitewater point for id %d", onlyId))
 			return
 		}
-		sp := Spot{
+		sp := dao.Spot{
 			IdTitle:     spot.IdTitle,
 			Description: spot.ShortDesc,
 			Link:        spot.Link,
@@ -101,11 +103,11 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 			OnError500(w, err, fmt.Sprintf("Can not find river for id %d", spot.RiverId))
 			return
 		}
-		rws := RiverWithSpots{
+		rws := dao.RiverWithSpots{
 			IdTitle:   river.IdTitle,
 			CountryId: river.Region.CountryId,
 			RegionId:  river.Region.Id,
-			Spots:     []Spot{},
+			Spots:     []dao.Spot{},
 		}
 
 		features, err = ymaps.SingleWhiteWaterPointToYmaps(sp, rws, this.ResourceBase, this.processForWeb, getLinkMaker(req.FormValue("link_type")))
@@ -130,10 +132,6 @@ func getLinkMaker(linkType string) ymaps.LinkMaker {
 }
 
 func (this *WhiteWaterHandler) InsertWhiteWaterPoints(w http.ResponseWriter, r *http.Request) {
-	if !this.CheckRoleAllowedAndMakeResponse(w, r, ADMIN, EDITOR) {
-		return
-	}
-
 	err := r.ParseForm()
 	if err != nil {
 		OnError(w, err, "Can not parse form", http.StatusBadRequest)
@@ -154,15 +152,15 @@ func (this *WhiteWaterHandler) InsertWhiteWaterPoints(w http.ResponseWriter, r *
 	}
 }
 
-func (this *WhiteWaterHandler) parseWhiteWaterPointsForm(w http.ResponseWriter, r *http.Request) ([]WhiteWaterPoint, error) {
+func (this *WhiteWaterHandler) parseWhiteWaterPointsForm(w http.ResponseWriter, r *http.Request) ([]dao.WhiteWaterPoint, error) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		return []WhiteWaterPoint{}, err
+		return []dao.WhiteWaterPoint{}, err
 	}
-	var points []WhiteWaterPoint
+	var points []dao.WhiteWaterPoint
 	err = json.Unmarshal(body, &points)
 	if err != nil {
-		return []WhiteWaterPoint{}, err
+		return []dao.WhiteWaterPoint{}, err
 	}
 	return points, nil
 }
@@ -205,7 +203,7 @@ func (this *WhiteWaterHandler) search(w http.ResponseWriter, r *http.Request) {
 }
 
 type SearchResp struct {
-	Spots        []WhiteWaterPointWithRiverTitle `json:"spots"`
-	Rivers       []RiverTitle                    `json:"rivers"`
+	Spots        []dao.WhiteWaterPointWithRiverTitle `json:"spots"`
+	Rivers       []dao.RiverTitle                    `json:"rivers"`
 	ResourceBase string                          `json:"resource_base"`
 }
