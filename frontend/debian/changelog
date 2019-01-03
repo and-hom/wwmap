@@ -1,3 +1,12 @@
+wwmap-frontend (0.0.32) unstable; urgency=medium
+
+  * #74 Return 401 if token is not registered
+  * #106 Google auth
+  * #135 Use custom sessionId instead of oauth tokens of different providesrs
+  * JS codestyle fixes
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Thu, 03 Jan 2019 15:44:48 +0300
+
 wwmap-frontend (0.0.31) unstable; urgency=medium
 
   * #138 Photo gallery in spot bubble on map
