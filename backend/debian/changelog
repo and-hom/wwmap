@@ -1,3 +1,9 @@
+wwmap-backend (0.0.36) unstable; urgency=medium
+
+  * User dao fix: work correct with null session id
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Fri, 04 Jan 2019 23:31:35 +0300
+
 wwmap-backend (0.0.35) unstable; urgency=medium
 
   * #135 Authorization for api fixed
