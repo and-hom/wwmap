@@ -104,10 +104,14 @@ func userMapper(rows *sql.Rows) (User, error) {
 	user := User{}
 	infoStr := ""
 	authProvider := ""
+	sessionId := sql.NullString{}
 
-	err := rows.Scan(&user.Id, &user.ExtId, &authProvider, &user.Role, &infoStr, &user.SessionId)
+	err := rows.Scan(&user.Id, &user.ExtId, &authProvider, &user.Role, &infoStr, &sessionId)
 	if err != nil {
 		return user, err
+	}
+	if sessionId.Valid {
+		user.SessionId = sessionId.String
 	}
 
 	err = json.Unmarshal([]byte(infoStr), &user.Info)
