@@ -89,6 +89,7 @@ type ImgDao interface {
 	Find(id int64) (Img, bool, error)
 	List(wwId int64, limit int, _type ImageType, enabledOnly bool) ([]Img, error)
 	ListAllBySpot(wwId int64) ([]Img, error)
+	ListMainByRiver(wwId int64) ([]Img, error)
 	ListAllByRiver(wwId int64) ([]Img, error)
 	SetEnabled(id int64, enabled bool) error
 	SetMain(spotId int64, id int64) error

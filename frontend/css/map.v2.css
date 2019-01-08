@@ -1,4 +1,5 @@
- /* Popup container */
+@charset "utf-8";
+/* Popup container */
 .wwmap-popup {
     position: relative;
     display: inline-block;
@@ -12,7 +13,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 100000;
+    z-index: 999;
 }
 
 /* The actual popup (appears on top) */
@@ -21,14 +22,16 @@
     background-color: #eeeedd;
     text-align: left;
     border-radius: 3px;
-    padding: 8px 0;
 
     margin: 0 auto;
 
-    z-index: 1000000;
+    z-index: 1000;
     padding: 20px;
     margin-top:80px;
     border: 1px solid black;
+
+    height: auto;
+    overflow: auto;
 }
 
 .wwmap-popuptext textarea {
@@ -67,6 +70,25 @@
 }
 .wwmap-river-menu .report-col {
 
+}
+
+.wwmap-report-list ul {
+    font-size: 70%;
+    overflow: hidden;
+    list-style-type: none;
+    padding: 0;
+}
+.wwmap-report-list ul li {
+    margin-bottom: 5px;
+}
+
+.wwmap-river-download-table tr td:first-child {
+    padding-right: 20px;
+    font-weight: bold;
+}
+
+.wwmap-river-download-table td {
+    vertical-align: top;
 }
 
 .wwmap-river-menu .title {
@@ -173,7 +195,7 @@
     white-space: nowrap;
 }
 
-.wwmap-gallery-div img {
+.wwmap-gallery-img {
     display: inline;
     width: 150px;
 }

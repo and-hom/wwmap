@@ -1,11 +1,12 @@
-<div class="wwmap-popuptext" id="report_popup">
+<script type="text/x-jquery-tmpl" id="report_popup_template">
+<div class="wwmap-popuptext">
     <form>
-        <input type="hidden" id="object_id" name="object_id"/>
+        <input type="hidden" id="object_id" name="object_id" value="${object_id}"/>
         <label for="object_title">Порог</label>
-        <input type="text" id="object_title" name="object_title" readonly style="margin-bottom:10px;"/><br/>
+        <input type="text" id="object_title" name="object_title" readonly style="margin-bottom:10px;" value="${object_title}"/><br/>
         <label for="title">Река</label>
-        <input type="text" id="title" name="title" readonly style="margin-bottom:10px;"/><br/>
-        <input type="hidden" id="user" name="user"/>
+        <input type="text" id="title" name="title" readonly style="margin-bottom:10px;" value="${title}"/><br/>
+        <input type="hidden" id="user" name="user" value="${user}"/>
 
         <label for="comment" style="width:100%; padding-right: 10px;">Исправления происходят в ручном режиме и после проверки. Пожалуйста,
             расскажите коротко,
@@ -18,9 +19,10 @@
         <input type="button" name="cancel" value="Отмена" width="600px; align: center;"/>
     </form>
 </div>
+</script>
 
-
-<div class="wwmap-popuptext" style="width:1000px;" id="info_popup">
+<script type="text/x-jquery-tmpl" id="info_popup_template">
+<div class="wwmap-popuptext" style="width:1000px;">
     <h3>Что это такое?</h3>
     <p>Это карта порогов для водного туризма с описаниями, категориями, ссылками на отчёты и выгрузкой GPX-файлов в
         навигатор. </p>
@@ -49,6 +51,7 @@
         предложить улучшения и предложить пулл-реквест.</p>
     <input type="button" name="cancel" value="Понятно" width="600px; align: center;"/>
 </div>
+</script>
 
 <script type="text/x-jquery-tmpl" id="bubble_template">
     <h3 class="popover-title">
@@ -61,7 +64,7 @@
         <div>{{properties.short_description}}</div>
         {%if properties.images %}&nbsp;<br/>
         <div class="wwmap-gallery-div">
-            {% for img in properties.images %} <a data-lightbox="img-set-{{properties.id}}" target="_blank" href="{{img.url}}"><img src="{{img.preview_url}}"/></a> {% endfor %}
+            {% for img in properties.images %} <a data-lightbox="img-set-{{properties.id}}" target="_blank" href="{{img.url}}"><img class="wwmap-gallery-img" src="{{img.preview_url}}"/></a> {% endfor %}
         </div>
         {% endif %}
     </div>
@@ -71,25 +74,63 @@
 </script>
 
 <script type="text/x-jquery-tmpl" id="rivers_template">
-    <table>
+<table>
     {%each rivers%}
-        <tr>
-            <td class="title-col title-col-${category}"><a href="" style="padding-left:10px;" onclick="show_map_at(${bounds}); return false;">${title}</a></td>
-            <td class="gpx-col">
-                <a href="${apiUrl}/${id}" style="padding-right:10px;" alt="Скачать GPX с точками порогов">GPX</a>
-                <a href="${apiUrl}/${id}?tr=true" alt="Скачать GPX с точками порогов">GPX<sub>en</sub></a>
-                {%if props.export_pdf%}
-                <a href="${html}" target="_blank" alt="Скачать описание для печати">Описание&nbsp;для&nbsp;печати</a>
-                {%/if%}
-            </td>
-            <td class="report-col">
-                <ul class="reports">
-                {%each reports%}
-                    <li><a target="_blank" href="${url}" title="${title}"><img src="${source_logo_url}"/>&nbsp;{%if year>1%}<strong>${year}&nbsp;</strong>{%/if%}${title}</a></li>
-                {%/each%}
-                </ul>
-            </td>
-        </tr>
+        <tr><td>
+            <a href="" style="padding-left:10px;" onclick="show_river_info_popup(${id}); return false;">${title}</a>
+        </td><td>
+            <a href="" style="padding-left:10px;" onclick="show_map_at(${bounds}); return false;"><img src="img/locate.png" width="25px" alt="Показать на карте" title="Показать на карте"/></a>
+        </td></tr>
     {%/each%}
-    </table>
+</table>
+</script>
+
+<script type="text/x-jquery-tmpl" id="river_desc_template">
+    <div class="wwmap-popuptext" style="width:1200px; height:700px;position: relative; overflow-x:hidden;">
+        <div style="float:right; width: 45%; height:100%;">
+            {%if props.vodinfo_sensor%}
+            <h3>Уровень воды сейчас</h3>
+            <img src="http://gis.vodinfo.ru/informer/draw/v2_${props.vodinfo_sensor}_400_300_30_ffffff_110_8_7_H_none.png" style="margin-bottom:20px; margin-right:20px;"/>
+            {%/if%}
+            <h3>Отчёты</h3>
+            <div class="wwmap-report-list">
+                <ul>
+                    {%each(source,reportsList) reports%}
+                    <h4>${source}</h4>
+                    {%each reportsList%}
+                    <li><a target="_blank" href="${url}" title="${title}"><img src="${source_logo_url}"/>&nbsp;{%if year>1%}<strong>${year}&nbsp;</strong>{%/if%}${title}</a></li>
+                    {%/each%}
+                    {%/each%}
+                </ul>
+            </div>
+        </div>
+        <div style="margin-bottom: 20px;">
+            <h3>${title}</h3>
+            ${description}
+        </div>
+        <div style="margin-bottom: 20px;">
+            {%each imgs%}
+            <a data-lightbox="river-img-set-{{id}}" target="_blank" href="${url}"><img class="wwmap-gallery-img" src="${preview_url}"/></a>
+            {%/each%}
+        </div>
+        <div style="">
+            <h3>Скачать</h3>
+            <table class="wwmap-river-download-table">
+                <tr>
+                    <td><label for="gpx_en">GPX для навигатора с русскими названиями</label></td>
+                    <td><a href="${apiUrl}/${id}" style="padding-right:10px;" alt="Скачать GPX с точками порогов">GPX</a></td>
+                </tr>
+                <tr>
+                    <td><label for="gpx_en">GPX для навигатора с названиями транслитом</label></td>
+                    <td><a href="${apiUrl}/${id}?tr=true" alt="Скачать GPX с точками порогов">GPX<sub>en</sub></a></td>
+                </tr>
+                {%if props.export_pdf%}
+                <tr>
+                    <td><label for="gpx_en">Краткое описание для печати</label></td>
+                    <td><a href="${html}" target="_blank" alt="Скачать описание для печати">Описание<br/>для&nbsp;печати</a></td>
+                </tr>
+                {%/if%}
+            </table>
+        </div>
+    </div>
 </script>
