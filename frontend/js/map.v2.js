@@ -284,7 +284,7 @@ function createLegendClass() {
     return Legend
 }
 
-function WWMapPopup(templateDivId, fromTemplates, divId, submitUrl, okMsg, failMsg) {
+function WWMapPopup(templateDivId, fromTemplates, divId, options) {
     this.divId = divId;
     if (fromTemplates) {
         loadFragment(MAP_FRAGMENTS_URL, templateDivId, function(templateText) {
@@ -295,28 +295,33 @@ function WWMapPopup(templateDivId, fromTemplates, divId, submitUrl, okMsg, failM
         t.templateDiv = $('#' + templateDivId);
     }
 
-    this.submitUrl = submitUrl;
-    this.okMsg = okMsg;
-    this.failMsg = failMsg;
+    this.submitUrl = (options) ? options.submitUrl : null;
+    this.okMsg = (options) ? options.okMsg : null;
+    this.failMsg = (options) ? options.failMsg : null;
 
     $('body').prepend('<div id="' + this.divId + '" class="wwmap-popup_area"></div>');
     this.div = $("#" + this.divId);
 
-    // close on mouse click outside the window
     var t = this;
-    this.div.click(function(source) {
-        var classAttr = $(source.target).attr('class');
-        if(classAttr && classAttr.indexOf('wwmap-popup_are') > -1) {
-            t.hide()
-        }
-    });
+
+    // close on mouse click outside the window
+    if (!options || options.closeOnMouseClickOutside!==false) {
+        this.div.click(function (source) {
+            var classAttr = $(source.target).attr('class');
+            if (classAttr && classAttr.indexOf('wwmap-popup_are') > -1) {
+                t.hide()
+            }
+        });
+    }
 
     // close on escape pressed
-    $(document).keyup(function(e) {
-        if (e.key === "Escape") {
-            t.hide()
-        }
-    });
+    if (!options || options.closeOnEscape!==false) {
+        $(document).keyup(function (e) {
+            if (e.key === "Escape") {
+                t.hide()
+            }
+        });
+    }
 }
 
 WWMapPopup.prototype.show = function (dataObject) {
@@ -441,8 +446,14 @@ function initWWMap(mapId, riversListId, catalogLinkType) {
     }
 
     // initialize popup windows
-    reportPopup = new WWMapPopup('report_popup_template', true, 'report_popup', apiBase + "/report",
-        "Запрос отправлен. Я прочитаю его по мере наличия свободного времени", "Что-то пошло не так...");
+    reportPopup = new WWMapPopup('report_popup_template', true, 'report_popup', {
+            submitUrl : apiBase + "/report",
+            okMsg:  "Запрос отправлен. Я прочитаю его по мере наличия свободного времени",
+            failMsg: "Что-то пошло не так...",
+            // To prevent contents lost
+            closeOnEscape: false,
+            closeOnMouseClickOutside: false
+        });
     var tutorialPopup = new WWMapPopup('info_popup_template', true, 'info_popup');
 
     // riverList
