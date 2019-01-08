@@ -59,7 +59,13 @@ func (this *GpxHandler) DownloadGpx(w http.ResponseWriter, req *http.Request) {
 		Waypoints: waypoints,
 		Creator: "wwmap",
 	}
-	w.Header().Add("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s.gpx\"", whitewaterPoints[0].RiverTitle))
+
+	filename := whitewaterPoints[0].RiverTitle
+	if transliterate {
+		filename = util.CyrillicToTranslit(filename)
+	}
+
+	w.Header().Add("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s.gpx\"", filename))
 	w.Header().Add("Content-Type", "application/gpx+xml")
 
 	xmlBytes := gpxData.ToXML()
