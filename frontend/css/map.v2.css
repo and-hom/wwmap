@@ -1,4 +1,6 @@
- /* Popup container */
+@charset "utf-8";
+
+/* Popup container */
 .wwmap-popup {
     position: relative;
     display: inline-block;
