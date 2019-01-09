@@ -110,10 +110,10 @@ function getAuthorizedUserInfoOrNull() {
     return null
 }
 
-function getWwmapUserLogin() {
+function getWwmapUserInfo() {
     var user = getAuthorizedUserInfoOrNull();
     if (user) {
-        return user.login
+        return user
     }
     return null
 }

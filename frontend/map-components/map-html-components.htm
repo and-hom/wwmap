@@ -80,6 +80,9 @@
             <a href="" style="padding-left:10px;" onclick="show_river_info_popup(${id}); return false;">${title}</a>
         </td><td>
             <a href="" style="padding-left:10px;" onclick="show_map_at(${bounds}); return false;"><img src="img/locate.png" width="25px" alt="Показать на карте" title="Показать на карте"/></a>
+            {%if canEdit%}
+                <a href="https://wwmap.ru/editor.htm#${region.country_id},${region.id},${id}" target="_blank" style="margin-left:-6px;"><img src="img/edit.png" width="25px" alt="Редактор" title="Редактор"/></a>
+            {%/if%}
         </td></tr>
     {%/each%}
 </table>
@@ -105,7 +108,7 @@
             </div>
         </div>
         <div style="margin-bottom: 20px;">
-            <h3>${title}</h3>
+            <h3>${title}{%if canEdit%}&nbsp;<a href="https://wwmap.ru/editor.htm#${region.country_id},${region.id},${id}" target="_blank" style="padding-left: 20px;"><img src="img/edit.png" width="25px" alt="Редактор" title="Редактор"/></a>{%/if%}</h3>
             ${description}
         </div>
         <div style="margin-bottom: 20px;">

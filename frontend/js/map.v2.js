@@ -383,11 +383,9 @@ function show_report_popup(id, title, riverTitle) {
         object_title: title,
         title: riverTitle
     };
-    if (typeof getWwmapUserLogin == 'function') {
-        var login = getWwmapUserLogin();
-        if (login) {
-            dataObject.user = login
-        }
+    var info = getWwmapUserInfoForMapControls();
+    if (info && info.login) {
+        dataObject.user = info.login;
     }
     reportPopup.show(dataObject)
 }
@@ -410,6 +408,7 @@ function RiverList(divId, templateDivId, fromTemplates) {
 
 RiverList.prototype.update = function (rivers) {
     if (this.templateDiv) {
+        rivers.canEdit = canEdit();
         var html = this.templateDiv.tmpl(rivers).html();
         $('#' + this.divId).html(html)
     }
@@ -470,10 +469,24 @@ function initWWMap(mapId, riversListId, catalogLinkType) {
     });
 }
 
+function getWwmapUserInfoForMapControls() {
+    if (typeof getWwmapUserInfo == 'function') {
+        return getWwmapUserInfo();
+    }
+    return null;
+}
+
+function canEdit() {
+    var info = getWwmapUserInfoForMapControls();
+    return (info && info.roles && ['EDITOR', 'ADMIN'].filter(function (r) {
+        return info.roles.includes(r)
+    }).length > 0)
+}
 
 function show_river_info_popup(id) {
     $.get(apiBase + "/river-card/" + id, function (data) {
         var dataObj = JSON.parse(data);
+        dataObj.canEdit = canEdit();
         riverList.riverInfoPopup.show(dataObj);
     });
     return false;
