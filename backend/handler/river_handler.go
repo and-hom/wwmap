@@ -5,6 +5,7 @@ import (
 	"github.com/and-hom/wwmap/lib/dao"
 	. "github.com/and-hom/wwmap/lib/handler"
 	. "github.com/and-hom/wwmap/lib/http"
+	"github.com/and-hom/wwmap/lib/model"
 	"github.com/gorilla/mux"
 	"net/http"
 	"strconv"
@@ -45,12 +46,16 @@ type RiverListDto struct {
 }
 
 type RiverPageDto struct {
-	dao.RiverTitle
+	dao.IdTitle
+	Region      dao.Region                   `json:"region"`
 	Description string                       `json:"description"`
 	Reports     map[string][]VoyageReportDto `json:"reports"`
 	Imgs        []dao.Img                    `json:"imgs"`
 	PdfUrl      string                       `json:"pdf"`
 	HtmlUrl     string                       `json:"html"`
+	Props       map[string]interface{}       `json:"props"`
+	MaxCategory model.SportCategory          `json:"max_category"`
+	AvgCategory model.SportCategory          `json:"avg_category"` // min category of 3 hardest spots
 }
 
 func (this *RiverHandler) GetRiverCard(w http.ResponseWriter, req *http.Request) {
@@ -61,7 +66,7 @@ func (this *RiverHandler) GetRiverCard(w http.ResponseWriter, req *http.Request)
 		return
 	}
 
-	river, err := this.RiverDao.Find(riverId)
+	river, err := this.TileDao.GetRiver(riverId, 1)
 	if err != nil {
 		OnError500(w, err, "Can not select river")
 		return
@@ -84,22 +89,30 @@ func (this *RiverHandler) GetRiverCard(w http.ResponseWriter, req *http.Request)
 		})
 	}
 
-	imgs, err := this.ImgDao.ListMainByRiver(riverId)
-	if err != nil {
-		OnError500(w, err, fmt.Sprintf("Can not select images for river %d", river.Id))
-		return
-	}
-	for i := 0; i < len(imgs); i++ {
-		this.processForWeb(&(imgs[i]))
+	imgs := []dao.Img{}
+	maxCat := model.UNDEFINED_CATEGORY
+	for i := 0; i < len(river.Spots); i++ {
+		if len(river.Spots[i].Images) > 0 {
+			img := river.Spots[i].Images[0]
+			this.processForWeb(&img)
+			imgs = append(imgs, img)
+		}
+		if maxCat < river.Spots[i].Category.Category {
+			maxCat = river.Spots[i].Category.Category
+		}
 	}
 
 	dto := RiverPageDto{
-		RiverTitle:  river.RiverTitle,
+		IdTitle:     river.IdTitle,
+		Region:      river.Region,
 		Description: river.Description,
+		Props:       river.Props,
 		Reports:     reportDtos,
 		Imgs:        imgs,
-		PdfUrl:      this.getRiverPassportUrl(&river.RiverTitle, this.RiverPassportPdfUrlBase),
-		HtmlUrl:     this.getRiverPassportUrl(&river.RiverTitle, this.RiverPassportHtmlUrlBase),
+		PdfUrl:      this.getRiverPassportUrl(&river, this.RiverPassportPdfUrlBase),
+		HtmlUrl:     this.getRiverPassportUrl(&river, this.RiverPassportHtmlUrlBase),
+		MaxCategory: model.SportCategory{Category: maxCat},
+		AvgCategory: model.SportCategory{Category: dao.CalculateClusterCategory(river.Spots)},
 	}
 	w.Write([]byte(this.JsonStr(dto, "{}")))
 }
@@ -175,10 +188,15 @@ func (this *RiverHandler) GetVisibleRivers(w http.ResponseWriter, req *http.Requ
 	w.Write([]byte(this.JsonStr(riversWithReports, "[]")))
 }
 
-func (this *RiverHandler) getRiverPassportUrl(river *dao.RiverTitle, base string) string {
-	export, found := river.Props["export_pdf"]
+func (this *RiverHandler) getRiverPassportUrl(river HasPropertiesAndId, base string) string {
+	export, found := river.GetProperties()["export_pdf"]
 	if found && export.(bool) {
-		return fmt.Sprintf(base, river.Id)
+		return fmt.Sprintf(base, river.GetId())
 	}
 	return ""
+}
+
+type HasPropertiesAndId interface {
+	GetId() int64
+	GetProperties() map[string]interface{}
 }

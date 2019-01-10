@@ -101,6 +101,7 @@ type ImgDao interface {
 
 type TileDao interface {
 	ListRiversWithBounds(bbox Bbox, showUnpublished bool, imgLimit int) ([]RiverWithSpots, error)
+	GetRiver(riverId int64, imgLimit int) (RiverWithSpotsExt, error)
 }
 
 type WwPassportDao interface {

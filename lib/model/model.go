@@ -2,9 +2,9 @@ package model
 
 import (
 	"fmt"
-	"strings"
 	"regexp"
 	"strconv"
+	"strings"
 )
 
 const UNDEFINED_CATEGORY = 0;
