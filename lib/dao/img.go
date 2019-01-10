@@ -16,6 +16,7 @@ type imgStorage struct {
 	listQuery            string
 	listAllBySpotQuery   string
 	listAllByRiverQuery   string
+	listMainByRiverQuery   string
 	insertLocalQuery     string
 	deleteQuery          string
 	setEnabledQuery      string
@@ -34,6 +35,7 @@ func NewImgPostgresDao(postgresStorage PostgresStorage) ImgDao {
 		listQuery : queries.SqlQuery("img", "list"),
 		listAllBySpotQuery : queries.SqlQuery("img", "list-all-by-spot"),
 		listAllByRiverQuery : queries.SqlQuery("img", "list-all-by-river"),
+		listMainByRiverQuery : queries.SqlQuery("img", "list-main-by-river"),
 		insertLocalQuery : queries.SqlQuery("img", "insert-local"),
 		deleteQuery : queries.SqlQuery("img", "delete"),
 		setEnabledQuery : queries.SqlQuery("img", "set-enabled"),
@@ -93,6 +95,14 @@ func (this imgStorage) ListAllBySpot(wwId int64) ([]Img, error) {
 
 func (this imgStorage) ListAllByRiver(riverId int64) ([]Img, error) {
 	result, err := this.doFindList(this.listAllByRiverQuery, imgMapper, riverId)
+	if err != nil {
+		return []Img{}, err
+	}
+	return result.([]Img), nil
+}
+
+func (this imgStorage) ListMainByRiver(riverId int64) ([]Img, error) {
+	result, err := this.doFindList(this.listMainByRiverQuery, imgMapper, riverId, string(IMAGE_TYPE_IMAGE))
 	if err != nil {
 		return []Img{}, err
 	}

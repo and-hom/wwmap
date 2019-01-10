@@ -101,7 +101,7 @@ function WWMap(divId, bubbleTemplate, riverList, tutorialPopup, catalogLinkType)
 WWMap.prototype.loadRivers = function (bounds) {
     if (this.riverList) {
         var riverList = this.riverList;
-        $.get(apiBase + "/visible-rivers?bbox=" + bounds.join(','), function (data) {
+        $.get(apiBase + "/visible-rivers-light?bbox=" + bounds.join(','), function (data) {
             var dataObj = {
                 "rivers": JSON.parse(data),
                 "apiUrl": apiBase + "/gpx/river",
@@ -284,29 +284,62 @@ function createLegendClass() {
     return Legend
 }
 
-function WWMapPopup(templateUrl, divId, submitUrl, okMsg, failMsg) {
+function WWMapPopup(templateDivId, fromTemplates, divId, options) {
     this.divId = divId;
-    this.templateUrl = templateUrl;
-    this.submitUrl = submitUrl;
-    this.okMsg = okMsg;
-    this.failMsg = failMsg;
+    if (fromTemplates) {
+        loadFragment(MAP_FRAGMENTS_URL, templateDivId, function(templateText) {
+            $('body').prepend(templateText);
+            t.templateDiv = $('#' + templateDivId);
+        })
+    } else {
+        t.templateDiv = $('#' + templateDivId);
+    }
+
+    this.submitUrl = (options) ? options.submitUrl : null;
+    this.okMsg = (options) ? options.okMsg : null;
+    this.failMsg = (options) ? options.failMsg : null;
 
     $('body').prepend('<div id="' + this.divId + '" class="wwmap-popup_area"></div>');
-    this.div = $("#" + this.divId)
+    this.div = $("#" + this.divId);
+
+    var t = this;
+
+    // close on mouse click outside the window
+    if (!options || options.closeOnMouseClickOutside!==false) {
+        this.div.click(function (source) {
+            var classAttr = $(source.target).attr('class');
+            if (classAttr && classAttr.indexOf('wwmap-popup_are') > -1) {
+                t.hide()
+            }
+        });
+    }
+
+    // close on escape pressed
+    if (!options || options.closeOnEscape!==false) {
+        $(document).keyup(function (e) {
+            if (e.key === "Escape") {
+                t.hide()
+            }
+        });
+    }
 }
 
-WWMapPopup.prototype.show = function (afterShowF) {
+WWMapPopup.prototype.show = function (dataObject) {
     var t = this;
-    loadFragment(this.templateUrl, this.divId, function (templateText) {
-        t.div.html(templateText);
-        $("#" + t.divId + " input[name=cancel]").click(function() {return t.hide()});
-        $("#" + t.divId + " input[type=submit]").click(function() {return t.submit_form()});
-        if (afterShowF) {
-            afterShowF()
-        }
-        initMailtoLinks();
-        t.div.addClass("wwmap-show");
-    })
+
+    var html = "";
+    if (dataObject) {
+        html = this.templateDiv.tmpl(dataObject)[0].outerHTML
+    } else {
+        html = this.templateDiv.html()
+    }
+
+    this.div.html(html);
+    $("#" + this.divId + " input[name=cancel]").click(function() {return t.hide()});
+    $("#" + this.divId + " input[type=submit]").click(function() {return t.submit_form()});
+
+    initMailtoLinks();
+    this.div.addClass("wwmap-show");
 };
 
 WWMapPopup.prototype.hide = function () {
@@ -329,10 +362,14 @@ WWMapPopup.prototype.submit_form = function () {
 };
 
 
-function loadFragment(url, fromId, onLoad) {
+function loadFragment(url, fromId, onLoad, data) {
     var virtualElement = $('<div id="loaded-content"></div>');
     virtualElement.load(url + ' #' + fromId, function () {
-        onLoad(virtualElement.html())
+        if (data) {
+            onLoad(virtualElement.tmpl(data).html())
+        } else {
+            onLoad(virtualElement.html())
+        }
     });
 }
 
@@ -341,18 +378,16 @@ function extractInnerHtml(str) {
 }
 
 function show_report_popup(id, title, riverTitle) {
-    reportPopup.show(function () {
-        $("#report_popup #object_id").val(id);
-        $("#report_popup #object_title").val(title);
-        $("#report_popup #title").val(riverTitle);
-
-        if (typeof getWwmapUserLogin == 'function') {
-            var login = getWwmapUserLogin();
-            if (login) {
-                $("#report_popup #user").val(login);
-            }
-        }
-    })
+    var dataObject = {
+        object_id: id,
+        object_title: title,
+        title: riverTitle
+    };
+    var info = getWwmapUserInfoForMapControls();
+    if (info && info.login) {
+        dataObject.user = info.login;
+    }
+    reportPopup.show(dataObject)
 }
 
 function RiverList(divId, templateDivId, fromTemplates) {
@@ -367,10 +402,13 @@ function RiverList(divId, templateDivId, fromTemplates) {
     } else {
         t.templateDiv = $('#' + templateDivId)
     }
+
+    this.riverInfoPopup = new WWMapPopup('river_desc_template', true, "river_desc");
 }
 
 RiverList.prototype.update = function (rivers) {
     if (this.templateDiv) {
+        rivers.canEdit = canEdit();
         var html = this.templateDiv.tmpl(rivers).html();
         $('#' + this.divId).html(html)
     }
@@ -407,12 +445,17 @@ function initWWMap(mapId, riversListId, catalogLinkType) {
     }
 
     // initialize popup windows
-    reportPopup = new WWMapPopup(MAP_FRAGMENTS_URL, 'report_popup', apiBase + "/report",
-        "Запрос отправлен. Я прочитаю его по мере наличия свободного времени", "Что-то пошло не так...");
-    var tutorialPopup = new WWMapPopup(MAP_FRAGMENTS_URL, 'info_popup');
+    reportPopup = new WWMapPopup('report_popup_template', true, 'report_popup', {
+            submitUrl : apiBase + "/report",
+            okMsg:  "Запрос отправлен. Я прочитаю его по мере наличия свободного времени",
+            failMsg: "Что-то пошло не так...",
+            // To prevent contents lost
+            closeOnEscape: false,
+            closeOnMouseClickOutside: false
+        });
+    var tutorialPopup = new WWMapPopup('info_popup_template', true, 'info_popup');
 
     // riverList
-    var riverList = null;
     if (riversListId) {
         riverList = new RiverList(riversListId, 'rivers_template', true)
     }
@@ -424,4 +467,27 @@ function initWWMap(mapId, riversListId, catalogLinkType) {
             wwMap.init()
         })
     });
+}
+
+function getWwmapUserInfoForMapControls() {
+    if (typeof getWwmapUserInfo == 'function') {
+        return getWwmapUserInfo();
+    }
+    return null;
+}
+
+function canEdit() {
+    var info = getWwmapUserInfoForMapControls();
+    return (info && info.roles && ['EDITOR', 'ADMIN'].filter(function (r) {
+        return info.roles.includes(r)
+    }).length > 0)
+}
+
+function show_river_info_popup(id) {
+    $.get(apiBase + "/river-card/" + id, function (data) {
+        var dataObj = JSON.parse(data);
+        dataObj.canEdit = canEdit();
+        riverList.riverInfoPopup.show(dataObj);
+    });
+    return false;
 }

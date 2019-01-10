@@ -32,12 +32,19 @@ type SpotCounters struct {
 
 type RiverTitle struct {
 	IdTitle
-	OsmId   int64 `json:"osm_id"`
-	Region  Region `json:"region"`
-	Bounds  Bbox `json:"bounds"`
-	Aliases []string `json:"aliases"`
+	OsmId   int64                  `json:"osm_id"`
+	Region  Region                 `json:"region"`
+	Bounds  Bbox                   `json:"bounds"`
+	Aliases []string               `json:"aliases"`
 	Props   map[string]interface{} `json:"props"`
-	Visible      bool `json:"visible"`
+	Visible bool                   `json:"visible"`
+}
+
+func (this RiverTitle) GetId() int64 {
+	return this.Id
+}
+func (this RiverTitle) GetProperties() map[string]interface{} {
+	return this.Props
 }
 
 type River struct {
@@ -61,6 +68,20 @@ type RiverWithSpots struct {
 	Spots     []Spot
 	RegionId  int64
 	CountryId int64
+}
+
+type RiverWithSpotsExt struct {
+	RiverWithSpots
+	Description string
+	Props       map[string]interface{}
+	Region      Region
+}
+
+func (this RiverWithSpotsExt) GetId() int64 {
+	return this.Id
+}
+func (this RiverWithSpotsExt) GetProperties() map[string]interface{} {
+	return this.Props
 }
 
 type WaterWay struct {
@@ -308,3 +329,37 @@ type RegionWithCountry struct {
 	Title   string `json:"title"`
 	Fake    bool `json:"fake,omitempty"`
 }
+
+
+
+const CATEGORY_DEFINITING_POINTS_COUNT int = 3
+const MAX_CATEGORY = 6
+
+func CalculateClusterCategory(points []Spot) int {
+	cntByCat := make(map[int]int)
+	categorizedPointsCount := 0
+	for i := 0; i < len(points); i++ {
+		currentCat := points[i].Category.Category
+		cntByCat[currentCat] += 1
+		if currentCat > 0 {
+			categorizedPointsCount += 1
+		}
+	}
+
+	wwCnt := 0
+	riverCategory := 0
+	definitingPointsCount := min(CATEGORY_DEFINITING_POINTS_COUNT, categorizedPointsCount)
+	for i := MAX_CATEGORY; i > 0 && wwCnt < definitingPointsCount; i-- {
+		wwCnt += cntByCat[i]
+		riverCategory = i
+	}
+	return riverCategory
+}
+
+func min(x, y int) int {
+	if x < y {
+		return x
+	}
+	return y
+}
+

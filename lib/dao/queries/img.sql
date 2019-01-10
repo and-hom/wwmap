@@ -1,18 +1,26 @@
+--@fields
+id, report_id, white_water_rapid_id,source,remote_id,url,preview_url,date_published, enabled, "type", main_image
+
 --@by-id
-SELECT id, report_id, white_water_rapid_id,source,remote_id,url,preview_url,date_published, enabled, "type", main_image
+SELECT ___fields___
 FROM image WHERE id=$1
 
 --@list
-SELECT id, report_id, white_water_rapid_id,source,remote_id,url,preview_url,date_published, enabled, "type", main_image
+SELECT ___fields___
 FROM image WHERE white_water_rapid_id=$1 AND "type"=$2 AND (NOT $3 OR enabled) ORDER BY id DESC LIMIT $4
 
 --@list-all-by-spot
-SELECT id, report_id, white_water_rapid_id,source,remote_id,url,preview_url,date_published, enabled, "type", main_image
+SELECT ___fields___
 FROM image WHERE white_water_rapid_id=$1
 
 --@list-all-by-river
-SELECT id, report_id, white_water_rapid_id,source,remote_id,url,preview_url,date_published, enabled, "type", main_image
+SELECT ___fields___
 FROM image WHERE white_water_rapid_id IN (SELECT id FROM white_water_rapid WHERE river_id=$1)
+
+--@list-main-by-river
+SELECT ___fields___ FROM
+(SELECT ROW_NUMBER() OVER (PARTITION BY white_water_rapid_id ORDER BY main_image DESC) AS r_num, *
+FROM image WHERE white_water_rapid_id IN (SELECT id FROM white_water_rapid WHERE river_id=$1) AND "type"=$2) sq WHERE r_num<=1
 
 --@upsert
 INSERT INTO image(report_id, white_water_rapid_id,source,remote_id,url,preview_url,date_published, "type")
@@ -36,7 +44,7 @@ DELETE FROM image WHERE id=$1
 UPDATE image SET enabled=$1 WHERE id=$2
 
 --@get-main
-SELECT id, report_id, white_water_rapid_id,source,remote_id,url,preview_url,date_published, enabled, "type", main_image
+SELECT ___fields___
 FROM image WHERE white_water_rapid_id=$1 AND main_image LIMIT 1
 
 --@set-main

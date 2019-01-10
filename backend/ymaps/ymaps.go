@@ -1,18 +1,17 @@
 package ymaps
 
 import (
+	"fmt"
+	"github.com/and-hom/wwmap/backend/clustering"
 	. "github.com/and-hom/wwmap/lib/dao"
 	. "github.com/and-hom/wwmap/lib/geo"
-	"fmt"
-	"math"
 	"github.com/and-hom/wwmap/lib/model"
+	"math"
 	"math/rand"
-	"github.com/and-hom/wwmap/backend/clustering"
 )
 
 const MAX_CLUSTERS int64 = 8192
 const MAX_CLUSTER_ID int64 = int64(math.MaxInt32)
-const CLUSTER_CATEGORY_DEFINITING_POINTS_COUNT int = 3
 
 func mkFeature(point Spot, river RiverWithSpots, withDescription bool, resourcesBase string,
 processImgForWeb func(img *Img), linkMaker LinkMaker) Feature {
@@ -94,27 +93,6 @@ func ClusterGeom(points []Spot) Bbox {
 	}
 }
 
-func calculateClusterCategory(points []Spot) int {
-	cntByCat := make(map[int]int)
-	categorizedPointsCount := 0
-	for i := 0; i < len(points); i++ {
-		currentCat := points[i].Category.Category
-		cntByCat[currentCat] += 1
-		if currentCat > 0 {
-			categorizedPointsCount += 1
-		}
-	}
-
-	wwCnt := 0
-	riverCategory := 0
-	definitingPointsCount := min(CLUSTER_CATEGORY_DEFINITING_POINTS_COUNT, categorizedPointsCount)
-	for i := 6; i > 0 && wwCnt < definitingPointsCount; i-- {
-		wwCnt += cntByCat[i]
-		riverCategory = i
-	}
-	return riverCategory
-}
-
 func categoryClusterIcon(category int) string {
 	switch category {
 	case 6:
@@ -150,7 +128,7 @@ func mkCluster(Id clustering.ClusterId, points []Spot, riverTitle string) Featur
 
 			Title: Id.Title,
 		}, Options: FeatureOptions{
-			Preset: categoryClusterIcon(calculateClusterCategory(points)),
+			Preset: categoryClusterIcon(CalculateClusterCategory(points)),
 		},
 	}
 }
@@ -182,12 +160,5 @@ resourcesBase string, skipId int64, processImgForWeb func(img *Img), linkMaker L
 
 func SingleWhiteWaterPointToYmaps(spot Spot,river RiverWithSpots, resourcesBase string, processImgForWeb func(img *Img), linkMaker LinkMaker) ([]Feature, error) {
 	return []Feature{mkFeature(spot, river, true, resourcesBase, processImgForWeb, linkMaker),}, nil
-}
-
-func min(x, y int) int {
-	if x < y {
-		return x
-	}
-	return y
 }
 
