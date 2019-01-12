@@ -1,3 +1,9 @@
+wwmap-db (0.0.20) unstable; urgency=medium
+
+  * #163 Incorrect unique constraint removed
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sat, 12 Jan 2019 23:33:07 +0300
+
 wwmap-db (0.0.19) unstable; urgency=medium
 
   * #106 Make user external id string for google (was bigint)

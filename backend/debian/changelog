@@ -1,3 +1,9 @@
+wwmap-backend (0.0.38) unstable; urgency=medium
+
+  * #163 #164 Api protocol minor changes. Sort reports on backend
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sat, 12 Jan 2019 23:26:26 +0300
+
 wwmap-backend (0.0.37) unstable; urgency=medium
 
   * #158 New api method for river card

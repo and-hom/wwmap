@@ -1,3 +1,13 @@
+wwmap-cron (0.0.19) unstable; urgency=medium
+
+  * #101 Links to wwmap editor in huskytm catalog
+  * #106 EMail template fixed for google auth
+  * #163 Import reports from lib.ru
+  * #164 Import reports from skitalets.ru
+  * Backup fixed: correct db url
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sat, 12 Jan 2019 23:21:33 +0300
+
 wwmap-cron (0.0.18) unstable; urgency=medium
 
   * #150 water level sensor informer added to huskytm export and to pdf
