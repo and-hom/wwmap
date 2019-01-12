@@ -67,14 +67,14 @@ func (this *HuskytmCatalogConnector) CreateEmptyPageIfNotExistsAndReturnId(id in
 	}
 	this.rateLimit.WaitIfNecessary()
 	p, r, _, err := this.client.Pages().Get(pageId, emptyMap())
-	if r.StatusCode == http.StatusNotFound || p.Status == "trash" {
+	if err != nil {
+		return 0, "", false, err
+	} else	if r.StatusCode == http.StatusNotFound || p.Status == "trash" {
 		log.Warnf("Existing page %d is not sutable: %d %s", pageId, r.StatusCode, p.Status)
 		createdPageId, link, err := this.createPage(parent, title)
 		log.Info("Created page id=%d for entity id=%d", createdPageId, id)
 		created := err == nil
 		return createdPageId, link, created, err
-	} else if err != nil {
-		return 0, "", false, err
 	}
 	return pageId, p.Link, false, nil
 }

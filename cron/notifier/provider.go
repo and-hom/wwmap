@@ -6,7 +6,6 @@ import (
 	"github.com/and-hom/wwmap/lib/config"
 	"github.com/and-hom/wwmap/lib/dao"
 	"github.com/and-hom/wwmap/lib/mail"
-	"github.com/pkg/errors"
 	"html/template"
 	"io"
 )
