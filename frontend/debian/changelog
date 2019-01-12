@@ -1,3 +1,13 @@
+wwmap-frontend (0.0.34) unstable; urgency=medium
+
+  * #140 Fixed refresh every 700ms after image upload (workaround)
+  * #162 Rediect from www to non-www
+  * #158 River list upgraded. Use separate river card popup.
+  * Close popups on escape or click outside
+  * Charset defined for css
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sat, 12 Jan 2019 18:18:30 +0300
+
 wwmap-frontend (0.0.33) unstable; urgency=medium
 
   * #135 Authorization for api fixed

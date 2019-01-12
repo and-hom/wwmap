@@ -1,3 +1,10 @@
+wwmap-backend (0.0.37) unstable; urgency=medium
+
+  * #158 New api method for river card
+  * Transliterate filename for GPX in translit mode
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sat, 12 Jan 2019 18:15:27 +0300
+
 wwmap-backend (0.0.36) unstable; urgency=medium
 
   * User dao fix: work correct with null session id
