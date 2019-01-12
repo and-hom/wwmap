@@ -79,9 +79,9 @@
         <tr><td>
             <a href="" style="padding-left:10px;" onclick="show_river_info_popup(${id}); return false;">${title}</a>
         </td><td>
-            <a href="" style="padding-left:10px;" onclick="show_map_at(${bounds}); return false;"><img src="img/locate.png" width="25px" alt="Показать на карте" title="Показать на карте"/></a>
+            <a href="" style="padding-left:10px;" onclick="show_map_at(${bounds}); return false;"><img src="https://wwmap.ru/img/locate.png" width="25px" alt="Показать на карте" title="Показать на карте"/></a>
             {%if canEdit%}
-                <a href="https://wwmap.ru/editor.htm#${region.country_id},${region.id},${id}" target="_blank" style="margin-left:-6px;"><img src="img/edit.png" width="25px" alt="Редактор" title="Редактор"/></a>
+                <a href="https://wwmap.ru/editor.htm#${region.country_id},${region.id},${id}" target="_blank" style="margin-left:-6px;"><img src="https://wwmap.ru/img/edit.png" width="25px" alt="Редактор" title="Редактор"/></a>
             {%/if%}
         </td></tr>
     {%/each%}
@@ -108,10 +108,10 @@
             </div>
         </div>
         <div style="margin-bottom: 20px;">
-            <h3>${title}{%if canEdit%}&nbsp;<a href="https://wwmap.ru/editor.htm#${region.country_id},${region.id},${id}" target="_blank" style="padding-left: 20px;"><img src="img/edit.png" width="25px" alt="Редактор" title="Редактор"/></a>{%/if%}</h3>
+            <h3>${title}{%if canEdit%}&nbsp;<a href="https://wwmap.ru/editor.htm#${region.country_id},${region.id},${id}" target="_blank" style="padding-left: 20px;"><img src="https://wwmap.ru/img/edit.png" width="25px" alt="Редактор" title="Редактор"/></a>{%/if%}</h3>
             {%if region.id>0 %}<div style="margin-top:-11px; margin-bottom:8px; font-size:70%;color:grey">${region.title}</div>{%/if%}
-            <div style="font-size:80%;"><img style="width: 16px;" src="img/cat${max_category}-fill.png" title="${max_category} к.с."/>&nbsp;&nbsp;${max_category}&nbsp;к.с. - Максимальная категория препятствий</div>
-            <div style="font-size:80%;"><img style="width: 16px;" src="img/cat${avg_category}-fill.png" title="${avg_category} к.с."/>&nbsp;&nbsp;${avg_category}&nbsp;к.с. - Минимальная категория трёх самых сложных препятствий</div>
+            <div style="font-size:80%;"><img style="width: 16px; margin-bottom: 1px;" src="https://wwmap.ru/img/cat${max_category}-fill.png" title="${max_category} к.с."/>&nbsp;&nbsp;${max_category}&nbsp;к.с. - Максимальная категория препятствий</div>
+            <div style="font-size:80%;"><img style="width: 16px; margin-bottom: 1px;" src="https://wwmap.ru/img/cat${avg_category}-fill.png" title="${avg_category} к.с."/>&nbsp;&nbsp;${avg_category}&nbsp;к.с. - Минимальная категория трёх самых сложных препятствий</div>
             <div style="margin-top:11px;">${description}</div>
         </div>
         <div style="margin-bottom: 20px;">
@@ -121,7 +121,7 @@
         </div>
         <div style="">
             <h3>Скачать</h3>
-            <table class="wwmap-river-download-table">
+            <table class="wwmap-river-download-table" style="width: auto;">
                 <tr>
                     <td><label for="gpx_en">GPX для навигатора с русскими названиями</label></td>
                     <td><a href="${apiUrl}/${id}" style="padding-right:10px;" alt="Скачать GPX с точками порогов">GPX</a></td>

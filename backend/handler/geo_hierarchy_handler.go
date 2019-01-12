@@ -415,7 +415,7 @@ func (this *GeoHierarchyHandler) FilterRivers(w http.ResponseWriter, r *http.Req
 
 	rivers, err := this.RiverDao.ListByFirstLetters(query, limit)
 	if err != nil {
-		OnError500(w, err, "Can not fetch rivers for query" + query)
+		OnError500(w, err, "Can not fetch rivers for query " + query)
 		return
 	}
 

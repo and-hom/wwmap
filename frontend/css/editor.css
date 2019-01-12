@@ -36,11 +36,6 @@
     background-color: #fafafa
 }
 
-.list-item-input {
-    display: block;
-    withd:400px;
-}
-
 .fade-enter-active, .fade-leave-active {
   transition: opacity .5s;
 }
@@ -146,7 +141,7 @@
 
 .border-inside .row {
     border-top: 1px solid black;
-    padding-top: 0px;
+    padding-top: 0;
 }
 .border-inside .row:first-child {
     border-top: 0;
@@ -162,8 +157,8 @@
 }
 
 .wwmap-system-hint {
-    font-size: 60%;
-    font-color: grey;
+    font-size: 70%;
+    color: grey;
 }
 
 .wwmap-river-techincal-props select {

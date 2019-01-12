@@ -24,11 +24,9 @@
     text-align: left;
     border-radius: 3px;
 
-    margin: 0 auto;
-
     z-index: 1000;
     padding: 20px;
-    margin-top:80px;
+    margin: 80px auto 0;
     border: 1px solid black;
 
     height: auto;
@@ -50,14 +48,14 @@
 
 .wwmap-river-menu {
     list-style-type: none;
-    padding-left: 0px;
+    padding-left: 0;
     width: 100%;
 }
 .wwmap-river-menu table {
     width: 100%;
 }
 .wwmap-river-menu td {
-    align: left
+    text-align: left
 }
 .wwmap-river-menu .title-col {
     width: 250px;
@@ -115,7 +113,7 @@
 
 .wwmap-river-menu .reports {
     column-count: 3;
-    margin-top:0px;
+    margin-top:0;
     padding-left: 20px;
     width: 620px;
 }

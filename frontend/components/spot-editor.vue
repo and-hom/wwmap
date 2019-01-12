@@ -231,7 +231,7 @@
                     </div>
                     <div class="col-6">
                         <div v-if="canEdit()">
-                            <div style="font-size:60%;">Эти параметры предназначены для определения порядка следования порогов.</div>
+                            <div class="wwmap-system-hint">Эти параметры предназначены для определения порядка следования порогов. Автоматическое упорядочивание проходит раз в сутки ночью.</div>
                             <div><strong>Порядок следования:</strong> {{ spot.order_index }}</div>
                             <div><strong>Автоматическое упорядочивание:</strong>&nbsp;<span v-if="spot.automatic_ordering">Да</span><span v-else>Нет</span></div>
                             <div><strong>В последний раз автоматическое упорядочивание срабатывало:</strong> {{ lastAutoOrdering() }}</div>
@@ -276,7 +276,7 @@
                 loading(true);
                 var component = this
                 fetch(
-                  `${backendApiBase}/river?q=${search}`
+                    backendApiBase + '/river?q=' + search
                 ).then(function(res) {
                     res.json().then(function(json){
                         component.options = json
