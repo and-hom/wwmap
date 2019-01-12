@@ -4,7 +4,7 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 ON CONFLICT (source, remote_id) DO UPDATE SET title=$1, url=$4, date_modified=$6, date_of_trip=$7, tags=$8, author=$9
 RETURNING id
 --@get-last-id
-SELECT COALESCE(max(date_modified), to_timestamp(0)) FROM voyage_report WHERE source=$1
+SELECT COALESCE(max(date_modified), to_timestamp(-65000000000)) FROM voyage_report WHERE source=$1
 --@list
 SELECT id,title,remote_id,source,url,date_published,date_modified,date_of_trip, tags, author FROM (
 SELECT ROW_NUMBER() OVER (PARTITION BY source ORDER BY date_of_trip DESC, date_published DESC) AS r_num,
