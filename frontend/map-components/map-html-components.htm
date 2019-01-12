@@ -98,9 +98,9 @@
             <h3>Отчёты</h3>
             <div class="wwmap-report-list">
                 <ul>
-                    {%each(source,reportsList) reports%}
+                    {%each reports%}
                     <h4>${source}</h4>
-                    {%each reportsList%}
+                    {%each reports%}
                     <li><a target="_blank" href="${url}" title="${title}"><img src="${source_logo_url}"/>&nbsp;{%if year>1%}<strong>${year}&nbsp;</strong>{%/if%}${title}</a></li>
                     {%/each%}
                     {%/each%}

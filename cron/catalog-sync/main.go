@@ -3,6 +3,7 @@ package main
 import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/cron/catalog-sync/huskytm"
+	"github.com/and-hom/wwmap/cron/catalog-sync/libru"
 	"github.com/and-hom/wwmap/lib/config"
 	"github.com/and-hom/wwmap/lib/dao"
 	"github.com/and-hom/wwmap/cron/catalog-sync/common"
@@ -70,6 +71,7 @@ func CreateApp() App {
 				return huskytm.GetReportProvider(configuration.Sync.Login, configuration.Sync.Password, configuration.Sync.MinDeltaBetweenRequests)
 			}),
 			common.WithReportProvider(tlib.GetReportProvider),
+			common.WithReportProvider(libru.GetReportProvider),
 		},
 		catalogConnectors: []common.WithCatalogConnector{
 			{F:func() (common.CatalogConnector, error) {
