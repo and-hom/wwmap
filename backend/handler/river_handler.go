@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/and-hom/wwmap/cron/catalog-sync/huskytm"
 	"github.com/and-hom/wwmap/cron/catalog-sync/libru"
+	"github.com/and-hom/wwmap/cron/catalog-sync/skitalets"
 	"github.com/and-hom/wwmap/cron/catalog-sync/tlib"
 	"github.com/and-hom/wwmap/lib/dao"
 	. "github.com/and-hom/wwmap/lib/handler"
@@ -133,6 +134,7 @@ func (this *RiverHandler) groupReports(reports []dao.VoyageReport, river dao.Riv
 	}
 	reportsListBuilder.addReportDtos(huskytm.SOURCE, "huskytm.ru")
 	reportsListBuilder.addReportDtos(tlib.SOURCE, "tlib.ru")
+	reportsListBuilder.addReportDtos(skitalets.SOURCE, "Скиталец")
 	reportsListBuilder.addReportDtos(libru.SOURCE, "lib.ru/TURIZM")
 	reportsListBuilder.others()
 	return reportsListBuilder.reportsList
