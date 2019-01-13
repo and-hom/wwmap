@@ -2,23 +2,24 @@
 <div class="container-fluid wwmap-river-techincal-props" style="margin-top: 20px;">
     <div class="row">
         <div class="col-3">
-            <strong>Подложка карты при рендеринге порогов в PDF</strong>
+            <strong>Подложка карты при экспорте отдельных порогов этой реки</strong>
         </div>
         <div class="col-9">
-            <select v-model="p.pdf_map_type">
-                    <option :value="null">Как у остальных препятствий на реке</option>
+            <select v-model="p.spot_export_map_type">
+                    <option :value="null">По-умолчанию</option>
                     <option value="google#satellite">Спутник Google</option>
                     <option value="yandex#satellite">Спутник Яндекс</option>
+                    <option value="osm#standard">OSM</option>
                     <option value="ggc#standard">Топографичсекая карта</option>
             </select>
         </div>
     </div>
     <div class="row">
         <div class="col-3">
-            <strong>Масштаб карты при рендеринге порогов в PDF</strong>
+            <strong>Масштаб карты при экспорте отдельных порогов этой реки</strong>
         </div>
         <div class="col-9">
-            <select v-model="p.pdf_map_zoom">
+            <select v-model="p.spot_export_map_zoom">
                 <option :value="null">Как у остальных препятствий на реке</option>
                 <option v-for="zoom in 5" v-bind:value="zoom + 11">{{zoom + 11}}</option>
             </select>

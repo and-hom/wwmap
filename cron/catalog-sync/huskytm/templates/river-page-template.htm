@@ -46,13 +46,16 @@
 
 <script type="text/javascript">
     ymaps.ready(function() {
-                addCachedLayer('osm#standard', 'OSM', 'OpenStreetMap contributors, CC-BY-SA', 'osm')
-                addLayer('google#satellite', 'Спутник Google', 'Изображения © DigitalGlobe,CNES / Airbus, 2018,Картографические данные © Google, 2018', GOOGLE_SAT_TILES)
-                addCachedLayer('ggc#standard', 'Топографическая карта', '', 'ggc', 0, 15)
+                addCachedLayer('osm#standard', 'OSM', 'OpenStreetMap contributors, CC-BY-SA', 'osm');
+                addLayer('google#satellite', 'Спутник Google', 'Изображения © DigitalGlobe,CNES / Airbus, 2018,Картографические данные © Google, 2018', GOOGLE_SAT_TILES);
+                addCachedLayer('ggc#standard', 'Топографическая карта', '', 'ggc', 0, 15);
+
+                var mapType = {{coalesce_string_prop "river_export_map_type" "osm#standard" .River.Props}};
+
                 var myMap = new ymaps.Map("map", {
                     bounds: {{ .River.Bounds.WithMargins 0.1 }},
                     controls: ["zoomControl"],
-                    type: "osm#standard",
+                    type: mapType
                 });
                 myMap.controls.add(
                     new ymaps.control.TypeSelector([

@@ -76,35 +76,38 @@
             }
         });
     }
-    loadStarted()
-    ymaps.ready(function() {
-                addCachedLayer('osm#standard', 'OSM', 'OpenStreetMap contributors, CC-BY-SA', 'osm')
-                {{ $spotCount := len .Spots }}
-                {{ if eq $spotCount 1 }}
-                {{ $spot := index .Spots 0 }}
-                var myMap = new ymaps.Map("map", {
-                    center: {{$spot.Spot.Point}},
-                    zoom: 15,
-                    type: "osm#standard",
-                    controls: ["zoomControl"],
-                });
-                {{else}}
-                var myMap = new ymaps.Map("map", {
-                    bounds: {{ .River.Bounds.WithMargins 0.2 }},
-                    type: "osm#standard",
-                    controls: ["zoomControl"],
-                });
-                {{end}}
-                var objectManager = new ymaps.RemoteObjectManager('https://wwmap.ru/api/ymaps-tile-ww?bbox=%b&zoom=%z', {
-                        clusterHasBalloon: false,
-                        geoObjectOpenBalloonOnClick: false,
-                        geoObjectStrokeWidth: 3,
-                        splitRequests: true,
-                        clusterHasBalloon: false,
-                    });
-                myMap.geoObjects.add(objectManager);
-                loadFinished(myMap);
-            })
+    loadStarted();
+    ymaps.ready(function () {
+        addCachedLayer('osm#standard', 'OSM', 'OpenStreetMap contributors, CC-BY-SA', 'osm')
+        {{ $spotCount := len .Spots }}
+
+        var mapType = {{coalesce_string_prop "river_export_map_type" "osm#standard" .River.Props}};
+        var myMap;
+
+        {{ if eq $spotCount 1 }}
+        {{ $spot := index .Spots 0 }}
+        myMap = new ymaps.Map("map", {
+            center: {{$spot.Spot.Point}},
+            zoom: 15,
+            type: mapType,
+            controls: ["zoomControl"]
+        });
+        {{else}}
+        myMap = new ymaps.Map("map", {
+            bounds: {{ .River.Bounds.WithMargins 0.2 }},
+            type: mapType,
+            controls: ["zoomControl"]
+        });
+        {{end}}
+        var objectManager = new ymaps.RemoteObjectManager('https://wwmap.ru/api/ymaps-tile-ww?bbox=%b&zoom=%z', {
+            clusterHasBalloon: false,
+            geoObjectOpenBalloonOnClick: false,
+            geoObjectStrokeWidth: 3,
+            splitRequests: true
+        });
+        myMap.geoObjects.add(objectManager);
+        loadFinished(myMap);
+    });
 
     function spotMap(spotId, point, mapType, zoom) {
         loadStarted()
@@ -113,7 +116,7 @@
                     addLayer('google#satellite', 'Спутник Google', 'Изображения © DigitalGlobe,CNES / Airbus, 2018,Картографические данные © Google, 2018', GOOGLE_SAT_TILES)
                     addCachedLayer('ggc#standard', 'Топографическая карта', '', 'ggc', 0, 15)
 
-                    divId = "map" + spotId
+                    divId = "map" + spotId;
                     var myMap = new ymaps.Map(divId, {
                         center: point,
                         zoom: zoom,
@@ -208,7 +211,7 @@
         </div>
     </div>
     <script type="text/javascript">
-    spotMap("{{.Spot.Id}}", {{.Spot.Point}}, "{{coalesce_string_prop "pdf_map_type" "yandex#satellite" .Spot.Props .River.Props}}", {{coalesce_int_prop "pdf_map_zoom" 16 .Spot.Props .River.Props}})
+    spotMap("{{.Spot.Id}}", {{.Spot.Point}}, "{{coalesce_string_prop "spot_export_map_type" "yandex#satellite" .Spot.Props .River.Props}}", {{coalesce_int_prop "spot_export_map_zoom" 16 .Spot.Props .River.Props}})
 
     </script>
 </div>

@@ -70,6 +70,20 @@
                             <props :p="river.props">
                                 <div class="row">
                                     <div class="col-3">
+                                        <strong>Подложка общей карты реки при экспорте</strong>
+                                    </div>
+                                    <div class="col-9">
+                                        <select v-model="river.props.river_export_map_type">
+                                            <option :value="null">По-умолчанию</option>
+                                            <option value="google#satellite">Спутник Google</option>
+                                            <option value="yandex#satellite">Спутник Яндекс</option>
+                                            <option value="osm#standard">OSM</option>
+                                            <option value="ggc#standard">Топографичсекая карта</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-3">
                                         <strong>Гидропост <a href="http://gis.vodinfo.ru/informer/">gis.vodinfo.ru/informer</a></strong>
                                     </div>
                                     <div class="col-9">
