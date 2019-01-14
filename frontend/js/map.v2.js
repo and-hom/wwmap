@@ -202,9 +202,7 @@ WWMap.prototype.init = function (mapDivId) {
         geoObjectOpenBalloonOnClick: false,
         geoObjectBalloonContentLayout: ymaps.templateLayoutFactory.createClass(this.bubbleTemplate),
         geoObjectStrokeWidth: 3,
-        splitRequests: true,
-
-        clusterHasBalloon: false
+        splitRequests: false
     });
 
     objectManager.objects.events.add(['click'], function (e) {
