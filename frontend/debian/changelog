@@ -1,3 +1,12 @@
+wwmap-frontend (0.0.36) unstable; urgency=medium
+
+  * bionic
+  * Spot editor page layout fix
+  * #156 Single tile for points
+  * #144 Select preferred map type for river
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Tue, 15 Jan 2019 21:52:13 +0300
+
 wwmap-frontend (0.0.35) unstable; urgency=medium
 
   * #163 #164 Api protocol minor changes. Sort reports on backend
