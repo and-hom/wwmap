@@ -58,6 +58,7 @@
                                 </dd>
                                 <dt>Другие варианты названия для автоматического поиска отчётов:</dt>
                                 <dd>
+                                    <div class="wwmap-system-hint" style="margin-bottom: 7px;">Каждое альтернативное название на новой строке</div>
                                     <textarea v-bind:text-content="river.aliases"
                                               v-on:input="river.aliases = parseAliases($event.target.value)"
                                               rows="10" cols="120"

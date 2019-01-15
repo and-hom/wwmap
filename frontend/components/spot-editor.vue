@@ -139,7 +139,9 @@
                     </div>
                     <hr/>
                     <div class="row">
-                        <div class="col-12"><strong>Другие варианты названия для поиска изображений:</strong><textarea v-if="editMode" v-bind:text-content="spot.aliases"
+                        <div class="col-12"><strong>Другие варианты названия для поиска изображений:</strong>
+                            <div class="wwmap-system-hint" style="margin-bottom: 7px;">Каждое альтернативное название на новой строке</div>
+                            <textarea v-if="editMode" v-bind:text-content="spot.aliases"
                                                                       v-on:input="spot.aliases = parseAliases($event.target.value)"
                                                                       rows="10" cols="120">{{ spot.aliases.join('\n') }}</textarea>
                                                                       </div>
