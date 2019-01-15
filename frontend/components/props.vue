@@ -1,8 +1,9 @@
 <template>
 <div class="container-fluid wwmap-river-techincal-props" style="margin-top: 20px;">
+    <slot name="before"></slot>
     <div class="row">
         <div class="col-3">
-            <strong>Подложка карты при экспорте отдельных порогов этой реки</strong>
+            <strong>Подложка карты при экспорте</strong>
         </div>
         <div class="col-9">
             <select v-model="p.spot_export_map_type">
@@ -16,7 +17,7 @@
     </div>
     <div class="row">
         <div class="col-3">
-            <strong>Масштаб карты при экспорте отдельных порогов этой реки</strong>
+            <strong>Масштаб карты при экспорте</strong>
         </div>
         <div class="col-9">
             <select v-model="p.spot_export_map_zoom">

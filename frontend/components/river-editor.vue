@@ -69,39 +69,43 @@
                         <b-tab title="Системные параметры">
                             <span class="wwmap-system-hint" style="padding-top: 10px;">Тут собраны настройки разных системных вещей для этой реки</span>
                             <props :p="river.props">
-                                <div class="row">
-                                    <div class="col-3">
-                                        <strong>Подложка общей карты реки при экспорте</strong>
+                                <template slot="before">
+                                    <div class="row">
+                                        <div class="col-3">
+                                            <strong>Подложка общей карты реки при экспорте</strong>
+                                        </div>
+                                        <div class="col-9">
+                                            <select v-model="river.props.river_export_map_type">
+                                                <option :value="null">По-умолчанию</option>
+                                                <option value="google#satellite">Спутник Google</option>
+                                                <option value="yandex#satellite">Спутник Яндекс</option>
+                                                <option value="osm#standard">OSM</option>
+                                                <option value="ggc#standard">Топографичсекая карта</option>
+                                            </select>
+                                        </div>
                                     </div>
-                                    <div class="col-9">
-                                        <select v-model="river.props.river_export_map_type">
-                                            <option :value="null">По-умолчанию</option>
-                                            <option value="google#satellite">Спутник Google</option>
-                                            <option value="yandex#satellite">Спутник Яндекс</option>
-                                            <option value="osm#standard">OSM</option>
-                                            <option value="ggc#standard">Топографичсекая карта</option>
-                                        </select>
+                                    <div class="row">
+                                        <div class="col-3">
+                                            <strong>Гидропост <a href="http://gis.vodinfo.ru/informer/">gis.vodinfo.ru/informer</a></strong>
+                                        </div>
+                                        <div class="col-9">
+                                            <v-select v-model="activeSensor" label="title" :options="sensors"
+                                                      @input="onSelectSensor" >
+                                                <template slot="no-options">
+                                                    Начните печатать название гидропоста
+                                                </template>
+                                                <template slot="option" slot-scope="option">
+                                                    {{ option.id }}&nbsp;&dash;&nbsp;{{ option.title }}
+                                                </template>
+                                                <template slot="selected-option" scope="option">
+                                                    {{ option.id }}&nbsp;&dash;&nbsp;{{ option.title }}
+                                                </template>
+                                            </v-select>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-3">
-                                        <strong>Гидропост <a href="http://gis.vodinfo.ru/informer/">gis.vodinfo.ru/informer</a></strong>
-                                    </div>
-                                    <div class="col-9">
-                                         <v-select v-model="activeSensor" label="title" :options="sensors"
-                                         @input="onSelectSensor" >
-                                             <template slot="no-options">
-                                                 Начните печатать название гидропоста
-                                             </template>
-                                             <template slot="option" slot-scope="option">
-                                                     {{ option.id }}&nbsp;&dash;&nbsp;{{ option.title }}
-                                             </template>
-                                             <template slot="selected-option" scope="option">
-                                                     {{ option.id }}&nbsp;&dash;&nbsp;{{ option.title }}
-                                             </template>
-                                         </v-select>
-                                    </div>
-                                </div>
+                                    <hr/>
+                                    <h2>Для отдельных порогов:</h2>
+                                </template>
                             </props>
                         </b-tab>
                     </b-tabs>
