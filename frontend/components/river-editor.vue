@@ -97,7 +97,7 @@
                                                 <template slot="option" slot-scope="option">
                                                     {{ option.id }}&nbsp;&dash;&nbsp;{{ option.title }}
                                                 </template>
-                                                <template slot="selected-option" scope="option">
+                                                <template slot="selected-option" slot-scope="option">
                                                     {{ option.id }}&nbsp;&dash;&nbsp;{{ option.title }}
                                                 </template>
                                             </v-select>
@@ -244,7 +244,7 @@
                 river: null,
                 previousRiverId: this.initialRiver.id,
                 shouldReInit:function(){
-                    return this.river==null || this.previousRiverId != this.initialRiver.id && this.initialRiver.id > 0
+                    return this.river==null || this.previousRiverId !== this.initialRiver.id && this.initialRiver.id > 0
                 },
                 resetToInitialIfRequired:function() {
                     if (this.shouldReInit()) {

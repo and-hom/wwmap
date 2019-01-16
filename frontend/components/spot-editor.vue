@@ -44,7 +44,7 @@
                                                 {{ option.title }}
                                             </div>
                                         </template>
-                                        <template slot="selected-option" scope="option">
+                                        <template slot="selected-option" slot-scope="option">
                                             <div class="selected d-center">
                                                 {{ option.title }}
                                             </div>
@@ -298,7 +298,7 @@
             this.resetToInitialIfRequired()
         },
         updated: function() {
-            shouldRefreshChildren = this.shouldReInit()
+            var shouldRefreshChildren = this.shouldReInit()
             this.resetToInitialIfRequired()
 
             if (shouldRefreshChildren) {
@@ -359,11 +359,10 @@
                     return null
                 },
                 mainSchemaIndex: function() {
-                    imgIdx = this.findMainImgIdx(this.schemas, this.spotMainUrl)
+                    var imgIdx = this.findMainImgIdx(this.schemas, this.spotMainUrl)
                     if (imgIdx>-1) {
                         return imgIdx
                     }
-                    console.log('sch-null')
                     return null
                 },
         },
@@ -438,7 +437,7 @@
 
                 spot: null,
                 shouldReInit:function(){
-                    return this.spot==null || this.previousSpotId != this.initialSpot.id && this.initialSpot.id > 0
+                    return this.spot==null || this.previousSpotId !== this.initialSpot.id && this.initialSpot.id > 0
                 },
                 resetToInitialIfRequired:function() {
                     if (this.shouldReInit()) {
