@@ -1,3 +1,9 @@
+wwmap-frontend (0.0.37) unstable; urgency=medium
+
+  * #166 Bug with spot editor page rendering fixed
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Wed, 16 Jan 2019 22:44:24 +0300
+
 wwmap-frontend (0.0.36) unstable; urgency=medium
 
   * bionic
