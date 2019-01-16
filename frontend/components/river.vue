@@ -52,11 +52,11 @@
                     app.regioneditorstate.visible = false;
                     app.countryeditorstate.visible = false;
 
-                    app.spoteditorstate.visible=true;
                     app.spoteditorstate.editMode = false;
                     app.spoteditorstate.spot=getSpot(spot.id)
                     app.spoteditorstate.country = this.country
                     app.spoteditorstate.region = this.region
+                    app.spoteditorstate.visible=true;
 
                     return false
                 },
@@ -72,9 +72,9 @@
                     app.rivereditorstate.river = getRiver(this.river.id)
                     app.rivereditorstate.editMode = false;
                     app.rivereditorstate.reports=getReports(this.river.id)
-                    app.rivereditorstate.visible = true
                     app.rivereditorstate.country = this.country
                     app.rivereditorstate.region = this.region
+                    app.rivereditorstate.visible = true
 
                     return false
                 },
