@@ -1,15 +1,15 @@
 package dao
 
 import (
-	"time"
-	log "github.com/Sirupsen/logrus"
 	"database/sql"
-	_ "github.com/lib/pq"
 	"errors"
-	"reflect"
-	. "github.com/and-hom/wwmap/lib/geo"
 	"fmt"
+	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/lib/config"
+	. "github.com/and-hom/wwmap/lib/geo"
+	_ "github.com/lib/pq"
+	"reflect"
+	"time"
 )
 
 type Storage interface {
@@ -142,6 +142,11 @@ type RefererDao interface {
 	RemoveOlderThen(ttl time.Duration) error
 }
 
+type ChangesLogDao interface {
+	Insert(entry ChangesLogEntry) error
+	List(objectType string, objectId int64, limit int) ([]ChangesLogEntry, error)
+}
+
 type PostgresStorage struct {
 	db *sql.DB
 }
@@ -156,7 +161,7 @@ func NewPostgresStorage(c config.Db) PostgresStorage {
 	db.SetMaxIdleConns(c.MaxIddleConn)
 
 	return PostgresStorage{
-		db:db,
+		db: db,
 	}
 }
 
@@ -167,13 +172,13 @@ func NewPostgresStorageForDb(db *sql.DB) PostgresStorage {
 func nullIf0(x int64) sql.NullInt64 {
 	if x == 0 {
 		return sql.NullInt64{
-			Int64:0,
-			Valid:false,
+			Int64: 0,
+			Valid: false,
 		}
 	}
 	return sql.NullInt64{
-		Int64:x,
-		Valid:true,
+		Int64: x,
+		Valid: true,
 	}
 }
 
@@ -369,5 +374,3 @@ func (this PgPoint) GetPoint() Point {
 type PgPolygon struct {
 	Coordinates [][]Point `json:"coordinates"`
 }
-
-

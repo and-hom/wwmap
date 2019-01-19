@@ -1,11 +1,11 @@
 package handler
 
 import (
-	. "github.com/and-hom/wwmap/lib/dao"
-	. "github.com/and-hom/wwmap/lib/handler"
+	"fmt"
 	"github.com/and-hom/wwmap/backend/passport"
 	"github.com/and-hom/wwmap/backend/referer"
-	"fmt"
+	. "github.com/and-hom/wwmap/lib/dao"
+	. "github.com/and-hom/wwmap/lib/handler"
 	"github.com/and-hom/wwmap/lib/notification"
 )
 
@@ -21,6 +21,7 @@ type App struct {
 	UserDao            UserDao
 	CountryDao         CountryDao
 	RegionDao          RegionDao
+	ChangesLogDao      ChangesLogDao
 	AuthProviders      map[AuthProvider]passport.Passport
 	RefererStorage     referer.RefererStorage
 	ImgUrlBase         string
@@ -34,5 +35,3 @@ func (this *App) processForWeb(img *Img) {
 		img.PreviewUrl = fmt.Sprintf(this.ImgUrlPreviewBase, img.Id)
 	}
 }
-
-

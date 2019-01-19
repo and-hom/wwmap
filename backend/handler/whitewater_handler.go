@@ -24,9 +24,6 @@ const PREVIEWS_COUNT int = 20
 
 func (this *WhiteWaterHandler) Init() {
 	this.Register("/ymaps-tile-ww", HandlerFunctions{Get: this.TileWhiteWaterHandler})
-	this.Register("/whitewater", HandlerFunctions{
-		Post: this.ForRoles(this.InsertWhiteWaterPoints, dao.ADMIN, dao.EDITOR),
-		Put: this.ForRoles(this.InsertWhiteWaterPoints, dao.ADMIN, dao.EDITOR)})
 	this.Register("/search", HandlerFunctions{Post: this.search})
 }
 
@@ -61,7 +58,7 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 	sessionId := req.FormValue("session_id")
 	allowed := false
 	if sessionId != "" {
-		allowed, err = this.CheckRoleAllowed(req, dao.ADMIN, dao.EDITOR)
+		_, allowed, err = this.CheckRoleAllowed(req, dao.ADMIN, dao.EDITOR)
 		if err != nil {
 			OnError500(w, err, "Can not get user info for token")
 			return
@@ -129,40 +126,6 @@ func getLinkMaker(linkType string) ymaps.LinkMaker {
 	default:
 		return ymaps.FromSpotLinkMaker{}
 	}
-}
-
-func (this *WhiteWaterHandler) InsertWhiteWaterPoints(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseForm()
-	if err != nil {
-		OnError(w, err, "Can not parse form", http.StatusBadRequest)
-		return
-	}
-
-	wwPoints, err := this.parseWhiteWaterPointsForm(w, r)
-	if err != nil {
-		OnError500(w, err, "Can not read request")
-		return
-	}
-
-	err = this.WhiteWaterDao.InsertWhiteWaterPoints(wwPoints...)
-
-	if err != nil {
-		OnError500(w, err, "Can not insert")
-		return
-	}
-}
-
-func (this *WhiteWaterHandler) parseWhiteWaterPointsForm(w http.ResponseWriter, r *http.Request) ([]dao.WhiteWaterPoint, error) {
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		return []dao.WhiteWaterPoint{}, err
-	}
-	var points []dao.WhiteWaterPoint
-	err = json.Unmarshal(body, &points)
-	if err != nil {
-		return []dao.WhiteWaterPoint{}, err
-	}
-	return points, nil
 }
 
 func (this *WhiteWaterHandler) search(w http.ResponseWriter, r *http.Request) {

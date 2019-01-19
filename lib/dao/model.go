@@ -8,20 +8,32 @@ import (
 	"time"
 )
 
+type JSONDate time.Time
+
+func (t JSONDate) MarshalJSON() ([]byte, error) {
+	//do your serializing here
+	stamp := fmt.Sprintf("\"%s\"", t.String())
+	return []byte(stamp), nil
+}
+
+func (t JSONDate) String() string {
+	return time.Time(t).Format("2006-01-02")
+}
+
 type JSONTime time.Time
 
-func (t JSONTime)MarshalJSON() ([]byte, error) {
+func (t JSONTime) MarshalJSON() ([]byte, error) {
 	//do your serializing here
 	stamp := fmt.Sprintf("\"%s\"", t.String())
 	return []byte(stamp), nil
 }
 
 func (t JSONTime) String() string {
-	return time.Time(t).Format("2006-01-02")
+	return time.Time(t).Format("2006-01-02 00:00")
 }
 
 type IdTitle struct {
-	Id    int64 `json:"id"`
+	Id    int64  `json:"id"`
 	Title string `json:"title"`
 }
 
@@ -49,7 +61,7 @@ func (this RiverTitle) GetProperties() map[string]interface{} {
 
 type River struct {
 	RiverTitle
-	Description  string `json:"description"`
+	Description  string       `json:"description"`
 	SpotCounters SpotCounters `json:"spot_counters"`
 }
 
@@ -85,13 +97,13 @@ func (this RiverWithSpotsExt) GetProperties() map[string]interface{} {
 }
 
 type WaterWay struct {
-	Id      int64 `json:"id"`
-	OsmId   int64 `json:"osm_id"`
-	Title   string `json:"title"`
-	Type    string `json:"type"`
+	Id      int64   `json:"id"`
+	OsmId   int64   `json:"osm_id"`
+	Title   string  `json:"title"`
+	Type    string  `json:"type"`
 	Path    []Point `json:"path"`
-	RiverId int64 `json:"river_id"`
-	Comment string `json:"comment"`
+	RiverId int64   `json:"river_id"`
+	Comment string  `json:"comment"`
 }
 
 const EXPORT_PROP_PREFIX = "export_"
@@ -99,49 +111,49 @@ const PAGE_LINK_PROP_PREFIX = "page_link_"
 
 type WhiteWaterPoint struct {
 	IdTitle
-	OsmId     int64 `json:"-"`
-	RiverId   int64 `json:"river_id"`
-	Type      string `json:"-"`
+	OsmId     int64               `json:"-"`
+	RiverId   int64               `json:"river_id"`
+	Type      string              `json:"-"`
 	Category  model.SportCategory `json:"category"`
-	Point     Point `json:"point"`
-	Link      string `json:"link"`
-	Comment   string `json:"-"`
-	ShortDesc string `json:"short_description"`
+	Point     Point               `json:"point"`
+	Link      string              `json:"link"`
+	Comment   string              `json:"-"`
+	ShortDesc string              `json:"short_description"`
 }
 
 type WhiteWaterPointFull struct {
 	WhiteWaterPoint
 	LowWaterCategory       model.SportCategory `json:"lw_category"`
-	LowWaterDescription    string `json:"lw_description"`
+	LowWaterDescription    string              `json:"lw_description"`
 	MediumWaterCategory    model.SportCategory `json:"mw_category"`
-	MediumWaterDescription string `json:"mw_description"`
+	MediumWaterDescription string              `json:"mw_description"`
 	HighWaterCategory      model.SportCategory `json:"hw_category"`
-	HighWaterDescription   string `json:"hw_description"`
+	HighWaterDescription   string              `json:"hw_description"`
 
-	Orient                 string `json:"orient"`
-	Approach               string `json:"approach"`
-	Safety                 string `json:"safety"`
+	Orient   string `json:"orient"`
+	Approach string `json:"approach"`
+	Safety   string `json:"safety"`
 
-	River                  IdTitle `json:"river"`
+	River IdTitle `json:"river"`
 
-	OrderIndex             int `json:"order_index,string"`
-	AutomaticOrdering      bool `json:"automatic_ordering"`
-	LastAutomaticOrdering  time.Time `json:"last_automatic_ordering"`
+	OrderIndex            int       `json:"order_index,string"`
+	AutomaticOrdering     bool      `json:"automatic_ordering"`
+	LastAutomaticOrdering time.Time `json:"last_automatic_ordering"`
 
-	Aliases                []string `json:"aliases"`
-	Props    map[string]interface{} `json:"props"`
+	Aliases []string               `json:"aliases"`
+	Props   map[string]interface{} `json:"props"`
 }
 
 type WhiteWaterPointWithRiverTitle struct {
 	WhiteWaterPoint
 	RiverTitle string `json:"river_title"`
-	Images     []Img `json:"images"`
+	Images     []Img  `json:"images"`
 }
 
 type PointRef struct {
 	Id       int64 `json:"id"`
 	ParentId int64 `json:"parent_id"`
-	Idx      int `json:"idx"`
+	Idx      int   `json:"idx"`
 }
 
 type NotificationProvider string
@@ -153,9 +165,9 @@ const NOTIFICATION_PROVIDER_VK NotificationProvider = "vk"
 type Notification struct {
 	IdTitle
 
-	Object     IdTitle
-	Comment    string
-	CreatedAt  JSONTime
+	Object    IdTitle
+	Comment   string
+	CreatedAt JSONDate
 
 	Recipient  NotificationRecipient
 	Classifier string
@@ -181,41 +193,41 @@ func (this NotificationRecipientWithClassifier) String() string {
 }
 
 type VoyageReport struct {
-	Id            int64 `json:"id,omitempty"`
-	Title         string `json:"title"`
-	Author        string `json:"author"`
-	Source        string `json:"source"`
-	RemoteId      string `json:"remote_id"`
-	Url           string `json:"url"`
+	Id            int64     `json:"id,omitempty"`
+	Title         string    `json:"title"`
+	Author        string    `json:"author"`
+	Source        string    `json:"source"`
+	RemoteId      string    `json:"remote_id"`
+	Url           string    `json:"url"`
 	DatePublished time.Time `json:"id,omitempty"`
 	DateModified  time.Time `json:"id,omitempty"`
 	DateOfTrip    time.Time `json:"id,omitempty"`
-	Tags          []string `json:"-"`
+	Tags          []string  `json:"-"`
 }
 
 type ImageType string;
 
 const (
-	IMAGE_TYPE_IMAGE ImageType = "image"
+	IMAGE_TYPE_IMAGE  ImageType = "image"
 	IMAGE_TYPE_SCHEMA ImageType = "schema"
 )
 
 const IMG_SOURCE_WWMAP string = "wwmap"
 
 type Img struct {
-	Id              int64 `json:"id"`
-	WwId            int64 `json:"ww_id"`
-	ReportId        int64 `json:"report_id"`
-	Source          string `json:"source"`
-	RemoteId        string `json:"remote_id"`
-	RawUrl          string `json:"-"`
-	Url             string `json:"url"`
-	PreviewUrl      string `json:"preview_url"`
+	Id              int64     `json:"id"`
+	WwId            int64     `json:"ww_id"`
+	ReportId        int64     `json:"report_id"`
+	Source          string    `json:"source"`
+	RemoteId        string    `json:"remote_id"`
+	RawUrl          string    `json:"-"`
+	Url             string    `json:"url"`
+	PreviewUrl      string    `json:"preview_url"`
 	DatePublished   time.Time `json:"date_published"`
-	LabelsForSearch []string `json:"-"`
-	Enabled         bool `json:"enabled"`
+	LabelsForSearch []string  `json:"-"`
+	Enabled         bool      `json:"enabled"`
 	Type            ImageType `json:"type"`
-	MainImage       bool        `json:"main_image"`
+	MainImage       bool      `json:"main_image"`
 }
 
 func GetImgType(_type string) ImageType {
@@ -253,9 +265,9 @@ type WWPassport struct {
 type Role string
 
 const (
-	ADMIN Role = "ADMIN"
-	EDITOR Role = "EDITOR"
-	USER Role = "USER"
+	ADMIN     Role = "ADMIN"
+	EDITOR    Role = "EDITOR"
+	USER      Role = "USER"
 	ANONYMOUS Role = "ANON"
 )
 
@@ -311,26 +323,44 @@ type User struct {
 }
 
 type Country struct {
-	Id    int64 `json:"id,omitempty"`
+	Id    int64  `json:"id,omitempty"`
 	Title string `json:"title"`
 	Code  string `json:"code"`
 }
 
 type Region struct {
-	Id        int64 `json:"id,omitempty"`
-	CountryId int64 `json:"country_id,omitempty"`
+	Id        int64  `json:"id,omitempty"`
+	CountryId int64  `json:"country_id,omitempty"`
 	Title     string `json:"title"`
-	Fake      bool `json:"fake,omitempty"`
+	Fake      bool   `json:"fake,omitempty"`
 }
 
 type RegionWithCountry struct {
-	Id      int64 `json:"id,omitempty"`
+	Id      int64   `json:"id,omitempty"`
 	Country Country `json:"country,omitempty"`
-	Title   string `json:"title"`
-	Fake    bool `json:"fake,omitempty"`
+	Title   string  `json:"title"`
+	Fake    bool    `json:"fake,omitempty"`
 }
 
+type ChangesLogEntry struct {
+	Id           int64               `json:"id,omitempty"`
+	ObjectType   string              `json:"object_type"`
+	ObjectId     int64               `json:"object_id"`
+	AuthProvider AuthProvider        `json:"auth_provider"`
+	ExtId        string              `json:"ext_id"`
+	Login        string              `json:"login"`
+	Type         ChangesLogEntryType `json:"type"`
+	Description  string              `json:"description"`
+	Time         JSONTime            `json:"time"`
+}
 
+type ChangesLogEntryType string
+
+const (
+	ENTRY_TYPE_CREATE ChangesLogEntryType = "CREATE"
+	ENTRY_TYPE_MODIFY ChangesLogEntryType = "MODIFY"
+	ENTRY_TYPE_DELETE ChangesLogEntryType = "DELETE"
+)
 
 const CATEGORY_DEFINITING_POINTS_COUNT int = 3
 const MAX_CATEGORY = 6
@@ -362,4 +392,3 @@ func min(x, y int) int {
 	}
 	return y
 }
-

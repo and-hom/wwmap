@@ -8,17 +8,18 @@
         </transition>
         <ask id="del-spot" title="Точно?" msg="Совсем удалить?" :okfn="function() { remove(); }"></ask>
 
-        <div v-if="canEdit()" class="btn-toolbar">
+        <div v-if="canEdit()" class="btn-toolbar justify-content-between">
             <div class="btn-group mr-2" role="group" aria-label="First group">
                 <button type="button" class="btn btn-info" v-if="!editMode" v-on:click="editMode=true; hideError();">
                     Редактирование
                 </button>
                 <button type="button" class="btn btn-success" v-if="editMode" v-on:click="save()">Сохранить</button>
                 <button type="button" class="btn btn-secondary" v-if="editMode" v-on:click="editMode=!editMode; reload()">Отменить</button>
-            </div>
-            <div class="btn-group">
                 <button type="button" class="btn btn-danger" v-if="spot.id>0" data-toggle="modal" data-target="#del-spot">Удалить
                 </button>
+            </div>
+            <div class="btn-group mr-2">
+                <log-dropdown object-type="SPOT" :object-id="spot.id"/>
             </div>
         </div>
 

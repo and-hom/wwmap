@@ -64,6 +64,9 @@
                     <button v-if="image.enabled==true" v-on:click="setImgEnabled(false, image.id)"class="btn btn-secondary">Не показывать</button>
                     <button v-if="image.source=='wwmap'" v-on:click="removeImage(image.id)" class="btn btn-danger">Удалить</button>
                     <button v-if="!image.main_image" v-on:click="setSpotPreview(image.id)" class="btn btn-info">Сделать главным изображением</button>
+                    <div style="margin-top: 20px;">
+                        <log-dropdown object-type="IMAGE" :object-id="image.id"/>
+                    </div>
                 </td>
             </tr>
         </table>

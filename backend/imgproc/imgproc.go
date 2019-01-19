@@ -51,7 +51,7 @@ func addCoords(_exif *exif.Exif, imgData *ImgProperties) {
 func addTime(_exif *exif.Exif, imgData *ImgProperties) {
 	time, err := _exif.DateTime()
 	if err == nil {
-		jsonTime := ImgPropertiesFormattedTime(time)
-		imgData.Timestamp = &jsonTime
+		JSONDate := ImgPropertiesFormattedTime(time)
+		imgData.Timestamp = &JSONDate
 	}
 }

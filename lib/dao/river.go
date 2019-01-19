@@ -221,7 +221,6 @@ func (this riverStorage) Props() PropertyManager {
 }
 
 func (this riverStorage) SetVisible(id int64, visible bool) (error) {
-	fmt.Println("visible", visible)
 	return this.performUpdates(this.setVisibleQuery, ArrayMapper, []interface{}{id, visible})
 }
 

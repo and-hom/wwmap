@@ -9,20 +9,19 @@
              msg="Совсем удалить? Все пороги будут также удалены! Да, совсем! Восстановить будет никак нельзя!"
              :okfn="function() { remove(); }"></ask>
 
-        <div v-if="canEdit()" class="btn-toolbar">
+        <div v-if="canEdit()" class="btn-toolbar justify-content-between">
             <div v-if="river.id" class="btn-group mr-2" role="group">
                 <button type="button" class="btn btn-primary" v-if="!editMode" v-on:click="add_spot()">Добавить препятствие</button>
-            </div>
-            <div class="btn-group mr-2" role="group" aria-label="First group">
                 <button type="button" class="btn btn-info" v-if="!editMode" v-on:click="editMode=true; hideError();">
                     Редактирование
                 </button>
                 <button type="button" class="btn btn-success" v-if="editMode" v-on:click="editMode=false; save()">Сохранить</button>
                 <button type="button" class="btn btn-secondary" v-if="editMode" v-on:click="editMode=false; reload()">Отменить</button>
-            </div>
-            <div class="btn-group">
                 <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#del-river">Удалить
                 </button>
+            </div>
+            <div class="btn-group mr-2">
+                <log-dropdown object-type="RIVER" :object-id="river.id"/>
             </div>
         </div>
 

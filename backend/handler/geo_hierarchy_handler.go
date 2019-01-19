@@ -61,15 +61,14 @@ func (this *GeoHierarchyHandler) Init() {
 }
 
 type RiverDto struct {
-	Id          int64 `json:"id"`
-	Title       string `json:"title"`
-	Aliases     []string `json:"aliases"`
-	Region      dao.Region `json:"region"`
-	Description string `json:"description,omitempty"`
-	Visible     bool `json:"visible"`
+	Id          int64                  `json:"id"`
+	Title       string                 `json:"title"`
+	Aliases     []string               `json:"aliases"`
+	Region      dao.Region             `json:"region"`
+	Description string                 `json:"description,omitempty"`
+	Visible     bool                   `json:"visible"`
 	Props       map[string]interface{} `json:"props"`
 }
-
 
 func (this *GeoHierarchyHandler) ListCountries(w http.ResponseWriter, r *http.Request) {
 	countries, err := this.CountryDao.List()
@@ -246,10 +245,10 @@ func (this *GeoHierarchyHandler) UploadGpx(w http.ResponseWriter, req *http.Requ
 	for _, wpt := range gpx_data.Waypoints {
 		spot := dao.WhiteWaterPointFull{}
 		spot.Title = wpt.Name
-		spot.River = dao.IdTitle{Id:riverId}
-		spot.Point = geo.Point{Lat:wpt.Lat, Lon:wpt.Lon}
+		spot.River = dao.IdTitle{Id: riverId}
+		spot.Point = geo.Point{Lat: wpt.Lat, Lon: wpt.Lon}
 		spot.ShortDesc = wpt.Desc
-		spot.Category = model.SportCategory{Category:model.UNDEFINED_CATEGORY}
+		spot.Category = model.SportCategory{Category: model.UNDEFINED_CATEGORY}
 		spot.Aliases = []string{}
 		_, err = this.WhiteWaterDao.InsertWhiteWaterPointFull(spot)
 		if err != nil {
@@ -257,6 +256,8 @@ func (this *GeoHierarchyHandler) UploadGpx(w http.ResponseWriter, req *http.Requ
 			return
 		}
 	}
+
+	this.LogUserEvent(req, RIVER_LOG_ENTRY_TYPE, riverId, dao.ENTRY_TYPE_MODIFY, "Upload GPX");
 }
 
 func (this *GeoHierarchyHandler) GetRiver(w http.ResponseWriter, r *http.Request) {
@@ -279,7 +280,7 @@ func (this *GeoHierarchyHandler) SaveRiver(w http.ResponseWriter, r *http.Reques
 	river := RiverDto{}
 	err = json.Unmarshal(bodyBytes, &river)
 	if err != nil {
-		OnError500(w, err, "Can not parse json from request body: " + string(bodyBytes))
+		OnError500(w, err, "Can not parse json from request body: "+string(bodyBytes))
 		return
 	}
 
@@ -305,23 +306,26 @@ func (this *GeoHierarchyHandler) SaveRiver(w http.ResponseWriter, r *http.Reques
 
 	riverForDb := dao.River{
 		RiverTitle: dao.RiverTitle{
-			IdTitle:dao.IdTitle{
-				Id:river.Id,
-				Title:river.Title,
+			IdTitle: dao.IdTitle{
+				Id:    river.Id,
+				Title: river.Title,
 			},
-			Region: dao.Region{Id:regionId},
-			Aliases:river.Aliases,
-			Props: river.Props,
+			Region:  dao.Region{Id: regionId},
+			Aliases: river.Aliases,
+			Props:   river.Props,
 		},
-		Description:river.Description,
+		Description: river.Description,
 	}
 
 	var id int64
+	var logEntryType dao.ChangesLogEntryType
 	if river.Id > 0 {
 		err = this.RiverDao.Save(riverForDb)
 		id = river.Id
+		logEntryType = dao.ENTRY_TYPE_MODIFY
 	} else {
 		id, err = this.RiverDao.Insert(riverForDb)
+		logEntryType = dao.ENTRY_TYPE_CREATE
 	}
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not save river %s", string(bodyBytes)))
@@ -329,6 +333,7 @@ func (this *GeoHierarchyHandler) SaveRiver(w http.ResponseWriter, r *http.Reques
 	}
 
 	this.writeRiver(id, w)
+	this.LogUserEvent(r, RIVER_LOG_ENTRY_TYPE, river.Id, logEntryType, "");
 }
 
 func (this *GeoHierarchyHandler) SetRiverVisible(w http.ResponseWriter, r *http.Request) {
@@ -345,11 +350,21 @@ func (this *GeoHierarchyHandler) SetRiverVisible(w http.ResponseWriter, r *http.
 		return
 	}
 	visible := false
-	json.Unmarshal(bodyBytes, &visible)
+	err = json.Unmarshal(bodyBytes, &visible)
+	if err != nil {
+		OnError(w, err, "Failed to parse request body", http.StatusBadRequest)
+		return
+	}
 
-	this.RiverDao.SetVisible(riverId, visible)
+	err = this.RiverDao.SetVisible(riverId, visible)
+	if err != nil {
+		OnError500(w, err, "Can not update river")
+		return
+	}
 
 	this.writeRiver(riverId, w)
+
+	this.LogUserEvent(r, RIVER_LOG_ENTRY_TYPE, riverId, dao.ENTRY_TYPE_MODIFY, fmt.Sprintf("visible=%t", visible));
 }
 
 func (this *GeoHierarchyHandler) RemoveRiver(w http.ResponseWriter, r *http.Request) {
@@ -365,7 +380,7 @@ func (this *GeoHierarchyHandler) RemoveRiver(w http.ResponseWriter, r *http.Requ
 		OnError500(w, err, fmt.Sprintf("Can not get images for river: %d", riverId))
 		return
 	}
-	this.removeImageData(imgs)
+	this.removeImageData(r, imgs)
 
 	err = this.Storage.WithinTx(func(tx interface{}) error {
 		err = this.ImgDao.RemoveByRiver(riverId, tx)
@@ -387,6 +402,7 @@ func (this *GeoHierarchyHandler) RemoveRiver(w http.ResponseWriter, r *http.Requ
 		OnError500(w, err, fmt.Sprintf("Can not remove river by id: %d", riverId))
 		return
 	}
+	this.LogUserEvent(r, RIVER_LOG_ENTRY_TYPE, riverId, dao.ENTRY_TYPE_DELETE, "");
 }
 
 func (this *GeoHierarchyHandler) writeRiver(riverId int64, w http.ResponseWriter) {
@@ -397,13 +413,13 @@ func (this *GeoHierarchyHandler) writeRiver(riverId int64, w http.ResponseWriter
 	}
 
 	riverWithRegion := RiverDto{
-		Id:river.Id,
-		Title:river.Title,
-		Aliases:river.Aliases,
-		Region:river.Region,
-		Description:river.Description,
-		Visible: river.Visible,
-		Props:river.Props,
+		Id:          river.Id,
+		Title:       river.Title,
+		Aliases:     river.Aliases,
+		Region:      river.Region,
+		Description: river.Description,
+		Visible:     river.Visible,
+		Props:       river.Props,
 	}
 	this.JsonAnswer(w, riverWithRegion)
 }
@@ -415,7 +431,7 @@ func (this *GeoHierarchyHandler) FilterRivers(w http.ResponseWriter, r *http.Req
 
 	rivers, err := this.RiverDao.ListByFirstLetters(query, limit)
 	if err != nil {
-		OnError500(w, err, "Can not fetch rivers for query " + query)
+		OnError500(w, err, "Can not fetch rivers for query "+query)
 		return
 	}
 
@@ -423,11 +439,11 @@ func (this *GeoHierarchyHandler) FilterRivers(w http.ResponseWriter, r *http.Req
 	for i := 0; i < len(rivers); i++ {
 		river := &(rivers[i])
 		dtos[i] = RiverDto{
-			Id:river.Id,
-			Title:river.Title,
-			Aliases:river.Aliases,
-			Region:river.Region,
-			Props:river.Props,
+			Id:      river.Id,
+			Title:   river.Title,
+			Aliases: river.Aliases,
+			Region:  river.Region,
+			Props:   river.Props,
 		}
 	}
 	this.JsonAnswer(w, dtos)
@@ -453,7 +469,7 @@ func (this *GeoHierarchyHandler) SaveSpot(w http.ResponseWriter, r *http.Request
 	spot := dao.WhiteWaterPointFull{}
 	err = json.Unmarshal(bodyBytes, &spot)
 	if err != nil {
-		OnError500(w, err, "Can not parse json from request body: " + string(bodyBytes))
+		OnError500(w, err, "Can not parse json from request body: "+string(bodyBytes))
 		return
 	}
 
@@ -463,11 +479,14 @@ func (this *GeoHierarchyHandler) SaveSpot(w http.ResponseWriter, r *http.Request
 	}
 
 	var id int64
+	var logType dao.ChangesLogEntryType
 	if spot.Id > 0 {
 		err = this.WhiteWaterDao.UpdateWhiteWaterPointsFull(spot)
 		id = spot.Id
+		logType = dao.ENTRY_TYPE_MODIFY
 	} else {
 		id, err = this.WhiteWaterDao.InsertWhiteWaterPointFull(spot)
+		logType = dao.ENTRY_TYPE_CREATE
 	}
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not save spot %s", string(bodyBytes)))
@@ -475,6 +494,8 @@ func (this *GeoHierarchyHandler) SaveSpot(w http.ResponseWriter, r *http.Request
 	}
 
 	this.writeSpot(id, w)
+
+	this.LogUserEvent(r, SPOT_LOG_ENTRY_TYPE, spot.Id, logType, "");
 }
 
 func (this *GeoHierarchyHandler) RemoveSpot(w http.ResponseWriter, r *http.Request) {
@@ -491,7 +512,7 @@ func (this *GeoHierarchyHandler) RemoveSpot(w http.ResponseWriter, r *http.Reque
 		OnError500(w, err, fmt.Sprintf("Can not list images for spot by id: %d", spotId))
 		return
 	}
-	this.removeImageData(imgs)
+	this.removeImageData(r, imgs)
 
 	err = this.Storage.WithinTx(func(tx interface{}) error {
 		err := this.ImgDao.RemoveBySpot(spotId, tx)
@@ -505,9 +526,11 @@ func (this *GeoHierarchyHandler) RemoveSpot(w http.ResponseWriter, r *http.Reque
 		OnError500(w, err, fmt.Sprintf("Can not remove spot by id: %d", spotId))
 		return
 	}
+
+	this.LogUserEvent(r, SPOT_LOG_ENTRY_TYPE, spotId, dao.ENTRY_TYPE_DELETE, "");
 }
 
-func (this *GeoHierarchyHandler)removeImageData(imgs []dao.Img) {
+func (this *GeoHierarchyHandler) removeImageData(req *http.Request, imgs []dao.Img) {
 	for _, img := range imgs {
 		imgIdStr := fmt.Sprintf("%d", img.Id)
 
@@ -520,6 +543,7 @@ func (this *GeoHierarchyHandler)removeImageData(imgs []dao.Img) {
 		if err != nil {
 			log.Errorf("Can not remove preview for by id %d: %v", img.Id, err)
 		}
+		this.LogUserEvent(req, RIVER_LOG_ENTRY_TYPE, img.Id, dao.ENTRY_TYPE_DELETE, "Recursively");
 	}
 }
 
@@ -541,7 +565,7 @@ func (this *GeoHierarchyHandler) GetRiverPassportHtml(w http.ResponseWriter, req
 }
 
 func (this *GeoHierarchyHandler) getRiverPassport(w http.ResponseWriter, req *http.Request,
-contentType string, storage blob.BlobStorage, suffix string) {
+	contentType string, storage blob.BlobStorage, suffix string) {
 	pathParams := mux.Vars(req)
 	w.Header().Set("Content-Type", contentType)
 	length, err := storage.Length(pathParams["riverId"])

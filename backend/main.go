@@ -37,6 +37,7 @@ func main() {
 	countryDao := NewCountryPostgresDao(storage)
 	regionDao := NewRegionPostgresDao(storage)
 	tileDao := NewTilePostgresDao(storage)
+	changesLogDao := NewChangesLogPostgresDao(storage)
 
 	clusterMaker := clustering.NewClusterMaker(configuration.ClusterizationParams)
 
@@ -67,6 +68,7 @@ func main() {
 		CountryDao: countryDao,
 		RegionDao: regionDao,
 		TileDao:tileDao,
+		ChangesLogDao: changesLogDao,
 		AuthProviders: map[AuthProvider]passport.Passport{
 			YANDEX: passport.Yandex(15 * time.Minute),
 			GOOGLE:     passport.Google(15 * time.Minute),

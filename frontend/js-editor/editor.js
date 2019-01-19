@@ -120,6 +120,10 @@ function dropSpotPreview(spotId) {
     return doDeleteSync(backendApiBase + "/spot/" + spotId + "/preview", true)
 }
 
+function getLogEntries(objectType, objectId) {
+    return doGetJsonSync(backendApiBase + "/log?object_type=" + objectType + "&object_id=" + objectId, true)
+}
+
 function isActive(countryId, regionId, riverId, spotId) {
     hash = window.location.hash
     if (!hash) {

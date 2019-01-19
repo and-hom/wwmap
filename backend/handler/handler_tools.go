@@ -8,11 +8,13 @@ import (
 	"github.com/and-hom/wwmap/lib/geo"
 	"github.com/and-hom/wwmap/lib/handler"
 	. "github.com/and-hom/wwmap/lib/http"
+	"golang.org/x/net/context"
 	"net/http"
 	"net/url"
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func (this *App) bboxFormValue(w http.ResponseWriter, req *http.Request) (geo.Bbox, error) {
@@ -60,35 +62,35 @@ func (this *App) CloseAndRemove(f *os.File) {
 
 func (this *App) CreateMissingUser(r *http.Request, authProvider dao.AuthProvider, info passport.UserInfo, sessionId string) (int64, dao.Role, string, bool, error) {
 	return this.UserDao.CreateIfNotExists(dao.User{
-		ExtId:info.Id,
-		AuthProvider:authProvider,
-		Role:dao.USER,
+		ExtId:        info.Id,
+		AuthProvider: authProvider,
+		Role:         dao.USER,
 		Info: dao.UserInfo{
-			FirstName:info.FirstName,
-			LastName:info.LastName,
-			Login:info.Login,
+			FirstName: info.FirstName,
+			LastName:  info.LastName,
+			Login:     info.Login,
 		},
 		SessionId: sessionId,
 	})
 }
 
 func (this *App) ForRoles(payload handler.HandlerFunction, roles ...dao.Role) handler.HandlerFunction {
-	if len(roles)==0 {
+	if len(roles) == 0 {
 		return payload
 	}
 	return func(writer http.ResponseWriter, request *http.Request) {
-		if !this.CheckRoleAllowedAndMakeResponse(writer, request, roles...) {
-			return
+		r2, ok := this.CheckRoleAllowedAndMakeResponse(writer, request, roles...)
+		if ok {
+			payload(writer, r2)
 		}
-		payload(writer, request)
 	}
 }
 
-func (this *App) CheckRoleAllowedAndMakeResponse(w http.ResponseWriter, r *http.Request, allowedRoles ...dao.Role) bool {
-	allowed, err := this.CheckRoleAllowed(r, allowedRoles...)
+func (this *App) CheckRoleAllowedAndMakeResponse(w http.ResponseWriter, r *http.Request, allowedRoles ...dao.Role) (*http.Request, bool) {
+	r2, allowed, err := this.CheckRoleAllowed(r, allowedRoles...)
 	if err != nil {
 		OnError500(w, err, "Can not check permissions")
-		return false
+		return r2, false
 	}
 	if !allowed {
 		msg := ""
@@ -98,9 +100,9 @@ func (this *App) CheckRoleAllowedAndMakeResponse(w http.ResponseWriter, r *http.
 			msg = fmt.Sprintf("Sorry! You haven't any of following roles: %s", dao.Join(", ", allowedRoles...))
 		}
 		OnError(w, nil, msg, http.StatusUnauthorized)
-		return false
+		return r2, false
 	}
-	return true
+	return r2, true
 }
 
 func (this *App) GetUserInfo(r *http.Request) (dao.AuthProvider, passport.UserInfo, error) {
@@ -113,22 +115,25 @@ func (this *App) GetUserInfo(r *http.Request) (dao.AuthProvider, passport.UserIn
 	return providerAndToken.AuthProvider, userInfo, err
 }
 
-func (this *App) CheckRoleAllowed(r *http.Request, allowedRoles ...dao.Role) (bool, error) {
+const USER_REQUEST_VARIABLE = "user"
+
+func (this *App) CheckRoleAllowed(r *http.Request, allowedRoles ...dao.Role) (*http.Request, bool, error) {
 	sessionId := r.FormValue("session_id")
 	if sessionId == "" {
 		sessionId = r.Header.Get("Authorization")
 	}
 	user, err := this.UserDao.GetBySession(sessionId)
 	if err != nil {
-		return false, err
+		return r, false, err
 	}
+	rWithUser := r.WithContext(context.WithValue(r.Context(), USER_REQUEST_VARIABLE, &user))
 
 	for i := 0; i < len(allowedRoles); i++ {
 		if allowedRoles[i] == user.Role {
-			return true, nil
+			return rWithUser, true, nil
 		}
 	}
-	return false, nil
+	return rWithUser, false, nil
 }
 
 func (this *App) collectReferer(r *http.Request) {
@@ -153,4 +158,34 @@ func (this *App) collectReferer(r *http.Request) {
 	if err != nil {
 		log.Error("Can not store referer ", err)
 	}
+}
+
+const SPOT_LOG_ENTRY_TYPE = "SPOT"
+const RIVER_LOG_ENTRY_TYPE = "RIVER"
+const IMAGE_LOG_ENTRY_TYPE = "IMAGE"
+const USER_LOG_ENTRY_TYPE = "USER"
+
+func (this *App) LogUserEvent(r *http.Request, objType string, id int64, logType dao.ChangesLogEntryType, description string) {
+	go func() {
+		u := r.Context().Value(USER_REQUEST_VARIABLE)
+		if u != nil {
+			u := u.(*dao.User)
+
+			err := this.ChangesLogDao.Insert(dao.ChangesLogEntry{
+				ObjectType:   objType,
+				ObjectId:     id,
+				AuthProvider: u.AuthProvider,
+				ExtId:        u.ExtId,
+				Login:        u.Info.Login,
+				Type:         logType,
+				Description:  description,
+				Time:         dao.JSONTime(time.Now()),
+			})
+			if err != nil {
+				log.Error("Can not add changelog entry!", err)
+			}
+		} else {
+			log.Error("User is null but authorized!")
+		}
+	}()
 }

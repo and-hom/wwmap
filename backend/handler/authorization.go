@@ -11,6 +11,7 @@ import (
 	"github.com/and-hom/wwmap/lib/notification"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
+	"golang.org/x/net/context"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -56,6 +57,13 @@ func (this *UserInfoHandler) SessionStart(w http.ResponseWriter, r *http.Request
 
 	if justCreated {
 		this.sendWelcomeMessages(authProvider, id, info)
+
+		rWithUser := r.WithContext(context.WithValue(r.Context(), USER_REQUEST_VARIABLE, &dao.User{
+			ExtId:        info.Id,
+			AuthProvider: authProvider,
+			Info:         dao.UserInfo{Login: info.Login},
+		}))
+		this.LogUserEvent(rWithUser, USER_LOG_ENTRY_TYPE, id, dao.ENTRY_TYPE_CREATE, info.Login)
 	}
 
 	infoDto := UserInfoDto{
@@ -160,10 +168,12 @@ func (this *UserInfoHandler) SetRole(w http.ResponseWriter, r *http.Request) {
 	}
 
 	this.JsonAnswer(w, users)
+
+	this.LogUserEvent(r, USER_LOG_ENTRY_TYPE, userId, dao.ENTRY_TYPE_MODIFY, fmt.Sprintf("%s => %s", oldRole, newRole))
 }
 
 func (this *UserInfoHandler) TestAuth(w http.ResponseWriter, r *http.Request) {
-	found, err := this.CheckRoleAllowed(r, dao.ADMIN)
+	_, found, err := this.CheckRoleAllowed(r, dao.ADMIN)
 	if err != nil {
 		onPassportErr(err, w, "Can not do request to Yandex Passport")
 		return

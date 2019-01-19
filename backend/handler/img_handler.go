@@ -141,6 +141,7 @@ func (this *ImgHandler) Upload(w http.ResponseWriter, req *http.Request) {
 		OnError500(w, err, "Can not store image")
 		return
 	}
+	this.LogUserEvent(req, IMAGE_LOG_ENTRY_TYPE, img.Id, dao.ENTRY_TYPE_CREATE, "");
 }
 
 func storageKey(img dao.Img) string {
@@ -198,6 +199,7 @@ func (this *ImgHandler) Delete(w http.ResponseWriter, req *http.Request) {
 	}
 
 	this.listImagesForSpot(w, spotId, getImgType(req))
+	this.LogUserEvent(req, IMAGE_LOG_ENTRY_TYPE, imgId, dao.ENTRY_TYPE_DELETE, "");
 }
 
 func (this *ImgHandler) SetEnabled(w http.ResponseWriter, req *http.Request) {
@@ -220,7 +222,11 @@ func (this *ImgHandler) SetEnabled(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	enabled := false
-	json.Unmarshal(bodyBytes, &enabled)
+	err = json.Unmarshal(bodyBytes, &enabled)
+	if err!=nil {
+		OnError(w, err, "Can not unmarshal request body", http.StatusBadRequest)
+		return
+	}
 
 	err = this.ImgDao.SetEnabled(imgId, enabled)
 	if err != nil {
@@ -229,6 +235,8 @@ func (this *ImgHandler) SetEnabled(w http.ResponseWriter, req *http.Request) {
 	}
 
 	this.listImagesForSpot(w, spotId, getImgType(req))
+
+	this.LogUserEvent(req, IMAGE_LOG_ENTRY_TYPE, imgId, dao.ENTRY_TYPE_MODIFY, fmt.Sprintf("enabled=%t", enabled));
 }
 
 func (this *ImgHandler) SetPreview(w http.ResponseWriter, req *http.Request) {
@@ -245,7 +253,10 @@ func (this *ImgHandler) SetPreview(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	imgId := int64(0)
-	json.Unmarshal(bodyBytes, &imgId)
+	err = json.Unmarshal(bodyBytes, &imgId)
+	if err!=nil {
+		OnError(w, err, "Can not unmarshal request body", http.StatusBadRequest)
+	}
 
 	img, found, err := this.ImgDao.Find(imgId)
 	if err != nil {
@@ -264,6 +275,7 @@ func (this *ImgHandler) SetPreview(w http.ResponseWriter, req *http.Request) {
 	}
 
 	this.listImagesForSpot(w, spotId, getImgType(req))
+	this.LogUserEvent(req, IMAGE_LOG_ENTRY_TYPE, imgId, dao.ENTRY_TYPE_MODIFY, "main=true");
 }
 
 func (this *ImgHandler) DropPreview(w http.ResponseWriter, req *http.Request) {
@@ -279,6 +291,7 @@ func (this *ImgHandler) DropPreview(w http.ResponseWriter, req *http.Request) {
 		OnError500(w, err, fmt.Sprintf("Can not set preview for spot %d", spotId))
 		return
 	}
+	this.LogUserEvent(req, SPOT_LOG_ENTRY_TYPE, spotId, dao.ENTRY_TYPE_MODIFY,"drop main img");
 }
 
 func (this *ImgHandler) GetPreview(w http.ResponseWriter, req *http.Request) {

@@ -13,10 +13,12 @@
 
     <script type="text/javascript" src="js-editor/tether.min.js"></script>
     <script type="text/javascript" src="js-editor/jquery-3.2.1.slim.min.js"></script>
+    <script type="text/javascript" src="js-editor/popper.min.js"></script>
     <script type="text/javascript" src="js-editor/bootstrap.min.js"></script>
 
     <script type="text/javascript" src="js-editor/api.js"></script>
     <script type="text/javascript" src="js-editor/auth.js"></script>
+    <script type="text/javascript" src="js-editor/editor.js"></script>
     <script type="text/javascript" src="js-editor/vue.js"></script>
     <script type="text/javascript" src="js-editor/http-vue-loader.js"></script>
     <script type="text/javascript" src="js-editor/showdown.min.js"></script>
@@ -67,9 +69,10 @@
                             <td :class="roleClass(user)">
                                 {{user.role}}
                             </td>
-                            <td>
+                            <td style="white-space: nowrap;">
                                 <button class="btn btn-primary" data-toggle="modal" data-target="#ask-role"
                                         :data-user-id="user.id" :data-current-role="user.role" :data-label="roleChangeText(user)">Сменить роль</button>
+                                <log-dropdown object-type="USER" :object-id="user.id"/>
                             </td>
                         </tr>
                     </table>
@@ -84,6 +87,8 @@
     Vue.component('auth', httpVueLoader('components/auth.vue'))
     Vue.component('ask-role', httpVueLoader('components/ask-role.vue'))
     Vue.component('page', httpVueLoader('components/page.vue'))
+    Vue.component('log', httpVueLoader('components/log.vue'))
+    Vue.component('log-dropdown', httpVueLoader('components/log-dropdown.vue'))
 
     function getUsers() {
         return doGetJsonSync(backendApiBase + "/user", true)
