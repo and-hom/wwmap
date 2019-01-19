@@ -392,3 +392,17 @@ func min(x, y int) int {
 	}
 	return y
 }
+
+type PgPoint struct {
+	Coordinates Point `json:"coordinates"`
+}
+
+func (this PgPoint) GetPoint() Point {
+	// flip coordinates for postGIS
+	return this.Coordinates.Flip()
+}
+
+type PgPolygon struct {
+	Coordinates [][]Point `json:"coordinates"`
+}
+
