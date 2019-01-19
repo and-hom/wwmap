@@ -56,12 +56,13 @@ WITH
     rank_query AS (SELECT alias_query.id,
                             wwmap_search(alias_query.title, $1) AS title_rank,
                             wwmap_search(alias_query.alias, $1) AS alias_rank,
-                            wwmap_search(river.title, $1) AS river_rank FROM alias_query LEFT OUTER JOIN river ON alias_query.river_id=river.id),
+                            wwmap_search(river.title, $1) AS river_rank FROM alias_query LEFT OUTER JOIN river ON alias_query.river_id=river.id WHERE river.visible=TRUE),
     final_rank_query AS (SELECT id, max(title_rank) + sum(alias_rank) AS own_rank, max(river_rank) AS river_rank FROM rank_query GROUP BY id)
 SELECT ___select-columns___
 FROM ___table___
     INNER JOIN final_rank_query ON ___table___.id=final_rank_query.id AND own_rank>0
     LEFT OUTER JOIN river ON ___table___.river_id=river.id
+    WHERE river.visible=TRUE
     ORDER BY river_rank*10 + own_rank DESC
 LIMIT $2 OFFSET $3
 

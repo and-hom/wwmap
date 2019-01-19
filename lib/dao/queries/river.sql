@@ -92,7 +92,7 @@ SELECT river.id, region_id, region.country_id, river.title, region.title AS regi
         INNER JOIN region ON river.region_id=region.id
 WHERE ___table___.id=ANY(
     SELECT DISTINCT id FROM
-    (SELECT id, title, CASE aliases WHEN '[]' THEN NULL ELSE jsonb_array_elements_text(aliases) END AS alias FROM ___table___) sq
+    (SELECT id, title, CASE aliases WHEN '[]' THEN NULL ELSE jsonb_array_elements_text(aliases) END AS alias FROM ___table___ WHERE visible=TRUE) sq
     WHERE  title ilike '%'||$1||'%' OR alias ilike '%'||$2||'%'
     )
 GROUP BY river.id, region_id, region.country_id, region.title, region.fake
