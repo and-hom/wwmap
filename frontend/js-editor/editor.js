@@ -124,6 +124,15 @@ function getLogEntries(objectType, objectId) {
     return doGetJsonSync(backendApiBase + "/log?object_type=" + objectType + "&object_id=" + objectId, true)
 }
 
+function getMeteoPoints() {
+    return doGetJsonSync(backendApiBase + "/meteo-point", true)
+}
+
+
+function addMeteoPoint(p) {
+    return doPostJsonSync(backendApiBase + "/meteo-point", p, true)
+}
+
 function isActive(countryId, regionId, riverId, spotId) {
     hash = window.location.hash
     if (!hash) {

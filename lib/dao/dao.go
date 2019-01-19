@@ -142,6 +142,7 @@ type MeteoDao interface {
 }
 
 type MeteoPointDao interface {
+	Find(id int64) (MeteoPoint, error)
 	Insert(meteo MeteoPoint) error
 	List() ([]MeteoPoint, error)
 }

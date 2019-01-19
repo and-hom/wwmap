@@ -2,20 +2,20 @@ package main
 
 import (
 	log "github.com/Sirupsen/logrus"
-	"github.com/gorilla/mux"
-	"net/http"
-	. "github.com/and-hom/wwmap/lib/dao"
-	. "github.com/and-hom/wwmap/lib/handler"
-	"github.com/and-hom/wwmap/lib/config"
+	"github.com/and-hom/wwmap/backend/clustering"
+	"github.com/and-hom/wwmap/backend/handler"
 	"github.com/and-hom/wwmap/backend/passport"
-	"time"
 	"github.com/and-hom/wwmap/backend/referer"
 	"github.com/and-hom/wwmap/lib/blob"
-	"github.com/and-hom/wwmap/backend/handler"
-	"github.com/and-hom/wwmap/backend/clustering"
+	"github.com/and-hom/wwmap/lib/config"
+	. "github.com/and-hom/wwmap/lib/dao"
+	. "github.com/and-hom/wwmap/lib/handler"
 	"github.com/and-hom/wwmap/lib/notification"
-	"os"
 	"github.com/gorilla/handlers"
+	"github.com/gorilla/mux"
+	"net/http"
+	"os"
+	"time"
 )
 
 var version string = "development"
@@ -38,6 +38,7 @@ func main() {
 	regionDao := NewRegionPostgresDao(storage)
 	tileDao := NewTilePostgresDao(storage)
 	changesLogDao := NewChangesLogPostgresDao(storage)
+	meteoPointDao := NewMeteoPointPostgresDao(storage)
 
 	clusterMaker := clustering.NewClusterMaker(configuration.ClusterizationParams)
 
@@ -69,6 +70,7 @@ func main() {
 		RegionDao: regionDao,
 		TileDao:tileDao,
 		ChangesLogDao: changesLogDao,
+		MeteoPointDao: meteoPointDao,
 		AuthProviders: map[AuthProvider]passport.Passport{
 			YANDEX: passport.Yandex(15 * time.Minute),
 			GOOGLE:     passport.Google(15 * time.Minute),
@@ -109,6 +111,7 @@ func main() {
 		},
 		&handler.RefSitesHandler{app},
 		handler.CreateSystemHandler(&app, version),
+		&handler.MeteoHandler{app},
 	}
 
 	for _, h := range _handlers {
