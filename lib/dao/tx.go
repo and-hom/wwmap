@@ -7,6 +7,11 @@ import (
 	"fmt"
 )
 
+type Storage interface {
+	// Call payload function within transaction if supported by storage. Simply call payload function if not supported.
+	WithinTx(payload func(tx interface{}) error) error
+}
+
 func (this *PostgresStorage) Begin() (PgTxHolder, error) {
 	tx, err := this.db.Begin()
 	if err != nil {

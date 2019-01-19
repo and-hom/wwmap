@@ -1,28 +1,28 @@
 package config
 
 import (
-	"gopkg.in/yaml.v2"
-	"os/user"
-	log "github.com/Sirupsen/logrus"
-	"io/ioutil"
 	"fmt"
+	log "github.com/Sirupsen/logrus"
+	"gopkg.in/yaml.v2"
+	"io/ioutil"
+	"os/user"
 	"time"
 )
 
 type ClusterizationParams struct {
 	BarrierRatio                 float64 `yaml:"barrier_ratio"`
 	MinDistRatio                 float64 `yaml:"min_dist_ratio"`
-	SinglePointClusteringMaxZoom int `yaml:"single_point_cluster_max_zoom"`
-	MaxClustersPerRiver          int `yaml:"max_clusters_per_river"`
+	SinglePointClusteringMaxZoom int     `yaml:"single_point_cluster_max_zoom"`
+	MaxClustersPerRiver          int     `yaml:"max_clusters_per_river"`
 	MinCLusteredPointsRatio      float64 `yaml:"min_clustered_points_ratio"`
 }
 
 type Notifications struct {
 	MailSettings             MailSettings `yaml:"mail"`
-	EmailSender              string `yaml:"email_sender"`
-	FallbackEmailRecipient   string `yaml:"fallback_email_recipient"`
-	ReportingEmailSubject    string `yaml:"reporting_email_subject"`
-	ImportExportEmailSubject string `yaml:"import_export_email_subject"`
+	EmailSender              string       `yaml:"email_sender"`
+	FallbackEmailRecipient   string       `yaml:"fallback_email_recipient"`
+	ReportingEmailSubject    string       `yaml:"reporting_email_subject"`
+	ImportExportEmailSubject string       `yaml:"import_export_email_subject"`
 }
 
 type Api struct {
@@ -34,15 +34,15 @@ type Content struct {
 }
 
 type TileCache struct {
-	BindTo  string `yaml:"bind_to"`
-	BaseDir string `yaml:"base_dir"`
+	BindTo  string              `yaml:"bind_to"`
+	BaseDir string              `yaml:"base_dir"`
 	Types   map[string][]string `yaml:"types"`
 }
 
 type WordpressSync struct {
-	Login                   string `yaml:"login"`
-	Password                string `yaml:"password"`
-	RootPageId              int `yaml:"root-page-id"`
+	Login                   string        `yaml:"login"`
+	Password                string        `yaml:"password"`
+	RootPageId              int           `yaml:"root-page-id"`
 	MinDeltaBetweenRequests time.Duration `yaml:"min-delta-between-requests"`
 }
 
@@ -58,12 +58,12 @@ type ImgStorage struct {
 
 type MailSettings struct {
 	From         string `yaml:"from"`
-	Ssl          bool `yaml:"ssl"`
+	Ssl          bool   `yaml:"ssl"`
 	SmtpIdentity string `yaml:"smtp-identity"`
 	SmtpUser     string `yaml:"smtp-user"`
 	SmtpPassword string `yaml:"smtp-password"`
 	SmtpHost     string `yaml:"smtp-host"`
-	SmtpPort     int `yaml:"smtp-port"`
+	SmtpPort     int    `yaml:"smtp-port"`
 }
 
 func (this MailSettings) SmtpHostPort() string {
@@ -71,9 +71,9 @@ func (this MailSettings) SmtpHostPort() string {
 }
 
 type Db struct {
-	ConnString      string `yaml:"connection-string"`
-	MaxOpenConn     int `yaml:"max-open-conn"`
-	MaxIddleConn    int `yaml:"max-iddle-conn"`
+	ConnString      string        `yaml:"connection-string"`
+	MaxOpenConn     int           `yaml:"max-open-conn"`
+	MaxIddleConn    int           `yaml:"max-iddle-conn"`
 	MaxConnLifetime time.Duration `yaml:"max-conn-lifetime"`
 }
 
@@ -84,17 +84,18 @@ func (this LogLevel) ToLogrus() (log.Level, error) {
 }
 
 type Configuration struct {
-	Db                       Db `yaml:"db"`
+	Db                       Db                   `yaml:"db"`
 	ClusterizationParams     ClusterizationParams `yaml:"clusterization"`
-	Notifications            Notifications `yaml:"notifications"`
-	Api                      Api `yaml:"api"`
-	Content                  Content `yaml:"content"`
-	TileCache                TileCache `yaml:"tile-cache"`
-	Sync                     WordpressSync `yaml:"sync"`
-	ImgStorage               ImgStorage `yaml:"img-storage"`
-	RiverPassportPdfStorage  BlobStorageParams `yaml:"river-passport-pdf-storage"`
-	RiverPassportHtmlStorage BlobStorageParams `yaml:"river-passport-html-storage"`
-	LogLevel                 LogLevel `yaml:"log-level"`
+	Notifications            Notifications        `yaml:"notifications"`
+	Api                      Api                  `yaml:"api"`
+	Content                  Content              `yaml:"content"`
+	TileCache                TileCache            `yaml:"tile-cache"`
+	Sync                     WordpressSync        `yaml:"sync"`
+	ImgStorage               ImgStorage           `yaml:"img-storage"`
+	RiverPassportPdfStorage  BlobStorageParams    `yaml:"river-passport-pdf-storage"`
+	RiverPassportHtmlStorage BlobStorageParams    `yaml:"river-passport-html-storage"`
+	LogLevel                 LogLevel             `yaml:"log-level"`
+	MeteoToken               string               `yaml:"meteo-token"`
 }
 
 func (this *Configuration) ChangeLogLevel() {
@@ -174,4 +175,3 @@ func Load(configLocationOverride string) Configuration {
 
 	return Configuration{}
 }
-

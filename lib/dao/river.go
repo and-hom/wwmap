@@ -1,14 +1,13 @@
 package dao
 
 import (
-	log "github.com/Sirupsen/logrus"
 	"database/sql"
 	"encoding/json"
-	"github.com/and-hom/wwmap/lib/geo"
 	"fmt"
-	"github.com/lib/pq"
+	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/lib/dao/queries"
-	"reflect"
+	"github.com/and-hom/wwmap/lib/geo"
+	"github.com/lib/pq"
 )
 
 func NewRiverPostgresDao(postgresStorage PostgresStorage) RiverDao {
@@ -127,8 +126,6 @@ func (this riverStorage) Save(rivers ...River) error {
 		if err != nil {
 			return []interface{}{}, err
 		}
-		log.Info(_river.Description)
-		log.Info(reflect.TypeOf(_river.Description))
 		return []interface{}{_river.Id, _river.Region.Id, _river.Title, string(aliasesB), _river.Description, string(propsB)}, nil
 	}, vars...)
 }

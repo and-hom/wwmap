@@ -119,6 +119,11 @@
             <a data-lightbox="river-img-set-{{id}}" target="_blank" href="${url}"><img class="wwmap-gallery-img" src="${preview_url}"/></a>
             {%/each%}
         </div>
+        {%if weather_point %}
+        <div style="margin-bottom: 20px;">
+            <a target="_blank" href="https://yandex.ru/pogoda/?lat=${weather_point[0]}&lon=${weather_point[1]}">Прогноз погоды по данным Яндекс-погоды</a>
+        </div>
+        {%/if%}
         <div style="">
             <h3>Скачать</h3>
             <table class="wwmap-river-download-table" style="width: auto;">

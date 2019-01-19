@@ -7,10 +7,12 @@ import (
 	"github.com/and-hom/wwmap/cron/catalog-sync/skitalets"
 	"github.com/and-hom/wwmap/cron/catalog-sync/tlib"
 	"github.com/and-hom/wwmap/lib/dao"
+	"github.com/and-hom/wwmap/lib/geo"
 	. "github.com/and-hom/wwmap/lib/handler"
 	. "github.com/and-hom/wwmap/lib/http"
 	"github.com/and-hom/wwmap/lib/model"
 	"github.com/gorilla/mux"
+	log "github.com/Sirupsen/logrus"
 	"net/http"
 	"strconv"
 	"strings"
@@ -56,15 +58,16 @@ type RiverListDto struct {
 
 type RiverPageDto struct {
 	dao.IdTitle
-	Region      dao.Region             `json:"region"`
-	Description string                 `json:"description"`
-	Reports     []VoyageReportListDto  `json:"reports"`
-	Imgs        []dao.Img              `json:"imgs"`
-	PdfUrl      string                 `json:"pdf"`
-	HtmlUrl     string                 `json:"html"`
-	Props       map[string]interface{} `json:"props"`
-	MaxCategory model.SportCategory    `json:"max_category"`
-	AvgCategory model.SportCategory    `json:"avg_category"` // min category of 3 hardest spots
+	Region       dao.Region             `json:"region"`
+	Description  string                 `json:"description"`
+	Reports      []VoyageReportListDto  `json:"reports"`
+	Imgs         []dao.Img              `json:"imgs"`
+	PdfUrl       string                 `json:"pdf"`
+	HtmlUrl      string                 `json:"html"`
+	Props        map[string]interface{} `json:"props"`
+	MaxCategory  model.SportCategory    `json:"max_category"`
+	AvgCategory  model.SportCategory    `json:"avg_category"` // min category of 3 hardest spots
+	WeatherPoint *geo.Point             `json:"weather_point"`
 }
 
 func (this *RiverHandler) GetRiverCard(w http.ResponseWriter, req *http.Request) {
@@ -101,17 +104,29 @@ func (this *RiverHandler) GetRiverCard(w http.ResponseWriter, req *http.Request)
 		}
 	}
 
+	var weatherPoint *geo.Point = nil
+	meteoPointId, meteoPointFound := river.Props["meteo_point"]
+	if meteoPointFound && meteoPointId!=nil{
+		p, err := this.MeteoPointDao.Find(int64(meteoPointId.(float64)))
+		if err != nil {
+			log.Error("Failed to find meteo point for river id=%d", river.Id)
+		} else {
+			weatherPoint = &(p.Point)
+		}
+	}
+
 	dto := RiverPageDto{
-		IdTitle:     river.IdTitle,
-		Region:      river.Region,
-		Description: river.Description,
-		Props:       river.Props,
-		Reports:     reportsList,
-		Imgs:        imgs,
-		PdfUrl:      this.getRiverPassportUrl(&river, this.RiverPassportPdfUrlBase),
-		HtmlUrl:     this.getRiverPassportUrl(&river, this.RiverPassportHtmlUrlBase),
-		MaxCategory: model.SportCategory{Category: maxCat},
-		AvgCategory: model.SportCategory{Category: dao.CalculateClusterCategory(river.Spots)},
+		IdTitle:      river.IdTitle,
+		Region:       river.Region,
+		Description:  river.Description,
+		Props:        river.Props,
+		Reports:      reportsList,
+		Imgs:         imgs,
+		PdfUrl:       this.getRiverPassportUrl(&river, this.RiverPassportPdfUrlBase),
+		HtmlUrl:      this.getRiverPassportUrl(&river, this.RiverPassportHtmlUrlBase),
+		MaxCategory:  model.SportCategory{Category: maxCat},
+		AvgCategory:  model.SportCategory{Category: dao.CalculateClusterCategory(river.Spots)},
+		WeatherPoint: weatherPoint,
 	}
 	w.Write([]byte(this.JsonStr(dto, "{}")))
 }

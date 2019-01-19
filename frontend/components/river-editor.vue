@@ -102,6 +102,41 @@
                                             </v-select>
                                         </div>
                                     </div>
+                                    <div class="row">
+                                        <div class="col-3">
+                                            <strong>Точка отслеживания погоды</strong>
+                                            <div class="wwmap-system-hint">Сейчас используется только для формирования ссылки на прогноз погоды.</div>
+                                        </div>
+                                        <div class="col-9">
+                                            <div id="meteo-point-select">
+                                                <div class="wwmap-system-hint">Выберите из списка или <button v-on:click.stop="addMeteoPoint">создайте</button></div>
+                                                <v-select v-model="meteoPoint" label="title" :options="meteoPoints" @input="onSelectMeteoPoint" >
+                                                    <template slot="no-options">
+                                                        Начните печатать название точки
+                                                    </template>
+                                                    <template slot="option" slot-scope="option">
+                                                        {{ option.id }}&nbsp;&dash;&nbsp;{{ option.title }}
+                                                    </template>
+                                                    <template slot="selected-option" slot-scope="option">
+                                                        {{ option.id }}&nbsp;&dash;&nbsp;{{ option.title }}
+                                                    </template>
+                                                </v-select>
+                                            </div>
+                                            <div id="meteo-point-add" style="display: none">
+                                                <div style="padding-top:15px;">
+                                                    <ya-map-location v-bind:spot="meteoPoint" width="100%" height="600px" :editable="true"/>
+                                                </div>
+                                                <label style="padding-right: 10px;" for="meteo_point_title_input"><strong>Название:</strong></label><input
+                                                    id="meteo_point_title_input" type="text" v-model="meteoPoint.title" style="margin-top: 10px; width: 80%;"/>
+                                                <div class="btn-toolbar" style="padding-top:15px;">
+                                                    <div class="btn-group mr-2" role="group">
+                                                        <button type="button" class="btn btn-success" v-on:click.stop="onAddMeteoPoint" :disabled="!meteoPoint.title">Добавить</button>
+                                                        <button type="button" class="btn btn-cancel" v-on:click.stop="onCancelAddMeteoPoint">Отмена</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                     <hr/>
                                     <h2>Для отдельных порогов:</h2>
                                 </template>
@@ -249,6 +284,8 @@
                     if (this.shouldReInit()) {
                         this.previousRiverId = this.initialRiver.id;
                         this.river = this.initialRiver;
+                        this.center = getRiverCenter(this.river.id);
+                        this.meteoPoint = {id: null, title: null, point: this.center};
 
                         this.prevRegionId = nvlReturningId(this.river.region);
                         this.prevRegionFake = this.river.region.fake;
@@ -346,7 +383,7 @@
                         river: this.river,
                         order_index: "0",
                         automatic_ordering: true,
-                        point:getRiverCenter(this.river.id),
+                        point: this.center,
                         aliases:[],
                         props:{},
                     }
@@ -377,12 +414,29 @@
                 prevRegionFake: null,
                 prevCountryId: 0,
                 sensors: app.sensors,
-                activeSensor: {id: 75402, title: "г.Звенигород [р. Москва]"},
-                informerUrl: function() {return this.river.props.vodinfo_sensor ? "http://gis.vodinfo.ru/informer/draw/v2_" + this.river.props.vodinfo_sensor + "_400_300_30_ffffff_110_8_7_H_none.png" : null}
+                activeSensor: {id:null, title:null},
+                informerUrl: function() {return this.river.props.vodinfo_sensor ? "http://gis.vodinfo.ru/informer/draw/v2_" + this.river.props.vodinfo_sensor + "_400_300_30_ffffff_110_8_7_H_none.png" : null},
+                meteoPoint: null,
+                meteoPoints: getMeteoPoints(),
+                addMeteoPoint: function () {
+                    document.getElementById('meteo-point-add').style.display = 'block';
+                    document.getElementById('meteo-point-select').style.display = 'none';
+                },
+                onCancelAddMeteoPoint: function () {
+                    document.getElementById('meteo-point-add').style.display = 'none';
+                    document.getElementById('meteo-point-select').style.display = 'block';
+                },
+                onAddMeteoPoint: function () {
+                    this.onCancelAddMeteoPoint();
+                    this.meteoPoint = addMeteoPoint(this.meteoPoint);
+                    this.meteoPoints = getMeteoPoints();
+
+                }
             }
         },
         methods: {
-            onSelectSensor: function(x) { this.river.props.vodinfo_sensor = x.id }
+            onSelectSensor: function(x) { this.river.props.vodinfo_sensor = x.id },
+            onSelectMeteoPoint: function(x) { this.river.props.meteo_point = x.id }
         }
     }
 
