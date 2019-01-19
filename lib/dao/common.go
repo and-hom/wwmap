@@ -2,6 +2,7 @@ package dao
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"github.com/and-hom/wwmap/lib/config"
 	log "github.com/Sirupsen/logrus"

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	. "github.com/and-hom/wwmap/lib/geo"
 	"github.com/and-hom/wwmap/lib/model"
+	"strconv"
 	"time"
 )
 
@@ -30,6 +31,25 @@ func (t JSONTime) MarshalJSON() ([]byte, error) {
 
 func (t JSONTime) String() string {
 	return time.Time(t).Format("2006-01-02 00:00")
+}
+
+type JSONUnixTime time.Time
+
+func (t JSONUnixTime) MarshalJSON() ([]byte, error) {
+	return []byte(t.String()), nil
+}
+
+func (t JSONUnixTime) String() string {
+	return fmt.Sprintf("%d", time.Time(t).Unix())
+}
+
+func (this *JSONUnixTime) UnmarshalJSON(data []byte) error {
+	t, err := strconv.ParseInt(string(data), 10, 64)
+	if err != nil {
+		return err
+	}
+	*this = JSONUnixTime(time.Unix(t, 0))
+	return nil
 }
 
 type IdTitle struct {
@@ -354,6 +374,31 @@ type ChangesLogEntry struct {
 	Time         JSONTime            `json:"time"`
 }
 
+type Daytime string
+
+const (
+	NIGHT   Daytime = "N"
+	MORNING Daytime = "M"
+	DAY     Daytime = "D"
+	EVENING Daytime = "E"
+)
+
+type MeteoPoint struct {
+	IdTitle
+	Point Point `json:"point"`
+}
+
+type Meteo struct {
+	Id      int64 `json:"id,omitempty"`
+	PointId int64 `json:"point_id"`
+
+	Date    JSONDate `json:"date"`
+	Daytime Daytime  `json:"daytime"`
+
+	Temp int `json:"temp"`
+	Rain int `json:"rain"`
+}
+
 type ChangesLogEntryType string
 
 const (
@@ -405,4 +450,3 @@ func (this PgPoint) GetPoint() Point {
 type PgPolygon struct {
 	Coordinates [][]Point `json:"coordinates"`
 }
-

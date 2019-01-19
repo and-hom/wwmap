@@ -136,3 +136,12 @@ type ChangesLogDao interface {
 	Insert(entry ChangesLogEntry) error
 	List(objectType string, objectId int64, limit int) ([]ChangesLogEntry, error)
 }
+
+type MeteoDao interface {
+	Insert(meteo Meteo) error
+}
+
+type MeteoPointDao interface {
+	Insert(meteo MeteoPoint) error
+	List() ([]MeteoPoint, error)
+}

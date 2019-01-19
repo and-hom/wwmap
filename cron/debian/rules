@@ -28,7 +28,10 @@ build-db-clean:
 build-spot-sort:
 	cd spot-sort && GOPATH="$(HOME)/.go" go build
 
-build: pre-build build-notifier build-catalog-sync build-db-clean build spot-sort
+build-meteo:
+	cd meteo && GOPATH="$(HOME)/.go" go build
+
+build: pre-build build-notifier build-catalog-sync build-db-clean build spot-sort build-meteo
 
 override_dh_auto_install:
 	install -d $$(pwd)/debian/wwmap-cron/usr/share/wwmap/backup/
@@ -39,3 +42,4 @@ override_dh_auto_install:
 	install -D -m 0755 catalog-sync/catalog-sync $$(pwd)/debian/wwmap-cron/usr/bin/wwmap-catalog-sync
 	install -D -m 0755 db-clean/db-clean $$(pwd)/debian/wwmap-cron/usr/bin/wwmap-db-clean
 	install -D -m 0755 spot-sort/spot-sort $$(pwd)/debian/wwmap-cron/usr/bin/wwmap-spot-sort
+	install -D -m 0755 meteo/meteo $$(pwd)/debian/wwmap-cron/usr/bin/wwmap-meteo

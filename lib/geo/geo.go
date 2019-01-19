@@ -45,6 +45,10 @@ func (this *Point) DistanceTo(p Point) float64 {
 	return math.Sqrt((this.Lat - p.Lat) * (this.Lat - p.Lat) + (this.Lon - p.Lon) * (this.Lon - p.Lon))
 }
 
+func (this *Point) String() string {
+	return fmt.Sprintf("(lat=%f, lon=%f)", this.Lat, this.Lon)
+}
+
 const (
 	POINT GeometryType = "Point"
 	RECTANGLE GeometryType = "Rectangle"
