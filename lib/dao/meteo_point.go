@@ -25,17 +25,20 @@ type meteoPointStorage struct {
 	listQuery   string
 }
 
-func (this meteoPointStorage) Insert(entry MeteoPoint) error {
-	_, err := this.updateReturningId(this.insertQuery, func(entity interface{}) ([]interface{}, error) {
+func (this meteoPointStorage) Insert(point MeteoPoint) (MeteoPoint, error) {
+	id, err := this.updateReturningId(this.insertQuery, func(entity interface{}) ([]interface{}, error) {
 		_e := entity.(MeteoPoint)
 		pointBytes, err := json.Marshal(geo.NewPgGeoPoint(_e.Point))
 		if err != nil {
 			return nil, err
 		}
-		fmt.Println(string(pointBytes))
 		return []interface{}{_e.Title, string(pointBytes)}, nil
-	}, entry)
-	return err
+	}, point)
+	if err != nil {
+		return MeteoPoint{}, err
+	}
+	point.Id = id[0]
+	return point, err
 }
 
 func (this meteoPointStorage) List() ([]MeteoPoint, error) {

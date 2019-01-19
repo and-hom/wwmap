@@ -27,12 +27,12 @@ func (this *MeteoHandler) AddMeteoPoint(w http.ResponseWriter, req *http.Request
 		OnError(w, err, "Can't parse request body", http.StatusBadRequest)
 		return
 	}
-	err = this.MeteoPointDao.Insert(point)
+	p, err := this.MeteoPointDao.Insert(point)
 	if err != nil {
 		OnError500(w, err, "Can't insert meteo point")
 		return
 	}
-	this.listMeteoPoints(w)
+	this.JsonAnswer(w, p)
 }
 
 func (this *MeteoHandler) ListMeteoPoints(w http.ResponseWriter, req *http.Request) {

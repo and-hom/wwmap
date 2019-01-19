@@ -428,7 +428,9 @@
                 },
                 onAddMeteoPoint: function () {
                     this.onCancelAddMeteoPoint();
-                    this.meteoPoints = addMeteoPoint(this.meteoPoint);
+                    this.meteoPoint = addMeteoPoint(this.meteoPoint);
+                    this.meteoPoints = getMeteoPoints();
+
                 }
             }
         },
