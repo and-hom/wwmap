@@ -113,7 +113,9 @@
                     </div>
                     <div class="row">
                         <div class="col-2"><strong>Расположение: </strong></div>
-                        <div class="col-10"><ya-map-location ref="locationEdit" v-bind:spot="spot" width="100%" height="600px" :editable="true"></ya-map-location></div>
+                        <div class="col-10">
+                            <ya-map-location ref="locationEdit" v-bind:spot="spot" width="100%" height="600px" :editable="true" :ya-search="true"/>
+                        </div>
                     </div>
                     <div class="row">
                         <div class="col-2"><strong>Описание: </strong></div>

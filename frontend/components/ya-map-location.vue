@@ -17,6 +17,10 @@
             editable: {
                 type: Boolean,
                 default: false
+            },
+            yaSearch: {
+                type: Boolean,
+                default: false
             }
         },
         updated: function() {
@@ -48,6 +52,15 @@
                         'google#satellite'
                     ])
                 );
+                if (component.yaSearch) {
+                    myMap.controls.add(new ymaps.control.SearchControl({
+                        options: {
+                            float: 'left',
+                            floatIndex: 100
+                        }
+                    }));
+                }
+
                 component.map = myMap;
 
 
