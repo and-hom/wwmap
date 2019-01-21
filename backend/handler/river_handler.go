@@ -109,7 +109,7 @@ func (this *RiverHandler) GetRiverCard(w http.ResponseWriter, req *http.Request)
 	if meteoPointFound && meteoPointId!=nil{
 		p, err := this.MeteoPointDao.Find(int64(meteoPointId.(float64)))
 		if err != nil {
-			log.Error("Failed to find meteo point for river id=%d", river.Id)
+			log.Errorf("Failed to find meteo point for river id=%d: %v", river.Id, err)
 		} else {
 			weatherPoint = &(p.Point)
 		}
