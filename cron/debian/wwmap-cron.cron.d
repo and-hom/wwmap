@@ -8,3 +8,4 @@
 0 0 1 * * wwmap wwmap-db-clean
 0 23 * * * wwmap wwmap-spot-sort
 0 */6 * * * wwmap wwmap-meteo
+0 10 * * * wwmap wwmap-vodinfo-eye

@@ -54,6 +54,11 @@ SELECT river.id, region_id, region.country_id, river.title, region.title AS regi
     WHERE region.id=$1
     ORDER BY CASE river.title WHEN '-' THEN NULL ELSE river.title END ASC
 
+--@all
+SELECT river.id as id, region_id, region.country_id, river.title, region.title AS region_title, fake AS region_fake, NULL,
+       river.aliases as aliases, river.props, river.visible
+    FROM river INNER JOIN region ON river.region_id=region.id
+
 --@by-country
 SELECT river.id as id, region_id, region.country_id, river.title, region.title AS region_title, fake AS region_fake, NULL,
        river.aliases as aliases, river.props, river.visible
