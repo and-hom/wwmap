@@ -1,3 +1,10 @@
+wwmap-cron (0.0.20) unstable; urgency=medium
+
+  * #144 Select preferred map to river
+  * #169 Fetch meteo points data from yandex weather
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Mon, 21 Jan 2019 22:02:22 +0300
+
 wwmap-cron (0.0.19) unstable; urgency=medium
 
   * #101 Links to wwmap editor in huskytm catalog

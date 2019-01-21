@@ -1,3 +1,10 @@
+wwmap-backend (0.0.39) unstable; urgency=medium
+
+  * #169 Add meteo points and associate with rivers
+  * #167 Log river, spot, image and user changes and show log to admin
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Mon, 21 Jan 2019 21:48:15 +0300
+
 wwmap-backend (0.0.38) unstable; urgency=medium
 
   * #163 #164 Api protocol minor changes. Sort reports on backend

@@ -1,3 +1,12 @@
+wwmap-frontend (0.0.38) unstable; urgency=medium
+
+  * #165 STandard yandex search control on editor map
+  * #167 Log river, spot, image and user changes and show log to admin
+  * #169 Add meteo points and associate with rivers
+  * #170 Show login in greeting panel if not human-name available
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Mon, 21 Jan 2019 22:00:39 +0300
+
 wwmap-frontend (0.0.37) unstable; urgency=medium
 
   * #166 Bug with spot editor page rendering fixed
