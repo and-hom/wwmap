@@ -32,7 +32,7 @@ func (this meteoPointStorage) Insert(point MeteoPoint) (MeteoPoint, error) {
 		if err != nil {
 			return nil, err
 		}
-		return []interface{}{_e.Title, string(pointBytes)}, nil
+		return []interface{}{_e.Title, string(pointBytes), _e.CollectData}, nil
 	}, point)
 	if err != nil {
 		return MeteoPoint{}, err
@@ -64,7 +64,7 @@ func meteoPointMapper(rows *sql.Rows) (MeteoPoint, error) {
 	result := MeteoPoint{}
 	pointStr := ""
 
-	err := rows.Scan(&result.Id, &result.Title, &pointStr)
+	err := rows.Scan(&result.Id, &result.Title, &pointStr, &result.CollectData)
 
 	var pgPoint PgPoint
 	err = json.Unmarshal([]byte(pointStr), &pgPoint)

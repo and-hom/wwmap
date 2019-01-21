@@ -24,6 +24,10 @@ func main() {
 	}
 
 	for _, point := range points {
+		if !point.CollectData {
+			continue
+		}
+
 		meteos, err := api.Get(point.Point)
 		if err != nil {
 			pStr, _ := point.Point.MarshalJSON()

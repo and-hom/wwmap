@@ -385,7 +385,8 @@ const (
 
 type MeteoPoint struct {
 	IdTitle
-	Point Point `json:"point"`
+	Point       Point `json:"point"`
+	CollectData bool  `json:"-"`
 }
 
 type Meteo struct {
