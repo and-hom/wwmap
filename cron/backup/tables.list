@@ -1,6 +1,6 @@
 id_gen
 user
-report
+notification
 country
 region
 river
@@ -8,3 +8,6 @@ white_water_rapid
 voyage_report
 voyage_report_river
 image
+changes_log
+meteo_point
+meteo
