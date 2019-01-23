@@ -116,7 +116,7 @@
         </div>
         <div style="margin-bottom: 20px;">
             {%each imgs%}
-            <a data-lightbox="river-img-set-{{id}}" target="_blank" href="${url}"><img class="wwmap-gallery-img" src="${preview_url}"/></a>
+            <a data-lightbox="river-img-set-{{id}}" data-title="${spot_title}" data-alt="${spot_title}" target="_blank" href="${url}"><img class="wwmap-gallery-img" src="${preview_url}" title="${spot_title}" alt="${spot_title}"/></a>
             {%/each%}
         </div>
         {%if weather_point %}

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/cron/catalog-sync/huskytm"
 	"github.com/and-hom/wwmap/cron/catalog-sync/libru"
 	"github.com/and-hom/wwmap/cron/catalog-sync/skitalets"
@@ -12,7 +13,6 @@ import (
 	. "github.com/and-hom/wwmap/lib/http"
 	"github.com/and-hom/wwmap/lib/model"
 	"github.com/gorilla/mux"
-	log "github.com/Sirupsen/logrus"
 	"net/http"
 	"strconv"
 	"strings"
@@ -61,13 +61,18 @@ type RiverPageDto struct {
 	Region       dao.Region             `json:"region"`
 	Description  string                 `json:"description"`
 	Reports      []VoyageReportListDto  `json:"reports"`
-	Imgs         []dao.Img              `json:"imgs"`
+	Imgs         []ImgWithSpot          `json:"imgs"`
 	PdfUrl       string                 `json:"pdf"`
 	HtmlUrl      string                 `json:"html"`
 	Props        map[string]interface{} `json:"props"`
 	MaxCategory  model.SportCategory    `json:"max_category"`
 	AvgCategory  model.SportCategory    `json:"avg_category"` // min category of 3 hardest spots
 	WeatherPoint *geo.Point             `json:"weather_point"`
+}
+
+type ImgWithSpot struct {
+	dao.Img
+	SpotTitle string `json:"spot_title"`
 }
 
 func (this *RiverHandler) GetRiverCard(w http.ResponseWriter, req *http.Request) {
@@ -91,13 +96,13 @@ func (this *RiverHandler) GetRiverCard(w http.ResponseWriter, req *http.Request)
 	}
 	reportsList := this.groupReports(reports, river)
 
-	imgs := []dao.Img{}
+	imgs := []ImgWithSpot{}
 	maxCat := model.UNDEFINED_CATEGORY
 	for i := 0; i < len(river.Spots); i++ {
 		if len(river.Spots[i].Images) > 0 {
 			img := river.Spots[i].Images[0]
 			this.processForWeb(&img)
-			imgs = append(imgs, img)
+			imgs = append(imgs, ImgWithSpot{Img: img, SpotTitle: river.Spots[i].Title})
 		}
 		if maxCat < river.Spots[i].Category.Category {
 			maxCat = river.Spots[i].Category.Category
@@ -106,7 +111,7 @@ func (this *RiverHandler) GetRiverCard(w http.ResponseWriter, req *http.Request)
 
 	var weatherPoint *geo.Point = nil
 	meteoPointId, meteoPointFound := river.Props["meteo_point"]
-	if meteoPointFound && meteoPointId!=nil{
+	if meteoPointFound && meteoPointId != nil {
 		p, err := this.MeteoPointDao.Find(int64(meteoPointId.(float64)))
 		if err != nil {
 			log.Errorf("Failed to find meteo point for river id=%d: %v", river.Id, err)
