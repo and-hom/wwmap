@@ -1,3 +1,9 @@
+wwmap-db (0.0.22) unstable; urgency=medium
+
+  * #172 Water level fetch from gis.vodinfo.ru
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Wed, 23 Jan 2019 22:55:13 +0300
+
 wwmap-db (0.0.21) unstable; urgency=medium
 
   * #169 Add meteo points and associate with rivers

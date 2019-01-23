@@ -1,3 +1,10 @@
+wwmap-backend (0.0.40) unstable; urgency=medium
+
+  * #171 Image hint with spot title on river card
+  * #173 Unlink waterway on drop river
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Wed, 23 Jan 2019 23:13:51 +0300
+
 wwmap-backend (0.0.39) unstable; urgency=medium
 
   * #169 Add meteo points and associate with rivers
