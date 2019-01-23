@@ -39,6 +39,7 @@ func main() {
 	tileDao := NewTilePostgresDao(storage)
 	changesLogDao := NewChangesLogPostgresDao(storage)
 	meteoPointDao := NewMeteoPointPostgresDao(storage)
+	waterWayDao := NewWaterWayPostgresDao(storage)
 
 	clusterMaker := clustering.NewClusterMaker(configuration.ClusterizationParams)
 
@@ -71,6 +72,7 @@ func main() {
 		TileDao:tileDao,
 		ChangesLogDao: changesLogDao,
 		MeteoPointDao: meteoPointDao,
+		WaterWayDao: waterWayDao,
 		AuthProviders: map[AuthProvider]passport.Passport{
 			YANDEX: passport.Yandex(15 * time.Minute),
 			GOOGLE:     passport.Google(15 * time.Minute),

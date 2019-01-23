@@ -62,6 +62,7 @@ type WaterWayDao interface {
 	UpdateWaterWay(waterway WaterWay) error
 	ForEachWaterWay(transformer func(WaterWay) (WaterWay, error), tmpTable string) error
 	DetectForRiver(riverId int64) ([]WaterWay, error)
+	UnlinkRiver(id int64, tx interface{}) error
 }
 
 type VoyageReportDao interface {

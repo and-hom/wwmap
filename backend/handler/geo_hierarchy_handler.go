@@ -377,10 +377,16 @@ func (this *GeoHierarchyHandler) RemoveRiver(w http.ResponseWriter, r *http.Requ
 
 	imgs, err := this.ImgDao.ListAllByRiver(riverId)
 	if err != nil {
-		OnError500(w, err, fmt.Sprintf("Can not get images for river: %d", riverId))
+		OnError500(w, err, fmt.Sprintf("Can not get images for river: %d %v", riverId, err))
 		return
 	}
 	this.removeImageData(r, imgs)
+
+	err = this.WaterWayDao.UnlinkRiver(riverId, nil)
+	if err != nil {
+		OnError500(w, err, fmt.Sprintf("Can not unlink river and waterway: %d %v", riverId, err))
+		return
+	}
 
 	err = this.Storage.WithinTx(func(tx interface{}) error {
 		err = this.ImgDao.RemoveByRiver(riverId, tx)

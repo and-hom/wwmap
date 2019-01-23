@@ -23,6 +23,7 @@ type App struct {
 	RegionDao          RegionDao
 	ChangesLogDao      ChangesLogDao
 	MeteoPointDao      MeteoPointDao
+	WaterWayDao        WaterWayDao
 	AuthProviders      map[AuthProvider]passport.Passport
 	RefererStorage     referer.RefererStorage
 	ImgUrlBase         string
