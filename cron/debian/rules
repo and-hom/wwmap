@@ -32,7 +32,7 @@ build-meteo:
 	cd meteo && GOPATH="$(HOME)/.go" go build
 
 build-level:
-	cd vodinfo-eye && pushd pattern && $(HOME)/.go/bin/go-bindata -pkg pattern * && popd && GOPATH="$(HOME)/.go" go build
+	cd vodinfo-eye && cd pattern && $(HOME)/.go/bin/go-bindata -pkg pattern * && cd .. && GOPATH="$(HOME)/.go" go build
 
 build: pre-build build-notifier build-catalog-sync build-db-clean build spot-sort build-meteo build-level
 

@@ -88,9 +88,13 @@ func getLevelValue(sensorId int, client http.Client, matcher PatternMatcher) int
 		return dao.NAN_LEVEL
 	}
 	yAxisLabelsCoords := matcher.Match(img, X_LEVEL_VALUE_AREA)
-	log.Debugf("Y axis labels coords: ", yAxisLabelsCoords)
+	log.Debug("Y axis labels coords: ", yAxisLabelsCoords)
 	if len(yAxisLabelsCoords) == 0 {
 		log.Errorf("No labels detected - can't process")
+		return dao.NAN_LEVEL
+	}
+	if len(yAxisLabelsCoords) == 1 {
+		log.Errorf("Single label detected - can't determine scale")
 		return dao.NAN_LEVEL
 	}
 	yAxisMarksXCoords, err := DetectYAxisLabels(img, yAxisLabelsCoords)
