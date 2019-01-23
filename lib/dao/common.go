@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/and-hom/wwmap/lib/config"
 	log "github.com/Sirupsen/logrus"
+	"github.com/and-hom/wwmap/lib/config"
 	"reflect"
 )
 

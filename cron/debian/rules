@@ -31,7 +31,10 @@ build-spot-sort:
 build-meteo:
 	cd meteo && GOPATH="$(HOME)/.go" go build
 
-build: pre-build build-notifier build-catalog-sync build-db-clean build spot-sort build-meteo
+build-level:
+	cd vodinfo-eye && pushd pattern && $(HOME)/.go/bin/go-bindata -pkg pattern * && popd && GOPATH="$(HOME)/.go" go build
+
+build: pre-build build-notifier build-catalog-sync build-db-clean build spot-sort build-meteo build-level
 
 override_dh_auto_install:
 	install -d $$(pwd)/debian/wwmap-cron/usr/share/wwmap/backup/
@@ -43,3 +46,4 @@ override_dh_auto_install:
 	install -D -m 0755 db-clean/db-clean $$(pwd)/debian/wwmap-cron/usr/bin/wwmap-db-clean
 	install -D -m 0755 spot-sort/spot-sort $$(pwd)/debian/wwmap-cron/usr/bin/wwmap-spot-sort
 	install -D -m 0755 meteo/meteo $$(pwd)/debian/wwmap-cron/usr/bin/wwmap-meteo
+	install -D -m 0755 vodinfo-eye/vodinfo-eye $$(pwd)/debian/wwmap-cron/usr/bin/wwmap-vodinfo-eye

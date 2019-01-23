@@ -17,6 +17,7 @@ type RiverDao interface {
 	Find(id int64) (River, error)
 	ListRiversWithBounds(bbox Bbox, limit int, showUnpublished bool) ([]RiverTitle, error)
 	FindTitles(titles []string) ([]RiverTitle, error)
+	ListAll() ([]RiverTitle, error)
 	ListByCountry(countryId int64) ([]RiverTitle, error)
 	ListByCountryFull(countryId int64) ([]River, error)
 	ListByRegion(regionId int64) ([]RiverTitle, error)
@@ -145,4 +146,8 @@ type MeteoPointDao interface {
 	Find(id int64) (MeteoPoint, error)
 	Insert(meteo MeteoPoint) (MeteoPoint, error)
 	List() ([]MeteoPoint, error)
+}
+
+type LevelDao interface {
+	Insert(level Level) error
 }

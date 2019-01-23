@@ -12,21 +12,22 @@ import (
 
 func NewRiverPostgresDao(postgresStorage PostgresStorage) RiverDao {
 	return riverStorage{
-		PostgresStorage: postgresStorage,
-		PropsManager:PropertyManagerImpl{table:queries.SqlQuery("river", "table"), dao:&postgresStorage},
-		findByTagsQuery: queries.SqlQuery("river", "find-by-tags"),
-		insideBoundsQuery: queries.SqlQuery("river", "inside-bounds"),
-		byIdQuery:queries.SqlQuery("river", "by-id"),
-		listByCountryQuery:queries.SqlQuery("river", "by-country"),
-		listByCountryFullQuery:queries.SqlQuery("river", "by-country-full"),
-		listByRegionQuery:queries.SqlQuery("river", "by-region"),
-		listByRegionFullQuery:queries.SqlQuery("river", "by-region-full"),
-		listByFirstLettersQuery:queries.SqlQuery("river", "by-first-letters"),
-		insertQuery:queries.SqlQuery("river", "insert"),
-		updateQuery:queries.SqlQuery("river", "update"),
-		deleteQuery:queries.SqlQuery("river", "delete"),
-		setVisibleQuery:queries.SqlQuery("river", "set-visible"),
-		findByTitlePartQuery:queries.SqlQuery("river", "by-title-part"),
+		PostgresStorage:         postgresStorage,
+		PropsManager:            PropertyManagerImpl{table: queries.SqlQuery("river", "table"), dao: &postgresStorage},
+		findByTagsQuery:         queries.SqlQuery("river", "find-by-tags"),
+		insideBoundsQuery:       queries.SqlQuery("river", "inside-bounds"),
+		byIdQuery:               queries.SqlQuery("river", "by-id"),
+		listAllQuery:            queries.SqlQuery("river", "all"),
+		listByCountryQuery:      queries.SqlQuery("river", "by-country"),
+		listByCountryFullQuery:  queries.SqlQuery("river", "by-country-full"),
+		listByRegionQuery:       queries.SqlQuery("river", "by-region"),
+		listByRegionFullQuery:   queries.SqlQuery("river", "by-region-full"),
+		listByFirstLettersQuery: queries.SqlQuery("river", "by-first-letters"),
+		insertQuery:             queries.SqlQuery("river", "insert"),
+		updateQuery:             queries.SqlQuery("river", "update"),
+		deleteQuery:             queries.SqlQuery("river", "delete"),
+		setVisibleQuery:         queries.SqlQuery("river", "set-visible"),
+		findByTitlePartQuery:    queries.SqlQuery("river", "by-title-part"),
 	}
 }
 
@@ -36,6 +37,7 @@ type riverStorage struct {
 	findByTagsQuery         string
 	insideBoundsQuery       string
 	byIdQuery               string
+	listAllQuery            string
 	listByCountryQuery      string
 	listByCountryFullQuery  string
 	listByRegionQuery       string
@@ -45,7 +47,7 @@ type riverStorage struct {
 	updateQuery             string
 	deleteQuery             string
 	setVisibleQuery         string
-	findByTitlePartQuery         string
+	findByTitlePartQuery    string
 }
 
 func (this riverStorage) FindTitles(titles []string) ([]RiverTitle, error) {
@@ -69,6 +71,10 @@ func (this riverStorage) Find(id int64) (River, error) {
 		return River{}, fmt.Errorf("River with id %d not found", id)
 	}
 	return r.(River), nil
+}
+
+func (this riverStorage) ListAll() ([]RiverTitle, error) {
+	return this.listRiverTitles(this.listAllQuery)
 }
 
 func (this riverStorage) ListByCountry(countryId int64) ([]RiverTitle, error) {
@@ -145,7 +151,7 @@ func (this riverStorage) listRiverTitles(query string, queryParams ...interface{
 
 			if boundsStr.Valid {
 				riverTitle.Bounds, err = ParseBounds(boundsStr.String)
-				if err!= nil {
+				if err != nil {
 					log.Warnf("Can not parse rect or point %s for white water object %d: %v", boundsStr.String, riverTitle.Id, err)
 				}
 			}
@@ -159,7 +165,7 @@ func (this riverStorage) listRiverTitles(query string, queryParams ...interface{
 			err = json.Unmarshal([]byte(props), &riverTitle.Props)
 			return riverTitle, err
 		}, queryParams...)
-	if (err != nil ) {
+	if (err != nil) {
 		return []RiverTitle{}, err
 	}
 	return result.([]RiverTitle), nil
@@ -178,10 +184,10 @@ func ParseBounds(boundsStr string) (geo.Bbox, error) {
 	}
 
 	return geo.Bbox{
-		X1:pgRect.Coordinates[0][0].Lat,
-		Y1:pgRect.Coordinates[0][0].Lon,
-		X2:pgRect.Coordinates[0][2].Lat,
-		Y2:pgRect.Coordinates[0][2].Lon,
+		X1: pgRect.Coordinates[0][0].Lat,
+		Y1: pgRect.Coordinates[0][0].Lon,
+		X2: pgRect.Coordinates[0][2].Lat,
+		Y2: pgRect.Coordinates[0][2].Lon,
 	}, nil
 }
 
@@ -205,7 +211,7 @@ func point2rect(pgPoint PgPoint) [][]geo.Point {
 			Lat: p.Lat - 0.0001,
 			Lon: p.Lon + 0.0001,
 		},
-	}, }
+	},}
 }
 
 func (this riverStorage) Remove(id int64, tx interface{}) error {
@@ -244,7 +250,7 @@ func riverMapperFull(rows *sql.Rows) (River, error) {
 
 	if boundsStr.Valid {
 		river.Bounds, err = ParseBounds(boundsStr.String)
-		if err!= nil {
+		if err != nil {
 			log.Warnf("Can not parse rect or point %s for white water object %d: %v", boundsStr.String, river.Id, err)
 		}
 	}

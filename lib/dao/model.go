@@ -5,6 +5,7 @@ import (
 	"fmt"
 	. "github.com/and-hom/wwmap/lib/geo"
 	"github.com/and-hom/wwmap/lib/model"
+	"math"
 	"strconv"
 	"time"
 )
@@ -398,6 +399,15 @@ type Meteo struct {
 
 	Temp int `json:"temp"`
 	Rain int `json:"rain"`
+}
+
+const NAN_LEVEL = math.MinInt32
+
+type Level struct {
+	Id       int64    `json:"id,omitempty"`
+	SensorId string   `json:"sensor_id"`
+	Date     JSONDate `json:"date"`
+	Level    int      `json:"level"`
 }
 
 type ChangesLogEntryType string
