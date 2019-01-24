@@ -85,7 +85,20 @@ func (this *patternMatcher) matches(pNum int, src image.Image, x int, y int) boo
 			if delta > MAX_DELTA_2 {
 				return false
 			}
+		}
+	}
 
+	// Check white fields left and right
+	for i := 1; i < 3; i++ {
+		for j := 0; j < pH; j++ {
+			r, g, b, _ := src.At(x-i, y+j).RGBA()
+			if !isWhite(r, g, b) {
+				return false
+			}
+			r, g, b, _ = src.At(x+pW+i-1, y+j).RGBA()
+			if !isWhite(r, g, b) {
+				return false
+			}
 		}
 	}
 

@@ -18,7 +18,3 @@ func detectBlueLineY(src image.Image, xScanLine int) int {
 	}
 	return -1
 }
-
-func isBlue(r, g, b uint32) bool {
-	return r < BLACK_MAX_VAL && g < BLACK_MAX_VAL && b > WHITE_MIN_VAL
-}

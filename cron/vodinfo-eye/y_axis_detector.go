@@ -6,9 +6,6 @@ import (
 	"image"
 )
 
-const BLACK_MAX_VAL = 10000
-const WHITE_MIN_VAL = 60000
-
 func DetectYAxisLabels(src image.Image, yAxisLabelsCoords map[int]int) (map[int]int, error) {
 	yAxisXPos := getYAxisXPos(src, 0)
 	if yAxisXPos < 0 {
@@ -39,7 +36,7 @@ func getYAxisXPos(src image.Image, xOffset int) int {
 		for y := -20; y < 20; y++ {
 			r, g, b, _ := src.At(x, yScan+y).RGBA()
 
-			if !blackPx(r, g, b) {
+			if !isBack(r, g, b) {
 				detected = false
 				break
 			}
@@ -51,10 +48,6 @@ func getYAxisXPos(src image.Image, xOffset int) int {
 	return -1
 }
 
-func blackPx(r, g, b uint32) bool {
-	return r <= BLACK_MAX_VAL && g <= BLACK_MAX_VAL && b <= BLACK_MAX_VAL
-}
-
 func getYAxisMarks(src image.Image, yAxisXPos int) []int {
 	marksXPos := yAxisXPos - 2
 	bounds := src.Bounds()
@@ -62,7 +55,7 @@ func getYAxisMarks(src image.Image, yAxisXPos int) []int {
 	blackCounter := 0
 	for y := 0; y < bounds.Dy(); y++ {
 		r, g, b, _ := src.At(marksXPos, y).RGBA()
-		if blackPx(r, g, b) {
+		if isBack(r, g, b) {
 			blackCounter++
 		} else {
 			if blackCounter > 0 && blackCounter < 6 {

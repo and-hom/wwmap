@@ -112,6 +112,7 @@ func getLevelValue(sensorId int, client http.Client, matcher PatternMatcher) int
 		return dao.NAN_LEVEL
 	}
 	lToday := (yMin-float64(yToday))/(yMin-yMax)*(lMax-lMin) + lMin
+	log.Debug("Level is ", lToday)
 	return int(lToday)
 }
 
