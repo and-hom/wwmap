@@ -90,7 +90,7 @@
 
 <script type="text/x-jquery-tmpl" id="river_desc_template">
     <div class="wwmap-popuptext" style="width:1200px; height:700px;position: relative; overflow-x:hidden;">
-        <div style="float:right; width: 45%; height:100%;">
+        <div style="float:right; width: 45%; height:100%; padding-left: 25px;">
             {%if props.vodinfo_sensor%}
             <h3>Уровень воды сейчас</h3>
             <img src="http://gis.vodinfo.ru/informer/draw/v2_${props.vodinfo_sensor}_400_300_30_ffffff_110_8_7_H_none.png" style="margin-bottom:20px; margin-right:20px;"/>
@@ -112,7 +112,7 @@
             {%if region.id>0 %}<div style="margin-top:-11px; margin-bottom:8px; font-size:70%;color:grey">${region.title}</div>{%/if%}
             <div style="font-size:80%;"><img style="width: 16px; margin-bottom: 1px;" src="https://wwmap.ru/img/cat${max_category}-fill.png" title="${max_category} к.с."/>&nbsp;&nbsp;${max_category}&nbsp;к.с. - Максимальная категория препятствий</div>
             <div style="font-size:80%;"><img style="width: 16px; margin-bottom: 1px;" src="https://wwmap.ru/img/cat${avg_category}-fill.png" title="${avg_category} к.с."/>&nbsp;&nbsp;${avg_category}&nbsp;к.с. - Минимальная категория трёх самых сложных препятствий</div>
-            <div style="margin-top:11px;">${description}</div>
+            <div style="margin-top:11px; text-align: justify;">${description}</div>
         </div>
         <div style="margin-bottom: 20px;">
             {%each imgs%}
