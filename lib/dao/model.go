@@ -231,6 +231,7 @@ type ImageType string;
 const (
 	IMAGE_TYPE_IMAGE  ImageType = "image"
 	IMAGE_TYPE_SCHEMA ImageType = "schema"
+	IMAGE_TYPE_VIDEO ImageType = "video"
 )
 
 const IMG_SOURCE_WWMAP string = "wwmap"
@@ -256,6 +257,9 @@ func GetImgType(_type string) ImageType {
 		return t
 	}
 	if t, f := checkType(_type, IMAGE_TYPE_SCHEMA); f {
+		return t
+	}
+	if t, f := checkType(_type, IMAGE_TYPE_VIDEO); f {
 		return t
 	}
 	return IMAGE_TYPE_IMAGE

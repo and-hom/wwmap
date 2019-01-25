@@ -60,3 +60,21 @@ function addAuth(xhr, auth) {
 function getBackendVersion() {
     return doGetJsonSync(backendApiBase + "/version")
 }
+
+function parseParams(paramsStr) {
+    if (!paramsStr) {
+        return {}
+    }
+
+    var paramsArr = paramsStr.split('&');
+    var params = {};
+    for (var i=0; i < paramsArr.length; i++) {
+        var keyValue = paramsArr[i].split('=');
+        if( keyValue.length < 2 ) {
+            continue
+        }
+        var key = keyValue[0];
+        params[key] = keyValue[1];
+    }
+    return params;
+}

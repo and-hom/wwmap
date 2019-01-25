@@ -25,10 +25,10 @@ import (
 
 const (
 	PREVIEW_MAX_HEIGHT = 200
-	PREVIEW_MAX_WIDTH = 300
+	PREVIEW_MAX_WIDTH  = 300
 
 	BIG_IMG_MAX_HEIGHT = 1000
-	BIG_IMG_MAX_WIDTH = 1500
+	BIG_IMG_MAX_WIDTH  = 1500
 )
 
 type ImgHandler struct {
@@ -41,6 +41,9 @@ func (this *ImgHandler) Init() {
 	this.Register("/spot/{spotId}/img", HandlerFunctions{Get: this.GetImages,
 		Post: this.ForRoles(this.Upload, dao.ADMIN, dao.EDITOR),
 		Put:  this.ForRoles(this.Upload, dao.ADMIN, dao.EDITOR)})
+	this.Register("/spot/{spotId}/img_ext", HandlerFunctions{
+		Post: this.ForRoles(this.AddExternalImage, dao.ADMIN, dao.EDITOR),
+		Put:  this.ForRoles(this.AddExternalImage, dao.ADMIN, dao.EDITOR)})
 	this.Register("/spot/{spotId}/img/{imgId}", HandlerFunctions{Get: this.GetImage,
 		Delete: this.ForRoles(this.Delete, dao.ADMIN, dao.EDITOR)})
 	this.Register("/spot/{spotId}/img/{imgId}/preview", HandlerFunctions{Get: this.GetImagePreview})
@@ -66,7 +69,7 @@ func (this *ImgHandler) GetImage(w http.ResponseWriter, req *http.Request) {
 	pathParams := mux.Vars(req)
 	r, err := this.ImgStorage.Read(storageKeyById(pathParams["imgId"]))
 	if err != nil {
-		OnError500(w, err, "Can not get image")
+		OnError(w, err, "Can not get image", http.StatusNotFound)
 		return
 	}
 	defer r.Close()
@@ -77,11 +80,47 @@ func (this *ImgHandler) GetImagePreview(w http.ResponseWriter, req *http.Request
 	pathParams := mux.Vars(req)
 	r, err := this.PreviewImgStorage.Read(storageKeyById(pathParams["imgId"]))
 	if err != nil {
-		OnError500(w, err, "Can not get image")
+		OnError(w, err, "Can not get image", http.StatusNotFound)
 		return
 	}
 	defer r.Close()
 	io.Copy(w, r)
+}
+
+func (this *ImgHandler) AddExternalImage(w http.ResponseWriter, req *http.Request) {
+	pathParams := mux.Vars(req)
+	spotId, err := strconv.ParseInt(pathParams["spotId"], 10, 64)
+	if err != nil {
+		OnError(w, err, "Can not parse id", http.StatusBadRequest)
+		return
+	}
+	if spotId <= 0 {
+		OnError(w, err, "Can not upload image for non existing spot", http.StatusBadRequest)
+		return
+	}
+
+	data := ExternalImageAddData{}
+	if err = json.NewDecoder(req.Body).Decode(&data); err != nil {
+		OnError(w, err, "Can't parse request body", http.StatusBadRequest)
+		return
+	}
+	img, err := this.ImgDao.Upsert(dao.Img{
+		WwId:            spotId,
+		RemoteId:        data.Id,
+		Type:            dao.ImageType(data.Type),
+		Source:          data.Source,
+		MainImage:       false,
+		Url:             "",
+		PreviewUrl:      "",
+		RawUrl:          "",
+		Enabled:         true,
+		LabelsForSearch: []string{},
+	})
+	if err != nil {
+		OnError500(w, err, "Can not insert")
+		return
+	}
+	this.JsonAnswer(w, img)
 }
 
 func (this *ImgHandler) Upload(w http.ResponseWriter, req *http.Request) {
@@ -223,7 +262,7 @@ func (this *ImgHandler) SetEnabled(w http.ResponseWriter, req *http.Request) {
 	}
 	enabled := false
 	err = json.Unmarshal(bodyBytes, &enabled)
-	if err!=nil {
+	if err != nil {
 		OnError(w, err, "Can not unmarshal request body", http.StatusBadRequest)
 		return
 	}
@@ -254,7 +293,7 @@ func (this *ImgHandler) SetPreview(w http.ResponseWriter, req *http.Request) {
 	}
 	imgId := int64(0)
 	err = json.Unmarshal(bodyBytes, &imgId)
-	if err!=nil {
+	if err != nil {
 		OnError(w, err, "Can not unmarshal request body", http.StatusBadRequest)
 	}
 
@@ -291,7 +330,7 @@ func (this *ImgHandler) DropPreview(w http.ResponseWriter, req *http.Request) {
 		OnError500(w, err, fmt.Sprintf("Can not set preview for spot %d", spotId))
 		return
 	}
-	this.LogUserEvent(req, SPOT_LOG_ENTRY_TYPE, spotId, dao.ENTRY_TYPE_MODIFY,"drop main img");
+	this.LogUserEvent(req, SPOT_LOG_ENTRY_TYPE, spotId, dao.ENTRY_TYPE_MODIFY, "drop main img");
 }
 
 func (this *ImgHandler) GetPreview(w http.ResponseWriter, req *http.Request) {
@@ -331,4 +370,10 @@ func (this *ImgHandler) listImagesForSpot(w http.ResponseWriter, spotId int64, _
 
 func getImgType(req *http.Request) dao.ImageType {
 	return dao.GetImgType(req.FormValue("type"))
+}
+
+type ExternalImageAddData struct {
+	Id     string `json:"id"`
+	Type   string `json:"type"`
+	Source string `json:"source"`
 }
