@@ -170,84 +170,68 @@
             </b-tabs>
         </div>
         <div v-else class="spot-display">
-            <div class="container-fluid" style="margin-top: 20px;">
+            <h1>{{ spot.title }}</h1>
+            <div style="float:right; width:400px; margin-left: 20px;">
+                <img v-if="spotMainUrl" :src="spotMainUrl" style="width:100%; cursor: pointer;"
+                     @click="imgIndex = mainImageIndex; schIndex = mainSchemaIndex" class="wwmap-desc-section-div"/>
+                <img v-else src="img/no-photo.png" style="width:100%" class="wwmap-desc-section-div"/>
+                <div v-if="spot.aliases && spot.aliases.length > 0 && canEdit()" class="wwmap-desc-section-div">
+                    <strong>Другие варианты названия для поиска картинок роботом:</strong>
+                    <ul style="padding-left: 0;">
+                        <li v-for="alias in spot.aliases">{{alias}}</li>
+                    </ul>
+                </div>
+                <div v-if="canEdit()" class="wwmap-desc-section-div">
+                    <div class="wwmap-system-hint">Эти параметры предназначены для определения порядка следования порогов. Автоматическое упорядочивание проходит раз в сутки ночью.</div>
+                    <div><strong>Порядок следования:</strong> {{ spot.order_index }}</div>
+                    <div><strong>Автоматическое упорядочивание:</strong>&nbsp;<span v-if="spot.automatic_ordering">Да</span><span v-else>Нет</span></div>
+                    <div><strong>В последний раз автоматическое упорядочивание срабатывало:</strong> {{ lastAutoOrdering() }}</div>
+                </div>
+            </div>
+            <div class="wwmap-desc-section-div">
+                <div v-if="spot.lw_category!=='0' ||spot.mw_category!=='0' || spot.hw_category!=='0'"><strong>К.с. нв/св/вв:</strong>&nbsp;<category :category="spot.lw_category"></category>/<category :category="spot.mw_category"></category>/<category :category="spot.hw_category"></category></div>
+                <div><strong>К.с. по классификатору:</strong>&nbsp;<category :category="spot.category"></category></div>
+            </div>
+            <div class="wwmap-desc-section-div" v-if="spot.short_description">
+                {{ spot.short_description }}
+            </div>
+            <div class="wwmap-desc-section-div">
+                <ya-map-location ref="locationView" v-bind:spot="spot" width="70%" height="600px" :editable="false" :zoom="15"></ya-map-location>
+                <div style="padding-top:4px;">
+                <strong>Широта:</strong>&nbsp;{{ spot.point[0] }}&nbsp;&nbsp;&nbsp;<strong>Долгота:</strong>&nbsp;{{ spot.point[1] }}
+                </div>
+            </div>
+            <div v-if="spot.orient" class="wwmap-desc-section-div">
+                <strong>Ориентиры:</strong><br/>
+                {{ spot.orient }}
+            </div>
+            <div class="container-fluid border-inside" style="padding-bottom:15px;"
+                 v-if="spot.lw_description || spot.mw_description || spot.hw_description">
                 <div class="row">
-                    <div class="col-7">
-                        <div class="short-div">
-                            <h1>{{ spot.title }}</h1>
-                        </div>
-                        <div class="short-div">
-                            {{ spot.short_description }}
-                        </div>
-                        <div class="short-div">
-                            <strong>Ориентиры:</strong><br/>
-                            {{ spot.orient }}
-                        </div>
-                    </div>
-                    <div class="col-5">
-                        <img v-if="spotMainUrl" :src="spotMainUrl" style="width:100%; cursor: pointer;"
-                        @click="imgIndex = mainImageIndex; schIndex = mainSchemaIndex"/>
-                        <img v-else src="img/no-photo.png" style="width:100%"/>
-                    </div>
+                    <div class="col-4"><strong>Уровень воды</strong></div>
+                    <div class="col-8"><strong>Тех. описание</strong></div>
                 </div>
                 <div class="row">
-                    <div class="col-7">
-                        <div class="container-fluid border-inside" style="padding-bottom:15px;">
-                            <div class="row">
-                                <div class="col-4"><strong>Уровень воды</strong></div>
-                                <div class="col-8"><strong>Тех. описание</strong></div>
-                            </div>
-                            <div class="row">
-                                <div class="col-4"><strong>Низкая вода</strong></div>
-                                <div class="col-8">{{ spot.lw_description }}</div>
-                            </div>
-                            <div class="row">
-                                <div class="col-4"><strong>Средняя вода</strong></div>
-                                <div class="col-8">{{ spot.mw_description }}</div>
-                            </div>
-                            <div class="row">
-                                <div class="col-4"><strong>Высокая вода</strong></div>
-                                <div class="col-8">{{ spot.hw_description }}</div>
-                            </div>
-                        </div>
+                    <div class="col-4"><strong>Низкая вода</strong></div>
+                    <div class="col-8">{{ spot.lw_description }}</div>
+                </div>
+                <div class="row">
+                    <div class="col-4"><strong>Средняя вода</strong></div>
+                    <div class="col-8">{{ spot.mw_description }}</div>
+                </div>
+                <div class="row">
+                    <div class="col-4"><strong>Высокая вода</strong></div>
+                    <div class="col-8">{{ spot.hw_description }}</div>
+                </div>
+            </div>
 
-                        <div v:if="spot.approach" class="short-div">
-                            <strong>Подход/выход</strong>
-                            <td colspan="2">{{ spot.approach }}</td>
-                        </div>
-                        <div v:if="spot.safety" class="short-div">
-                            <strong>Страховка</strong>
-                            <td colspan="2">{{ spot.safety }}</td>
-                        </div>
-                    </div>
-                    <div class="col-5">
-                        <strong>Расположение: </strong>
-                        <ya-map-location ref="locationView" v-bind:spot="spot" width="100%" :editable="false"></ya-map-location>
-                        <div class="short-div">
-                            <strong>Координаты:</strong><br/><strong>Широта:</strong>&nbsp;{{ spot.point[0] }}
-                            <br/><strong>Долгота:</strong>&nbsp;{{ spot.point[1] }}
-                            <br/>
-                            <div><strong>К.с. нв/св/вв:</strong>&nbsp;<category :category="spot.lw_category"></category>/<category :category="spot.mw_category"></category>/<category :category="spot.hw_category"></category></div>
-                            <div><strong>К.с. по классификатору:</strong>&nbsp;<category :category="spot.category"></category></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-6">
-                        <strong>Другие варианты названия для поиска картинок роботом:</strong>
-                        <ul>
-                            <li v-for="alias in spot.aliases">{{alias}}</li>
-                        </ul>
-                    </div>
-                    <div class="col-6">
-                        <div v-if="canEdit()">
-                            <div class="wwmap-system-hint">Эти параметры предназначены для определения порядка следования порогов. Автоматическое упорядочивание проходит раз в сутки ночью.</div>
-                            <div><strong>Порядок следования:</strong> {{ spot.order_index }}</div>
-                            <div><strong>Автоматическое упорядочивание:</strong>&nbsp;<span v-if="spot.automatic_ordering">Да</span><span v-else>Нет</span></div>
-                            <div><strong>В последний раз автоматическое упорядочивание срабатывало:</strong> {{ lastAutoOrdering() }}</div>
-                        </div>
-                    </div>
-                </div>
+            <div v-if="spot.approach" class="wwmap-desc-section-div">
+                <strong>Подход/выход</strong>
+                {{ spot.approach }}
+            </div>
+            <div v-if="spot.safety" class="wwmap-desc-section-div">
+                <strong>Страховка</strong>
+                {{ spot.safety }}
             </div>
             <div v-if="schemas.length">
                 <h2>Схемы</h2>
@@ -276,6 +260,14 @@
         </div>
     </div>
 </template>
+<style type="text/css">
+    .wwmap-desc-section-div {
+        margin-bottom: 10px;
+    }
+    .btn-toolbar {
+        margin-bottom: 5px;
+    }
+</style>
 
 <script>
     module.exports = {

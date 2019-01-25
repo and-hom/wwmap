@@ -6,6 +6,10 @@
     module.exports = {
         props: {
             spot: Object,
+            zoom: {
+                type: Number,
+                default: 12
+            },
             width: {
                 type: String,
                 default: "600px"
@@ -40,7 +44,7 @@
 
                 var myMap = new ymaps.Map("map", {
                     center: component.spot.point,
-                    zoom: 12,
+                    zoom: component.zoom,
                     controls: ["zoomControl"],
                     type: "osm#standard"
                 });
