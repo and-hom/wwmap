@@ -53,9 +53,13 @@ func main() {
 	}
 
 	for sensorId, _ := range sensorIds {
-		lToday := getLevelValue(sensorId, client, patternMatcher)
+		lToday := dao.NAN_LEVEL
+		img, err := DownloadImage(sensorId, client)
+		if err == nil {
+			lToday = GetLevelValue(img, patternMatcher)
+		}
 
-		err := levelDao.Insert(dao.Level{
+		err = levelDao.Insert(dao.Level{
 			SensorId: fmt.Sprintf("%d", sensorId),
 			Date:     dao.JSONDate(time.Now()),
 			Level:    lToday,
@@ -67,26 +71,30 @@ func main() {
 	}
 }
 
-func getLevelValue(sensorId int, client http.Client, matcher PatternMatcher) int {
+func DownloadImage(sensorId int, client http.Client) (image.Image, error) {
 	log.Infof("Read informer for %d", sensorId)
 	url := fmt.Sprintf(URL_TEMPLATE, sensorId)
 	log.Infof("Download image %s", url)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		log.Errorf("Can't create request for %s: %v", url, err)
-		return dao.NAN_LEVEL
+		return nil, err
 	}
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/601.7.7 (KHTML, like Gecko) Version/9.1.2 Safari/601.7.7")
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Errorf("Can't perform request for %s: %v", url, err)
-		return dao.NAN_LEVEL
+		return nil, err
 	}
 	img, _, err := image.Decode(resp.Body)
 	if err != nil {
 		log.Errorf("Can't decode image for %s: %v", url, err)
-		return dao.NAN_LEVEL
+		return nil, err
 	}
+	return img, nil
+}
+
+func GetLevelValue(img image.Image, matcher PatternMatcher) int {
 	yAxisLabelsCoords := matcher.Match(img, X_LEVEL_VALUE_AREA)
 	log.Debug("Y axis labels coords: ", yAxisLabelsCoords)
 	if len(yAxisLabelsCoords) == 0 {
