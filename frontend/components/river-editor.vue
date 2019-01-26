@@ -215,6 +215,7 @@
                             <div class="example-btn">
                                 <file-upload
                                         class="btn btn-primary"
+                                        :headers="headers"
                                         :post-action="uploadPath"
                                         extensions="gpx"
                                         :multiple="false"
@@ -270,7 +271,12 @@
             this.resetToInitialIfRequired()
         },
         computed: {
-                uploadPath: function() { return backendApiBase + "/river/" + this.river.id +"/gpx"},
+            uploadPath: function() { return backendApiBase + "/river/" + this.river.id +"/gpx"},
+            headers:function(){
+                return {
+                    Authorization: getWwmapSessionId()
+                }
+            }
         },
         data:function() {
             return {
