@@ -31,11 +31,11 @@ SELECT (river).id, (river).title, (river).description, (river).props,
 FROM (
     SELECT
             region, river, white_water_rapid, image,
-            ROW_NUMBER() OVER (PARTITION BY river.id, white_water_rapid.id ORDER BY image.id) AS r
+            ROW_NUMBER() OVER (PARTITION BY river.id, white_water_rapid.id, image.type ORDER BY image.id) AS r
         FROM river
         INNER JOIN region ON river.region_id=region.id
         INNER JOIN white_water_rapid ON river.id=white_water_rapid.river_id
         LEFT OUTER JOIN image ON white_water_rapid.id=image.white_water_rapid_id
-    WHERE river.id=$1 AND (image.enabled AND image."type" = $2 OR image.id IS NULL)
+    WHERE river.id=$1 AND (image.enabled AND image."type" = ANY($2) OR image.id IS NULL)
         ORDER BY river.id, white_water_rapid.order_index, white_water_rapid.id, image.main_image DESC, image.date_published DESC
 ) sq WHERE r<=$3

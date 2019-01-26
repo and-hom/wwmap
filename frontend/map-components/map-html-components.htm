@@ -131,6 +131,17 @@
             <a data-lightbox="river-img-set-{{id}}" data-title="${spot_title}" data-alt="${spot_title}" target="_blank" href="${url}"><img class="wwmap-gallery-img" src="${preview_url}" title="${spot_title}" alt="${spot_title}"/></a>
             {%/each%}
         </div>
+        <div style="margin-bottom: 20px;">
+            {%each videos%}
+                    <iframe width="304" height="200"
+                            src="https://www.youtube.com/embed/${remote_id}"
+                            frameborder="0"
+                            allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen
+                    style="margin-right: 2px; margin-bottom: 2px;"></iframe>
+            {%/each%}
+            <a target="_blank" href="https://www.youtube.com/results?search_query=${search_query}" style="display:block;">Поискать видео на Youtube</a>
+        </div>
         {%if weather_point %}
         <div style="margin-bottom: 20px;">
             <a target="_blank" href="https://yandex.ru/pogoda/?lat=${weather_point[0]}&lon=${weather_point[1]}">Прогноз погоды по данным Яндекс-погоды</a>

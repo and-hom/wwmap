@@ -5,6 +5,7 @@ import (
 	"github.com/and-hom/wwmap/lib/dao/queries"
 	"github.com/and-hom/wwmap/lib/geo"
 	"encoding/json"
+	"github.com/lib/pq"
 )
 
 func NewTilePostgresDao(postgresStorage PostgresStorage) TileDao {
@@ -24,7 +25,9 @@ type tileStorage struct {
 func (this *tileStorage) GetRiver(riverId int64, imgLimit int) (RiverWithSpotsExt, error) {
 	river := RiverWithSpotsExt{}
 	
-	rows, err := this.db.Query(this.singleRiverQuery, riverId, string(IMAGE_TYPE_IMAGE), imgLimit)
+	rows, err := this.db.Query(this.singleRiverQuery, riverId,
+		pq.Array([]string{string(IMAGE_TYPE_IMAGE), string(IMAGE_TYPE_VIDEO)}),
+		imgLimit)
 	if err != nil {
 		return river, err
 	}
