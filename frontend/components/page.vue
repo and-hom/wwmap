@@ -15,7 +15,7 @@
     <slot></slot>
     <footer v-if="showFooter" class="footer">
         <div class="container wwmap-footer">
-            Версия бэкенда:&nbsp;{{backVersion}}&nbsp;&nbsp;Версия фронтенда:&nbsp;{{frontVersion}}
+            <span>Версия бэкенда:&nbsp;{{backVersion}}</span><span>Версия фронтенда:&nbsp;{{frontVersion}}</span><span>Контакт для связи:&nbsp;<a href="mailto:info@wwmap.ru">info@wwmap.ru</a></span>
         </div>
     </footer>
 </div>
@@ -47,6 +47,10 @@
         padding-right: 15px;
         padding-left: 15px;
         margin-left: 0;
+    }
+
+    .wwmap-footer span {
+        margin-right: 30px;
     }
 </style>
 
