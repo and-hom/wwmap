@@ -25,10 +25,10 @@ import (
 
 const (
 	PREVIEW_MAX_HEIGHT = 200
-	PREVIEW_MAX_WIDTH = 300
+	PREVIEW_MAX_WIDTH  = 300
 
 	BIG_IMG_MAX_HEIGHT = 1000
-	BIG_IMG_MAX_WIDTH = 1500
+	BIG_IMG_MAX_WIDTH  = 1500
 )
 
 type ImgHandler struct {
@@ -141,7 +141,7 @@ func (this *ImgHandler) Upload(w http.ResponseWriter, req *http.Request) {
 		OnError500(w, err, "Can not store image")
 		return
 	}
-	this.LogUserEvent(req, IMAGE_LOG_ENTRY_TYPE, img.Id, dao.ENTRY_TYPE_CREATE, "");
+	this.LogUserEvent(req, IMAGE_LOG_ENTRY_TYPE, img.Id, dao.ENTRY_TYPE_CREATE, fmt.Sprintf("%s/%s", img.Source, img.RemoteId));
 }
 
 func storageKey(img dao.Img) string {
@@ -223,7 +223,7 @@ func (this *ImgHandler) SetEnabled(w http.ResponseWriter, req *http.Request) {
 	}
 	enabled := false
 	err = json.Unmarshal(bodyBytes, &enabled)
-	if err!=nil {
+	if err != nil {
 		OnError(w, err, "Can not unmarshal request body", http.StatusBadRequest)
 		return
 	}
@@ -254,7 +254,7 @@ func (this *ImgHandler) SetPreview(w http.ResponseWriter, req *http.Request) {
 	}
 	imgId := int64(0)
 	err = json.Unmarshal(bodyBytes, &imgId)
-	if err!=nil {
+	if err != nil {
 		OnError(w, err, "Can not unmarshal request body", http.StatusBadRequest)
 	}
 
@@ -291,7 +291,7 @@ func (this *ImgHandler) DropPreview(w http.ResponseWriter, req *http.Request) {
 		OnError500(w, err, fmt.Sprintf("Can not set preview for spot %d", spotId))
 		return
 	}
-	this.LogUserEvent(req, SPOT_LOG_ENTRY_TYPE, spotId, dao.ENTRY_TYPE_MODIFY,"drop main img");
+	this.LogUserEvent(req, SPOT_LOG_ENTRY_TYPE, spotId, dao.ENTRY_TYPE_MODIFY, "drop main img");
 }
 
 func (this *ImgHandler) GetPreview(w http.ResponseWriter, req *http.Request) {

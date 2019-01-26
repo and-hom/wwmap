@@ -333,7 +333,7 @@ func (this *GeoHierarchyHandler) SaveRiver(w http.ResponseWriter, r *http.Reques
 	}
 
 	this.writeRiver(id, w)
-	this.LogUserEvent(r, RIVER_LOG_ENTRY_TYPE, river.Id, logEntryType, "");
+	this.LogUserEvent(r, RIVER_LOG_ENTRY_TYPE, id, logEntryType, riverForDb.Title);
 }
 
 func (this *GeoHierarchyHandler) SetRiverVisible(w http.ResponseWriter, r *http.Request) {
@@ -501,7 +501,7 @@ func (this *GeoHierarchyHandler) SaveSpot(w http.ResponseWriter, r *http.Request
 
 	this.writeSpot(id, w)
 
-	this.LogUserEvent(r, SPOT_LOG_ENTRY_TYPE, spot.Id, logType, "");
+	this.LogUserEvent(r, SPOT_LOG_ENTRY_TYPE, id, logType, spot.Title);
 }
 
 func (this *GeoHierarchyHandler) RemoveSpot(w http.ResponseWriter, r *http.Request) {
