@@ -89,7 +89,12 @@ func (this *App) ForRoles(payload handler.HandlerFunction, roles ...dao.Role) ha
 func (this *App) CheckRoleAllowedAndMakeResponse(w http.ResponseWriter, r *http.Request, allowedRoles ...dao.Role) (*http.Request, bool) {
 	r2, allowed, err := this.CheckRoleAllowed(r, allowedRoles...)
 	if err != nil {
-		OnError500(w, err, "Can not check permissions")
+		switch err.(type) {
+		default:
+			OnError500(w, err, "Can not check permissions")
+		case passport.UnauthorizedError:
+			OnError(w, err, "Unauthorized", http.StatusUnauthorized)
+		}
 		return r2, false
 	}
 	if !allowed {
@@ -121,6 +126,9 @@ func (this *App) CheckRoleAllowed(r *http.Request, allowedRoles ...dao.Role) (*h
 	sessionId := r.FormValue("session_id")
 	if sessionId == "" {
 		sessionId = r.Header.Get("Authorization")
+	}
+	if sessionId == "" {
+		return r, false, nil
 	}
 	user, err := this.UserDao.GetBySession(sessionId)
 	if err != nil {
