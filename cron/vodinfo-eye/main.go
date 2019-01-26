@@ -59,10 +59,12 @@ func main() {
 			lToday = GetLevelValue(img, patternMatcher)
 		}
 
+		now := time.Now()
 		err = levelDao.Insert(dao.Level{
-			SensorId: fmt.Sprintf("%d", sensorId),
-			Date:     dao.JSONDate(time.Now()),
-			Level:    lToday,
+			SensorId:  fmt.Sprintf("%d", sensorId),
+			Date:      dao.JSONDate(now),
+			HourOfDay: int16(now.Hour()),
+			Level:     lToday,
 		})
 		if err != nil {
 			log.Errorf("Can't insert level value for %d: %v", sensorId, err)

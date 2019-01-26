@@ -404,10 +404,11 @@ type Meteo struct {
 const NAN_LEVEL = math.MinInt32
 
 type Level struct {
-	Id       int64    `json:"id,omitempty"`
-	SensorId string   `json:"sensor_id"`
-	Date     JSONDate `json:"date"`
-	Level    int      `json:"level"`
+	Id        int64    `json:"id,omitempty"`
+	SensorId  string   `json:"sensor_id"`
+	Date      JSONDate `json:"date"`
+	HourOfDay int16    `json:"hour_of_day"`
+	Level     int      `json:"level"`
 }
 
 type ChangesLogEntryType string

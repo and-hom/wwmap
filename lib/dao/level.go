@@ -25,7 +25,7 @@ func (this levelStorage) Insert(entry Level) error {
 			Valid: _e.Level != NAN_LEVEL,
 			Int64: int64(_e.Level),
 		}
-		return []interface{}{_e.SensorId, time.Time(_e.Date), levelValue}, nil
+		return []interface{}{_e.SensorId, time.Time(_e.Date), _e.HourOfDay, levelValue}, nil
 	}, entry)
 	return err
 }

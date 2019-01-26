@@ -1,0 +1,1 @@
+ALTER TABLE level DROP COLUMN hour_of_day;
