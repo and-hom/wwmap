@@ -110,6 +110,7 @@ type SpotPageDto struct {
 
 	MainImage       dao.Img
 	Imgs            []dao.Img
+	Videos          []dao.Img
 
 	RootPageLink    string
 	CountryPageLink string
