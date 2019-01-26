@@ -1,20 +1,18 @@
 <template>
     <div>
         <div>
-            <label for="video_url" style="padding-right: 10px;">Ссылка на видео с youtube (как в браузере)</label><input id="video_url" type="text"/>
+            <label for="video_url" style="padding-right: 10px;">Ссылка на видео с youtube (как в браузере)</label><input id="video_url" type="text" style="width:400px;"/>
             <input type="button" class="btn btn-success" value="Добавить" v-on:click.prevent="onAddVideo"/>
         </div>
 
         <table class="table">
             <tr v-for="image in images">
-                <td>
+                <td style="width: 1px;">
                     <iframe width="560" height="315"
                             :src="embeddedVideoUrl(image.remote_id)"
                             frameborder="0"
                             allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
                             allowfullscreen></iframe>
-                <td>
-                    <a target="_blank" :href="image.report_url">{{image.report_title}}</a>
                 </td>
                 <td>
                     <button v-if="image.enabled===false" v-on:click="setImgEnabled(true, image.id)"
