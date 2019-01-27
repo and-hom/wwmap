@@ -135,55 +135,59 @@
     padding: 3px;
     color: #252525;
     font-size: 80%;
+    opacity: 0.2;
 }
 
 .wwmap-legend .cat0:before {
     content: 'Неизв. кс';
 }
 .wwmap-legend .cat0 {
-    background: rgba(187, 187, 187, 0.54);
+    background: rgb(187, 187, 187);
 }
 
 .wwmap-legend .cat1:before {
     content: '1кс';
 }
 .wwmap-legend .cat1 {
-    background: rgba(0, 255, 249, 0.54);
+    background: rgb(0, 255, 249);
 }
 
 .wwmap-legend .cat2:before {
     content: '2кс';
 }
 .wwmap-legend .cat2 {
-    background: rgba(60, 255, 0, 0.54);
+    background: rgb(60, 255, 0);
 }
 
 .wwmap-legend .cat3:before {
     content: '3кс';
 }
 .wwmap-legend .cat3 {
-    background: rgba(252, 255, 23, 0.54);
+    background: rgb(252, 255, 23);
 }
 
 .wwmap-legend .cat4:before {
     content: '4кс';
 }
 .wwmap-legend .cat4 {
-    background: rgba(255, 177, 0, 0.54);
+    background: rgb(255, 177, 0);
 }
 
 .wwmap-legend .cat5:before {
     content: '5кс';
 }
 .wwmap-legend .cat5 {
-    background: rgba(255, 0, 0, 0.54);
+    background: rgb(255, 0, 0);
 }
 
 .wwmap-legend .cat6:before {
     content: '6кс';
 }
 .wwmap-legend .cat6 {
-    background: rgba(204, 0, 0, 0.54);
+    background: rgb(204, 0, 0);
+}
+.wwmap-legend .cat-bold {
+    opacity: 0.8
 }
 
 .wwmap-gallery-div {

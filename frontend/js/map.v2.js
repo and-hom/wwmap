@@ -174,8 +174,7 @@ WWMap.prototype.init = function (mapDivId) {
         });
     }
 
-    var LegendClass = createLegendClass();
-    this.yMap.controls.add(new LegendClass(), {
+    this.yMap.controls.add(createLegend(), {
         float: 'left'
     });
 
@@ -246,11 +245,12 @@ function addLayer(key, name, copyright, tilesUrlTemplate, lower_scale, upper_sca
     ymaps.mapType.storage.add(key, new ymaps.MapType(name, [key]));
 }
 
-function createLegendClass() {
+function createLegend() {
     Legend = function (options) {
         Legend.superclass.constructor.call(this, options);
         this._$content = null;
         this._geocoderDeferred = null;
+        this.catFilter = 1;
     };
 
     ymaps.util.augment(Legend, ymaps.collection.Item, {
@@ -273,13 +273,63 @@ function createLegendClass() {
             // Создаем HTML-элемент с текстом.
             var content = '<div class="wwmap-legend">';
             for (i = 0; i <= 6; i++) {
-                content += '<div class="cat' + i + '"></div>'
+                content += '<div class="cat' + i + ' cat-bold"></div>'
             }
             content += '</div>';
             this._$content = $(content).appendTo(parentDomContainer);
+
+            var legendDiv = $('.wwmap-legend');
+            var t = this;
+            legendDiv.bind('click', function (e) {
+                t.onFilterStateChanged(e)
+            });
+            legendDiv.bind('mousedown', function (e) {
+                t.onDragStart(e)
+            });
+            legendDiv.bind('mouseup', function (e) {
+                t.onDragStop(e)
+            });
+            legendDiv.bind('mousemove', function (e) {
+                t.onDrag(e)
+            });
+        },
+
+        onDragStart: function (e) {
+            this.drag = true
+        },
+        onDragStop: function (e) {
+            this.drag = false
+        },
+        onDrag: function (e) {
+            if (this.drag) {
+                this.onFilterStateChanged(e)
+            }
+        },
+        onFilterStateChanged: function (e) {
+            var category = $(e.target)
+                .attr("class")
+                .split(' ')
+                .filter(function (c) {
+                    return c.startsWith('cat')
+                })
+                .map(function (value) {
+                    return parseInt(value.substring(3))
+                })[0];
+            if (!category || category === this.catFilter) {
+                return
+            }
+            for (var i = 1; i <= 6; i++) {
+                if (i < category) {
+                    $('.wwmap-legend .cat' + i).removeClass("cat-bold")
+                } else {
+                    $('.wwmap-legend .cat' + i).addClass("cat-bold")
+                }
+            }
+            this.catFilter = category;
         }
     });
-    return Legend
+
+    return new Legend()
 }
 
 function WWMapPopup(templateDivId, fromTemplates, divId, options) {
