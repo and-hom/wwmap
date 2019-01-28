@@ -56,6 +56,12 @@ type RiverListDto struct {
 	HtmlUrl string            `json:"html"`
 }
 
+type RiverListLightDto struct {
+	dao.IdTitle
+	Bounds geo.Bbox   `json:"bounds"`
+	Region dao.Region `json:"region"`
+}
+
 type RiverPageDto struct {
 	dao.IdTitle
 	Region       dao.Region             `json:"region"`
@@ -97,15 +103,11 @@ func (this *RiverHandler) GetRiverCard(w http.ResponseWriter, req *http.Request)
 	reportsList := this.groupReports(reports, river)
 
 	imgs := []ImgWithSpot{}
-	maxCat := model.UNDEFINED_CATEGORY
 	for i := 0; i < len(river.Spots); i++ {
 		if len(river.Spots[i].Images) > 0 {
 			img := river.Spots[i].Images[0]
 			this.processForWeb(&img)
 			imgs = append(imgs, ImgWithSpot{Img: img, SpotTitle: river.Spots[i].Title})
-		}
-		if maxCat < river.Spots[i].Category.Category {
-			maxCat = river.Spots[i].Category.Category
 		}
 	}
 
@@ -120,6 +122,7 @@ func (this *RiverHandler) GetRiverCard(w http.ResponseWriter, req *http.Request)
 		}
 	}
 
+	riverCats := dao.CalculateClusterCategory(river.Spots)
 	dto := RiverPageDto{
 		IdTitle:      river.IdTitle,
 		Region:       river.Region,
@@ -129,8 +132,8 @@ func (this *RiverHandler) GetRiverCard(w http.ResponseWriter, req *http.Request)
 		Imgs:         imgs,
 		PdfUrl:       this.getRiverPassportUrl(&river, this.RiverPassportPdfUrlBase),
 		HtmlUrl:      this.getRiverPassportUrl(&river, this.RiverPassportHtmlUrlBase),
-		MaxCategory:  model.SportCategory{Category: maxCat},
-		AvgCategory:  model.SportCategory{Category: dao.CalculateClusterCategory(river.Spots)},
+		MaxCategory:  model.SportCategory{Category: riverCats.Max},
+		AvgCategory:  model.SportCategory{Category: riverCats.Avg},
 		WeatherPoint: weatherPoint,
 	}
 	w.Write([]byte(this.JsonStr(dto, "{}")))
@@ -194,22 +197,53 @@ func (this *RiverHandler) GetVisibleRiversLight(w http.ResponseWriter, req *http
 		return
 	}
 
-	rivers, err := this.RiverDao.ListRiversWithBounds(bbox, RIVER_LIST_LIMIT, false)
+	catFilter := 0
+	catFilterStr := req.FormValue("max_cat")
+	if catFilterStr !="" {
+		catFilter, err = strconv.Atoi(catFilterStr)
+		if err != nil {
+			log.Warnf("Incorrect max_cat parameter %s.")
+			catFilter = 0
+		}
+	}
+
+	rivers, err := this.TileDao.ListRiversWithBounds(bbox, RIVER_LIST_LIMIT, false)
 	if err != nil {
 		OnError500(w, err, "Can not select rivers")
 		return
 	}
 
-	riversWithReports := make([]RiverListDto, len(rivers))
+	riversWithReports := make([]RiverListLightDto, 0, len(rivers))
 	for i := 0; i < len(rivers); i++ {
 		river := &rivers[i]
-		river.Bounds = river.Bounds.WithMargins(RIVER_BOUNDS_MARGINS_RATIO)
-		river.Props = nil
-
-		riversWithReports[i] = RiverListDto{
-			RiverTitle: *river,
+		if len(river.Spots)==0 {
+			continue
+		}
+		maxCat := 0
+		bounds := geo.Bbox{
+			X1: river.Spots[0].Point.Lon,
+			Y1: river.Spots[0].Point.Lat,
+			X2: river.Spots[0].Point.Lon,
+			Y2: river.Spots[0].Point.Lat,
+		}
+		for j := 0; j < len(river.Spots); j++ {
+			cat := river.Spots[j].Category.Category
+			if maxCat < cat {
+				maxCat = cat
+			}
+			if j > 0 {
+				bounds.Add(river.Spots[j].Point)
+			}
+		}
+		if maxCat < catFilter {
+			continue
 		}
 
+		riversWithReports = append(riversWithReports, RiverListLightDto{
+			IdTitle: dao.IdTitle{Id: river.Id, Title: river.Title,},
+			Region:  dao.Region{Id: river.RegionId, CountryId: river.CountryId,},
+			Bounds:bounds.WithMargins(RIVER_BOUNDS_MARGINS_RATIO),
+		})
 	}
 	w.Write([]byte(this.JsonStr(riversWithReports, "[]")))
 }

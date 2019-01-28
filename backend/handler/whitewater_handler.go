@@ -68,7 +68,7 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 	var features []Feature
 
 	if onlyId == 0 {
-		rivers, err := this.TileDao.ListRiversWithBounds(bbox, allowed, PREVIEWS_COUNT)
+		rivers, err := this.TileDao.ListRiversWithBounds(bbox, PREVIEWS_COUNT, allowed)
 		if err != nil {
 			OnError500(w, err, fmt.Sprintf("Can not read whitewater points for bbox %s", bbox.String()))
 			return

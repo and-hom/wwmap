@@ -95,7 +95,7 @@ func (this *tileStorage) GetRiver(riverId int64, imgLimit int) (RiverWithSpotsEx
 	return river, nil
 }
 
-func (this *tileStorage) ListRiversWithBounds(bbox geo.Bbox, showUnpublished bool, imgLimit int) ([]RiverWithSpots, error) {
+func (this *tileStorage) ListRiversWithBounds(bbox geo.Bbox, imgLimit int, showUnpublished bool) ([]RiverWithSpots, error) {
 	rows, err := this.db.Query(this.insideBoundsQuery, bbox.Y1, bbox.X1, bbox.Y2, bbox.X2, imgLimit, showUnpublished)
 	if err != nil {
 		return []RiverWithSpots{}, err

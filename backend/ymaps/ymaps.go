@@ -117,6 +117,8 @@ func categoryClusterIcon(category int) string {
 func mkCluster(Id clustering.ClusterId, points []Spot, riverTitle string) Feature {
 	bounds := ClusterGeom(points)
 
+	riverCats := CalculateClusterCategory(points)
+
 	return Feature{
 		Id: MAX_CLUSTER_ID - rand.Int63n(MAX_CLUSTERS),
 		Type: CLUSTER,
@@ -127,8 +129,9 @@ func mkCluster(Id clustering.ClusterId, points []Spot, riverTitle string) Featur
 			IconContent: riverTitle,
 
 			Title: Id.Title,
+			Category: &model.SportCategory{Category: riverCats.Max,},
 		}, Options: FeatureOptions{
-			Preset: categoryClusterIcon(CalculateClusterCategory(points)),
+			Preset: categoryClusterIcon(riverCats.Avg),
 		},
 	}
 }

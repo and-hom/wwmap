@@ -422,25 +422,37 @@ const (
 const CATEGORY_DEFINITING_POINTS_COUNT int = 3
 const MAX_CATEGORY = 6
 
-func CalculateClusterCategory(points []Spot) int {
+type RiverCategoryMetrics struct {
+	Max int
+	Avg int
+}
+
+func CalculateClusterCategory(points []Spot) RiverCategoryMetrics {
 	cntByCat := make(map[int]int)
 	categorizedPointsCount := 0
+	maxCategory := 0
 	for i := 0; i < len(points); i++ {
 		currentCat := points[i].Category.Category
 		cntByCat[currentCat] += 1
 		if currentCat > 0 {
 			categorizedPointsCount += 1
 		}
+		if (currentCat > maxCategory) {
+			maxCategory = currentCat
+		}
 	}
 
 	wwCnt := 0
-	riverCategory := 0
+	avgCategory := 0
 	definitingPointsCount := min(CATEGORY_DEFINITING_POINTS_COUNT, categorizedPointsCount)
 	for i := MAX_CATEGORY; i > 0 && wwCnt < definitingPointsCount; i-- {
 		wwCnt += cntByCat[i]
-		riverCategory = i
+		avgCategory = i
 	}
-	return riverCategory
+	return RiverCategoryMetrics{
+		Max: maxCategory,
+		Avg: avgCategory,
+	}
 }
 
 func min(x, y int) int {

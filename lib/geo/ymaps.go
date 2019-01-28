@@ -1,13 +1,13 @@
 package geo
 
 import (
-	"strings"
-	"fmt"
-	"strconv"
 	"bytes"
-	"math"
+	"fmt"
 	"github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/lib/model"
+	"math"
+	"strconv"
+	"strings"
 )
 
 type Bbox struct {
@@ -53,6 +53,21 @@ func (this Bbox) WithMargins(ratio float64) Bbox {
 		Y1: this.Y1 - marginY,
 		X2: this.X2 + marginX,
 		Y2: this.Y2 + marginY,
+	}
+}
+
+func (this *Bbox) Add(point Point) {
+	if (this.X1 > point.Lon) {
+		this.X1 = point.Lon
+	}
+	if (this.X2 < point.Lon) {
+		this.X2 = point.Lon
+	}
+	if (this.Y1 > point.Lat) {
+		this.Y1 = point.Lat
+	}
+	if (this.Y2 < point.Lat) {
+		this.Y2 = point.Lat
 	}
 }
 

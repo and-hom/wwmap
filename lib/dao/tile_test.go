@@ -18,7 +18,7 @@ func TestTileDaoZeroRows(t *testing.T) {
 	tileDao, db := initDao(t)
 	defer db.Close()
 
-	found, err := tileDao.ListRiversWithBounds(geo.Bbox{}, false, 1)
+	found, err := tileDao.ListRiversWithBounds(geo.Bbox{}, 1, false)
 	assert.Nil(t, err)
 	assert.Equal(t, 0, len(found))
 }
@@ -27,7 +27,7 @@ func TestTileDaoSingleRiverSingleSpotNoImg(t *testing.T) {
 	tileDao, db := initDao(t, []driver.Value{1, "Хара-Мурин", 1, 1, 1, "8", POINT_JSON, "4a", "http://aaa/bbb", "{}", -1, "", "", "", "", time.Unix(0, 0), ""})
 	defer db.Close()
 
-	found, err := tileDao.ListRiversWithBounds(geo.Bbox{}, false, 1)
+	found, err := tileDao.ListRiversWithBounds(geo.Bbox{}, 1, false)
 	assert.Nil(t, err)
 	assert.Equal(t, 1, len(found))
 	assert.Equal(t, 1, len(found[0].Spots))
@@ -38,7 +38,7 @@ func TestTileDaoSingleRiverSingleSpot(t *testing.T) {
 	tileDao, db := initDao(t, []driver.Value{1, "Хара-Мурин", 1, 1, 1, "8", POINT_JSON, "4a", "http://aaa/bbb", "{}", 1, "wwmap", "1", "", "", time.Unix(0, 0), "image"})
 	defer db.Close()
 
-	found, err := tileDao.ListRiversWithBounds(geo.Bbox{}, false, 1)
+	found, err := tileDao.ListRiversWithBounds(geo.Bbox{}, 1, false)
 	assert.Nil(t, err)
 	assert.Equal(t, 1, len(found))
 	assert.Equal(t, 1, len(found[0].Spots))
@@ -54,7 +54,7 @@ func TestTileDaoTwoRiversTwoSpots(t *testing.T) {
 	)
 	defer db.Close()
 
-	found, err := tileDao.ListRiversWithBounds(geo.Bbox{}, false, 1)
+	found, err := tileDao.ListRiversWithBounds(geo.Bbox{}, 1, false)
 	assert.Nil(t, err)
 	assert.Equal(t, 2, len(found))
 

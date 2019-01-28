@@ -92,6 +92,8 @@ function WWMap(divId, bubbleTemplate, riverList, tutorialPopup, catalogLinkType)
     this.tutorialPopup = tutorialPopup;
     this.catalogLinkType = catalogLinkType;
 
+    this.catFilter = 1;
+
     addCachedLayer('osm#standard', 'OSM', 'OpenStreetMap contributors, CC-BY-SA', 'osm');
     addLayer('google#satellite', 'Спутник Google', 'Изображения © DigitalGlobe,CNES / Airbus, 2018,Картографические данные © Google, 2018', GOOGLE_SAT_TILES);
     addCachedLayer('ggc#standard', 'Топографическая карта', '', 'ggc', 0, 15);
@@ -101,7 +103,7 @@ function WWMap(divId, bubbleTemplate, riverList, tutorialPopup, catalogLinkType)
 WWMap.prototype.loadRivers = function (bounds) {
     if (this.riverList) {
         var riverList = this.riverList;
-        $.get(apiBase + "/visible-rivers-light?bbox=" + bounds.join(','), function (data) {
+        $.get(apiBase + "/visible-rivers-light?bbox=" + bounds.join(',') + "&max_cat=" + this.catFilter, function (data) {
             var dataObj = {
                 "rivers": JSON.parse(data),
                 "apiUrl": apiBase + "/gpx/river",
@@ -174,7 +176,7 @@ WWMap.prototype.init = function (mapDivId) {
         });
     }
 
-    this.yMap.controls.add(createLegend(), {
+    this.yMap.controls.add(createLegend(this), {
         float: 'left'
     });
 
@@ -204,11 +206,20 @@ WWMap.prototype.init = function (mapDivId) {
         splitRequests: false
     });
 
+    objectManager.setFilter(function(obj) {
+        if (obj.properties.category) {
+            var objCategory = parseInt(obj.properties.category[0]);
+            return t.catFilter === 1 || objCategory < 0 || objCategory >= t.catFilter;
+        }
+        return true
+    });
+
     objectManager.objects.events.add(['click'], function (e) {
         objectManager.objects.balloon.open(e.get('objectId'));
     });
 
     this.yMap.geoObjects.add(objectManager);
+    this.objectManager = objectManager;
 
     this.loadRivers(this.yMap.getBounds())
 };
@@ -245,12 +256,11 @@ function addLayer(key, name, copyright, tilesUrlTemplate, lower_scale, upper_sca
     ymaps.mapType.storage.add(key, new ymaps.MapType(name, [key]));
 }
 
-function createLegend() {
+function createLegend(wwmap) {
     Legend = function (options) {
         Legend.superclass.constructor.call(this, options);
         this._$content = null;
         this._geocoderDeferred = null;
-        this.catFilter = 1;
     };
 
     ymaps.util.augment(Legend, ymaps.collection.Item, {
@@ -315,7 +325,7 @@ function createLegend() {
                 .map(function (value) {
                     return parseInt(value.substring(3))
                 })[0];
-            if (!category || category === this.catFilter) {
+            if (!category || category === wwmap.catFilter) {
                 return
             }
             for (var i = 1; i <= 6; i++) {
@@ -325,7 +335,9 @@ function createLegend() {
                     $('.wwmap-legend .cat' + i).addClass("cat-bold")
                 }
             }
-            this.catFilter = category;
+            wwmap.catFilter = category;
+            wwmap.objectManager.reloadData();
+            wwmap.loadRivers(wwmap.yMap.getBounds())
         }
     });
 
