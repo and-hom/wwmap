@@ -3,36 +3,36 @@
 	dh $@
 
 pre-build:
-	GOPATH="$(HOME)/.go" go install github.com/go-bindata/go-bindata
-	cd ../lib/dao/queries; $(HOME)/.go/bin/go-bindata -pkg queries .
+	go install github.com/go-bindata/go-bindata
+	cd ../lib/dao/queries; go-bindata -pkg queries .
 
 build-notifier:
-	cd notifier && $(HOME)/.go/bin/go-bindata *-template* && GOPATH="$(HOME)/.go" go build
+	cd notifier && go-bindata *-template* && go build
 
 TEMPLATE_FILES=spot-page-template.htm river-page-template.htm region-page-template.htm country-page-template.htm root-page-template.htm decorator.htm
 build-catalog-sync:
 	cd catalog-sync && \
 	mkdir -p bindata && \
-	$(HOME)/.go/bin/go-bindata -pkg bindata -o bindata/bindata.go email-template && \
+	go-bindata -pkg bindata -o bindata/bindata.go email-template && \
 	cd huskytm/templates && \
-	$(HOME)/.go/bin/go-bindata -pkg templates $(TEMPLATE_FILES) && \
+	go-bindata -pkg templates $(TEMPLATE_FILES) && \
 	cd ../../ && \
 	cd pdf/templates && \
-	$(HOME)/.go/bin/go-bindata -pkg templates $(TEMPLATE_FILES) && \
+	go-bindata -pkg templates $(TEMPLATE_FILES) && \
 	cd ../../ && \
-	GOPATH="$(HOME)/.go" go build
+	go build
 
 build-db-clean:
-	cd db-clean && GOPATH="$(HOME)/.go" go build
+	cd db-clean && go build
 
 build-spot-sort:
-	cd spot-sort && GOPATH="$(HOME)/.go" go build
+	cd spot-sort && go build
 
 build-meteo:
-	cd meteo && GOPATH="$(HOME)/.go" go build
+	cd meteo && go build
 
 build-level:
-	cd vodinfo-eye && cd pattern && $(HOME)/.go/bin/go-bindata -pkg pattern . && cd .. && GOPATH="$(HOME)/.go" go build
+	cd vodinfo-eye && cd pattern && go-bindata -pkg pattern . && cd .. && go build
 
 build: pre-build build-notifier build-catalog-sync build-db-clean build spot-sort build-meteo build-level
 

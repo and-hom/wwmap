@@ -5,7 +5,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	wp "github.com/and-hom/go-wordpress"
 	"github.com/and-hom/wwmap/cron/catalog-sync/common"
-	"github.com/and-hom/wwmap/cron/catalog-sync/huskytm/templates"
+	templates "github.com/and-hom/wwmap/cron/catalog-sync/huskytm/templates"
 	"github.com/and-hom/wwmap/lib/dao"
 	"github.com/and-hom/wwmap/lib/util"
 	"net/http"
@@ -17,7 +17,7 @@ func GetCatalogConnector(login, password string, minDeltaBetweenRequests time.Du
 		BaseAPIURL: API_BASE, // example: `http://192.168.99.100:32777/wp-json/wp/v2`
 		Username:   login,
 		Password:   password,
-		Timeout: 10 * time.Second,
+		Timeout:    10 * time.Second,
 	})
 	u, r, b, e := client.Users().Me(emptyMap())
 	if e != nil {
@@ -27,15 +27,15 @@ func GetCatalogConnector(login, password string, minDeltaBetweenRequests time.Du
 		return nil, fmt.Errorf("Connection failed. Code: %d Body: %s", r.StatusCode, string(b))
 	}
 	t, err := common.LoadTemplates(templates.MustAsset)
-	if err!=nil {
+	if err != nil {
 		return nil, err
 	}
 	return &HuskytmCatalogConnector{
-		client:client,
-		me:u.ID,
-		pageIdsCache:make(map[string]int),
-		templates:t,
-		rateLimit:util.NewRateLimit(minDeltaBetweenRequests),
+		client:       client,
+		me:           u.ID,
+		pageIdsCache: make(map[string]int),
+		templates:    t,
+		rateLimit:    util.NewRateLimit(minDeltaBetweenRequests),
 	}, nil
 }
 
@@ -69,7 +69,7 @@ func (this *HuskytmCatalogConnector) CreateEmptyPageIfNotExistsAndReturnId(id in
 	p, r, _, err := this.client.Pages().Get(pageId, emptyMap())
 	if err != nil {
 		return 0, "", false, err
-	} else	if r.StatusCode == http.StatusNotFound || p.Status == "trash" {
+	} else if r.StatusCode == http.StatusNotFound || p.Status == "trash" {
 		log.Warnf("Existing page %d is not sutable: %d %s", pageId, r.StatusCode, p.Status)
 		createdPageId, link, err := this.createPage(parent, title)
 		log.Info("Created page id=%d for entity id=%d", createdPageId, id)
@@ -82,10 +82,10 @@ func (this *HuskytmCatalogConnector) CreateEmptyPageIfNotExistsAndReturnId(id in
 func (this *HuskytmCatalogConnector) createPage(parent int, title string) (int, string, error) {
 	this.rateLimit.WaitIfNecessary()
 	p, r, b, err := this.client.Pages().Create(&wp.Page{
-		Title:        wp.Title{Raw:title},
-		Author:        this.me,
-		Parent:        parent,
-		Status:        "publish",
+		Title:  wp.Title{Raw: title},
+		Author: this.me,
+		Parent: parent,
+		Status: "publish",
 	})
 	if err != nil {
 		log.Errorf("Connection failed. Code: %d Body: %s", r.StatusCode, string(b))
@@ -167,4 +167,3 @@ type PageNotFoundError struct {
 func (this PageNotFoundError) Error() string {
 	return this.msg
 }
-

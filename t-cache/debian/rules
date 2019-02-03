@@ -3,7 +3,7 @@
 	dh $@
 
 build:
-	GOPATH="$(HOME)/.go" go build
+	go build
 
 override_dh_auto_install:
 	install -D -m 0755 t-cache $$(pwd)/debian/wwmap-t-cache/usr/bin/wwmap-t-cache
