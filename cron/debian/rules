@@ -34,7 +34,7 @@ build-meteo:
 build-level:
 	cd vodinfo-eye && cd pattern && go-bindata -pkg pattern . && cd .. && go build
 
-build: pre-build build-notifier build-catalog-sync build-db-clean build spot-sort build-meteo build-level
+build: pre-build build-notifier build-catalog-sync build-db-clean build-spot-sort build-meteo build-level
 
 override_dh_auto_install:
 	install -d $$(pwd)/debian/wwmap-cron/usr/share/wwmap/backup/
