@@ -20,7 +20,7 @@ DIR=/var/lib/wwmap/backup
 NOW=$(date +"%Y-%m-%d")
 # DBS="$(psql -U $USER -lt |awk '{ print $1}' |grep -vE '^-|^List|^Name|template[0|1]')"
 
-BACKUPS=`find $DIR -name "wwmap.*.gz" | wc -l | sed 's/\ //g'`
+BACKUPS=`find $DIR -maxdepth 1 -name "wwmap.*.gz" | wc -l | sed 's/\ //g'`
 while [ $BACKUPS -ge $KEEP ]
 do
   ls -tr1 $DIR/wwmap.*.gz | head -n 1 | xargs rm -f
