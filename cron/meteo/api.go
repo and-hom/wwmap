@@ -32,7 +32,7 @@ type yandexWeatherApi struct {
 func (this yandexWeatherApi) Get(point geo.Point) ([]dao.Meteo, error) {
 	log.Info("Fetch weather for ", point.String())
 
-	url := fmt.Sprintf("https://api.weather.yandex.ru/v1/forecast?lat=%f&lon=%f", point.Lat, point.Lon)
+	url := fmt.Sprintf("https://api.weather.yandex.ru/v1/informers?lat=%f&lon=%f", point.Lat, point.Lon)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return []dao.Meteo{}, err
@@ -43,7 +43,7 @@ func (this yandexWeatherApi) Get(point geo.Point) ([]dao.Meteo, error) {
 	if err != nil {
 		return []dao.Meteo{}, err
 	}
-	if (resp.StatusCode != http.StatusOK) {
+	if resp.StatusCode != http.StatusOK {
 		return []dao.Meteo{}, fmt.Errorf("HTTP code is %d: %s", resp.StatusCode, resp.Status)
 	}
 
@@ -76,7 +76,7 @@ func (this yandexWeatherApi) rainLevel(condition string) int {
 	if strings.Contains(condition, "rain") {
 		return 2
 	}
-	return 0;
+	return 0
 }
 
 type YandexWeatherResponse struct {
@@ -85,9 +85,9 @@ type YandexWeatherResponse struct {
 }
 
 type YandexWeatherFact struct {
-	Temp          int    `json:"temp"`
-	Condition     string `json:"condition"`
-	DefPressureMm int    `json:"def_pressure_mm"`
-	DefPressurePa int    `json:"def_pressure_pa"`
-	Daytime       string `json:"daytime"`
+	Temp       int    `json:"temp"`
+	Condition  string `json:"condition"`
+	PressureMm int    `json:"pressure_mm"`
+	PressurePa int    `json:"pressure_pa"`
+	Daytime    string `json:"daytime"`
 }
