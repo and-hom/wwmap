@@ -21,7 +21,9 @@
                     <button v-if="image.enabled===true" v-on:click="setImgEnabled(false, image.id)"
                             class="btn btn-secondary">Не показывать
                     </button>
-                    <button v-if="image.source==='wwmap'" v-on:click="removeImage(image.id)" class="btn btn-danger">
+                    <ask :id="'del-video-' + image.id" title="Точно?" msg="Удалить видео?"
+                         :okfn="function() { removeImage(image.id); }"></ask>
+                    <button data-toggle="modal" :data-target="'#del-video-' + image.id" class="btn btn-danger">
                         Удалить
                     </button>
                     <div style="margin-top: 20px;">

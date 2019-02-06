@@ -35,7 +35,7 @@ type ImgHandler struct {
 	App
 	ImgStorage        blob.BlobStorage
 	PreviewImgStorage blob.BlobStorage
-};
+}
 
 func (this *ImgHandler) Init() {
 	this.Register("/spot/{spotId}/img", HandlerFunctions{Get: this.GetImages,
@@ -180,7 +180,7 @@ func (this *ImgHandler) Upload(w http.ResponseWriter, req *http.Request) {
 		OnError500(w, err, "Can not store image")
 		return
 	}
-	this.LogUserEvent(req, IMAGE_LOG_ENTRY_TYPE, img.Id, dao.ENTRY_TYPE_CREATE, "");
+	this.LogUserEvent(req, IMAGE_LOG_ENTRY_TYPE, img.Id, dao.ENTRY_TYPE_CREATE, "")
 }
 
 func storageKey(img dao.Img) string {
@@ -222,23 +222,35 @@ func (this *ImgHandler) Delete(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	existing, found, err := this.ImgDao.Find(imgId)
+	if err != nil {
+		OnError500(w, err, "Can't select existing image from database")
+		return
+	}
+	if !found {
+		OnError(w, err, "Image does not exist", http.StatusNotFound)
+		return
+	}
+
 	err = this.ImgDao.Remove(imgId, nil)
 	if err != nil {
 		OnError500(w, err, "Can not delete image from db")
 		return
 	}
 
-	imgRemoveErr := this.ImgStorage.Remove(imgIdStr)
-	previewRemoveErr := this.PreviewImgStorage.Remove(imgIdStr)
-	if imgRemoveErr != nil {
-		logrus.Errorf("Can not delete image data: ", imgRemoveErr)
-	}
-	if previewRemoveErr != nil {
-		logrus.Errorf("Can not delete image preview: ", previewRemoveErr)
+	if existing.Source == dao.IMG_SOURCE_WWMAP {
+		imgRemoveErr := this.ImgStorage.Remove(imgIdStr)
+		previewRemoveErr := this.PreviewImgStorage.Remove(imgIdStr)
+		if imgRemoveErr != nil {
+			logrus.Errorf("Can not delete image data: ", imgRemoveErr)
+		}
+		if previewRemoveErr != nil {
+			logrus.Errorf("Can not delete image preview: ", previewRemoveErr)
+		}
 	}
 
 	this.listImagesForSpot(w, spotId, getImgType(req))
-	this.LogUserEvent(req, IMAGE_LOG_ENTRY_TYPE, imgId, dao.ENTRY_TYPE_DELETE, "");
+	this.LogUserEvent(req, IMAGE_LOG_ENTRY_TYPE, imgId, dao.ENTRY_TYPE_DELETE, "")
 }
 
 func (this *ImgHandler) SetEnabled(w http.ResponseWriter, req *http.Request) {
@@ -275,7 +287,7 @@ func (this *ImgHandler) SetEnabled(w http.ResponseWriter, req *http.Request) {
 
 	this.listImagesForSpot(w, spotId, getImgType(req))
 
-	this.LogUserEvent(req, IMAGE_LOG_ENTRY_TYPE, imgId, dao.ENTRY_TYPE_MODIFY, fmt.Sprintf("enabled=%t", enabled));
+	this.LogUserEvent(req, IMAGE_LOG_ENTRY_TYPE, imgId, dao.ENTRY_TYPE_MODIFY, fmt.Sprintf("enabled=%t", enabled))
 }
 
 func (this *ImgHandler) SetPreview(w http.ResponseWriter, req *http.Request) {
@@ -314,7 +326,7 @@ func (this *ImgHandler) SetPreview(w http.ResponseWriter, req *http.Request) {
 	}
 
 	this.listImagesForSpot(w, spotId, getImgType(req))
-	this.LogUserEvent(req, IMAGE_LOG_ENTRY_TYPE, imgId, dao.ENTRY_TYPE_MODIFY, "main=true");
+	this.LogUserEvent(req, IMAGE_LOG_ENTRY_TYPE, imgId, dao.ENTRY_TYPE_MODIFY, "main=true")
 }
 
 func (this *ImgHandler) DropPreview(w http.ResponseWriter, req *http.Request) {
@@ -330,7 +342,7 @@ func (this *ImgHandler) DropPreview(w http.ResponseWriter, req *http.Request) {
 		OnError500(w, err, fmt.Sprintf("Can not set preview for spot %d", spotId))
 		return
 	}
-	this.LogUserEvent(req, SPOT_LOG_ENTRY_TYPE, spotId, dao.ENTRY_TYPE_MODIFY, "drop main img");
+	this.LogUserEvent(req, SPOT_LOG_ENTRY_TYPE, spotId, dao.ENTRY_TYPE_MODIFY, "drop main img")
 }
 
 func (this *ImgHandler) GetPreview(w http.ResponseWriter, req *http.Request) {
