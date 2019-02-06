@@ -4,6 +4,8 @@
 backend/.drafts
 backend/backend
 
+junk/
+
 **/debian/files
 **/debian/.debhelper
 **/debian/debhelper*
