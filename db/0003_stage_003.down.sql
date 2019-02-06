@@ -1,2 +1,4 @@
 TRUNCATE TABLE "route" CASCADE;
+ALTER TABLE point DROP COLUMN route_id;
+ALTER TABLE track DROP COLUMN route_id;
 DROP TABLE "route";
