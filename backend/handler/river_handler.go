@@ -14,6 +14,7 @@ import (
 	"github.com/and-hom/wwmap/lib/model"
 	"github.com/gorilla/mux"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 )
@@ -68,12 +69,14 @@ type RiverPageDto struct {
 	Description  string                 `json:"description"`
 	Reports      []VoyageReportListDto  `json:"reports"`
 	Imgs         []ImgWithSpot          `json:"imgs"`
+	Videos       []ImgWithSpot          `json:"videos"`
 	PdfUrl       string                 `json:"pdf"`
 	HtmlUrl      string                 `json:"html"`
 	Props        map[string]interface{} `json:"props"`
 	MaxCategory  model.SportCategory    `json:"max_category"`
 	AvgCategory  model.SportCategory    `json:"avg_category"` // min category of 3 hardest spots
 	WeatherPoint *geo.Point             `json:"weather_point"`
+	SearchQuery  string                 `json:"search_query"`
 }
 
 type ImgWithSpot struct {
@@ -103,11 +106,25 @@ func (this *RiverHandler) GetRiverCard(w http.ResponseWriter, req *http.Request)
 	reportsList := this.groupReports(reports, river)
 
 	imgs := []ImgWithSpot{}
+	videos := []ImgWithSpot{}
 	for i := 0; i < len(river.Spots); i++ {
-		if len(river.Spots[i].Images) > 0 {
-			img := river.Spots[i].Images[0]
-			this.processForWeb(&img)
-			imgs = append(imgs, ImgWithSpot{Img: img, SpotTitle: river.Spots[i].Title})
+		wasVideo := false
+		wasImg := false
+		for j := 0; j < len(river.Spots[i].Images); j++ {
+			fmt.Println(river.Spots[i].Images[j].Type)
+			if !wasVideo && river.Spots[i].Images[j].Type == dao.IMAGE_TYPE_VIDEO {
+				videos = append(videos, ImgWithSpot{Img: river.Spots[i].Images[j], SpotTitle: river.Spots[i].Title})
+				wasVideo = true
+			}
+			if !wasImg && river.Spots[i].Images[j].Type == dao.IMAGE_TYPE_IMAGE {
+				img := river.Spots[i].Images[j]
+				this.processForWeb(&img)
+				imgs = append(imgs, ImgWithSpot{Img: img, SpotTitle: river.Spots[i].Title})
+				wasImg = true
+			}
+			if wasImg && wasVideo {
+				break
+			}
 		}
 	}
 
@@ -130,11 +147,16 @@ func (this *RiverHandler) GetRiverCard(w http.ResponseWriter, req *http.Request)
 		Props:        river.Props,
 		Reports:      reportsList,
 		Imgs:         imgs,
+		Videos:       videos,
 		PdfUrl:       this.getRiverPassportUrl(&river, this.RiverPassportPdfUrlBase),
 		HtmlUrl:      this.getRiverPassportUrl(&river, this.RiverPassportHtmlUrlBase),
 		MaxCategory:  model.SportCategory{Category: riverCats.Max},
 		AvgCategory:  model.SportCategory{Category: riverCats.Avg},
 		WeatherPoint: weatherPoint,
+		SearchQuery: strings.Join([]string{
+			url.QueryEscape("река"),
+			url.QueryEscape(river.Title),
+			url.QueryEscape("сплав")}, "+"),
 	}
 	w.Write([]byte(this.JsonStr(dto, "{}")))
 }

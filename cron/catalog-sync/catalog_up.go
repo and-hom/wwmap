@@ -335,6 +335,11 @@ func (this *App) writeSpots(catalogConnector *common.CatalogConnector, parentPag
 			log.Errorf("Can not get attached images for %d: %v", spot.Id, err)
 			return 0, "", []common.SpotLink{}, false, err
 		}
+		videos, err := this.ImgDao.List(spot.Id, MAX_ATTACHED_IMGS, dao.IMAGE_TYPE_VIDEO, true)
+		if err != nil {
+			log.Errorf("Can not get attached videos for %d: %v", spot.Id, err)
+			return 0, "", []common.SpotLink{}, false, err
+		}
 		schemas, err := this.ImgDao.List(spot.Id, MAX_ATTACHED_IMGS, dao.IMAGE_TYPE_SCHEMA, true)
 		if err != nil {
 			log.Errorf("Can not get attached schemas for %d: %v", spot.Id, err)
@@ -359,6 +364,7 @@ func (this *App) writeSpots(catalogConnector *common.CatalogConnector, parentPag
 			Country:country,
 			MainImage:mainImg,
 			Imgs:imgs,
+			Videos: videos,
 
 			RootPageLink:rootPageLink,
 			CountryPageLink:countryPageLink,

@@ -195,11 +195,37 @@
     width: 100%;
     overflow-x: scroll;
     overflow-y: hidden;
-    white-space: nowrap;
+    /*white-space: nowrap;*/
 }
 
 .wwmap-gallery-img {
-    display: inline;
+    display: inline-block;
     width: 150px;
     margin-bottom: 3px;
+    vertical-align: top;
+}
+
+.wwmap-gallery-youtube {
+    display: inline-block;
+    height: 112px;
+}
+
+.wwmap-gallery-youtube-preview {
+    display: block;
+    background-position: center center;
+    background-size: contain;
+    width: 150px;
+    height: 112px;
+}
+
+.wwmap-play-btn {
+    display: block;
+    width: 150px;
+    height: 112px;
+    position: relative;
+    top: -112px;
+    z-index: 1;
+    background: url("../img/youtube-play.png") no-repeat;
+    background-position: center center;
+    background-size: 50px;
 }

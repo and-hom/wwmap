@@ -62,7 +62,9 @@
                 <td>
                     <button v-if="image.enabled==false" v-on:click="setImgEnabled(true, image.id)" class="btn btn-success">Показывать</button>
                     <button v-if="image.enabled==true" v-on:click="setImgEnabled(false, image.id)"class="btn btn-secondary">Не показывать</button>
-                    <button v-if="image.source=='wwmap'" v-on:click="removeImage(image.id)" class="btn btn-danger">Удалить</button>
+                    <ask :id="'del-img-' + image.id" title="Точно?" msg="Удалить изображение?"
+                         :okfn="function() { removeImage(image.id); }"></ask>
+                    <button data-toggle="modal" :data-target="'#del-img-' + image.id" class="btn btn-danger">Удалить</button>
                     <button v-if="!image.main_image" v-on:click="setSpotPreview(image.id)" class="btn btn-info">Сделать главным изображением</button>
                     <div style="margin-top: 20px;">
                         <log-dropdown object-type="IMAGE" :object-id="image.id"/>

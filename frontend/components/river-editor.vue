@@ -1,10 +1,5 @@
 <template>
     <div>
-        <transition name="fade">
-            <div class="alert alert-danger" role="alert" v-if="errMsg">
-                {{errMsg}}
-            </div>
-        </transition>
         <ask id="del-river" title="Точно?"
              msg="Совсем удалить? Все пороги будут также удалены! Да, совсем! Восстановить будет никак нельзя!"
              :okfn="function() { remove(); }"></ask>
@@ -308,7 +303,6 @@
                  return this.userInfo!=null && (this.userInfo.roles.includes("EDITOR") || this.userInfo.roles.includes("ADMIN"))
                 },
                 editMode: app.rivereditorstate.editMode,
-                errMsg:null,
                 askForRemove: true,
                 save:function() {
                     console.log(this.river.props)
@@ -370,10 +364,10 @@
                     }
                 },
                 showError: function(errMsg) {
-                    this.errMsg = errMsg
+                    app.errMsg = errMsg
                 },
                 hideError: function(errMsg) {
-                    this.errMsg = null
+                    app.errMsg = null
                 },
                 // end of editor
 

@@ -1,11 +1,6 @@
 <template>
     <div>
         <div style="display:none;" :id="initialSpot.id"></div>
-        <transition name="fade">
-            <div class="alert alert-danger" role="alert" v-if="errMsg">
-                {{errMsg}}
-            </div>
-        </transition>
         <ask id="del-spot" title="Точно?" msg="Совсем удалить?" :okfn="function() { remove(); }"></ask>
 
         <div v-if="canEdit()" class="btn-toolbar justify-content-between">
@@ -155,13 +150,14 @@
                                                                       </div>
                     </div>
                 </b-tab>
-                <b-tab title="Схемы" :disabled="spot.id>0 ? false : true">
+                <b-tab title="Схемы" :disabled="spot.id<=0">
                     <img-upload ref="schemasList" :spot="spot" v-bind:images="schemas" type="schema" :auth="true"></img-upload>
                 </b-tab>
-                <b-tab title="Фото" :disabled="spot.id>0 ? false : true">
+                <b-tab title="Фото" :disabled="spot.id<=0">
                     <img-upload ref="imagesList" :spot="spot" v-bind:images="images" type="image" :auth="true"></img-upload>
                 </b-tab>
-                <b-tab title="Видео" disabled>
+                <b-tab title="Видео" :disabled="spot.id<=0">
+                    <video-add :spot="spot" v-bind:images="videos" type="video" :auth="true"></video-add>
                 </b-tab>
                 <b-tab title="Системные параметры">
                     <span class="wwmap-system-hint" style="padding-top: 10px;">Тут собраны настройки разных системных вещей для каждого порога в отдельности</span>
@@ -257,6 +253,18 @@
                     ></div>
                 </div>
             </div>
+            <div v-if="videos.length">
+                <h2>Видео</h2>
+                <div>
+                    <iframe width="450" height="300"
+                            v-for="image in videos"
+                            :src="embeddedVideoUrl(image.remote_id)"
+                            frameborder="0"
+                            allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen
+                    style="margin-right: 2px; margin-bottom: 2px;"></iframe>
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -301,15 +309,15 @@
                 // Maybe computed properties are not allowed in v-bind ?
 
                 if (this.editMode) {
-                    this.$refs.locationEdit.spot = this.spot
-                    this.$refs.locationEdit.doUpdate()
-                    this.$refs.schemasList.spot = this.spot
-                    this.$refs.schemasList.refresh()
-                    this.$refs.imagesList.spot = this.spot
-                    this.$refs.imagesList.refresh()
+                    this.$refs.locationEdit.spot = this.spot;
+                    this.$refs.locationEdit.doUpdate();
+                    this.$refs.schemasList.spot = this.spot;
+                    this.$refs.schemasList.refresh();
+                    this.$refs.imagesList.spot = this.spot;
+                    this.$refs.imagesList.refresh();
                 } else {
-                    this.$refs.locationView.spot = this.spot
-                    this.$refs.locationView.doUpdate()
+                    this.$refs.locationView.spot = this.spot;
+                    this.$refs.locationView.doUpdate();
                 }
                 // end of hack
             }
@@ -334,7 +342,7 @@
 
                     set:function(newVal) {
                         app.spoteditorstate.images = newVal
-                    },
+                    }
                 },
                 schemas: {
                     get:function() {
@@ -343,7 +351,16 @@
 
                     set:function(newVal) {
                         app.spoteditorstate.schemas = newVal
+                    }
+                },
+                videos: {
+                    get:function() {
+                        return app.spoteditorstate.videos
                     },
+
+                    set:function(newVal) {
+                        app.spoteditorstate.videos = newVal
+                    }
                 },
                 mainImageIndex: function() {
                     var imgIdx = this.findMainImgIdx(this.images, this.spotMainUrl)
@@ -371,7 +388,6 @@
                  return this.userInfo!=null && (this.userInfo.roles.includes("EDITOR") || this.userInfo.roles.includes("ADMIN"))
                 },
                 editMode: app.spoteditorstate.editMode,
-                errMsg:null,
                 askForRemove: false,
                 save:function() {
                     updated = saveSpot(this.spot)
@@ -399,10 +415,12 @@
                     this.spotMainUrl = getSpotMainImageUrl(this.spot.id)
                 },
                 reloadImgs: function() {
-                    this.images = getImages(this.initialSpot.id, "image")
-                    this.imgIndex = null
-                    this.schemas = getImages(this.initialSpot.id, "schema")
-                    this.schIndex = null
+                    this.images = getImages(this.initialSpot.id, "image");
+                    this.imgIndex = null;
+                    this.schemas = getImages(this.initialSpot.id, "schema");
+                    this.schIndex = null;
+                    this.videos = getImages(this.initialSpot.id, "video");
+                    this.vidIndex = null;
                 },
                 remove: function() {
                     this.hideError()
@@ -416,10 +434,10 @@
                     }
                 },
                 showError: function(errMsg) {
-                    this.errMsg = errMsg
+                    app.errMsg = errMsg
                 },
-                hideError: function(errMsg) {
-                    this.errMsg = null
+                hideError: function() {
+                    app.errMsg = null
                 },
                 // end of editor
                 all_categories:all_categories,
@@ -429,6 +447,7 @@
                 // imgs
                 imgIndex: null,
                 schIndex: null,
+                vidIndex: null,
 
                 spot: null,
                 shouldReInit:function(){
@@ -441,6 +460,7 @@
                         this.spotMainUrl = getSpotMainImageUrl(this.initialSpot.id)
                         this.images = getImages(this.initialSpot.id, "image")
                         this.schemas = getImages(this.initialSpot.id, "schema")
+                        this.videos = getImages(this.initialSpot.id, "video")
                     }
                 },
 
@@ -463,6 +483,9 @@
                                                    }
                                                    return false
                                                })
+                },
+                embeddedVideoUrl: function (id) {
+                    return "https://www.youtube.com/embed/" + id
                 },
                 schemaIndex: null,
                 imageIndex: null,

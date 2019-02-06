@@ -35,12 +35,15 @@ type ImgHandler struct {
 	App
 	ImgStorage        blob.BlobStorage
 	PreviewImgStorage blob.BlobStorage
-};
+}
 
 func (this *ImgHandler) Init() {
 	this.Register("/spot/{spotId}/img", HandlerFunctions{Get: this.GetImages,
 		Post: this.ForRoles(this.Upload, dao.ADMIN, dao.EDITOR),
 		Put:  this.ForRoles(this.Upload, dao.ADMIN, dao.EDITOR)})
+	this.Register("/spot/{spotId}/img_ext", HandlerFunctions{
+		Post: this.ForRoles(this.AddExternalImage, dao.ADMIN, dao.EDITOR),
+		Put:  this.ForRoles(this.AddExternalImage, dao.ADMIN, dao.EDITOR)})
 	this.Register("/spot/{spotId}/img/{imgId}", HandlerFunctions{Get: this.GetImage,
 		Delete: this.ForRoles(this.Delete, dao.ADMIN, dao.EDITOR)})
 	this.Register("/spot/{spotId}/img/{imgId}/preview", HandlerFunctions{Get: this.GetImagePreview})
@@ -66,7 +69,7 @@ func (this *ImgHandler) GetImage(w http.ResponseWriter, req *http.Request) {
 	pathParams := mux.Vars(req)
 	r, err := this.ImgStorage.Read(storageKeyById(pathParams["imgId"]))
 	if err != nil {
-		OnError500(w, err, "Can not get image")
+		OnError(w, err, "Can not get image", http.StatusNotFound)
 		return
 	}
 	defer r.Close()
@@ -77,11 +80,47 @@ func (this *ImgHandler) GetImagePreview(w http.ResponseWriter, req *http.Request
 	pathParams := mux.Vars(req)
 	r, err := this.PreviewImgStorage.Read(storageKeyById(pathParams["imgId"]))
 	if err != nil {
-		OnError500(w, err, "Can not get image")
+		OnError(w, err, "Can not get image", http.StatusNotFound)
 		return
 	}
 	defer r.Close()
 	io.Copy(w, r)
+}
+
+func (this *ImgHandler) AddExternalImage(w http.ResponseWriter, req *http.Request) {
+	pathParams := mux.Vars(req)
+	spotId, err := strconv.ParseInt(pathParams["spotId"], 10, 64)
+	if err != nil {
+		OnError(w, err, "Can not parse id", http.StatusBadRequest)
+		return
+	}
+	if spotId <= 0 {
+		OnError(w, err, "Can not upload image for non existing spot", http.StatusBadRequest)
+		return
+	}
+
+	data := ExternalImageAddData{}
+	if err = json.NewDecoder(req.Body).Decode(&data); err != nil {
+		OnError(w, err, "Can't parse request body", http.StatusBadRequest)
+		return
+	}
+	img, err := this.ImgDao.Upsert(dao.Img{
+		WwId:            spotId,
+		RemoteId:        data.Id,
+		Type:            dao.ImageType(data.Type),
+		Source:          data.Source,
+		MainImage:       false,
+		Url:             "",
+		PreviewUrl:      "",
+		RawUrl:          "",
+		Enabled:         true,
+		LabelsForSearch: []string{},
+	})
+	if err != nil {
+		OnError500(w, err, "Can not insert")
+		return
+	}
+	this.JsonAnswer(w, img)
 }
 
 func (this *ImgHandler) Upload(w http.ResponseWriter, req *http.Request) {
@@ -183,23 +222,35 @@ func (this *ImgHandler) Delete(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	existing, found, err := this.ImgDao.Find(imgId)
+	if err != nil {
+		OnError500(w, err, "Can't select existing image from database")
+		return
+	}
+	if !found {
+		OnError(w, err, "Image does not exist", http.StatusNotFound)
+		return
+	}
+
 	err = this.ImgDao.Remove(imgId, nil)
 	if err != nil {
 		OnError500(w, err, "Can not delete image from db")
 		return
 	}
 
-	imgRemoveErr := this.ImgStorage.Remove(imgIdStr)
-	previewRemoveErr := this.PreviewImgStorage.Remove(imgIdStr)
-	if imgRemoveErr != nil {
-		logrus.Errorf("Can not delete image data: ", imgRemoveErr)
-	}
-	if previewRemoveErr != nil {
-		logrus.Errorf("Can not delete image preview: ", previewRemoveErr)
+	if existing.Source == dao.IMG_SOURCE_WWMAP {
+		imgRemoveErr := this.ImgStorage.Remove(imgIdStr)
+		previewRemoveErr := this.PreviewImgStorage.Remove(imgIdStr)
+		if imgRemoveErr != nil {
+			logrus.Errorf("Can not delete image data: ", imgRemoveErr)
+		}
+		if previewRemoveErr != nil {
+			logrus.Errorf("Can not delete image preview: ", previewRemoveErr)
+		}
 	}
 
 	this.listImagesForSpot(w, spotId, getImgType(req))
-	this.LogUserEvent(req, IMAGE_LOG_ENTRY_TYPE, imgId, dao.ENTRY_TYPE_DELETE, "");
+	this.LogUserEvent(req, IMAGE_LOG_ENTRY_TYPE, imgId, dao.ENTRY_TYPE_DELETE, "")
 }
 
 func (this *ImgHandler) SetEnabled(w http.ResponseWriter, req *http.Request) {
@@ -236,7 +287,7 @@ func (this *ImgHandler) SetEnabled(w http.ResponseWriter, req *http.Request) {
 
 	this.listImagesForSpot(w, spotId, getImgType(req))
 
-	this.LogUserEvent(req, IMAGE_LOG_ENTRY_TYPE, imgId, dao.ENTRY_TYPE_MODIFY, fmt.Sprintf("enabled=%t", enabled));
+	this.LogUserEvent(req, IMAGE_LOG_ENTRY_TYPE, imgId, dao.ENTRY_TYPE_MODIFY, fmt.Sprintf("enabled=%t", enabled))
 }
 
 func (this *ImgHandler) SetPreview(w http.ResponseWriter, req *http.Request) {
@@ -275,7 +326,7 @@ func (this *ImgHandler) SetPreview(w http.ResponseWriter, req *http.Request) {
 	}
 
 	this.listImagesForSpot(w, spotId, getImgType(req))
-	this.LogUserEvent(req, IMAGE_LOG_ENTRY_TYPE, imgId, dao.ENTRY_TYPE_MODIFY, "main=true");
+	this.LogUserEvent(req, IMAGE_LOG_ENTRY_TYPE, imgId, dao.ENTRY_TYPE_MODIFY, "main=true")
 }
 
 func (this *ImgHandler) DropPreview(w http.ResponseWriter, req *http.Request) {
@@ -331,4 +382,10 @@ func (this *ImgHandler) listImagesForSpot(w http.ResponseWriter, spotId int64, _
 
 func getImgType(req *http.Request) dao.ImageType {
 	return dao.GetImgType(req.FormValue("type"))
+}
+
+type ExternalImageAddData struct {
+	Id     string `json:"id"`
+	Type   string `json:"type"`
+	Source string `json:"source"`
 }

@@ -25,20 +25,6 @@ function clearSessionId() {
     window.localStorage.removeItem(WWMAP_SESSION_ID);
 }
 
-function parseParams(paramsStr) {
-    var paramsArr = paramsStr.split('&');
-    var params = {};
-    for (var i=0; i < paramsArr.length; i++) {
-        var keyValue = paramsArr[i].split('=');
-        if( keyValue.length < 2 ) {
-            continue
-        }
-        var key = keyValue[0];
-        params[key] = keyValue[1];
-    }
-    return params;
-}
-
 function extractFieldFromHash(tokenParamName) {
     var hash = window.location.hash;
     if (hash) {

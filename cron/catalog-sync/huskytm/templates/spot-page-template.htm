@@ -70,9 +70,19 @@
         </td>
     </tr>
 </table>
-<h2>Галерея</h2>
+{{ if .Imgs }}<h2>Галерея</h2>
 <div class="wwmap-gallery">{{range .Imgs}}<a
-            data-lightbox="img-set" target="_blank" href="{{.Url}}"><img src="{{.PreviewUrl}}"/></a>{{end}}</div>
+            data-lightbox="img-set" target="_blank" href="{{.Url}}"><img src="{{.PreviewUrl}}"/></a>{{end}}</div>{{end}}
+{{ if .Schemas }}<h2>Схемы</h2>
+<div class="wwmap-gallery">{{range .Schemas}}<a
+            data-lightbox="img-set" target="_blank" href="{{.Url}}"><img src="{{.PreviewUrl}}"/></a>{{end}}</div>{{end}}
+{{ if .Videos }}<h2>Видео</h2>
+<div class="wwmap-gallery">{{range .Videos}}<iframe width="304" height="200"
+                                                    src="https://www.youtube.com/embed/{{.RemoteId}}"
+                                                    frameborder="0"
+                                                    allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                                                    allowfullscreen
+                                                    style="margin-right: 2px; margin-bottom: 2px; display: inline;"></iframe>{{end}}</div>{{end}}
 
 <div style="color: darkgrey;">Эта страница создана автоматически роботом карты. Редактировать данные можно <a target="_blank"
                                                                                                                              href="https://wwmap.ru/editor.htm#{{.Country.Id}},{{.Region.Id}},{{.River.Id}},{{.Spot.Id}}">тут</a></div>

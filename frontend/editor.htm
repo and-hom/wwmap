@@ -51,6 +51,11 @@
                     </ul>
                 </div>
                 <div id="editor-pane" class="col-9" style="bgcolor:red;">
+                    <transition name="fade">
+                        <div class="alert alert-danger" role="alert" v-if="errMsg">
+                            {{errMsg}}
+                        </div>
+                    </transition>
                     <div>
                         <country-editor v-if="countryeditorstate.visible"
                                         v-bind:country="countryeditorstate.country"/>
@@ -77,33 +82,34 @@
 </div>
 
 <script type="text/javascript">
-    Vue.component('v-select', VueSelect.VueSelect)
-    Vue.component('gallery', VueGallery)
-    Vue.component('file-upload', VueUploadComponent)
+    Vue.component('v-select', VueSelect.VueSelect);
+    Vue.component('gallery', VueGallery);
+    Vue.component('file-upload', VueUploadComponent);
 
-    Vue.component('ask', httpVueLoader('components/ask.vue'))
-    Vue.component('auth', httpVueLoader('components/auth.vue'))
-    Vue.component('ya-map-location', httpVueLoader('components/ya-map-location.vue'))
-    Vue.component('img-upload', httpVueLoader('components/img-upload.vue'))
-    Vue.component('category', httpVueLoader('components/category.vue'))
-    Vue.component('props', httpVueLoader('components/props.vue'))
-    Vue.component('log', httpVueLoader('components/log.vue'))
-    Vue.component('log-dropdown', httpVueLoader('components/log-dropdown.vue'))
+    Vue.component('ask', httpVueLoader('components/ask.vue'));
+    Vue.component('auth', httpVueLoader('components/auth.vue'));
+    Vue.component('ya-map-location', httpVueLoader('components/ya-map-location.vue'));
+    Vue.component('img-upload', httpVueLoader('components/img-upload.vue'));
+    Vue.component('video-add', httpVueLoader('components/video-add.vue'));
+    Vue.component('category', httpVueLoader('components/category.vue'));
+    Vue.component('props', httpVueLoader('components/props.vue'));
+    Vue.component('log', httpVueLoader('components/log.vue'));
+    Vue.component('log-dropdown', httpVueLoader('components/log-dropdown.vue'));
 
-    Vue.component('river', httpVueLoader('components/river.vue'))
-    Vue.component('region', httpVueLoader('components/region.vue'))
-    Vue.component('country', httpVueLoader('components/country.vue'))
+    Vue.component('river', httpVueLoader('components/river.vue'));
+    Vue.component('region', httpVueLoader('components/region.vue'));
+    Vue.component('country', httpVueLoader('components/country.vue'));
 
-    Vue.component('country-editor', httpVueLoader('components/country-editor.vue'))
-    Vue.component('region-editor', httpVueLoader('components/region-editor.vue'))
-    Vue.component('river-editor', httpVueLoader('components/river-editor.vue'))
-    Vue.component('spot-editor', httpVueLoader('components/spot-editor.vue'))
+    Vue.component('country-editor', httpVueLoader('components/country-editor.vue'));
+    Vue.component('region-editor', httpVueLoader('components/region-editor.vue'));
+    Vue.component('river-editor', httpVueLoader('components/river-editor.vue'));
+    Vue.component('spot-editor', httpVueLoader('components/spot-editor.vue'));
 
-    Vue.component('page', httpVueLoader('components/page.vue'))
+    Vue.component('page', httpVueLoader('components/page.vue'));
 
 
     function getById(arr,id) {
-        var filtered = arr.filter(function(x) {return x.id==id});
+        var filtered = arr.filter(function(x) {return x.id===id});
         if (filtered.length>0) {
             return filtered[0]
         }
@@ -113,12 +119,12 @@
     function showCountrySubentities(id) {
         Vue.set(app.treePath, id, {
             rivers: getRiversByCountry(id),
-            regions: getRegions(id),
+            regions: getRegions(id)
         })
     }
 
     function showRegionTree(countryId, id) {
-        var region = getById(app.treePath[countryId].regions,id)
+        var region = getById(app.treePath[countryId].regions,id);
         Vue.set(region, "rivers", getRiversByRegion(countryId, id))
     }
 
@@ -139,9 +145,9 @@
     }
 
     function getSpotsFromTree(countryId, regionId, riverId) {
-        var river
+        var river;
         if (regionId && regionId>0) {
-            var region = getById(app.treePath[countryId].regions, regionId)
+            var region = getById(app.treePath[countryId].regions, regionId);
             river = getById(region.rivers, riverId)
         } else {
             river = getById(app.treePath[countryId].rivers, riverId)
@@ -150,14 +156,14 @@
     }
 
     function setActiveEntityState(countryId, regionId, riverId, spotId) {
-        app.selectedSpot = spotId
-        app.selectedRiver = riverId
-        app.selectedRegion = regionId
-        app.selectedCountry = countryId
+        app.selectedSpot = spotId;
+        app.selectedRiver = riverId;
+        app.selectedRegion = regionId;
+        app.selectedCountry = countryId;
     }
 
     function newRiver(country, region) {
-        app.spoteditorstate.visible = false
+        app.spoteditorstate.visible = false;
         app.rivereditorstate.visible = false;
         app.regioneditorstate.visible = false;
         app.countryeditorstate.visible = false;
@@ -168,12 +174,11 @@
             id: 0,
             region: region,
             aliases: [],
-            props: {},
-        }
-        app.rivereditorstate.country = country
-        app.rivereditorstate.region = region
+            props: {}
+        };
+        app.rivereditorstate.country = country;
+        app.rivereditorstate.region = region;
     }
-
     var app = new Vue({
         el: '#vue-app',
         data: {
@@ -183,19 +188,19 @@
             "visible": false,
             "editMode": false,
             "images": [],
-            "schemas": [],
+            "schemas": []
           },
           "rivereditorstate": {
             "visible": false,
-            "editMode": false,
+            "editMode": false
           },
           "regioneditorstate": {
             "visible": false,
-            "editMode": false,
+            "editMode": false
           },
           "countryeditorstate": {
             "visible": false,
-            "editMode": false,
+            "editMode": false
           },
           userInfo: getAuthorizedUserInfoOrNull(),
           treePath: {},
@@ -203,7 +208,8 @@
           selectedRegion: getActiveId(REGION_ACTIVE_ENTITY_LEVEL),
           selectedRiver: getActiveId(RIVER_ACTIVE_ENTITY_LEVEL),
           selectedSpot: getActiveId(SPOT_ACTIVE_ENTITY_LEVEL),
-          sensors: sensors
+          sensors: sensors,
+          errMsg: ""
         }
     })
 
