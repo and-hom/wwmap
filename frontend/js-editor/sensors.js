@@ -720,3 +720,9 @@ var sensors = [
     {id: 8156, title: "с.Раздолье [р. Китой]"},
     {id: 84804, title: "Каргалинский  гидроузел [канал Дельтовый]"}
 ];
+
+sensorsById = {};
+for (var i=0;i<sensors.length;i++) {
+    var s = sensors[i];
+    sensorsById[s.id] = s.title;
+}

@@ -6,7 +6,6 @@ import (
 	"time"
 )
 
-
 type IdEntity interface {
 	Remove(id int64, tx interface{}) error
 }
@@ -25,7 +24,7 @@ type RiverDao interface {
 	ListByFirstLetters(query string, limit int) ([]RiverTitle, error)
 	Insert(river River) (int64, error)
 	Save(river ...River) error
-	SetVisible(id int64, visible bool) (error)
+	SetVisible(id int64, visible bool) error
 	FindByTitlePart(tPart string, limit, offset int) ([]RiverTitle, error)
 }
 
@@ -151,4 +150,5 @@ type MeteoPointDao interface {
 
 type LevelDao interface {
 	Insert(level Level) error
+	List(fromDate JSONDate) (map[string][]Level, error)
 }

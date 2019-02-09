@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8"/>
-    <title>Сайты</title>
+    <title>Карта на свой сайт</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon" />
     <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
 
@@ -22,16 +22,8 @@
 <body>
 
 <div id="vue-app">
-    <page link="refs.htm">
+    <page link="docs-integration.htm">
         <div class="container-fluid">
-            <div class="row">
-                <div class="col-12" id="left-menu">
-                    <h1>Сайты, на которых размещена карта</h1>
-                    <ul>
-                        <li v-for="ref in refs"><a target="_blank" :href="ref.page">{{ ref.page }}</a></li>
-                    </ul>
-                </div>
-            </div>
             <div class="row">
                 <div class="col-12" style="padding-top:30px;">
                     <div id="integration-guide" v-html="integrationGuide">
@@ -43,31 +35,26 @@
 </div>
 
 <script type="text/javascript">
-    function getRefs() {
-        return doGetJsonSync(backendApiBase + "/ref-sites")
-    }
-
-    Vue.component('auth', httpVueLoader('components/auth.vue'))
-    Vue.component('page', httpVueLoader('components/page.vue'))
+    Vue.component('auth', httpVueLoader('components/auth.vue'));
+    Vue.component('page', httpVueLoader('components/page.vue'));
 
     var app = new Vue({
         el: '#vue-app',
         computed: {
                 integrationGuide:function () {
                     var converter = new showdown.Converter();
-                    var xhr = sendRequest('INTEGRATION_ru.md', 'GET', false)
-                    if (xhr && xhr.status == 200) {
+                    var xhr = sendRequest('INTEGRATION_ru.md', 'GET', false);
+                    if (xhr && xhr.status === 200) {
                         return converter.makeHtml(xhr.response);
                     }
-                    var xhr = sendRequest('../INTEGRATION_ru.md', 'GET', false)
-                    if (xhr && xhr.status == 200) {
+                    xhr = sendRequest('../INTEGRATION_ru.md', 'GET', false);
+                    if (xhr && xhr.status === 200) {
                         return converter.makeHtml(xhr.response);
                     }
                     return '<span style="color:red">Can not load</span>'
                  },
         },
         data: {
-            refs: getRefs(),
         }
     })
 

@@ -40,78 +40,82 @@ func main() {
 	changesLogDao := NewChangesLogPostgresDao(storage)
 	meteoPointDao := NewMeteoPointPostgresDao(storage)
 	waterWayDao := NewWaterWayPostgresDao(storage)
+	levelDao := NewLevelPostgresDao(storage)
 
 	clusterMaker := clustering.NewClusterMaker(configuration.ClusterizationParams)
 
 	imgStorage := blob.BasicFsStorage{
-		BaseDir:configuration.ImgStorage.Full.Dir,
+		BaseDir: configuration.ImgStorage.Full.Dir,
 	}
 	imgPreviewStorage := blob.BasicFsStorage{
-		BaseDir:configuration.ImgStorage.Preview.Dir,
+		BaseDir: configuration.ImgStorage.Preview.Dir,
 	}
 	riverPassportPdfStorage := blob.BasicFsStorage{
-		BaseDir:configuration.RiverPassportPdfStorage.Dir,
+		BaseDir: configuration.RiverPassportPdfStorage.Dir,
 	}
 	riverPassportHtmlStorage := blob.BasicFsStorage{
-		BaseDir:configuration.RiverPassportHtmlStorage.Dir,
+		BaseDir: configuration.RiverPassportHtmlStorage.Dir,
 	}
 
 	r := mux.NewRouter()
 
 	app := handler.App{
-		Handler: Handler{R:r},
-		Storage:&storage,
-		RiverDao:riverDao,
-		WhiteWaterDao:whiteWaterDao,
-		NotificationDao:notificationDao,
+		Handler:         Handler{R: r},
+		Storage:         &storage,
+		RiverDao:        riverDao,
+		WhiteWaterDao:   whiteWaterDao,
+		NotificationDao: notificationDao,
 		VoyageReportDao: voyageReportDao,
-		ImgDao:imgDao,
-		UserDao: userDao,
-		CountryDao: countryDao,
-		RegionDao: regionDao,
-		TileDao:tileDao,
-		ChangesLogDao: changesLogDao,
-		MeteoPointDao: meteoPointDao,
-		WaterWayDao: waterWayDao,
+		ImgDao:          imgDao,
+		UserDao:         userDao,
+		CountryDao:      countryDao,
+		RegionDao:       regionDao,
+		TileDao:         tileDao,
+		ChangesLogDao:   changesLogDao,
+		MeteoPointDao:   meteoPointDao,
+		WaterWayDao:     waterWayDao,
 		AuthProviders: map[AuthProvider]passport.Passport{
 			YANDEX: passport.Yandex(15 * time.Minute),
-			GOOGLE:     passport.Google(15 * time.Minute),
+			GOOGLE: passport.Google(15 * time.Minute),
 			VK:     passport.Vk(15 * time.Minute),
 		},
-		RefererStorage: referer.CreateDbReferrerStorage(storage),
-		ImgUrlBase:configuration.ImgStorage.Full.UrlBase,
-		ImgUrlPreviewBase:configuration.ImgStorage.Preview.UrlBase,
-		NotificationHelper:notification.NotificationHelper{
-			NotificationDao:notificationDao,
-			UserDao: userDao,
-			FallbackEmailRecipient:configuration.Notifications.FallbackEmailRecipient,
+		RefererStorage:    referer.CreateDbReferrerStorage(storage),
+		ImgUrlBase:        configuration.ImgStorage.Full.UrlBase,
+		ImgUrlPreviewBase: configuration.ImgStorage.Preview.UrlBase,
+		NotificationHelper: notification.NotificationHelper{
+			NotificationDao:        notificationDao,
+			UserDao:                userDao,
+			FallbackEmailRecipient: configuration.Notifications.FallbackEmailRecipient,
 		},
 	}
 
 	_handlers := []ApiHandler{
 		&handler.GpxHandler{app},
 		&handler.RiverHandler{
-			App:app,
-			ResourceBase: configuration.Content.ResourceBase,
-			RiverPassportPdfUrlBase: configuration.RiverPassportPdfStorage.UrlBase,
+			App:                      app,
+			ResourceBase:             configuration.Content.ResourceBase,
+			RiverPassportPdfUrlBase:  configuration.RiverPassportPdfStorage.UrlBase,
 			RiverPassportHtmlUrlBase: configuration.RiverPassportHtmlStorage.UrlBase,
 		},
-		&handler.WhiteWaterHandler{App:app, ResourceBase:configuration.Content.ResourceBase, ClusterMaker: clusterMaker},
+		&handler.WhiteWaterHandler{App: app, ResourceBase: configuration.Content.ResourceBase, ClusterMaker: clusterMaker},
 		&handler.ReportHandler{app},
 		&handler.UserInfoHandler{app},
 		&handler.GeoHierarchyHandler{
-			App: app,
-			ImgStorage: imgStorage,
-			PreviewImgStorage: imgPreviewStorage,
-			RiverPassportHtmlStorage:riverPassportHtmlStorage,
-			RiverPassportPdfStorage:riverPassportPdfStorage,
+			App:                      app,
+			ImgStorage:               imgStorage,
+			PreviewImgStorage:        imgPreviewStorage,
+			RiverPassportHtmlStorage: riverPassportHtmlStorage,
+			RiverPassportPdfStorage:  riverPassportPdfStorage,
 		},
 		&handler.ImgHandler{
-			App:app,
-			ImgStorage: imgStorage,
+			App:               app,
+			ImgStorage:        imgStorage,
 			PreviewImgStorage: imgPreviewStorage,
 		},
-		&handler.RefSitesHandler{app},
+		&handler.DashboardHandler{
+			App:      app,
+			LevelDao: levelDao,
+		},
 		handler.CreateSystemHandler(&app, version),
 		&handler.MeteoHandler{app},
 	}

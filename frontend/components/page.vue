@@ -1,24 +1,27 @@
 <template>
-<div>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <ul class="navbar-nav mr-auto">
-            <li :class="itemClass(page)" v-if="showMenuItem(page)" v-for="page in pages">
-                <a v-if="page.sub==null" class="nav-link" :href="pageLink(page.href)">{{pageTitle(page)}}</a>
-                <a v-else class="nav-link dropdown-toggle" :id="page.id" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{page.title}}</a>
-                <div v-if="page.sub" class="dropdown-menu" :aria-labelledby="page.id">
-                  <a v-for="sub in page.sub" v-if="showMenuItem(sub)" :class="subItemClass(sub)" :href="pageLink(sub.href)">{{sub.title}}</a>
-                </div>
-            </li>
-        </ul>
-        <auth></auth>
-    </nav>
-    <slot></slot>
-    <footer v-if="showFooter" class="footer">
-        <div class="container wwmap-footer">
-            <span>Версия бэкенда:&nbsp;{{backVersion}}</span><span>Версия фронтенда:&nbsp;{{frontVersion}}</span><span>Контакт для связи:&nbsp;<a href="mailto:info@wwmap.ru">info@wwmap.ru</a></span>
-        </div>
-    </footer>
-</div>
+    <div>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <ul class="navbar-nav mr-auto">
+                <li :class="itemClass(page)" v-if="showMenuItem(page)" v-for="page in pages">
+                    <a v-if="page.sub==null" class="nav-link" :href="pageLink(page.href)">{{pageTitle(page)}}</a>
+                    <a v-else class="nav-link dropdown-toggle" :id="page.id" role="button" data-toggle="dropdown"
+                       aria-haspopup="true" aria-expanded="false">{{page.title}}</a>
+                    <div v-if="page.sub" class="dropdown-menu" :aria-labelledby="page.id">
+                        <a v-for="sub in page.sub" v-if="showMenuItem(sub)" :class="subItemClass(sub)"
+                           :href="pageLink(sub.href)">{{sub.title}}</a>
+                    </div>
+                </li>
+            </ul>
+            <auth></auth>
+        </nav>
+        <slot></slot>
+        <footer v-if="showFooter" class="footer">
+            <div class="container wwmap-footer">
+                <span>Версия бэкенда:&nbsp;{{backVersion}}</span><span>Версия фронтенда:&nbsp;{{frontVersion}}</span><span>Контакт для связи:&nbsp;<a
+                    href="mailto:info@wwmap.ru">info@wwmap.ru</a></span>
+            </div>
+        </footer>
+    </div>
 
 </template>
 <style type="text/css">
@@ -26,10 +29,12 @@
         position: relative;
         min-height: 100%;
     }
+
     body {
         /* Margin bottom by footer height */
         margin-bottom: 60px;
     }
+
     .footer {
         position: absolute;
         bottom: 0;
@@ -58,27 +63,29 @@
     module.exports = {
         props: ['link'],
         computed: {
-            showFooter: function() {
+            showFooter: function () {
                 var userInfo = getAuthorizedUserInfoOrNull();
-                return userInfo && ['EDITOR', 'ADMIN'].filter(function(r) {return userInfo.roles.includes(r)}).length>0
+                return userInfo && ['EDITOR', 'ADMIN'].filter(function (r) {
+                    return userInfo.roles.includes(r)
+                }).length > 0
             }
         },
         data: function () {
             return {
                 pages: [
                     {
-                        href:  "editor.htm",
+                        href: "editor.htm",
                         title: "Редактор",
                         allow: ['EDITOR', 'ADMIN'],
                     },
                     {
-                        href:  "editor.htm",
+                        href: "editor.htm",
                         title: "Каталог",
                         allow: ['USER', 'ANONYMOUS'],
                     },
                     {
                         href: "map.htm",
-                        title: "Как карта видна окружающим",
+                        title: "Карта",
                         allow: ['EDITOR', 'ADMIN'],
                     },
                     {
@@ -87,13 +94,23 @@
                         allow: ['USER', 'ANONYMOUS'],
                     },
                     {
-                        href: "refs.htm",
-                        title: "Сайты"
+                        href: "docs-integration.htm",
+                        title: "Карта на свой сайт"
                     },
                     {
-                        href: "users.htm",
-                        title: "Пользователи",
-                        allow: ['ADMIN'],
+                        id: "2",
+                        title: "Администрирование",
+                        allow: ['EDITOR', 'ADMIN'],
+                        sub: [
+                            {
+                                href: "users.htm",
+                                title: "Пользователи",
+                            },
+                            {
+                                href: "dashboard.htm",
+                                title: "Панель показателей",
+                            },
+                        ]
                     },
                     {
                         href: "about.htm",
@@ -116,7 +133,7 @@
                         ]
                     },
                 ],
-                showMenuItem: function(page) {
+                showMenuItem: function (page) {
                     if (typeof page == 'string' || page instanceof String) {
                         return true
                     }
@@ -125,26 +142,30 @@
                     }
 
                     var userInfo = getAuthorizedUserInfoOrNull()
-                    if (userInfo==null || userInfo.roles==null) {
-                        return page.allow.filter(function(r) {return r=='ANONYMOUS'}).length>0
+                    if (userInfo == null || userInfo.roles == null) {
+                        return page.allow.filter(function (r) {
+                            return r == 'ANONYMOUS'
+                        }).length > 0
                     }
 
-                    return page.allow.filter(function(r) {return userInfo.roles.includes(r)}).length>0
+                    return page.allow.filter(function (r) {
+                        return userInfo.roles.includes(r)
+                    }).length > 0
                 },
-                pageTitle: function(page) {
+                pageTitle: function (page) {
                     if (typeof page === 'string' || page instanceof String) {
                         return page
                     }
                     return page.title
                 },
-                pageLink: function(link) {
-                    if (link==this.link) {
+                pageLink: function (link) {
+                    if (link == this.link) {
                         return "#"
                     }
                     return link
                 },
-                itemClass: function(page) {
-                    if (page.href==this.link) {
+                itemClass: function (page) {
+                    if (page.href == this.link) {
                         return "nav-item active"
                     }
                     if (page.sub) {
@@ -152,8 +173,8 @@
                     }
                     return "nav-item"
                 },
-                subItemClass: function(sub) {
-                    if (sub.href==this.link) {
+                subItemClass: function (sub) {
+                    if (sub.href === this.link) {
                         return "dropdown-item active"
                     }
                     return "dropdown-item"
