@@ -2,3 +2,6 @@
 
 mkdir -p /var/lib/wwmap/backup
 chown wwmap:wwmap /var/lib/wwmap/backup
+
+mkdir -p /var/log/wwmap/cron
+chown -R wwmap:wwmap /var/log/wwmap/cron
