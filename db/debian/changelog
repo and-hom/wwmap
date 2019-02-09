@@ -1,3 +1,9 @@
+wwmap-db (0.0.23) UNRELEASED; urgency=medium
+
+  * #172 Get water level metrics several times a day
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Wed, 06 Feb 2019 23:44:45 +0300
+
 wwmap-db (0.0.22) unstable; urgency=medium
 
   * #172 Water level fetch from gis.vodinfo.ru

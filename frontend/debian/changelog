@@ -1,3 +1,12 @@
+wwmap-frontend (0.0.40) unstable; urgency=medium
+
+  * #137 Add youtube videos to spot
+  * #175 Map and river list filtering (map control)
+  * Some page look improvements
+  * GPX download url fixed
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Wed, 06 Feb 2019 23:42:33 +0300
+
 wwmap-frontend (0.0.39) unstable; urgency=medium
 
   * #171 Image hint with spot title on river card

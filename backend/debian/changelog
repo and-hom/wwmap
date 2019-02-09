@@ -1,3 +1,11 @@
+wwmap-backend (0.0.41) unstable; urgency=medium
+
+  * #137 Add youtube videos to spot
+  * #174 Send 401 instead of 500 if unauthorized
+  * #175 Map and river list filtering
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Wed, 06 Feb 2019 23:40:21 +0300
+
 wwmap-backend (0.0.40) unstable; urgency=medium
 
   * #171 Image hint with spot title on river card
