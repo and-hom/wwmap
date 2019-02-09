@@ -105,9 +105,7 @@ WWMap.prototype.loadRivers = function (bounds) {
         var riverList = this.riverList;
         $.get(apiBase + "/visible-rivers-light?bbox=" + bounds.join(',') + "&max_cat=" + this.catFilter, function (data) {
             var dataObj = {
-                "rivers": JSON.parse(data),
-                "apiUrl": apiBase + "/gpx/river",
-                "apiBase": apiBase
+                "rivers": JSON.parse(data)
             };
             for (i in dataObj.rivers) {
                 if (dataObj.rivers[i].bounds) {
@@ -547,6 +545,8 @@ function show_river_info_popup(id) {
     $.get(apiBase + "/river-card/" + id, function (data) {
         var dataObj = JSON.parse(data);
         dataObj.canEdit = canEdit();
+        dataObj.apiUrl = apiBase + "/gpx/river";
+        dataObj.apiBase = apiBase;
         riverList.riverInfoPopup.show(dataObj);
     });
     return false;
