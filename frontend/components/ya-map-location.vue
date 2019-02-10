@@ -25,14 +25,24 @@
             yaSearch: {
                 type: Boolean,
                 default: false
+            },
+            editEndPoint: {
+                type: Boolean,
+                default: false
+            },
+        },
+        watch: {
+            // This would be called anytime the value of title changes
+            editEndPoint(newValue, oldValue) {
+                this.doUpdate();
             }
         },
-        updated: function() {
+        updated: function () {
             this.doUpdate()
         },
-        created: function() {
+        created: function () {
             var component = this;
-            ymaps.ready(function() {
+            ymaps.ready(function () {
                 if (component.map) {
                     component.map.destroy();
                     component.label.geometry.setCoordinates(component.spot.point);
@@ -74,23 +84,27 @@
 
             })
         },
-        data: function() {
+        data: function () {
             return {
-                mapDivStyle: function() {
+                mapDivStyle: function () {
                     return 'width: ' + this.width + '; height: ' + this.height + ';'
                 },
-                doUpdate: function() {
+                doUpdate: function () {
                     if (this.map) {
                         this.map.setCenter(this.spot.point);
 
                         this.map.geoObjects.remove(this.label);
+                        if (this.endLabel) {
+                            this.map.geoObjects.remove(this.endLabel);
+                            this.map.geoObjects.remove(this.arrow);
+                        }
                         this.addLabel();
 
                         this.map.geoObjects.remove(this.objectManager);
                         this.addObjectManager();
                     }
                 },
-                objectManagerUrlTemplate: function() {
+                objectManagerUrlTemplate: function () {
                     var skip = 0;
                     if (this.spot && this.spot.id) {
                         skip = this.spot.id
@@ -102,7 +116,7 @@
                     }
                     return url
                 },
-                addObjectManager:function() {
+                addObjectManager: function () {
                     var objectManager = new ymaps.RemoteObjectManager(this.objectManagerUrlTemplate(), {
                         clusterHasBalloon: false,
                         geoObjectOpenBalloonOnClick: false,
@@ -112,22 +126,24 @@
                     this.map.geoObjects.add(objectManager);
                     this.objectManager = objectManager
                 },
-                addLabel: function() {
+                addLabel: function () {
                     var component = this;
                     var label = new ymaps.GeoObject({
                         geometry: {
                             type: "Point",
-                            coordinates: this.spot.point
+                            coordinates: this.spot.point,
                         },
                         properties: {
                             hintContent: this.spot.title
                         }
                     }, {
                         preset: 'islands#blueIcon',
-                        draggable: this.editable
+                        draggable: this.editable,
+                        zIndex: 10000000,
                     });
                     label.events.add('dragend', function (e) {
-                        component.spot.point = label.geometry.getCoordinates()
+                        component.spot.point = label.geometry.getCoordinates();
+                        component.refreshArrow();
                     });
 
                     if (this.editable) {
@@ -135,11 +151,52 @@
                             p = e.get('coords');
                             label.geometry.setCoordinates(p);
                             component.spot.point = p;
+                            component.refreshArrow();
                         });
+                    }
+
+                    if (this.editEndPoint) {
+                        ymaps.modules.require(['geoObject.Arrow'], function (Arrow) {
+                            var arrow = new Arrow([component.spot.point, component.spot.props.end_point], null, {
+                                geodesic: true,
+                                strokeWidth: 5,
+                                opacity: 0.5,
+                                strokeStyle: 'shortdash'
+                            });
+                            component.map.geoObjects.add(arrow);
+                            component.arrow = arrow;
+                        });
+
+                        var endLabel = new ymaps.GeoObject({
+                            geometry: {
+                                type: "Point",
+                                coordinates: this.spot.props.end_point,
+                            },
+                            properties: {
+                                hintContent: this.spot.title + " конец"
+                            }
+                        }, {
+                            preset: 'islands#yellowIcon',
+                            draggable: this.editable,
+                            zIndex: 10000001,
+                        });
+                        endLabel.events.add('dragend', function (e) {
+                            component.spot.props.end_point = endLabel.geometry.getCoordinates();
+                            component.refreshArrow();
+                        });
+
+                        this.map.geoObjects.add(endLabel);
+                        this.endLabel = endLabel;
                     }
 
                     this.map.geoObjects.add(label);
                     this.label = label;
+                },
+                refreshArrow: function () {
+                    if (this.arrow) {
+                        this.arrow.geometry.set(0, this.spot.point);
+                        this.arrow.geometry.set(1, this.spot.props.end_point);
+                    }
                 }
             }
         }

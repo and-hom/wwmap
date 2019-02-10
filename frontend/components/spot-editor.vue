@@ -107,9 +107,13 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-2"><strong>Расположение: </strong></div>
+                        <div class="col-2">
+                            <strong style="display: block; maring-bottom: 20px;">Расположение: </strong><br/>
+                            <a v-if="editEndPoint" href="javascript:void(0);" v-on:click.stop="removeSpotEndPoint()" style="font-size: 80%;">Убрать конечную точку</a>
+                            <a v-else href="javascript:void(0);" v-on:click.stop="addSpotEndPoint()" style="font-size: 80%;">Препятствие протяжённое. Добавить конечную точку</a>
+                        </div>
                         <div class="col-10">
-                            <ya-map-location ref="locationEdit" v-bind:spot="spot" width="100%" height="600px" :editable="true" :ya-search="true"/>
+                            <ya-map-location ref="locationEdit" v-bind:spot="spot" width="100%" height="600px" :editable="true" :ya-search="true" v-bind:edit-end-point="editEndPoint"/>
                         </div>
                     </div>
                     <div class="row">
@@ -153,7 +157,7 @@
                 <b-tab title="Схемы" :disabled="spot.id<=0">
                     <img-upload ref="schemasList" :spot="spot" v-bind:images="schemas" type="schema" :auth="true"></img-upload>
                 </b-tab>
-                <b-tab title="Фото" :disabled="spot.id<=0">
+                <b-tab   title="Фото" :disabled="spot.id<=0">
                     <img-upload ref="imagesList" :spot="spot" v-bind:images="images" type="image" :auth="true"></img-upload>
                 </b-tab>
                 <b-tab title="Видео" :disabled="spot.id<=0">
@@ -367,7 +371,6 @@
                     if (imgIdx>-1) {
                         return imgIdx
                     }
-                    console.log('img-null')
                     return null
                 },
                 mainSchemaIndex: function() {
@@ -450,17 +453,33 @@
                 vidIndex: null,
 
                 spot: null,
+                editEndPoint: false,
+                endPointBackup: null,
+                addSpotEndPoint: function () {
+                    if (this.endPointBackup) {
+                        this.spot.props.end_point = this.endPointBackup
+                    } else if (this.spot.props.end_point == null) {
+                        this.spot.props.end_point = this.spot.point
+                    }
+                    this.editEndPoint = true;
+                },
+                removeSpotEndPoint: function () {
+                    this.endPointBackup = this.spot.props.end_point;
+                    this.editEndPoint = false;
+                    this.spot.props.end_point = null;
+                },
                 shouldReInit:function(){
                     return this.spot==null || this.previousSpotId !== this.initialSpot.id && this.initialSpot.id > 0
                 },
                 resetToInitialIfRequired:function() {
                     if (this.shouldReInit()) {
-                        this.previousSpotId = this.initialSpot.id
-                        this.spot = this.initialSpot
-                        this.spotMainUrl = getSpotMainImageUrl(this.initialSpot.id)
-                        this.images = getImages(this.initialSpot.id, "image")
-                        this.schemas = getImages(this.initialSpot.id, "schema")
-                        this.videos = getImages(this.initialSpot.id, "video")
+                        this.previousSpotId = this.initialSpot.id;
+                        this.spot = this.initialSpot;
+                        this.spotMainUrl = getSpotMainImageUrl(this.initialSpot.id);
+                        this.images = getImages(this.initialSpot.id, "image");
+                        this.schemas = getImages(this.initialSpot.id, "schema");
+                        this.videos = getImages(this.initialSpot.id, "video");
+                        this.editEndPoint = (this.spot.props.end_point!=null);
                     }
                 },
 
