@@ -1,3 +1,12 @@
+wwmap-cron (0.0.24) unstable; urgency=medium
+
+  * #177 Cron job logging
+  * #178 Detect yesterday water level if missing
+  * #179 Clear old nulls from levels
+  * Level table added to backup
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Wed, 13 Feb 2019 00:10:53 +0300
+
 wwmap-cron (0.0.23) unstable; urgency=medium
 
   * #137 Videos in pdf and huskytm export
