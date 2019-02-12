@@ -8,16 +8,18 @@ import (
 
 func NewLevelPostgresDao(postgresStorage PostgresStorage) LevelDao {
 	return &levelStorage{
-		PostgresStorage: postgresStorage,
-		insertQuery:     queries.SqlQuery("level", "insert"),
-		listQuery:       queries.SqlQuery("level", "list-one"),
+		PostgresStorage:  postgresStorage,
+		insertQuery:      queries.SqlQuery("level", "insert"),
+		listQuery:        queries.SqlQuery("level", "list-one"),
+		removeNullsQuery: queries.SqlQuery("level", "remove-nulls"),
 	}
 }
 
 type levelStorage struct {
 	PostgresStorage
-	insertQuery string
-	listQuery   string
+	insertQuery      string
+	listQuery        string
+	removeNullsQuery string
 }
 
 func (this levelStorage) Insert(entry Level) error {
@@ -42,6 +44,14 @@ func (this levelStorage) List(fromDate JSONDate) (map[string][]Level, error) {
 		result[level.SensorId] = append(result[level.SensorId], level)
 	}
 	return result, nil
+}
+
+func (this levelStorage) RemoveNullsBefore(beforeDate JSONDate) error {
+	return this.performUpdates(this.removeNullsQuery, dateToUpdateParams, time.Time(beforeDate))
+}
+
+func dateToUpdateParams(date interface{}) ([]interface{}, error) {
+	return []interface{}{date}, nil
 }
 
 func scanLevel(rows *sql.Rows) (Level, error) {

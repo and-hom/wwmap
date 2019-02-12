@@ -151,4 +151,5 @@ type MeteoPointDao interface {
 type LevelDao interface {
 	Insert(level Level) error
 	List(fromDate JSONDate) (map[string][]Level, error)
+	RemoveNullsBefore(fromDate JSONDate) error
 }
