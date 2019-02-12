@@ -36,13 +36,13 @@ func getYAxisXPos(src image.Image, xOffset int) int {
 		for y := -20; y < 20; y++ {
 			r, g, b, _ := src.At(x, yScan+y).RGBA()
 
-			if !isBack(r, g, b) {
+			if !isBlack(r, g, b) {
 				detected = false
 				break
 			}
 		}
 		if detected {
-			return x;
+			return x
 		}
 	}
 	return -1
@@ -55,7 +55,7 @@ func getYAxisMarks(src image.Image, yAxisXPos int) []int {
 	blackCounter := 0
 	for y := 0; y < bounds.Dy(); y++ {
 		r, g, b, _ := src.At(marksXPos, y).RGBA()
-		if isBack(r, g, b) {
+		if isBlack(r, g, b) {
 			blackCounter++
 		} else {
 			if blackCounter > 0 && blackCounter < 6 {
