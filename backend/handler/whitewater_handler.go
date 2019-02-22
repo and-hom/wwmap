@@ -142,7 +142,7 @@ func (this *WhiteWaterHandler) search(w http.ResponseWriter, r *http.Request) {
 	}
 	rivers, err := this.RiverDao.FindByTitlePart(string(requestBody), 30, 0)
 	if err != nil {
-		OnError500(w, err, "Can not select spots")
+		OnError500(w, err, "Can not select rivers")
 		return
 	}
 
@@ -168,5 +168,5 @@ func (this *WhiteWaterHandler) search(w http.ResponseWriter, r *http.Request) {
 type SearchResp struct {
 	Spots        []dao.WhiteWaterPointWithRiverTitle `json:"spots"`
 	Rivers       []dao.RiverTitle                    `json:"rivers"`
-	ResourceBase string                          `json:"resource_base"`
+	ResourceBase string                              `json:"resource_base"`
 }

@@ -96,7 +96,7 @@
                         this.map.geoObjects.remove(this.label);
                         if (this.endLabel) {
                             this.map.geoObjects.remove(this.endLabel);
-                            this.map.geoObjects.remove(this.arrow);
+                            this.map.geoObjects.remove(this.contour);
                         }
                         this.addLabel();
 
@@ -128,22 +128,26 @@
                 },
                 addLabel: function () {
                     var component = this;
+                    var props = {
+                        hintContent: this.spot.title,
+                    };
+                    if (this.editEndPoint) {
+                        props.iconContent = "Начало"
+                    }
                     var label = new ymaps.GeoObject({
                         geometry: {
                             type: "Point",
                             coordinates: this.spot.point,
                         },
-                        properties: {
-                            hintContent: this.spot.title
-                        }
+                        properties: props
                     }, {
-                        preset: 'islands#blueIcon',
+                        preset: 'islands#blueStretchyIcon',
                         draggable: this.editable,
                         zIndex: 10000000,
                     });
                     label.events.add('dragend', function (e) {
                         component.spot.point = label.geometry.getCoordinates();
-                        component.refreshArrow();
+                        component.refreshContour();
                     });
 
                     if (this.editable) {
@@ -151,20 +155,27 @@
                             p = e.get('coords');
                             label.geometry.setCoordinates(p);
                             component.spot.point = p;
-                            component.refreshArrow();
+                            component.refreshContour();
                         });
                     }
 
                     if (this.editEndPoint) {
-                        ymaps.modules.require(['geoObject.Arrow'], function (Arrow) {
-                            var arrow = new Arrow([component.spot.point, component.spot.props.end_point], null, {
-                                geodesic: true,
-                                strokeWidth: 5,
-                                opacity: 0.5,
-                                strokeStyle: 'shortdash'
+                        ymaps.modules.require(['overlay.BiPlacemark'], function (BiPlacemarkOverlay) {
+                            var contour = new ymaps.GeoObject({
+                                geometry: {
+                                    type: "LineString",
+                                    coordinates: [component.spot.point, component.spot.props.end_point],
+                                },
+                                properties: {}
+                            }, {
+                                lineStringOverlay: BiPlacemarkOverlay,
+                                strokeColor: "#BBBBBBCC",
+                                strokeStyle: 'shortdash',
+                                strokeWidth: 3,
+                                fill: false
                             });
-                            component.map.geoObjects.add(arrow);
-                            component.arrow = arrow;
+                            component.map.geoObjects.add(contour);
+                            component.contour = contour;
                         });
 
                         var endLabel = new ymaps.GeoObject({
@@ -173,16 +184,17 @@
                                 coordinates: this.spot.props.end_point,
                             },
                             properties: {
-                                hintContent: this.spot.title + " конец"
+                                hintContent: this.spot.title + " конец",
+                                iconContent: "Конец"
                             }
                         }, {
-                            preset: 'islands#yellowIcon',
+                            preset: 'islands#yellowStretchyIcon',
                             draggable: this.editable,
                             zIndex: 10000001,
                         });
                         endLabel.events.add('dragend', function (e) {
                             component.spot.props.end_point = endLabel.geometry.getCoordinates();
-                            component.refreshArrow();
+                            component.refreshContour();
                         });
 
                         this.map.geoObjects.add(endLabel);
@@ -192,10 +204,10 @@
                     this.map.geoObjects.add(label);
                     this.label = label;
                 },
-                refreshArrow: function () {
-                    if (this.arrow) {
-                        this.arrow.geometry.set(0, this.spot.point);
-                        this.arrow.geometry.set(1, this.spot.props.end_point);
+                refreshContour: function () {
+                    if (this.contour) {
+                        this.contour.geometry.set(0, this.spot.point);
+                        this.contour.geometry.set(1, this.spot.props.end_point);
                     }
                 }
             }

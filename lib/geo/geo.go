@@ -2,8 +2,8 @@ package geo
 
 import (
 	"bytes"
-	"fmt"
 	"encoding/json"
+	"fmt"
 	"math"
 )
 
@@ -16,8 +16,8 @@ type Point struct {
 
 func (this Point) Flip() Point {
 	return Point{
-		Lat:this.Lon,
-		Lon:this.Lat,
+		Lat: this.Lon,
+		Lon: this.Lat,
 	}
 }
 
@@ -33,7 +33,7 @@ func (this Point) MarshalJSON() ([]byte, error) {
 func (this *Point) UnmarshalJSON(data []byte) error {
 	arr := make([]float64, 2)
 	err := json.Unmarshal(data, &arr)
-	if (err != nil) {
+	if err != nil {
 		return err
 	}
 	this.Lat = arr[0]
@@ -42,7 +42,7 @@ func (this *Point) UnmarshalJSON(data []byte) error {
 }
 
 func (this *Point) DistanceTo(p Point) float64 {
-	return math.Sqrt((this.Lat - p.Lat) * (this.Lat - p.Lat) + (this.Lon - p.Lon) * (this.Lon - p.Lon))
+	return math.Sqrt((this.Lat-p.Lat)*(this.Lat-p.Lat) + (this.Lon-p.Lon)*(this.Lon-p.Lon))
 }
 
 func (this *Point) String() string {
@@ -50,15 +50,15 @@ func (this *Point) String() string {
 }
 
 const (
-	POINT GeometryType = "Point"
-	RECTANGLE GeometryType = "Rectangle"
-	POLYGON GeometryType = "Polygon"
+	POINT       GeometryType = "Point"
+	RECTANGLE   GeometryType = "Rectangle"
+	POLYGON     GeometryType = "Polygon"
 	LINE_STRING GeometryType = "LineString"
 )
 
 type LineString struct {
 	Type        GeometryType `json:"type"`
-	Coordinates []Point `json:"coordinates"`
+	Coordinates []Point      `json:"coordinates"`
 }
 
 func (this LineString) GetPath() []Point {
@@ -67,8 +67,8 @@ func (this LineString) GetPath() []Point {
 
 func NewLineString(points []Point) Geometry {
 	return LineString{
-		Coordinates:flip(points),
-		Type:LINE_STRING,
+		Coordinates: flip(points),
+		Type:        LINE_STRING,
 	}
 }
 
@@ -82,13 +82,13 @@ func flip(points []Point) []Point {
 
 type YRectangle struct {
 	Type        GeometryType `json:"type"`
-	Coordinates []Point `json:"coordinates"`
+	Coordinates []Point      `json:"coordinates"`
 }
 
 func NewYRectangle(points []Point) Geometry {
 	return LineString{
-		Coordinates:points,
-		Type:RECTANGLE,
+		Coordinates: points,
+		Type:        RECTANGLE,
 	}
 }
 
@@ -103,28 +103,34 @@ func NewYRectangleFromBbox(bbox Bbox) Geometry {
 		Lat: bbox.Y2,
 	}
 	return LineString{
-		Coordinates:points,
-		Type:RECTANGLE,
+		Coordinates: points,
+		Type:        RECTANGLE,
 	}
 }
 
 type geoPoint struct {
 	Type        GeometryType `json:"type"`
-	Coordinates Point `json:"coordinates"`
+	Coordinates Point        `json:"coordinates"`
 }
 
 func NewPgGeoPoint(point Point) Geometry {
 	return geoPoint{
 		// flip coordinates for postGIS
 		Coordinates: point.Flip(),
-		Type:POINT,
+		Type:        POINT,
 	}
 }
 
 func NewYmapsGeoPoint(point Point) Geometry {
 	return geoPoint{
 		Coordinates: point,
-		Type:POINT,
+		Type:        POINT,
 	}
 }
 
+func NewYmapsGeoLine(p1, p2 Point) Geometry {
+	return LineString{
+		Coordinates: []Point{p1, p2},
+		Type:        LINE_STRING,
+	}
+}
