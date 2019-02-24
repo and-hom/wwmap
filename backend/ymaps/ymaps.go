@@ -2,6 +2,7 @@ package ymaps
 
 import (
 	"fmt"
+	"github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/backend/clustering"
 	. "github.com/and-hom/wwmap/lib/dao"
 	. "github.com/and-hom/wwmap/lib/geo"
@@ -47,7 +48,6 @@ func mkFeature(point Spot, river RiverWithSpots, withDescription bool, resources
 
 	feature := Feature{
 		Id:         point.Id,
-		Geometry:   NewYmapsGeoPoint(point.Point),
 		Type:       FEATURE,
 		Properties: properties,
 		Options: FeatureOptions{
@@ -60,20 +60,14 @@ func mkFeature(point Spot, river RiverWithSpots, withDescription bool, resources
 		},
 	}
 
-	p2str, hasP2 := point.Props["end_point"]
-	if hasP2 {
-		p2arr := p2str.([]interface{})
-		p2 := Point{
-			Lat: p2arr[0].(float64),
-			Lon: p2arr[1].(float64),
-		}
-
-		feature.Geometry = NewYmapsGeoLine(point.Point, p2)
+	if point.Point.Line != nil {
+		feature.Geometry = NewYmapsGeoLine(*point.Point.Line...)
 		feature.Options.Overlay = "BiPlacemrakOverlay"
 		feature.Options.StrokeColor = CatColor(point.Category.Category)
+	} else if point.Point.Point != nil {
+		feature.Geometry = NewYmapsGeoPoint(*point.Point.Point)
 	} else {
-		feature.Geometry = NewYmapsGeoPoint(point.Point)
-
+		logrus.Errorf("Geometry for object id=%d missing", point.Id)
 	}
 
 	return feature
@@ -112,8 +106,8 @@ func ClusterGeom(points []Spot) Bbox {
 	var maxLon = -float64(360)
 
 	for i := 0; i < len(points); i++ {
-		lat := points[i].Point.Lat
-		lon := points[i].Point.Lon
+		lat := points[i].Point.Center().Lat
+		lon := points[i].Point.Center().Lon
 
 		minLat = math.Min(minLat, lat)
 		minLon = math.Min(minLon, lon)

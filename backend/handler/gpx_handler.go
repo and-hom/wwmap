@@ -1,17 +1,18 @@
 package handler
 
 import (
-	"github.com/gorilla/mux"
-	"strconv"
-	"net/http"
 	"fmt"
-	"github.com/ptrv/go-gpx"
-	. "github.com/and-hom/wwmap/lib/http"
+	"github.com/and-hom/wwmap/lib/dao"
 	. "github.com/and-hom/wwmap/lib/handler"
+	. "github.com/and-hom/wwmap/lib/http"
 	"github.com/and-hom/wwmap/lib/util"
+	"github.com/gorilla/mux"
+	"github.com/ptrv/go-gpx"
+	"net/http"
+	"strconv"
 )
 
-type GpxHandler struct{ App };
+type GpxHandler struct{ App }
 
 func (this *GpxHandler) Init() {
 	this.Register("/gpx/river/{id}", HandlerFunctions{Get: this.DownloadGpx})
@@ -34,14 +35,10 @@ func (this *GpxHandler) DownloadGpx(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	waypoints := make([]gpx.Wpt, len(whitewaterPoints))
+	waypoints := make([]gpx.Wpt, 0, len(whitewaterPoints))
 	for i := 0; i < len(whitewaterPoints); i++ {
 		whitewaterPoint := whitewaterPoints[i]
-		waypoints[i] = gpx.Wpt{
-			Lat: whitewaterPoint.Point.Lat,
-			Lon: whitewaterPoint.Point.Lon,
-			Cmt: whitewaterPoint.Comment,
-		}
+
 		categoryString := util.HumanReadableCategoryNameWithBrackets(whitewaterPoint.Category, transliterate)
 
 		titleString := whitewaterPoint.Title
@@ -49,7 +46,23 @@ func (this *GpxHandler) DownloadGpx(w http.ResponseWriter, req *http.Request) {
 			titleString = util.CyrillicToTranslit(whitewaterPoint.Title)
 		}
 
-		waypoints[i].Name = categoryString + titleString
+		if whitewaterPoint.Point.Point != nil {
+			waypoints = append(waypoints, gpx.Wpt{
+				Lat:  whitewaterPoint.Point.Point.Lat,
+				Lon:  whitewaterPoint.Point.Point.Lon,
+				Cmt:  whitewaterPoint.Comment,
+				Name: categoryString + titleString,
+			})
+		} else {
+			for i, p := range *whitewaterPoint.Point.Line {
+				waypoints = append(waypoints, gpx.Wpt{
+					Lat:  p.Lat,
+					Lon:  p.Lon,
+					Cmt:  whitewaterPoint.Comment,
+					Name: categoryString + titleString + orderString(i, whitewaterPoint, transliterate),
+				})
+			}
+		}
 	}
 	if len(whitewaterPoints) == 0 {
 		OnError(w, nil, fmt.Sprintf("No whitewater points found for river with id %d", id), http.StatusNotFound)
@@ -57,7 +70,7 @@ func (this *GpxHandler) DownloadGpx(w http.ResponseWriter, req *http.Request) {
 	}
 	gpxData := gpx.Gpx{
 		Waypoints: waypoints,
-		Creator: "wwmap",
+		Creator:   "wwmap",
 	}
 
 	filename := whitewaterPoints[0].RiverTitle
@@ -70,4 +83,34 @@ func (this *GpxHandler) DownloadGpx(w http.ResponseWriter, req *http.Request) {
 
 	xmlBytes := gpxData.ToXML()
 	w.Write(xmlBytes)
+}
+
+func orderString(i int, spot dao.WhiteWaterPointWithRiverTitle, transliterate bool) string {
+	if transliterate {
+		return orderStringEn(i, spot)
+	} else {
+		return orderStringRu(i, spot)
+	}
+}
+
+func orderStringRu(i int, spot dao.WhiteWaterPointWithRiverTitle) string {
+	switch i {
+	case 0:
+		return " (Нач.)"
+	case len(*spot.Point.Line) - 1:
+		return " (Кон.)"
+	default:
+		return fmt.Sprintf(" (тчк. %d)", i+2)
+	}
+}
+
+func orderStringEn(i int, spot dao.WhiteWaterPointWithRiverTitle) string {
+	switch i {
+	case 0:
+		return " (Na4.)"
+	case len(*spot.Point.Line) - 1:
+		return " (Kon.)"
+	default:
+		return fmt.Sprintf(" (t4k. %d)", i+2)
+	}
 }

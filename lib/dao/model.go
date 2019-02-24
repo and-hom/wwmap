@@ -88,7 +88,7 @@ type River struct {
 
 type Spot struct {
 	IdTitle
-	Point       Point
+	Point       PointOrLine
 	Category    model.SportCategory
 	Description string
 	Images      []Img
@@ -136,7 +136,7 @@ type WhiteWaterPoint struct {
 	RiverId   int64               `json:"river_id"`
 	Type      string              `json:"-"`
 	Category  model.SportCategory `json:"category"`
-	Point     Point               `json:"point"`
+	Point     PointOrLine         `json:"point"`
 	Link      string              `json:"link"`
 	Comment   string              `json:"-"`
 	ShortDesc string              `json:"short_description"`
@@ -226,12 +226,12 @@ type VoyageReport struct {
 	Tags          []string  `json:"-"`
 }
 
-type ImageType string;
+type ImageType string
 
 const (
 	IMAGE_TYPE_IMAGE  ImageType = "image"
 	IMAGE_TYPE_SCHEMA ImageType = "schema"
-	IMAGE_TYPE_VIDEO ImageType = "video"
+	IMAGE_TYPE_VIDEO  ImageType = "video"
 )
 
 const IMG_SOURCE_WWMAP string = "wwmap"
@@ -441,7 +441,7 @@ func CalculateClusterCategory(points []Spot) RiverCategoryMetrics {
 		if currentCat > 0 {
 			categorizedPointsCount += 1
 		}
-		if (currentCat > maxCategory) {
+		if currentCat > maxCategory {
 			maxCategory = currentCat
 		}
 	}
@@ -477,4 +477,8 @@ func (this PgPoint) GetPoint() Point {
 
 type PgPolygon struct {
 	Coordinates [][]Point `json:"coordinates"`
+}
+
+type PgPointOrLineString struct {
+	Coordinates PointOrLine `json:"coordinates"`
 }

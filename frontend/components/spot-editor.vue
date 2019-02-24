@@ -109,11 +109,11 @@
                     <div class="row">
                         <div class="col-2">
                             <strong style="display: block; maring-bottom: 20px;">Расположение: </strong><br/>
-                            <a v-if="editEndPoint" href="javascript:void(0);" v-on:click.stop="removeSpotEndPoint()" style="font-size: 80%;">Убрать конечную точку</a>
+                            <a v-if="editEndPoint()" href="javascript:void(0);" v-on:click.stop="removeSpotEndPoint()" style="font-size: 80%;">Убрать конечную точку</a>
                             <a v-else href="javascript:void(0);" v-on:click.stop="addSpotEndPoint()" style="font-size: 80%;">Препятствие протяжённое. Добавить конечную точку</a>
                         </div>
                         <div class="col-10">
-                            <ya-map-location ref="locationEdit" v-bind:spot="spot" width="100%" height="600px" :editable="true" :ya-search="true" v-bind:edit-end-point="editEndPoint"/>
+                            <ya-map-location ref="locationEdit" v-bind:spot="spot" width="100%" height="600px" :editable="true" :ya-search="true" v-bind:refresh-on-change="spot.point"/>
                         </div>
                     </div>
                     <div class="row">
@@ -198,7 +198,7 @@
             <div class="wwmap-desc-section-div">
                 <ya-map-location ref="locationView" v-bind:spot="spot" width="70%" height="600px" :editable="false" :zoom="15"></ya-map-location>
                 <div style="padding-top:4px;">
-                <strong>Широта:</strong>&nbsp;{{ spot.point[0] }}&nbsp;&nbsp;&nbsp;<strong>Долгота:</strong>&nbsp;{{ spot.point[1] }}
+                <strong>Широта:</strong>&nbsp;{{ spotPoint0()[0] }}&nbsp;&nbsp;&nbsp;<strong>Долгота:</strong>&nbsp;{{ spotPoint0()[1] }}
                 </div>
             </div>
             <div v-if="spot.orient" class="wwmap-desc-section-div">
@@ -453,20 +453,31 @@
                 vidIndex: null,
 
                 spot: null,
-                editEndPoint: false,
+                editEndPoint: function () {
+                    return Array.isArray(this.spot.point[0])
+                },
                 endPointBackup: null,
                 addSpotEndPoint: function () {
-                    if (this.endPointBackup) {
-                        this.spot.props.end_point = this.endPointBackup
-                    } else if (this.spot.props.end_point == null) {
-                        this.spot.props.end_point = this.spot.point
+                    if (!Array.isArray(this.spot.point[0])) {
+                        if (this.endPointBackup) {
+                            this.spot.point = [this.spot.point, this.endPointBackup];
+                        } else {
+                            this.spot.point = [this.spot.point, this.spot.point];
+                        }
                     }
-                    this.editEndPoint = true;
                 },
                 removeSpotEndPoint: function () {
-                    this.endPointBackup = this.spot.props.end_point;
-                    this.editEndPoint = false;
-                    this.spot.props.end_point = null;
+                    if (Array.isArray(this.spot.point[0])) {
+                        this.endPointBackup = this.spot.point[this.spot.point.length - 1];
+                        this.spot.point = this.spot.point[0];
+                    }
+                },
+                spotPoint0: function() {
+                    if (Array.isArray(this.spot.point[0])) {
+                        return this.spot.point[0]
+                    } else {
+                        return this.spot.point
+                    }
                 },
                 shouldReInit:function(){
                     return this.spot==null || this.previousSpotId !== this.initialSpot.id && this.initialSpot.id > 0
@@ -479,7 +490,6 @@
                         this.images = getImages(this.initialSpot.id, "image");
                         this.schemas = getImages(this.initialSpot.id, "schema");
                         this.videos = getImages(this.initialSpot.id, "video");
-                        this.editEndPoint = (this.spot.props.end_point!=null);
                     }
                 },
 
@@ -495,13 +505,13 @@
                     }
                     return this.spot.last_automatic_ordering
                 },
-                findMainImgIdx:function(imgs, spotMainUrl) {
-                    return imgs.findIndex(function(el) {
-                                                   if (el.preview_url == spotMainUrl) {
-                                                       return true
-                                                   }
-                                                   return false
-                                               })
+                findMainImgIdx: function (imgs, spotMainUrl) {
+                    return imgs.findIndex(function (el) {
+                        if (el.preview_url == spotMainUrl) {
+                            return true
+                        }
+                        return false
+                    })
                 },
                 embeddedVideoUrl: function (id) {
                     return "https://www.youtube.com/embed/" + id

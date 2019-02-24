@@ -133,7 +133,7 @@ func (this whiteWaterStorage) UpdateWhiteWaterPointsFull(whiteWaterPoints ...Whi
 }
 
 func paramsFull(wwp WhiteWaterPointFull) ([]interface{}, error) {
-	pointBytes, err := json.Marshal(geo.NewPgGeoPoint(wwp.Point))
+	pointBytes, err := json.Marshal(wwp.Point.ToPg())
 	if err != nil {
 		return nil, err
 	}
@@ -186,7 +186,7 @@ func (this whiteWaterStorage) list(query string, vars ...interface{}) ([]WhiteWa
 			}
 			return whiteWaterPoint, nil
 		}, vars...)
-	if (err != nil) {
+	if err != nil {
 		return []WhiteWaterPointWithRiverTitle{}, err
 	}
 	return result.([]WhiteWaterPointWithRiverTitle), nil
@@ -194,7 +194,7 @@ func (this whiteWaterStorage) list(query string, vars ...interface{}) ([]WhiteWa
 
 func (this whiteWaterStorage) listFull(query string, vars ...interface{}) ([]WhiteWaterPointFull, error) {
 	result, err := this.doFindList(query, scanWwPointFull, vars...)
-	if (err != nil) {
+	if err != nil {
 		return []WhiteWaterPointFull{}, err
 	}
 	return result.([]WhiteWaterPointFull), nil
@@ -248,13 +248,13 @@ func scanWwPointFull(rows *sql.Rows, additionalVars ...interface{}) (WhiteWaterP
 		return WhiteWaterPointFull{}, err
 	}
 
-	var pgPoint PgPoint
+	var pgPoint PgPointOrLineString
 	err = json.Unmarshal([]byte(pointString), &pgPoint)
 	if err != nil {
 		log.Errorf("Can not parse point %s for white water object %d: %v", pointString, wwp.Id, err)
 		return WhiteWaterPointFull{}, err
 	}
-	wwp.Point = pgPoint.GetPoint()
+	wwp.Point = pgPoint.Coordinates.Flip()
 
 	wwp.RiverId = wwp.River.Id
 
@@ -296,7 +296,7 @@ func scanWwPoint(rows *sql.Rows, additionalVars ...interface{}) (WhiteWaterPoint
 		return WhiteWaterPoint{}, err
 	}
 
-	var pgPoint PgPoint
+	var pgPoint PgPointOrLineString
 	err = json.Unmarshal([]byte(pointStr), &pgPoint)
 	if err != nil {
 		log.Errorf("Can not parse point %s for white water object %d: %v", pointStr, id, err)
@@ -316,7 +316,7 @@ func scanWwPoint(rows *sql.Rows, additionalVars ...interface{}) (WhiteWaterPoint
 			Title: title,
 		},
 		RiverId:   getOrElse(riverId, -1),
-		Point:     pgPoint.GetPoint(),
+		Point:     pgPoint.Coordinates,
 		Category:  category,
 		ShortDesc: shortDesc.String,
 		Link:      link.String,
@@ -346,7 +346,7 @@ func (this whiteWaterStorage) update(query string, whiteWaterPoints ...WhiteWate
 	return this.performUpdates(query,
 		func(entity interface{}) ([]interface{}, error) {
 			wwp := entity.(WhiteWaterPoint)
-			pathBytes, err := json.Marshal(geo.NewPgGeoPoint(wwp.Point))
+			pathBytes, err := json.Marshal(wwp.Point.ToPg())
 			if err != nil {
 				return nil, err
 			}
@@ -410,7 +410,7 @@ func (this whiteWaterStorage) AutoOrderingRiverIds() ([]int64, error) {
 }
 
 type idDistPair struct {
-	int64;
+	int64
 	int
 }
 

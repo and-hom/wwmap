@@ -161,7 +161,7 @@ func (this *RiverHandler) GetRiverCard(w http.ResponseWriter, req *http.Request)
 	w.Write([]byte(this.JsonStr(dto, "{}")))
 }
 
-func (this *RiverHandler) groupReports(reports []dao.VoyageReport, river dao.RiverWithSpotsExt) ([]VoyageReportListDto) {
+func (this *RiverHandler) groupReports(reports []dao.VoyageReport, river dao.RiverWithSpotsExt) []VoyageReportListDto {
 	reportDtos := make(map[string][]VoyageReportDto)
 	for _, report := range reports {
 		reportDtos[report.Source] = append(reportDtos[report.Source], VoyageReportDto{
@@ -221,7 +221,7 @@ func (this *RiverHandler) GetVisibleRiversLight(w http.ResponseWriter, req *http
 
 	catFilter := 0
 	catFilterStr := req.FormValue("max_cat")
-	if catFilterStr !="" {
+	if catFilterStr != "" {
 		catFilter, err = strconv.Atoi(catFilterStr)
 		if err != nil {
 			log.Warnf("Incorrect max_cat parameter %s.")
@@ -238,15 +238,16 @@ func (this *RiverHandler) GetVisibleRiversLight(w http.ResponseWriter, req *http
 	riversWithReports := make([]RiverListLightDto, 0, len(rivers))
 	for i := 0; i < len(rivers); i++ {
 		river := &rivers[i]
-		if len(river.Spots)==0 {
+		if len(river.Spots) == 0 {
 			continue
 		}
 		maxCat := 0
+		p0 := river.Spots[0].Point.Center()
 		bounds := geo.Bbox{
-			X1: river.Spots[0].Point.Lon,
-			Y1: river.Spots[0].Point.Lat,
-			X2: river.Spots[0].Point.Lon,
-			Y2: river.Spots[0].Point.Lat,
+			X1: p0.Lon,
+			Y1: p0.Lat,
+			X2: p0.Lon,
+			Y2: p0.Lat,
 		}
 		for j := 0; j < len(river.Spots); j++ {
 			cat := river.Spots[j].Category.Category
@@ -254,7 +255,7 @@ func (this *RiverHandler) GetVisibleRiversLight(w http.ResponseWriter, req *http
 				maxCat = cat
 			}
 			if j > 0 {
-				bounds.Add(river.Spots[j].Point)
+				bounds.Add(river.Spots[j].Point.Center())
 			}
 		}
 		if maxCat < catFilter {
@@ -262,9 +263,9 @@ func (this *RiverHandler) GetVisibleRiversLight(w http.ResponseWriter, req *http
 		}
 
 		riversWithReports = append(riversWithReports, RiverListLightDto{
-			IdTitle: dao.IdTitle{Id: river.Id, Title: river.Title,},
-			Region:  dao.Region{Id: river.RegionId, CountryId: river.CountryId,},
-			Bounds:bounds.WithMargins(RIVER_BOUNDS_MARGINS_RATIO),
+			IdTitle: dao.IdTitle{Id: river.Id, Title: river.Title},
+			Region:  dao.Region{Id: river.RegionId, CountryId: river.CountryId},
+			Bounds:  bounds.WithMargins(RIVER_BOUNDS_MARGINS_RATIO),
 		})
 	}
 	w.Write([]byte(this.JsonStr(riversWithReports, "[]")))
