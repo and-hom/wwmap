@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"encoding/json"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/lib/blob"
@@ -15,7 +14,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/ptrv/go-gpx"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strconv"
 )
@@ -271,15 +269,10 @@ func (this *GeoHierarchyHandler) GetRiver(w http.ResponseWriter, r *http.Request
 }
 
 func (this *GeoHierarchyHandler) SaveRiver(w http.ResponseWriter, r *http.Request) {
-	bodyBytes, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		OnError500(w, err, "Can not read request body")
-		return
-	}
 	river := RiverDto{}
-	err = json.Unmarshal(bodyBytes, &river)
+	body, err := decodeJsonBody(r, &river)
 	if err != nil {
-		OnError500(w, err, "Can not parse json from request body: "+string(bodyBytes))
+		OnError500(w, err, "Can not parse json from request body: "+body)
 		return
 	}
 
@@ -327,7 +320,7 @@ func (this *GeoHierarchyHandler) SaveRiver(w http.ResponseWriter, r *http.Reques
 		logEntryType = dao.ENTRY_TYPE_CREATE
 	}
 	if err != nil {
-		OnError500(w, err, fmt.Sprintf("Can not save river %s", string(bodyBytes)))
+		OnError500(w, err, "Can not save river: "+body)
 		return
 	}
 
@@ -343,15 +336,10 @@ func (this *GeoHierarchyHandler) SetRiverVisible(w http.ResponseWriter, r *http.
 		return
 	}
 
-	bodyBytes, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		OnError500(w, err, "Can not read body")
-		return
-	}
 	visible := false
-	err = json.Unmarshal(bodyBytes, &visible)
+	body, err := decodeJsonBody(r, &visible)
 	if err != nil {
-		OnError(w, err, "Failed to parse request body", http.StatusBadRequest)
+		OnError(w, err, "Failed to parse request body: "+body, http.StatusBadRequest)
 		return
 	}
 
@@ -466,15 +454,10 @@ func (this *GeoHierarchyHandler) GetSpot(w http.ResponseWriter, r *http.Request)
 }
 
 func (this *GeoHierarchyHandler) SaveSpot(w http.ResponseWriter, r *http.Request) {
-	bodyBytes, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		OnError500(w, err, "Can not read request body")
-		return
-	}
 	spot := dao.WhiteWaterPointFull{}
-	err = json.Unmarshal(bodyBytes, &spot)
+	body, err := decodeJsonBody(r, &spot)
 	if err != nil {
-		OnError500(w, err, "Can not parse json from request body: "+string(bodyBytes))
+		OnError500(w, err, "Can not parse json from request body: "+body)
 		return
 	}
 
@@ -494,7 +477,7 @@ func (this *GeoHierarchyHandler) SaveSpot(w http.ResponseWriter, r *http.Request
 		logType = dao.ENTRY_TYPE_CREATE
 	}
 	if err != nil {
-		OnError500(w, err, fmt.Sprintf("Can not save spot %s", string(bodyBytes)))
+		OnError500(w, err, "Can not save spot: "+body)
 		return
 	}
 

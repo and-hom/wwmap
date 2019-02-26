@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/and-hom/wwmap/backend/clustering"
 	"github.com/and-hom/wwmap/backend/ymaps"
@@ -146,23 +145,11 @@ func (this *WhiteWaterHandler) search(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp := SearchResp{
+	this.JsonAnswer(w, SearchResp{
 		Spots:        spots,
 		Rivers:       rivers,
 		ResourceBase: this.ResourceBase,
-	}
-
-	respBytes, err := json.Marshal(resp)
-	if err != nil {
-		OnError500(w, err, "Can not marshal response")
-		return
-	}
-
-	_, err = w.Write(respBytes)
-	if err != nil {
-		OnError500(w, err, "Can not write response")
-		return
-	}
+	})
 }
 
 type SearchResp struct {

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/backend/passport"
@@ -9,6 +10,7 @@ import (
 	"github.com/and-hom/wwmap/lib/handler"
 	. "github.com/and-hom/wwmap/lib/http"
 	"golang.org/x/net/context"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -196,4 +198,13 @@ func (this *App) LogUserEvent(r *http.Request, objType string, id int64, logType
 			log.Error("User is null but authorized!")
 		}
 	}()
+}
+
+func decodeJsonBody(r *http.Request, obj interface{}) (string, error) {
+	bodyBytes, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		return "", err
+	}
+	err = json.Unmarshal(bodyBytes, obj)
+	return string(bodyBytes), err
 }

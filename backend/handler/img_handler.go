@@ -17,7 +17,6 @@ import (
 	_ "image/jpeg"
 	"image/png"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strconv"
 	"time"
@@ -180,7 +179,7 @@ func (this *ImgHandler) Upload(w http.ResponseWriter, req *http.Request) {
 		OnError500(w, err, "Can not store image")
 		return
 	}
-	this.LogUserEvent(req, IMAGE_LOG_ENTRY_TYPE, img.Id, dao.ENTRY_TYPE_CREATE, fmt.Sprintf("%s/%s", img.Source, img.RemoteId));
+	this.LogUserEvent(req, IMAGE_LOG_ENTRY_TYPE, img.Id, dao.ENTRY_TYPE_CREATE, fmt.Sprintf("%s/%s", img.Source, img.RemoteId))
 }
 
 func storageKey(img dao.Img) string {
@@ -267,15 +266,10 @@ func (this *ImgHandler) SetEnabled(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	bodyBytes, err := ioutil.ReadAll(req.Body)
-	if err != nil {
-		OnError500(w, err, "Can not read body")
-		return
-	}
 	enabled := false
-	err = json.Unmarshal(bodyBytes, &enabled)
+	body, err := decodeJsonBody(req, &enabled)
 	if err != nil {
-		OnError(w, err, "Can not unmarshal request body", http.StatusBadRequest)
+		OnError(w, err, "Can not unmarshal request body: "+body, http.StatusBadRequest)
 		return
 	}
 
@@ -298,15 +292,10 @@ func (this *ImgHandler) SetPreview(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	bodyBytes, err := ioutil.ReadAll(req.Body)
-	if err != nil {
-		OnError500(w, err, "Can not read body")
-		return
-	}
 	imgId := int64(0)
-	err = json.Unmarshal(bodyBytes, &imgId)
+	body, err := decodeJsonBody(req, &imgId)
 	if err != nil {
-		OnError(w, err, "Can not unmarshal request body", http.StatusBadRequest)
+		OnError(w, err, "Can not unmarshal request body: "+body, http.StatusBadRequest)
 	}
 
 	img, found, err := this.ImgDao.Find(imgId)
@@ -342,7 +331,7 @@ func (this *ImgHandler) DropPreview(w http.ResponseWriter, req *http.Request) {
 		OnError500(w, err, fmt.Sprintf("Can not set preview for spot %d", spotId))
 		return
 	}
-	this.LogUserEvent(req, SPOT_LOG_ENTRY_TYPE, spotId, dao.ENTRY_TYPE_MODIFY, "drop main img");
+	this.LogUserEvent(req, SPOT_LOG_ENTRY_TYPE, spotId, dao.ENTRY_TYPE_MODIFY, "drop main img")
 }
 
 func (this *ImgHandler) GetPreview(w http.ResponseWriter, req *http.Request) {
