@@ -17,7 +17,16 @@ func (this PointOrLine) Center() Point {
 		return *this.Point
 	}
 	if this.Line != nil {
-		return (*this.Line)[0] // todo real center ?
+		lat := 0.0
+		lon := 0.0
+		for i := 0; i < len(*this.Line); i++ {
+			lat += (*this.Line)[i].Lat
+			lon += (*this.Line)[i].Lon
+		}
+		return Point{
+			Lat: lat / float64(len(*this.Line)),
+			Lon: lon / float64(len(*this.Line)),
+		}
 	}
 	return Point{}
 }
