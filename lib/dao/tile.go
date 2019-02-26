@@ -65,7 +65,7 @@ func (this *tileStorage) GetRiver(riverId int64, imgLimit int) (RiverWithSpotsEx
 				return river, err
 			}
 
-			pgPoint := PgPointOrLineString{}
+			pgPoint := geo.PgPointOrLineString{}
 			err = json.Unmarshal([]byte(pointStr), &pgPoint)
 			if err != nil {
 				return river, err
@@ -132,7 +132,7 @@ func (this *tileStorage) ListRiversWithBounds(bbox geo.Bbox, imgLimit int, showU
 				return []RiverWithSpots{}, err
 			}
 
-			pgPoint := PgPointOrLineString{}
+			pgPoint := geo.PgPointOrLineString{}
 			err = json.Unmarshal([]byte(pointStr), &pgPoint)
 			if err != nil {
 				return []RiverWithSpots{}, err

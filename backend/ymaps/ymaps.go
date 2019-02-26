@@ -61,7 +61,7 @@ func mkFeature(point Spot, river RiverWithSpots, withDescription bool, resources
 	}
 
 	if point.Point.Line != nil {
-		feature.Geometry = NewYmapsGeoLine(*point.Point.Line...)
+		feature.Geometry = NewYmapsLineString(*point.Point.Line...)
 		feature.Options.Overlay = "BiPlacemrakOverlay"
 		feature.Options.StrokeColor = CatColor(point.Category.Category)
 	} else if point.Point.Point != nil {

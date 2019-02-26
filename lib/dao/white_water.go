@@ -248,7 +248,7 @@ func scanWwPointFull(rows *sql.Rows, additionalVars ...interface{}) (WhiteWaterP
 		return WhiteWaterPointFull{}, err
 	}
 
-	var pgPoint PgPointOrLineString
+	var pgPoint geo.PgPointOrLineString
 	err = json.Unmarshal([]byte(pointString), &pgPoint)
 	if err != nil {
 		log.Errorf("Can not parse point %s for white water object %d: %v", pointString, wwp.Id, err)
@@ -296,7 +296,7 @@ func scanWwPoint(rows *sql.Rows, additionalVars ...interface{}) (WhiteWaterPoint
 		return WhiteWaterPoint{}, err
 	}
 
-	var pgPoint PgPointOrLineString
+	var pgPoint geo.PgPointOrLineString
 	err = json.Unmarshal([]byte(pointStr), &pgPoint)
 	if err != nil {
 		log.Errorf("Can not parse point %s for white water object %d: %v", pointStr, id, err)
@@ -376,13 +376,13 @@ func (this whiteWaterStorage) GetGeomCenterByRiver(riverId int64) (geo.Point, er
 		if err != nil {
 			return geo.Point{}, err
 		}
-		var pgPoint PgPoint
+		var pgPoint geo.GeoPoint
 		err = json.Unmarshal([]byte(pointString), &pgPoint)
 		if err != nil {
 			log.Errorf("Can not parse centroid point %s for river %d: %v", pointString, riverId, err)
 			return geo.Point{}, err
 		}
-		return pgPoint.GetPoint(), nil
+		return pgPoint.Coordinates.Flip(), nil
 	}, riverId)
 	if err != nil {
 		return geo.Point{}, err
@@ -418,7 +418,7 @@ const ORDERING_MIN_DISTANCE_METERS = 30
 
 func (this whiteWaterStorage) DistanceFromBeginning(riverId int64, path []geo.Point) (map[int64]int, error) {
 	result := make(map[int64]int)
-	pathB, err := json.Marshal(geo.NewLineString(path))
+	pathB, err := json.Marshal(geo.NewPgLineString(path))
 	if err != nil {
 		return result, err
 	}

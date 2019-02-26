@@ -66,13 +66,13 @@ func meteoPointMapper(rows *sql.Rows) (MeteoPoint, error) {
 
 	err := rows.Scan(&result.Id, &result.Title, &pointStr, &result.CollectData)
 
-	var pgPoint PgPoint
+	var pgPoint geo.GeoPoint
 	err = json.Unmarshal([]byte(pointStr), &pgPoint)
 	if err != nil {
 		log.Errorf("Can not parse centroid point %s for meteo point %d: %v", pointStr, result.Id, err)
 		return MeteoPoint{}, err
 	}
-	result.Point = pgPoint.GetPoint()
+	result.Point = pgPoint.Coordinates.Flip()
 
 	return result, err
 }
