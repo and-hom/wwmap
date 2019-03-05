@@ -86,12 +86,6 @@
                     {
                         href: "map.htm",
                         title: "Карта",
-                        allow: ['EDITOR', 'ADMIN'],
-                    },
-                    {
-                        href: "map.htm",
-                        title: "Карта",
-                        allow: ['USER', 'ANONYMOUS'],
                     },
                     {
                         href: "docs-integration.htm",
