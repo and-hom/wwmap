@@ -100,26 +100,18 @@ func CatColor(cat int) string {
 }
 
 func ClusterGeom(points []Spot) Bbox {
-	var minLat = float64(360)
-	var minLon = float64(360)
-	var maxLat = -float64(360)
-	var maxLon = -float64(360)
+	result := Bbox{
+		X1: 360.0,
+		Y1: 360.0,
+		X2: -360.0,
+		Y2: -360.0,
+	}
 
 	for i := 0; i < len(points); i++ {
-		lat := points[i].Point.Center().Lat
-		lon := points[i].Point.Center().Lon
+		result.AddPointOrLine(points[i].Point)
+	}
 
-		minLat = math.Min(minLat, lat)
-		minLon = math.Min(minLon, lon)
-		maxLat = math.Max(maxLat, lat)
-		maxLon = math.Max(maxLon, lon)
-	}
-	return Bbox{
-		X1: minLon,
-		Y1: minLat,
-		X2: maxLon,
-		Y2: maxLat,
-	}
+	return result
 }
 
 func categoryClusterIcon(category int) string {

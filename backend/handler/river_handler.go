@@ -242,21 +242,18 @@ func (this *RiverHandler) GetVisibleRiversLight(w http.ResponseWriter, req *http
 			continue
 		}
 		maxCat := 0
-		p0 := river.Spots[0].Point.Center()
 		bounds := geo.Bbox{
-			X1: p0.Lon,
-			Y1: p0.Lat,
-			X2: p0.Lon,
-			Y2: p0.Lat,
+			X1: 360.0,
+			Y1: 360.0,
+			X2: -360.0,
+			Y2: -360.0,
 		}
 		for j := 0; j < len(river.Spots); j++ {
 			cat := river.Spots[j].Category.Category
 			if maxCat < cat {
 				maxCat = cat
 			}
-			if j > 0 {
-				bounds.Add(river.Spots[j].Point.Center())
-			}
+			bounds.AddPointOrLine(river.Spots[j].Point)
 		}
 		if maxCat < catFilter {
 			continue

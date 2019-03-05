@@ -56,6 +56,17 @@ func (this Bbox) WithMargins(ratio float64) Bbox {
 	}
 }
 
+func (this *Bbox) AddPointOrLine(point PointOrLine) {
+	if point.Point != nil {
+		this.Add(*point.Point)
+	}
+	if point.Line != nil {
+		for i := 0; i < len(*point.Line); i++ {
+			this.Add((*point.Line)[i])
+		}
+	}
+}
+
 func (this *Bbox) Add(point Point) {
 	if this.X1 > point.Lon {
 		this.X1 = point.Lon
