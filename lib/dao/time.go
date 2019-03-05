@@ -27,7 +27,7 @@ func (t JSONTime) MarshalJSON() ([]byte, error) {
 }
 
 func (t JSONTime) String() string {
-	return time.Time(t).Format("2006-01-02 00:00")
+	return time.Time(t).Format("2006-01-02 15:04")
 }
 
 type JSONUnixTime time.Time
