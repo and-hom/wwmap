@@ -6,7 +6,7 @@
 
         <div v-if="canEdit()" class="btn-toolbar justify-content-between">
             <div class="btn-group mr-2" role="group">
-                <button v-if="river.id" type="button" class="btn btn-primary" v-if="!editMode" v-on:click="add_spot()">Добавить препятствие</button>
+                <button v-if="river.id && !editMode" type="button" class="btn btn-primary" v-on:click="add_spot()">Добавить препятствие</button>
                 <button type="button" class="btn btn-info" v-if="!editMode" v-on:click="editMode=true; hideError();">
                     Редактирование
                 </button>
