@@ -522,12 +522,12 @@ func (this *GeoHierarchyHandler) removeImageData(req *http.Request, imgs []dao.I
 	for _, img := range imgs {
 		imgIdStr := fmt.Sprintf("%d", img.Id)
 
-		err := this.ImgStorage.Remove(imgIdStr)
+		err := this.ImgStorage.Remove(storageKeyById(imgIdStr))
 		if err != nil {
 			log.Errorf("Can not remove image for by id %d: %v", img.Id, err)
 		}
 
-		err = this.PreviewImgStorage.Remove(imgIdStr)
+		err = this.PreviewImgStorage.Remove(storageKeyById(imgIdStr))
 		if err != nil {
 			log.Errorf("Can not remove preview for by id %d: %v", img.Id, err)
 		}
@@ -556,7 +556,7 @@ func (this *GeoHierarchyHandler) getRiverPassport(w http.ResponseWriter, req *ht
 	contentType string, storage blob.BlobStorage, suffix string) {
 	pathParams := mux.Vars(req)
 	w.Header().Set("Content-Type", contentType)
-	length, err := storage.Length(pathParams["riverId"])
+	length, err := storage.Length(pathParams["riverId"] + suffix)
 	if err != nil {
 		log.Warnf("Can not get river passport content length %s: %v", pathParams["riverId"], err)
 		length = 0
