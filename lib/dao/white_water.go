@@ -316,7 +316,7 @@ func scanWwPoint(rows *sql.Rows, additionalVars ...interface{}) (WhiteWaterPoint
 			Title: title,
 		},
 		RiverId:   getOrElse(riverId, -1),
-		Point:     pgPoint.Coordinates,
+		Point:     pgPoint.Coordinates.Flip(),
 		Category:  category,
 		ShortDesc: shortDesc.String,
 		Link:      link.String,
