@@ -50,14 +50,14 @@ func (this *DashboardHandler) Levels(w http.ResponseWriter, req *http.Request) {
 
 	today := time.Now()
 	_10daysLevels := today.Add(time.Hour * 24 * (-PLOT_DAYS))
-	d, err := this.LevelDao.List(dao.JSONDate(_10daysLevels))
+	levelData, err := this.LevelDao.List(dao.JSONDate(_10daysLevels))
 	if err != nil {
 		OnError500(w, err, "Can't list sensor data")
 	}
 
 	result := make(map[string]SensorData)
-	for sensorId, data := range d {
-		r := riversBySensor[sensorId]
+	for sensorId, r := range riversBySensor {
+		data := levelData[sensorId]
 		rivers := make([]RiverWithRegionDto, len(r))
 		for i := 0; i < len(r); i++ {
 			rivers[i] = RiverWithRegionDto{
