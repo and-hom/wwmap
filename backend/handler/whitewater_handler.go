@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/and-hom/wwmap/backend/clustering"
 	"github.com/and-hom/wwmap/backend/ymaps"
@@ -142,31 +141,19 @@ func (this *WhiteWaterHandler) search(w http.ResponseWriter, r *http.Request) {
 	}
 	rivers, err := this.RiverDao.FindByTitlePart(string(requestBody), 30, 0)
 	if err != nil {
-		OnError500(w, err, "Can not select spots")
+		OnError500(w, err, "Can not select rivers")
 		return
 	}
 
-	resp := SearchResp{
+	this.JsonAnswer(w, SearchResp{
 		Spots:        spots,
 		Rivers:       rivers,
 		ResourceBase: this.ResourceBase,
-	}
-
-	respBytes, err := json.Marshal(resp)
-	if err != nil {
-		OnError500(w, err, "Can not marshal response")
-		return
-	}
-
-	_, err = w.Write(respBytes)
-	if err != nil {
-		OnError500(w, err, "Can not write response")
-		return
-	}
+	})
 }
 
 type SearchResp struct {
 	Spots        []dao.WhiteWaterPointWithRiverTitle `json:"spots"`
 	Rivers       []dao.RiverTitle                    `json:"rivers"`
-	ResourceBase string                          `json:"resource_base"`
+	ResourceBase string                              `json:"resource_base"`
 }

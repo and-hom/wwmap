@@ -56,17 +56,28 @@ func (this Bbox) WithMargins(ratio float64) Bbox {
 	}
 }
 
+func (this *Bbox) AddPointOrLine(point PointOrLine) {
+	if point.Point != nil {
+		this.Add(*point.Point)
+	}
+	if point.Line != nil {
+		for i := 0; i < len(*point.Line); i++ {
+			this.Add((*point.Line)[i])
+		}
+	}
+}
+
 func (this *Bbox) Add(point Point) {
-	if (this.X1 > point.Lon) {
+	if this.X1 > point.Lon {
 		this.X1 = point.Lon
 	}
-	if (this.X2 < point.Lon) {
+	if this.X2 < point.Lon {
 		this.X2 = point.Lon
 	}
-	if (this.Y1 > point.Lat) {
+	if this.Y1 > point.Lat {
 		this.Y1 = point.Lat
 	}
-	if (this.Y2 < point.Lat) {
+	if this.Y2 < point.Lat {
 		this.Y2 = point.Lat
 	}
 }
@@ -86,15 +97,15 @@ func ParseBbox(data string) (Bbox, error) {
 	}
 
 	return Bbox{
-		X1:partsF[0],
-		Y1:partsF[1],
-		X2:partsF[2],
-		Y2:partsF[3],
+		X1: partsF[0],
+		Y1: partsF[1],
+		X2: partsF[2],
+		Y2: partsF[3],
 	}, nil
 }
 
 func (this Bbox) Center() Point {
-	return Point{Lat:(this.Y1 + this.Y2) / 2, Lon:(this.X1 + this.X2) / 2, }
+	return Point{Lat: (this.Y1 + this.Y2) / 2, Lon: (this.X1 + this.X2) / 2}
 
 }
 
@@ -107,7 +118,7 @@ func (this Bbox) Height() float64 {
 }
 
 func (this Bbox) Contains(p Point) bool {
-	return this.X1 <= p.Lat && p.Lat <= this.X2 && this.Y1 <= p.Lon && p.Lon <= this.Y2;
+	return this.X1 <= p.Lat && p.Lat <= this.X2 && this.Y1 <= p.Lon && p.Lon <= this.Y2
 }
 
 type BboxInt struct {
@@ -123,37 +134,36 @@ type PointInt struct {
 }
 
 type Geometry interface {
-
 }
 
 type yRectangleInt struct {
 	Type        GeometryType `json:"type"`
-	Coordinates [][]int `json:"coordinates"`
+	Coordinates [][]int      `json:"coordinates"`
 }
 
 func NewYRectangleInt(rectangle [][]int) Geometry {
 	return yRectangleInt{
-		Coordinates:rectangle,
-		Type:RECTANGLE,
+		Coordinates: rectangle,
+		Type:        RECTANGLE,
 	}
 }
 
 type FeatureProperties struct {
-	BalloonContent  string `json:"balloonContent,omitempty"`
-	ClusterCaption  string `json:"clusterCaption,omitempty"`
-	HintContent     string `json:"hintContent,omitempty"`
-	IconContent     string `json:"iconContent,omitempty"`
+	BalloonContent  string          `json:"balloonContent,omitempty"`
+	ClusterCaption  string          `json:"clusterCaption,omitempty"`
+	HintContent     string          `json:"hintContent,omitempty"`
+	IconContent     string          `json:"iconContent,omitempty"`
 	HotspotMetaData HotspotMetaData `json:"HotspotMetaData,omitempty"`
-	Id              int64 `json:"id,omitempty"`
+	Id              int64           `json:"id,omitempty"`
 
 	// custom fields
-	Title           string `json:"title,omitempty"`
-	Link            string `json:"link,omitempty"`
-	Comment         string `json:"comment,omitempty"`
-	ShortDesc       string `json:"short_description,omitempty"`
-	Category        *model.SportCategory `json:"category,omitempty"`
-	RiverTitle      string `json:"river_title,omitempty"`
-	Images          []Preview `json:"images,omitempty"`
+	Title      string               `json:"title,omitempty"`
+	Link       string               `json:"link,omitempty"`
+	Comment    string               `json:"comment,omitempty"`
+	ShortDesc  string               `json:"short_description,omitempty"`
+	Category   *model.SportCategory `json:"category,omitempty"`
+	RiverTitle string               `json:"river_title,omitempty"`
+	Images     []Preview            `json:"images,omitempty"`
 }
 
 type Preview struct {
@@ -166,21 +176,24 @@ type Preview struct {
 type IconLayout string
 
 const (
-	IMAGE IconLayout = "default#image"
+	IMAGE              IconLayout = "default#image"
 	IMAGE_WITH_CONTENT IconLayout = "default#imageWithContent"
 )
 
 type FeatureOptions struct {
-	Preset          string `json:"preset,omitempty"`
-	Id              int64 `json:"id,omitempty"`
+	Preset string `json:"preset,omitempty"`
+	Id     int64  `json:"id,omitempty"`
 
 	IconLayout      IconLayout `json:"iconLayout,omitempty"`
-	IconImageHref   string `json:"iconImageHref,omitempty"`
-	IconImageSize   []int `json:"iconImageSize,omitempty"`
-	IconImageOffset []int `json:"iconImageOffset,omitempty"`
+	IconImageHref   string     `json:"iconImageHref,omitempty"`
+	IconImageSize   []int      `json:"iconImageSize,omitempty"`
+	IconImageOffset []int      `json:"iconImageOffset,omitempty"`
+
+	StrokeColor string `json:"strokeColor,omitempty"`
+	Overlay     string `json:"overlay,omitempty"`
 }
 
-type FeatureType string;
+type FeatureType string
 
 const (
 	FEATURE FeatureType = "Feature"
@@ -188,25 +201,25 @@ const (
 )
 
 type Feature struct {
-	Type       FeatureType `json:"type"`
-	Id         int64 `json:"id,omitempty"`
-	Geometry   Geometry `json:"geometry,omitempty"`
-	Bbox       Bbox `json:"bbox,omitempty"`
-	Number     int `json:"number,omitempty"`
-	Features   []Feature `json:"features,omitempty"`
+	Type       FeatureType       `json:"type"`
+	Id         int64             `json:"id,omitempty"`
+	Geometry   Geometry          `json:"geometry,omitempty"`
+	Bbox       *Bbox             `json:"bbox,omitempty"`
+	Number     int               `json:"number,omitempty"`
+	Features   []Feature         `json:"features,omitempty"`
 	Properties FeatureProperties `json:"properties,omitempty"`
-	Options    FeatureOptions `json:"options,omitempty"`
+	Options    FeatureOptions    `json:"options,omitempty"`
 }
 
 type FeatureCollection struct {
 	Features []Feature `json:"features"`
-	Type     string `json:"type"`
+	Type     string    `json:"type"`
 }
 
 func MkFeatureCollection(features []Feature) FeatureCollection {
 	return FeatureCollection{
-		Features:features,
-		Type:"FeatureCollection",
+		Features: features,
+		Type:     "FeatureCollection",
 	}
 }
 
@@ -227,7 +240,7 @@ func flatten(arrs [][]Feature) []Feature {
 }
 
 type HotspotMetaData struct {
-	Id               int64 `json:"id"`
+	Id               int64    `json:"id"`
 	RenderedGeometry Geometry `json:"RenderedGeometry"`
 }
 
@@ -244,10 +257,10 @@ func tileToCoords(x int, y int, z uint32) BboxInt {
 	ySize := 180 / tileCount
 
 	return BboxInt{
-		X1 : minX + (x - 1) * xSize,
-		Y1 : minY - (y - 1) * ySize,
-		X2 : minX + x * xSize,
-		Y2 : minY - y * ySize,
+		X1: minX + (x-1)*xSize,
+		Y1: minY - (y-1)*ySize,
+		X2: minX + x*xSize,
+		Y2: minY - y*ySize,
 	}
 }
 
@@ -271,7 +284,6 @@ func tileToCoords(x int, y int, z uint32) BboxInt {
 //
 //	return tilePoint, int(x), int(y)
 //}
-
 
 //func toTileCoords1(z uint32, p Point) (PointInt, int, int) {
 //	tileCount := 1 << z
@@ -315,7 +327,7 @@ func ToTileCoords(z uint32, p Point) (PointInt, int, int) {
 	ppm := pixelsPerMeter(z)
 
 	mercatorXPixels := longitudeToMercatorMeters(p.Lon) * ppm
-	mercatorYPixels := (EQUATOR / 2 - latitudeToMercatorMeters(p.Lat)) * ppm
+	mercatorYPixels := (EQUATOR/2 - latitudeToMercatorMeters(p.Lat)) * ppm
 
 	logrus.Info(latitudeToMercatorMeters(p.Lat), ppm)
 
@@ -336,22 +348,22 @@ func longitudeToMercatorMeters(lon float64) float64 {
 }
 
 func latitudeToMercatorMeters(lat float64) float64 {
-	latitudeRad := normalizeLatitude(lat) * math.Pi / 180.0;
-	esinLat := EXCENTRICITET * math.Sin(latitudeRad);
+	latitudeRad := normalizeLatitude(lat) * math.Pi / 180.0
+	esinLat := EXCENTRICITET * math.Sin(latitudeRad)
 
 	// Для широты -90 получается 0, и в результате по широте выходит -Infinity
-	tan_temp := math.Tan(math.Pi * 0.25 + latitudeRad * 0.5);
-	pow_temp := math.Pow(math.Tan(math.Pi * 0.25 + math.Asin(esinLat) * 0.5), EXCENTRICITET);
-	U := tan_temp / pow_temp;
+	tan_temp := math.Tan(math.Pi*0.25 + latitudeRad*0.5)
+	pow_temp := math.Pow(math.Tan(math.Pi*0.25+math.Asin(esinLat)*0.5), EXCENTRICITET)
+	U := tan_temp / pow_temp
 
-	return RADIUS * math.Log(U);
+	return RADIUS * math.Log(U)
 }
 
 func normalizeLatitude(lat float64) float64 {
-	if lat > 90 - LAT_EPSILON {
+	if lat > 90-LAT_EPSILON {
 		return 90 - LAT_EPSILON
 	}
-	if lat < LAT_EPSILON - 90 {
+	if lat < LAT_EPSILON-90 {
 		return LAT_EPSILON - 90
 	}
 	return lat
@@ -359,7 +371,7 @@ func normalizeLatitude(lat float64) float64 {
 
 func pixelsPerMeter(zoom uint32) float64 {
 	globalPixelCount := 1 << (zoom + 8)
-	return float64(globalPixelCount) * DIV_EQUATOR;
+	return float64(globalPixelCount) * DIV_EQUATOR
 }
 
 const RADIUS = 6378137.0

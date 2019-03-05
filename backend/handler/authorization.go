@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"encoding/json"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/backend/passport"
@@ -12,7 +11,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"golang.org/x/net/context"
-	"io/ioutil"
 	"net/http"
 	"strconv"
 	"time"
@@ -75,15 +73,7 @@ func (this *UserInfoHandler) SessionStart(w http.ResponseWriter, r *http.Request
 		SessionId:    sessionId,
 	}
 
-	bytes, err := json.Marshal(infoDto)
-	if err != nil {
-		OnError500(w, err, "Can not create response")
-		return
-	}
-	_, err = w.Write(bytes)
-	if err != nil {
-		OnError500(w, err, "Can not write response")
-	}
+	this.JsonAnswer(w, infoDto)
 }
 
 func (this *UserInfoHandler) GetUserInfo(w http.ResponseWriter, r *http.Request) {
@@ -103,15 +93,7 @@ func (this *UserInfoHandler) GetUserInfo(w http.ResponseWriter, r *http.Request)
 		SessionId:    user.SessionId,
 	}
 
-	bytes, err := json.Marshal(infoDto)
-	if err != nil {
-		OnError500(w, err, "Can not create response")
-		return
-	}
-	_, err = w.Write(bytes)
-	if err != nil {
-		OnError500(w, err, "Can not write response")
-	}
+	this.JsonAnswer(w, infoDto)
 }
 
 func (this *UserInfoHandler) ListUsers(w http.ResponseWriter, r *http.Request) {
@@ -132,15 +114,10 @@ func (this *UserInfoHandler) SetRole(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	bodyBytes, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		OnError500(w, err, "Can not read body")
-		return
-	}
 	roleStr := ""
-	err = json.Unmarshal(bodyBytes, &roleStr)
+	body, err := decodeJsonBody(r, &roleStr)
 	if err != nil {
-		OnError500(w, err, "Can not unmarshall role: "+string(bodyBytes))
+		OnError500(w, err, "Can not unmarshall role: "+body)
 		return
 	}
 
@@ -208,30 +185,18 @@ func (this *UserInfoHandler) GetVkToken(w http.ResponseWriter, r *http.Request) 
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		OnError500(w, err, "Can not get token")
-		return
-	}
-
 	answer := VkTokenAnswer{}
-	err = json.Unmarshal(body, &answer)
+	body, err := decodeJsonBody(r, &answer)
 	if err != nil {
-		OnError500(w, err, fmt.Sprintf("Can not parse VK response: %s", string(body)))
+		OnError500(w, err, "Can not parse VK response: "+body)
 		return
 	}
 
-	if (answer.AccessToken == "") {
+	if answer.AccessToken == "" {
 		OnError(w, nil, answer.ErrDesc, http.StatusUnauthorized)
 	}
 
-	rb, err := json.Marshal(answer)
-	if err != nil {
-		OnError500(w, err, "Can not marshal response")
-		return
-	}
-
-	w.Write(rb)
+	this.JsonAnswer(w, answer)
 }
 
 func (this *UserInfoHandler) sendChangeRoleMessage(authProvider dao.AuthProvider, userId int64, info dao.UserInfo, oldRole dao.Role, newRole dao.Role) {
@@ -248,21 +213,25 @@ func (this *UserInfoHandler) sendChangeRoleMessage(authProvider dao.AuthProvider
 }
 
 func (this *UserInfoHandler) sendWelcomeMessages(authProvider dao.AuthProvider, id int64, info passport.UserInfo) {
-	this.NotificationHelper.SendToRole(dao.Notification{
+	if err := this.NotificationHelper.SendToRole(dao.Notification{
 		IdTitle:    dao.IdTitle{Title: string(authProvider)},
 		Object:     dao.IdTitle{Id: id, Title: fmt.Sprintf("%s %s (%s %s)", info.Id, info.Login, info.FirstName, info.LastName)},
 		Comment:    "User created",
 		Classifier: "user",
 		SendBefore: time.Now(), // send as soon as possible
-	}, dao.ADMIN)
+	}, dao.ADMIN); err != nil {
+		log.Errorf("Can't create new user notification for admin: %v", err)
+	}
 
 	if authProvider == dao.YANDEX || authProvider == dao.GOOGLE {
-		this.NotificationDao.Add(dao.Notification{
+		if err := this.NotificationDao.Add(dao.Notification{
 			IdTitle:    dao.IdTitle{Title: string(authProvider)},
 			Object:     dao.IdTitle{Id: id, Title: string(info.Login)},
 			Recipient:  dao.NotificationRecipient{Provider: dao.NOTIFICATION_PROVIDER_EMAIL, Recipient: notification.YandexEmail(info.Login)},
 			Classifier: "user-welcome",
 			SendBefore: time.Now(), // send as soon as possible
-		})
+		}); err != nil {
+			log.Errorf("Can't create welcome notification for user: %v", err)
+		}
 	}
 }

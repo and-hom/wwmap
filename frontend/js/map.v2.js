@@ -133,7 +133,7 @@ WWMap.prototype.createHelpBtn = function () {
     return helpButton
 };
 
-WWMap.prototype.init = function (mapDivId) {
+WWMap.prototype.init = function () {
     var positionAndZoom = getLastPositionAndZoom();
 
     var yMap;
@@ -522,7 +522,10 @@ function initWWMap(mapId, riversListId, catalogLinkType) {
     ymaps.ready(function () {
         loadFragment(MAP_FRAGMENTS_URL, 'bubble_template', function (bubbleContent) {
             wwMap = new WWMap(mapId, extractInnerHtml(bubbleContent), riverList, tutorialPopup, catalogLinkType);
-            wwMap.init()
+            ymaps.modules.require(['overlay.BiPlacemark'], function (BiPlacemarkOverlay) {
+                ymaps.overlay.storage.add("BiPlacemrakOverlay", BiPlacemarkOverlay);
+                wwMap.init()
+            });
         })
     });
 }

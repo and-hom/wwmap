@@ -25,29 +25,48 @@
             yaSearch: {
                 type: Boolean,
                 default: false
+            },
+            refreshOnChange: {
+                default: null
+            },
+        },
+        watch: {
+            // This would be called anytime the value of title changes
+            refreshOnChange(newValue, oldValue) {
+                this.doUpdate();
             }
         },
-        updated: function() {
+        updated: function () {
             this.doUpdate()
         },
-        created: function() {
+        created: function () {
             var component = this;
-            ymaps.ready(function() {
+            ymaps.ready(function () {
                 if (component.map) {
                     component.map.destroy();
-                    component.label.geometry.setCoordinates(component.spot.point);
+                    component.label.geometry.setCoordinates(component.getP(0));
+                    return
                 } else {
                     addCachedLayer('osm#standard', 'OSM', 'OpenStreetMap contributors, CC-BY-SA', 'osm');
                     addLayer('google#satellite', 'Спутник Google', 'Изображения © DigitalGlobe,CNES / Airbus, 2018,Картографические данные © Google, 2018', GOOGLE_SAT_TILES);
                     addCachedLayer('ggc#standard', 'Топографическая карта', '', 'ggc', 0, 15)
                 }
 
-                var myMap = new ymaps.Map("map", {
-                    center: component.spot.point,
-                    zoom: component.zoom,
-                    controls: ["zoomControl"],
-                    type: "osm#standard"
-                });
+                let myMap;
+                if (Array.isArray(component.spot.point[0])) {
+                    myMap = new ymaps.Map("map", {
+                        bounds: component.pBounds(),
+                        controls: ["zoomControl"],
+                        type: "osm#standard"
+                    });
+                } else {
+                    myMap = new ymaps.Map("map", {
+                        center: component.pCenter(),
+                        zoom: component.zoom,
+                        controls: ["zoomControl"],
+                        type: "osm#standard"
+                    });
+                }
                 myMap.controls.add(
                     new ymaps.control.TypeSelector([
                         'osm#standard',
@@ -70,27 +89,29 @@
 
                 component.addObjectManager();
                 component.addLabel();
-
-
             })
         },
-        data: function() {
+        data: function () {
             return {
-                mapDivStyle: function() {
+                mapDivStyle: function () {
                     return 'width: ' + this.width + '; height: ' + this.height + ';'
                 },
-                doUpdate: function() {
+                doUpdate: function () {
                     if (this.map) {
-                        this.map.setCenter(this.spot.point);
+                        this.map.setCenter(this.pCenter());
 
                         this.map.geoObjects.remove(this.label);
+                        if (this.endLabel) {
+                            this.map.geoObjects.remove(this.endLabel);
+                            this.map.geoObjects.remove(this.contour);
+                        }
                         this.addLabel();
 
                         this.map.geoObjects.remove(this.objectManager);
                         this.addObjectManager();
                     }
                 },
-                objectManagerUrlTemplate: function() {
+                objectManagerUrlTemplate: function () {
                     var skip = 0;
                     if (this.spot && this.spot.id) {
                         skip = this.spot.id
@@ -102,44 +123,164 @@
                     }
                     return url
                 },
-                addObjectManager:function() {
+                addObjectManager: function () {
                     var objectManager = new ymaps.RemoteObjectManager(this.objectManagerUrlTemplate(), {
                         clusterHasBalloon: false,
                         geoObjectOpenBalloonOnClick: false,
                         geoObjectStrokeWidth: 3,
                         splitRequests: true
-                    });
+                })
+                    ;
                     this.map.geoObjects.add(objectManager);
                     this.objectManager = objectManager
                 },
-                addLabel: function() {
+                addLabel: function () {
                     var component = this;
+                    var props = {
+                        hintContent: this.spot.title,
+                    };
+                    if (Array.isArray(this.spot.point[0])) {
+                        props.iconContent = "Начало"
+                    }
                     var label = new ymaps.GeoObject({
                         geometry: {
                             type: "Point",
-                            coordinates: this.spot.point
+                            coordinates: this.getP(0),
                         },
-                        properties: {
-                            hintContent: this.spot.title
-                        }
+                        properties: props
                     }, {
-                        preset: 'islands#blueIcon',
-                        draggable: this.editable
+                        preset: 'islands#blueStretchyIcon',
+                        draggable: this.editable,
+                        zIndex: 1000000,
+                        zIndexHover: 1000000,
+                        zIndexActive: 1000000,
                     });
                     label.events.add('dragend', function (e) {
-                        component.spot.point = label.geometry.getCoordinates()
+                        component.setP(0, label.geometry.getCoordinates());
+                        component.refreshContour();
                     });
 
                     if (this.editable) {
                         this.map.events.add('click', function (e) {
-                            p = e.get('coords');
+                            let p = e.get('coords');
                             label.geometry.setCoordinates(p);
-                            component.spot.point = p;
+                            component.setP(0, p);
+                            component.refreshContour();
                         });
+                    }
+
+                    if (Array.isArray(this.spot.point[0])) {
+                        ymaps.modules.require(['overlay.BiPlacemark'], function (BiPlacemarkOverlay) {
+                            var contour = new ymaps.GeoObject({
+                                geometry: {
+                                    type: "LineString",
+                                    coordinates: component.spot.point,
+                                },
+                                properties: {}
+                            }, {
+                                lineStringOverlay: BiPlacemarkOverlay,
+                                strokeColor: "#BBBBBBCC",
+                                strokeStyle: 'shortdash',
+                                strokeWidth: 3,
+                                fill: false
+                            });
+                            component.map.geoObjects.add(contour);
+                            component.contour = contour;
+                        });
+
+                        var endLabel = new ymaps.GeoObject({
+                            geometry: {
+                                type: "Point",
+                                coordinates: this.getP(1),
+                            },
+                            properties: {
+                                hintContent: this.spot.title + " конец",
+                                iconContent: "Конец"
+                            }
+                        }, {
+                            preset: 'islands#yellowStretchyIcon',
+                            draggable: this.editable,
+                            zIndex: 10000001,
+                            zIndexHover: 10000001,
+                            zIndexActive: 10000001,
+                        });
+                        endLabel.events.add('dragend', function () {
+                            component.setP(1, endLabel.geometry.getCoordinates());
+                            component.refreshContour();
+                        });
+
+                        this.map.geoObjects.add(endLabel);
+                        this.endLabel = endLabel;
                     }
 
                     this.map.geoObjects.add(label);
                     this.label = label;
+                },
+                refreshContour: function () {
+                    if (this.contour && Array.isArray(this.spot.point[0])) {
+                        for (let i = 0; i < this.spot.point.length; i++) {
+                            this.contour.geometry.set(i, this.spot.point[i]);
+                        }
+                    }
+                },
+                getP: function (i) {
+                    if (Array.isArray(this.spot.point[0])) {
+                        return this.spot.point[i];
+                    } else if (i == 0) {
+                        return this.spot.point;
+                    } else {
+                        return null;
+                    }
+                },
+                setP: function (i, p) {
+                    if (Array.isArray(this.spot.point[0])) {
+                        this.spot.point[i] = p
+                    } else if (i == 0) {
+                        this.spot.point = p;
+                    } else {
+                        throw "Geometry is point, not linestring"
+                    }
+                },
+                pCenter: function () {
+                    if (!Array.isArray(this.spot.point[0])) {
+                        return this.spot.point;
+                    }
+                    let x = 0;
+                    let y = 0;
+                    let len = this.spot.point.length;
+                    for (let i = 0; i < len; i++) {
+                        x += this.spot.point[i][0];
+                        y += this.spot.point[i][1];
+                    }
+                    return [x / len, y / len]
+                },
+                pBounds: function () {
+                    if (!Array.isArray(this.spot.point[0])) {
+                        throw "For linestring only!"
+                    }
+                    let margin = 0.20;
+                    let result = [[100000, 100000], [-100000, -100000]];
+                    for (let i = 0; i < this.spot.point.length; i++) {
+                        if (this.spot.point[i][0] < result[0][0]) {
+                            result[0][0] = this.spot.point[i][0];
+                        }
+                        if (this.spot.point[i][1] < result[0][1]) {
+                            result[0][1] = this.spot.point[i][1];
+                        }
+                        if (this.spot.point[i][0] > result[1][0]) {
+                            result[1][0] = this.spot.point[i][0];
+                        }
+                        if (this.spot.point[i][1] > result[1][1]) {
+                            result[1][1] = this.spot.point[i][1];
+                        }
+                    }
+                    let dx = result[1][0] - result[0][0];
+                    let dy = result[1][1] - result[0][1];
+                    result[0][0] = result[0][0] - margin * dx;
+                    result[1][0] = result[1][0] + margin * dx;
+                    result[0][1] = result[0][1] - margin * dy;
+                    result[1][1] = result[1][1] + margin * dy;
+                    return result
                 }
             }
         }

@@ -1,32 +1,32 @@
 package dao
 
 import (
-	"encoding/json"
-	"github.com/and-hom/wwmap/lib/geo"
 	"database/sql"
+	"encoding/json"
+	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/lib/dao/queries"
-	"fmt"
+	"github.com/and-hom/wwmap/lib/geo"
 )
 
 func NewWaterWayPostgresDao(postgresStorage PostgresStorage) WaterWayDao {
 	return waterWayStorage{
-		PostgresStorage:postgresStorage,
-		insertQuery: queries.SqlQuery("water-way", "insert"),
-		updateQuery: queries.SqlQuery("water-way", "update"),
-		listQuery: queries.SqlQuery("water-way", "list"),
-		unlinkRiverQuery: queries.SqlQuery("water-way", "unlink-river"),
-		detectForRiverQuery:queries.SqlQuery("water-way", "detect-for-river"),
+		PostgresStorage:     postgresStorage,
+		insertQuery:         queries.SqlQuery("water-way", "insert"),
+		updateQuery:         queries.SqlQuery("water-way", "update"),
+		listQuery:           queries.SqlQuery("water-way", "list"),
+		unlinkRiverQuery:    queries.SqlQuery("water-way", "unlink-river"),
+		detectForRiverQuery: queries.SqlQuery("water-way", "detect-for-river"),
 	}
 }
 
 type waterWayStorage struct {
 	PostgresStorage
-	insertQuery string
-	updateQuery string
-	listQuery   string
-	unlinkRiverQuery   string
-	detectForRiverQuery     string
+	insertQuery         string
+	updateQuery         string
+	listQuery           string
+	unlinkRiverQuery    string
+	detectForRiverQuery string
 }
 
 func (this waterWayStorage) AddWaterWays(waterways ...WaterWay) error {
@@ -38,11 +38,11 @@ func (this waterWayStorage) AddWaterWays(waterways ...WaterWay) error {
 		func(entity interface{}) ([]interface{}, error) {
 			waterway := entity.(WaterWay)
 
-			pathBytes, err := json.Marshal(geo.NewLineString(waterway.Path))
+			pathBytes, err := json.Marshal(geo.NewPgLineString(waterway.Path))
 			if err != nil {
 				return nil, err
 			}
-			return []interface{}{waterway.OsmId, waterway.Title, waterway.Type, waterway.Comment, string(pathBytes)}, nil;
+			return []interface{}{waterway.OsmId, waterway.Title, waterway.Type, waterway.Comment, string(pathBytes)}, nil
 		}, vars...)
 }
 
@@ -51,11 +51,11 @@ func (this waterWayStorage) UpdateWaterWay(waterway WaterWay) error {
 		func(entity interface{}) ([]interface{}, error) {
 			waterway := entity.(WaterWay)
 
-			pathBytes, err := json.Marshal(geo.NewLineString(waterway.Path))
+			pathBytes, err := json.Marshal(geo.NewPgLineString(waterway.Path))
 			if err != nil {
 				return nil, err
 			}
-			return []interface{}{string(pathBytes), waterway.OsmId}, nil;
+			return []interface{}{string(pathBytes), waterway.OsmId}, nil
 		}, waterway)
 }
 
@@ -75,12 +75,12 @@ func (this waterWayStorage) ForEachWaterWay(transformer func(WaterWay) (WaterWay
 	if err != nil {
 		return err
 	}
-	defer stmt.Close();
+	defer stmt.Close()
 
 	i := 0
 	for rows.Next() {
 		waterWay, err := scanWaterWay(rows)
-		if err!=nil {
+		if err != nil {
 			return err
 		}
 		waterWayNew, err := transformer(waterWay)
@@ -89,18 +89,18 @@ func (this waterWayStorage) ForEachWaterWay(transformer func(WaterWay) (WaterWay
 			return err
 		}
 
-		pathBytesNew, err := json.Marshal(geo.NewLineString(waterWayNew.Path))
+		pathBytesNew, err := json.Marshal(geo.NewPgLineString(waterWayNew.Path))
 		if err != nil {
 			log.Errorf("Can not serialize path %v: %v", waterWayNew.Path, err)
 			return err
 		}
 		riverIdNew := sql.NullInt64{
-			Valid:waterWayNew.RiverId > 0,
-			Int64:waterWayNew.RiverId,
+			Valid: waterWayNew.RiverId > 0,
+			Int64: waterWayNew.RiverId,
 		}
 		stmt.Exec(waterWayNew.Id, waterWayNew.OsmId, riverIdNew, waterWayNew.Title, waterWayNew.Type, waterWayNew.Comment, string(pathBytesNew))
 		i++
-		if i % 1000 == 0 {
+		if i%1000 == 0 {
 			//	err := tx.Commit()
 			//	if err != nil {
 			//		log.Errorf("Can not commit: %v", err)
@@ -131,11 +131,10 @@ func scanWaterWay(rows *sql.Rows) (WaterWay, error) {
 		log.Errorf("Can not parse path \"%s\": %v", path, err)
 		return WaterWay{}, err
 	}
-	waterWay.Path = path.GetPath()
+	waterWay.Path = path.GetFlippedPath()
 
 	return waterWay, nil
 }
-
 
 func (this waterWayStorage) UnlinkRiver(id int64, tx interface{}) error {
 	return this.performUpdatesWithinTxOptionally(tx, this.unlinkRiverQuery, IdMapper, id)
@@ -145,8 +144,8 @@ const DETECTION_MIN_DISTANCE_METERS = 30
 
 func (this waterWayStorage) DetectForRiver(riverId int64) ([]WaterWay, error) {
 	fmt.Println(this.detectForRiverQuery)
-	result, err := this.doFindList(this.detectForRiverQuery, scanWaterWay ,riverId, DETECTION_MIN_DISTANCE_METERS)
-	if err!=nil {
+	result, err := this.doFindList(this.detectForRiverQuery, scanWaterWay, riverId, DETECTION_MIN_DISTANCE_METERS)
+	if err != nil {
 		return []WaterWay{}, err
 	}
 	return result.([]WaterWay), err

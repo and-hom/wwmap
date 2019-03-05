@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"encoding/json"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/lib/blob"
@@ -15,7 +14,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/ptrv/go-gpx"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strconv"
 )
@@ -30,7 +28,7 @@ type GeoHierarchyHandler struct {
 }
 
 func (this *GeoHierarchyHandler) Init() {
-	this.Register("/country", HandlerFunctions{Get: this.ListCountries,})
+	this.Register("/country", HandlerFunctions{Get: this.ListCountries})
 	this.Register("/country/{countryId}/region", HandlerFunctions{Get: this.ListRegions})
 	this.Register("/country/{countryId}/region/{regionId}/river", HandlerFunctions{Get: this.ListRegionRivers})
 	this.Register("/country/{countryId}/river", HandlerFunctions{Get: this.ListCountryRivers})
@@ -42,12 +40,11 @@ func (this *GeoHierarchyHandler) Init() {
 	this.Register("/river/{riverId}", HandlerFunctions{Get: this.GetRiver,
 		Put:    this.ForRoles(this.SaveRiver, dao.ADMIN, dao.EDITOR),
 		Post:   this.ForRoles(this.SaveRiver, dao.ADMIN, dao.EDITOR),
-		Delete: this.ForRoles(this.RemoveRiver, dao.ADMIN, dao.EDITOR),})
+		Delete: this.ForRoles(this.RemoveRiver, dao.ADMIN, dao.EDITOR)})
 	this.Register("/river/{riverId}/reports", HandlerFunctions{Get: this.ListRiverReports})
 	this.Register("/river/{riverId}/spots", HandlerFunctions{Get: this.ListSpots})
 	this.Register("/river/{riverId}/center", HandlerFunctions{Get: this.GetRiverCenter})
-	this.Register("/river/{riverId}/gpx", HandlerFunctions{Post:
-	this.ForRoles(this.UploadGpx, dao.ADMIN, dao.EDITOR),
+	this.Register("/river/{riverId}/gpx", HandlerFunctions{Post: this.ForRoles(this.UploadGpx, dao.ADMIN, dao.EDITOR),
 		Put: this.ForRoles(this.UploadGpx, dao.ADMIN, dao.EDITOR)})
 	this.Register("/river/{riverId}/pdf", HandlerFunctions{Get: this.GetRiverPassportPdf})
 	this.Register("/river/{riverId}/html", HandlerFunctions{Get: this.GetRiverPassportHtml})
@@ -246,7 +243,7 @@ func (this *GeoHierarchyHandler) UploadGpx(w http.ResponseWriter, req *http.Requ
 		spot := dao.WhiteWaterPointFull{}
 		spot.Title = wpt.Name
 		spot.River = dao.IdTitle{Id: riverId}
-		spot.Point = geo.Point{Lat: wpt.Lat, Lon: wpt.Lon}
+		spot.Point = geo.PointOrLine{Point: &geo.Point{Lat: wpt.Lat, Lon: wpt.Lon}}
 		spot.ShortDesc = wpt.Desc
 		spot.Category = model.SportCategory{Category: model.UNDEFINED_CATEGORY}
 		spot.Aliases = []string{}
@@ -257,7 +254,7 @@ func (this *GeoHierarchyHandler) UploadGpx(w http.ResponseWriter, req *http.Requ
 		}
 	}
 
-	this.LogUserEvent(req, RIVER_LOG_ENTRY_TYPE, riverId, dao.ENTRY_TYPE_MODIFY, "Upload GPX");
+	this.LogUserEvent(req, RIVER_LOG_ENTRY_TYPE, riverId, dao.ENTRY_TYPE_MODIFY, "Upload GPX")
 }
 
 func (this *GeoHierarchyHandler) GetRiver(w http.ResponseWriter, r *http.Request) {
@@ -272,27 +269,22 @@ func (this *GeoHierarchyHandler) GetRiver(w http.ResponseWriter, r *http.Request
 }
 
 func (this *GeoHierarchyHandler) SaveRiver(w http.ResponseWriter, r *http.Request) {
-	bodyBytes, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		OnError500(w, err, "Can not read request body")
-		return
-	}
 	river := RiverDto{}
-	err = json.Unmarshal(bodyBytes, &river)
+	body, err := decodeJsonBody(r, &river)
 	if err != nil {
-		OnError500(w, err, "Can not parse json from request body: "+string(bodyBytes))
+		OnError500(w, err, "Can not parse json from request body: "+body)
 		return
 	}
 
 	regionId := river.Region.Id
-	if (regionId == 0) {
+	if regionId == 0 {
 		log.Error(river.Region.CountryId)
 		fakeRegion, found, err := this.RegionDao.GetFake(river.Region.CountryId)
 		if err != nil {
 			OnError500(w, err, fmt.Sprintf("Can not get fake region for country: %d", river.Region.CountryId))
 			return
 		}
-		if (found) {
+		if found {
 			regionId = fakeRegion.Id
 		} else {
 			regionId, err = this.RegionDao.CreateFake(river.Region.CountryId)
@@ -328,12 +320,12 @@ func (this *GeoHierarchyHandler) SaveRiver(w http.ResponseWriter, r *http.Reques
 		logEntryType = dao.ENTRY_TYPE_CREATE
 	}
 	if err != nil {
-		OnError500(w, err, fmt.Sprintf("Can not save river %s", string(bodyBytes)))
+		OnError500(w, err, "Can not save river: "+body)
 		return
 	}
 
 	this.writeRiver(id, w)
-	this.LogUserEvent(r, RIVER_LOG_ENTRY_TYPE, id, logEntryType, riverForDb.Title);
+	this.LogUserEvent(r, RIVER_LOG_ENTRY_TYPE, id, logEntryType, riverForDb.Title)
 }
 
 func (this *GeoHierarchyHandler) SetRiverVisible(w http.ResponseWriter, r *http.Request) {
@@ -344,15 +336,10 @@ func (this *GeoHierarchyHandler) SetRiverVisible(w http.ResponseWriter, r *http.
 		return
 	}
 
-	bodyBytes, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		OnError500(w, err, "Can not read body")
-		return
-	}
 	visible := false
-	err = json.Unmarshal(bodyBytes, &visible)
+	body, err := decodeJsonBody(r, &visible)
 	if err != nil {
-		OnError(w, err, "Failed to parse request body", http.StatusBadRequest)
+		OnError(w, err, "Failed to parse request body: "+body, http.StatusBadRequest)
 		return
 	}
 
@@ -364,7 +351,7 @@ func (this *GeoHierarchyHandler) SetRiverVisible(w http.ResponseWriter, r *http.
 
 	this.writeRiver(riverId, w)
 
-	this.LogUserEvent(r, RIVER_LOG_ENTRY_TYPE, riverId, dao.ENTRY_TYPE_MODIFY, fmt.Sprintf("visible=%t", visible));
+	this.LogUserEvent(r, RIVER_LOG_ENTRY_TYPE, riverId, dao.ENTRY_TYPE_MODIFY, fmt.Sprintf("visible=%t", visible))
 }
 
 func (this *GeoHierarchyHandler) RemoveRiver(w http.ResponseWriter, r *http.Request) {
@@ -408,7 +395,7 @@ func (this *GeoHierarchyHandler) RemoveRiver(w http.ResponseWriter, r *http.Requ
 		OnError500(w, err, fmt.Sprintf("Can not remove river by id: %d", riverId))
 		return
 	}
-	this.LogUserEvent(r, RIVER_LOG_ENTRY_TYPE, riverId, dao.ENTRY_TYPE_DELETE, "");
+	this.LogUserEvent(r, RIVER_LOG_ENTRY_TYPE, riverId, dao.ENTRY_TYPE_DELETE, "")
 }
 
 func (this *GeoHierarchyHandler) writeRiver(riverId int64, w http.ResponseWriter) {
@@ -467,15 +454,10 @@ func (this *GeoHierarchyHandler) GetSpot(w http.ResponseWriter, r *http.Request)
 }
 
 func (this *GeoHierarchyHandler) SaveSpot(w http.ResponseWriter, r *http.Request) {
-	bodyBytes, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		OnError500(w, err, "Can not read request body")
-		return
-	}
 	spot := dao.WhiteWaterPointFull{}
-	err = json.Unmarshal(bodyBytes, &spot)
+	body, err := decodeJsonBody(r, &spot)
 	if err != nil {
-		OnError500(w, err, "Can not parse json from request body: "+string(bodyBytes))
+		OnError500(w, err, "Can not parse json from request body: "+body)
 		return
 	}
 
@@ -495,13 +477,13 @@ func (this *GeoHierarchyHandler) SaveSpot(w http.ResponseWriter, r *http.Request
 		logType = dao.ENTRY_TYPE_CREATE
 	}
 	if err != nil {
-		OnError500(w, err, fmt.Sprintf("Can not save spot %s", string(bodyBytes)))
+		OnError500(w, err, "Can not save spot: "+body)
 		return
 	}
 
 	this.writeSpot(id, w)
 
-	this.LogUserEvent(r, SPOT_LOG_ENTRY_TYPE, id, logType, spot.Title);
+	this.LogUserEvent(r, SPOT_LOG_ENTRY_TYPE, id, logType, spot.Title)
 }
 
 func (this *GeoHierarchyHandler) RemoveSpot(w http.ResponseWriter, r *http.Request) {
@@ -533,7 +515,7 @@ func (this *GeoHierarchyHandler) RemoveSpot(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	this.LogUserEvent(r, SPOT_LOG_ENTRY_TYPE, spotId, dao.ENTRY_TYPE_DELETE, "");
+	this.LogUserEvent(r, SPOT_LOG_ENTRY_TYPE, spotId, dao.ENTRY_TYPE_DELETE, "")
 }
 
 func (this *GeoHierarchyHandler) removeImageData(req *http.Request, imgs []dao.Img) {
@@ -549,7 +531,7 @@ func (this *GeoHierarchyHandler) removeImageData(req *http.Request, imgs []dao.I
 		if err != nil {
 			log.Errorf("Can not remove preview for by id %d: %v", img.Id, err)
 		}
-		this.LogUserEvent(req, RIVER_LOG_ENTRY_TYPE, img.Id, dao.ENTRY_TYPE_DELETE, "Recursively");
+		this.LogUserEvent(req, RIVER_LOG_ENTRY_TYPE, img.Id, dao.ENTRY_TYPE_DELETE, "Recursively")
 	}
 }
 

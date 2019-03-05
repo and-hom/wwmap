@@ -1,30 +1,30 @@
 package dao
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/and-hom/wwmap/lib/dao/queries"
 	"github.com/and-hom/wwmap/lib/geo"
-	"encoding/json"
 	"github.com/lib/pq"
 )
 
 func NewTilePostgresDao(postgresStorage PostgresStorage) TileDao {
 	return &tileStorage{
-		PostgresStorage: postgresStorage,
+		PostgresStorage:   postgresStorage,
 		insideBoundsQuery: queries.SqlQuery("tile", "inside-bounds"),
-		singleRiverQuery: queries.SqlQuery("tile", "by-id"),
+		singleRiverQuery:  queries.SqlQuery("tile", "by-id"),
 	}
 }
 
 type tileStorage struct {
 	PostgresStorage
 	insideBoundsQuery string
-	singleRiverQuery string
+	singleRiverQuery  string
 }
 
 func (this *tileStorage) GetRiver(riverId int64, imgLimit int) (RiverWithSpotsExt, error) {
 	river := RiverWithSpotsExt{}
-	
+
 	rows, err := this.db.Query(this.singleRiverQuery, riverId,
 		pq.Array([]string{string(IMAGE_TYPE_IMAGE), string(IMAGE_TYPE_VIDEO)}),
 		imgLimit)
@@ -65,12 +65,12 @@ func (this *tileStorage) GetRiver(riverId int64, imgLimit int) (RiverWithSpotsEx
 				return river, err
 			}
 
-			pgPoint := PgPoint{}
+			pgPoint := geo.PgPointOrLineString{}
 			err = json.Unmarshal([]byte(pointStr), &pgPoint)
 			if err != nil {
 				return river, err
 			}
-			spot.Point = pgPoint.GetPoint()
+			spot.Point = pgPoint.Coordinates
 
 			err = json.Unmarshal([]byte(spotPropsStr), &spot.Props)
 			if err != nil {
@@ -80,17 +80,17 @@ func (this *tileStorage) GetRiver(riverId int64, imgLimit int) (RiverWithSpotsEx
 		}
 
 		lSp := len(river.Spots)
-		if lSp == 0 || river.Spots[lSp - 1].Id != spot.Id {
+		if lSp == 0 || river.Spots[lSp-1].Id != spot.Id {
 			river.Spots = append(river.Spots, spot)
 			lSp += 1
 		}
 
 		if img.Id > 0 {
-			river.Spots[lSp - 1].Images = append(river.Spots[lSp - 1].Images, img)
+			river.Spots[lSp-1].Images = append(river.Spots[lSp-1].Images, img)
 		}
 	}
 
-	if (len(river.Spots)==0) {
+	if len(river.Spots) == 0 {
 		// no records
 		return river, fmt.Errorf("River with id %d not found or have no spots", riverId)
 	}
@@ -132,12 +132,12 @@ func (this *tileStorage) ListRiversWithBounds(bbox geo.Bbox, imgLimit int, showU
 				return []RiverWithSpots{}, err
 			}
 
-			pgPoint := PgPoint{}
+			pgPoint := geo.PgPointOrLineString{}
 			err = json.Unmarshal([]byte(pointStr), &pgPoint)
 			if err != nil {
 				return []RiverWithSpots{}, err
 			}
-			spot.Point = pgPoint.GetPoint()
+			spot.Point = pgPoint.Coordinates.Flip()
 
 			err = json.Unmarshal([]byte(propsStr), &spot.Props)
 			if err != nil {
@@ -147,19 +147,19 @@ func (this *tileStorage) ListRiversWithBounds(bbox geo.Bbox, imgLimit int, showU
 		}
 
 		lRiv := len(rivers)
-		if lRiv == 0 || rivers[lRiv - 1].Id != river.Id {
+		if lRiv == 0 || rivers[lRiv-1].Id != river.Id {
 			rivers = append(rivers, river)
 			lRiv += 1
 		}
 
-		lSp := len(rivers[lRiv - 1].Spots)
-		if lSp == 0 || rivers[lRiv - 1].Spots[lSp - 1].Id != spot.Id {
-			rivers[lRiv - 1].Spots = append(rivers[lRiv - 1].Spots, spot)
+		lSp := len(rivers[lRiv-1].Spots)
+		if lSp == 0 || rivers[lRiv-1].Spots[lSp-1].Id != spot.Id {
+			rivers[lRiv-1].Spots = append(rivers[lRiv-1].Spots, spot)
 			lSp += 1
 		}
 
 		if img.Id > 0 {
-			rivers[lRiv - 1].Spots[lSp - 1].Images = append(rivers[lRiv - 1].Spots[lSp - 1].Images, img)
+			rivers[lRiv-1].Spots[lSp-1].Images = append(rivers[lRiv-1].Spots[lSp-1].Images, img)
 		}
 	}
 

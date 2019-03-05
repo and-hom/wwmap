@@ -165,17 +165,17 @@ func (this riverStorage) listRiverTitles(query string, queryParams ...interface{
 			err = json.Unmarshal([]byte(props), &riverTitle.Props)
 			return riverTitle, err
 		}, queryParams...)
-	if (err != nil) {
+	if err != nil {
 		return []RiverTitle{}, err
 	}
 	return result.([]RiverTitle), nil
 }
 
 func ParseBounds(boundsStr string) (geo.Bbox, error) {
-	var pgRect PgPolygon
+	var pgRect geo.PgPolygon
 	err := json.Unmarshal([]byte(boundsStr), &pgRect)
 	if err != nil {
-		var pgPoint PgPoint
+		var pgPoint geo.GeoPoint
 		err := json.Unmarshal([]byte(boundsStr), &pgPoint)
 		if err != nil {
 			return geo.Bbox{}, err
@@ -191,10 +191,10 @@ func ParseBounds(boundsStr string) (geo.Bbox, error) {
 	}, nil
 }
 
-func point2rect(pgPoint PgPoint) [][]geo.Point {
+func point2rect(pgPoint geo.GeoPoint) [][]geo.Point {
 	// do not flip twice
 	p := pgPoint.Coordinates
-	return [][]geo.Point{[]geo.Point{
+	return [][]geo.Point{{
 		{
 			Lat: p.Lat - 0.0001,
 			Lon: p.Lon - 0.0001,
@@ -211,7 +211,7 @@ func point2rect(pgPoint PgPoint) [][]geo.Point {
 			Lat: p.Lat - 0.0001,
 			Lon: p.Lon + 0.0001,
 		},
-	},}
+	}}
 }
 
 func (this riverStorage) Remove(id int64, tx interface{}) error {
@@ -223,7 +223,7 @@ func (this riverStorage) Props() PropertyManager {
 	return this.PropsManager
 }
 
-func (this riverStorage) SetVisible(id int64, visible bool) (error) {
+func (this riverStorage) SetVisible(id int64, visible bool) error {
 	return this.performUpdates(this.setVisibleQuery, ArrayMapper, []interface{}{id, visible})
 }
 
