@@ -19,6 +19,7 @@ _Например, в wordpress есть специальный плагин, ч
 
     <script type="text/javascript" src="https://wwmap.ru/js/config.js"></script>
     <script type="text/javascript" src="https://wwmap.ru/js/map.v2.js"></script>
+    <script type="text/javascript" src="https://wwmap.ru/js/tube.js"></script>
 ```
 3. Добавляем div для карты. id произвольный. Возможно, задать размеры, поля и др. параметры области стилями:
 ```
