@@ -1,4 +1,10 @@
-wwmap-db (0.0.23) UNRELEASED; urgency=medium
+wwmap-db (0.0.24) unstable; urgency=medium
+
+  * #4 Change geometry constraint for spot POINT -> POINT OR LINESTRING
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Wed, 06 Mar 2019 22:22:45 +0300
+
+wwmap-db (0.0.23) unstable; urgency=medium
 
   * #172 Get water level metrics several times a day
 

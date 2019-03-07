@@ -1,3 +1,12 @@
+wwmap-backend (0.0.42) unstable; urgency=medium
+
+  * #4 Canyons support
+  * #131 Level monitoring dashboard
+  * #186 Remove images and length of html/pdf fixed: use correct filename suffix
+  * #189 Time format in changes log fixed
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Wed, 06 Mar 2019 22:19:18 +0300
+
 wwmap-backend (0.0.41) unstable; urgency=medium
 
   * #137 Add youtube videos to spot
