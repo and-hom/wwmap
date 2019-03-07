@@ -42,53 +42,59 @@
         created: function () {
             var component = this;
             ymaps.ready(function () {
-                if (component.map) {
-                    component.map.destroy();
-                    component.label.geometry.setCoordinates(component.getP(0));
-                    return
-                } else {
-                    addCachedLayer('osm#standard', 'OSM', 'OpenStreetMap contributors, CC-BY-SA', 'osm');
-                    addLayer('google#satellite', 'Спутник Google', 'Изображения © DigitalGlobe,CNES / Airbus, 2018,Картографические данные © Google, 2018', GOOGLE_SAT_TILES);
-                    addCachedLayer('ggc#standard', 'Топографическая карта', '', 'ggc', 0, 15)
-                }
+                ymaps.modules.require(['overlay.BiPlacemark'], function (BiPlacemarkOverlay) {
+                    if (ymaps.overlay.storage.get("BiPlacemrakOverlay") == null) {
+                        ymaps.overlay.storage.add("BiPlacemrakOverlay", BiPlacemarkOverlay);
+                    }
+                    if (component.map) {
+                        component.map.destroy();
+                        component.label.geometry.setCoordinates(component.getP(0));
+                        return
+                    } else {
+                        addCachedLayer('osm#standard', 'OSM', 'OpenStreetMap contributors, CC-BY-SA', 'osm');
+                        addLayer('google#satellite', 'Спутник Google', 'Изображения © DigitalGlobe,CNES / Airbus, 2018,Картографические данные © Google, 2018', GOOGLE_SAT_TILES);
+                        addCachedLayer('ggc#standard', 'Топографическая карта', '', 'ggc', 0, 15)
+                    }
 
-                let myMap;
-                if (Array.isArray(component.spot.point[0])) {
-                    myMap = new ymaps.Map("map", {
-                        bounds: component.pBounds(),
-                        controls: ["zoomControl"],
-                        type: "osm#standard"
-                    });
-                } else {
-                    myMap = new ymaps.Map("map", {
-                        center: component.pCenter(),
-                        zoom: component.zoom,
-                        controls: ["zoomControl"],
-                        type: "osm#standard"
-                    });
-                }
-                myMap.controls.add(
-                    new ymaps.control.TypeSelector([
-                        'osm#standard',
-                        'ggc#standard',
-                        'yandex#satellite',
-                        'google#satellite'
-                    ])
-                );
-                if (component.yaSearch) {
-                    myMap.controls.add(new ymaps.control.SearchControl({
-                        options: {
-                            float: 'left',
-                            floatIndex: 100
-                        }
-                    }));
-                }
+                    let myMap;
+                    if (Array.isArray(component.spot.point[0])) {
+                        myMap = new ymaps.Map("map", {
+                            bounds: component.pBounds(),
+                            controls: ["zoomControl"],
+                            type: "osm#standard"
+                        });
+                    } else {
+                        myMap = new ymaps.Map("map", {
+                            center: component.pCenter(),
+                            zoom: component.zoom,
+                            controls: ["zoomControl"],
+                            type: "osm#standard"
+                        });
+                    }
+                    myMap.controls.add(
+                        new ymaps.control.TypeSelector([
+                            'osm#standard',
+                            'ggc#standard',
+                            'yandex#satellite',
+                            'google#satellite'
+                        ])
+                    );
+                    if (component.yaSearch) {
+                        myMap.controls.add(new ymaps.control.SearchControl({
+                            options: {
+                                float: 'left',
+                                floatIndex: 100
+                            }
+                        }));
+                    }
 
-                component.map = myMap;
+                    component.map = myMap;
 
 
-                component.addObjectManager();
-                component.addLabel();
+                    component.addObjectManager();
+                    component.addLabel();
+
+                });
             })
         },
         data: function () {
@@ -128,7 +134,7 @@
                         clusterHasBalloon: false,
                         geoObjectOpenBalloonOnClick: false,
                         geoObjectStrokeWidth: 3,
-                        splitRequests: true
+                        splitRequests: false
                 })
                     ;
                     this.map.geoObjects.add(objectManager);
@@ -170,23 +176,21 @@
                     }
 
                     if (Array.isArray(this.spot.point[0])) {
-                        ymaps.modules.require(['overlay.BiPlacemark'], function (BiPlacemarkOverlay) {
-                            var contour = new ymaps.GeoObject({
-                                geometry: {
-                                    type: "LineString",
-                                    coordinates: component.spot.point,
-                                },
-                                properties: {}
-                            }, {
-                                lineStringOverlay: BiPlacemarkOverlay,
-                                strokeColor: "#BBBBBBCC",
-                                strokeStyle: 'shortdash',
-                                strokeWidth: 3,
-                                fill: false
-                            });
-                            component.map.geoObjects.add(contour);
-                            component.contour = contour;
+                        var contour = new ymaps.GeoObject({
+                            geometry: {
+                                type: "LineString",
+                                coordinates: component.spot.point,
+                            },
+                            properties: {}
+                        }, {
+                            lineStringOverlay: "BiPlacemrakOverlay",
+                            strokeColor: "#BBBBBBCC",
+                            strokeStyle: 'shortdash',
+                            strokeWidth: 3,
+                            fill: false
                         });
+                        component.map.geoObjects.add(contour);
+                        component.contour = contour;
 
                         var endLabel = new ymaps.GeoObject({
                             geometry: {
