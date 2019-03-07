@@ -52,11 +52,12 @@ ORDER BY order_index ASC
 
 --@by-title-part
 WITH
-    alias_query AS (SELECT id as id, river_id, title, CASE aliases WHEN '[]' THEN NULL ELSE jsonb_array_elements_text(aliases) END AS alias FROM ___table___),
-    rank_query AS (SELECT alias_query.id,
-                            wwmap_search(alias_query.title, $1) AS title_rank,
-                            wwmap_search(alias_query.alias, $1) AS alias_rank,
-                            wwmap_search(river.title, $1) AS river_rank FROM alias_query LEFT OUTER JOIN river ON alias_query.river_id=river.id WHERE river.visible=TRUE),
+    alias_query AS (SELECT id, jsonb_array_elements_text(aliases) AS alias FROM white_water_rapid),
+    spot_with_alias_query AS (SELECT ___table___.id as id, river_id, title, alias_query.alias AS alias FROM ___table___ LEFT OUTER JOIN alias_query ON ___table___.id=alias_query.id),
+    rank_query AS (SELECT spot_with_alias_query.id,
+                            wwmap_search(spot_with_alias_query.title, $1) AS title_rank,
+                            wwmap_search(spot_with_alias_query.alias, $1) AS alias_rank,
+                            wwmap_search(river.title, $1) AS river_rank FROM spot_with_alias_query LEFT OUTER JOIN river ON spot_with_alias_query.river_id=river.id WHERE river.visible=TRUE),
     final_rank_query AS (SELECT id, max(title_rank) + sum(alias_rank) AS own_rank, max(river_rank) AS river_rank FROM rank_query GROUP BY id)
 SELECT ___select-columns___
 FROM ___table___
