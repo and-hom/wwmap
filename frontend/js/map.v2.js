@@ -26,7 +26,7 @@ WWMapSearchProvider.prototype.geocode = function (request, options) {
                         name: spot.title,
                         description: spot.river_title,
                         balloonContentBody: '<p>' + spot.title + ' (' + spot.river_title + ')' + '</p>',
-                        boundedBy: [addToPoint(spot.point, -0.003), addToPoint(spot.point, 0.003)]
+                        boundedBy: spotToBounds(spot)
                     },{
                         iconLayout: 'default#image',
                         iconImageHref: respData.resource_base + '/img/empty-px.png',
@@ -74,6 +74,20 @@ WWMapSearchProvider.prototype.geocode = function (request, options) {
 
     return deferred.promise();
 };
+
+function spotToBounds(spot) {
+    let margins = 0.003;
+    if (Array.isArray(spot.point[0])) {
+        let p = spot.point;
+        p[0][0] -= margins;
+        p[0][1] -= margins;
+        p[1][0] += margins;
+        p[1][1] += margins;
+        return p
+    } else {
+        return [addToPoint(spot.point, -margins), addToPoint(spot.point, margins)];
+    }
+}
 
 function addToPoint(p, x) {
     return [p[0] + x, p[1] + x]
