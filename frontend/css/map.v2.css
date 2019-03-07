@@ -47,9 +47,18 @@
 
 
 .wwmap-river-menu {
-    list-style-type: none;
     padding-left: 0;
     width: 100%;
+    display: table;
+}
+.wwmap-river-menu-item {
+    display: table-row;
+}
+.wwmap-river-menu-title {
+    display: table-cell;
+}
+.wwmap-river-menu-controls {
+    display: table-cell;
 }
 .wwmap-river-menu table {
     width: 100%;
