@@ -21,6 +21,7 @@
         data: function () {
             return {
                 changeExpandState:function() {
+                        app.errMsg = null;
                         if (this.region.rivers) {
                             Vue.delete(this.region, "rivers")
                         } else {

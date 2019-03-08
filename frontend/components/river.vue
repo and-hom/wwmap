@@ -37,6 +37,7 @@
                     this.spots=[]
                 },
                 changeExpandState:function() {
+                        app.errMsg = null;
                         if (this.river.spots) {
                             Vue.delete(this.river, "spots")
                         } else {
@@ -44,6 +45,7 @@
                         }
                 },
                 selectSpot:function(spot) {
+                    app.errMsg = null;
                     setActiveEntity(this.country.id, nvlReturningId(this.region), this.river.id, spot.id);
                     setActiveEntityState(this.country.id, nvlReturningId(this.region), this.river.id, spot.id);
 

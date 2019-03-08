@@ -35,6 +35,7 @@
         data: function() {
             return {
                 changeExpandState:function() {
+                    app.errMsg = null;
                     if (app.treePath[this.country.id]) {
                         Vue.delete(app.treePath, this.country.id)
                     } else {
