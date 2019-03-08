@@ -10,7 +10,7 @@
                 <button type="button" class="btn btn-info" v-if="!editMode" v-on:click="editMode=true; hideError();">
                     Редактирование
                 </button>
-                <button type="button" class="btn btn-success" v-if="editMode" v-on:click="editMode=false; save()">Сохранить</button>
+                <button type="button" class="btn btn-success" v-if="editMode" v-on:click="editMode=!save()">Сохранить</button>
                 <button type="button" class="btn btn-secondary" v-if="editMode" v-on:click="editMode=false; reload()">Отменить</button>
                 <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#del-river">Удалить
                 </button>
@@ -305,13 +305,15 @@
                 editMode: app.rivereditorstate.editMode,
                 askForRemove: true,
                 save:function() {
-                    console.log(this.river.props)
-                    updated = saveRiver(this.river)
+                    if (!this.river.title || !this.river.title.replace(/\s/g, '').length) {
+                        this.showError("Нельзя сохранять реку без названия");
+                        return false
+                    }
+                    updated = saveRiver(this.river);
                     if (updated) {
-                        var prev = this.river
-                        this.river = updated
-                        this.editMode=false
-                        this.hideError()
+                        this.river = updated;
+                        this.editMode=false;
+                        this.hideError();
                         var new_region_id = nvlReturningId(updated.region)
                         setActiveEntity(updated.region.country_id, new_region_id, updated.id)
                         setActiveEntityState(updated.region.country_id, new_region_id, updated.id)
@@ -331,8 +333,10 @@
                             this.prevRegionFake = updated.region.fake
                             this.prevCountryId = updated.region.country_id
                         }
+                        return true;
                     } else {
-                        this.showError("Не удалось сохранить реку. Возможно, недостаточно прав")
+                        this.showError("Не удалось сохранить реку. Возможно, недостаточно прав");
+                        return false;
                     }
                 },
                 reload:function() {

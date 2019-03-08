@@ -8,7 +8,7 @@
                 <button type="button" class="btn btn-info" v-if="!editMode" v-on:click="editMode=true; hideError();">
                     Редактирование
                 </button>
-                <button type="button" class="btn btn-success" v-if="editMode" v-on:click="save()">Сохранить</button>
+                <button type="button" class="btn btn-success" v-if="editMode" v-on:click="editMode = !save()">Сохранить</button>
                 <button type="button" class="btn btn-secondary" v-if="editMode" v-on:click="editMode=!editMode; reload()">Отменить</button>
                 <button type="button" class="btn btn-danger" v-if="spot.id>0" data-toggle="modal" data-target="#del-spot">Удалить
                 </button>
@@ -393,19 +393,25 @@
                 editMode: app.spoteditorstate.editMode,
                 askForRemove: false,
                 save:function() {
-                    updated = saveSpot(this.spot)
+                    if (!this.spot.title || !this.spot.title.replace(/\s/g, '').length) {
+                        this.showError("Нельзя сохранять порог без названия");
+                        return false
+                    }
+                    updated = saveSpot(this.spot);
                     if (updated) {
-                        this.spot = updated
-                        this.editMode=false
-                        this.reloadMainImg()
-                        this.reloadImgs()
-                        this.hideError()
+                        this.spot = updated;
+                        this.editMode=false;
+                        this.reloadMainImg();
+                        this.reloadImgs();
+                        this.hideError();
 
-                        setActiveEntity(this.country.id, nvlReturningId(this.region), this.spot.river.id, updated.id)
-                        setActiveEntityState(this.country.id, nvlReturningId(this.region), this.spot.river.id, updated.id)
-                        showRiverTree(this.country.id, nvlReturningId(this.region), this.spot.river.id)
+                        setActiveEntity(this.country.id, nvlReturningId(this.region), this.spot.river.id, updated.id);
+                        setActiveEntityState(this.country.id, nvlReturningId(this.region), this.spot.river.id, updated.id);
+                        showRiverTree(this.country.id, nvlReturningId(this.region), this.spot.river.id);
+                        return true;
                     } else {
-                        this.showError("Не удалось сохранить препятствие. Возможно, недостаточно прав")
+                        this.showError("Не удалось сохранить препятствие. Возможно, недостаточно прав");
+                        return false;
                     }
                 },
                 reload:function() {

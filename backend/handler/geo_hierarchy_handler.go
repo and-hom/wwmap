@@ -16,6 +16,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 type GeoHierarchyHandler struct {
@@ -276,6 +277,11 @@ func (this *GeoHierarchyHandler) SaveRiver(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	if len(strings.TrimSpace(river.Title)) == 0 {
+		OnError(w, errors.New(""), "Can not save river with empty name", http.StatusBadRequest)
+		return
+	}
+
 	regionId := river.Region.Id
 	if regionId == 0 {
 		log.Error(river.Region.CountryId)
@@ -463,6 +469,11 @@ func (this *GeoHierarchyHandler) SaveSpot(w http.ResponseWriter, r *http.Request
 
 	if spot.River.Id <= 0 {
 		OnError(w, errors.New(""), "Can not save spot without river", http.StatusBadRequest)
+		return
+	}
+
+	if len(strings.TrimSpace(spot.Title)) == 0 {
+		OnError(w, errors.New(""), "Can not save spot with empty name", http.StatusBadRequest)
 		return
 	}
 
