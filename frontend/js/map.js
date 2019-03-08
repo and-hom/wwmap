@@ -1,6 +1,22 @@
 // lecagy js. use map.v2.js
 
-    ymaps.ready(init);
+    // support for #4 with api v1
+    jQuery.loadScript = function (url, callback) {
+        jQuery.ajax({
+            url: url,
+            dataType: 'script',
+            success: callback,
+            async: true
+        });
+    };
+    $.loadScript('https://wwmap.ru/js/tube.js');
+
+    ymaps.ready(function() {
+        ymaps.modules.require(['overlay.BiPlacemark'], function (BiPlacemarkOverlay) {
+            ymaps.overlay.storage.add("BiPlacemrakOverlay", BiPlacemarkOverlay);
+            init();
+        });
+    });
     var myMap;
 
     function loadRivers(bounds) {
