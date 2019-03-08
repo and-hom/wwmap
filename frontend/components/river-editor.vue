@@ -2,7 +2,7 @@
     <div>
         <ask id="del-river" title="Точно?"
              msg="Совсем удалить? Все пороги будут также удалены! Да, совсем! Восстановить будет никак нельзя!"
-             :okfn="function() { remove(); }"></ask>
+             :ok-fn="function() { remove(); }"></ask>
 
         <div v-if="canEdit()" class="btn-toolbar justify-content-between">
             <div class="btn-group mr-2" role="group">
@@ -271,7 +271,16 @@
                 return {
                     Authorization: getWwmapSessionId()
                 }
-            }
+            },
+            editMode: {
+                get:function() {
+                    return app.rivereditorstate.editMode
+                },
+
+                set:function(newVal) {
+                    app.rivereditorstate.editMode = newVal
+                }
+            },
         },
         data:function() {
             return {
@@ -302,7 +311,6 @@
                 canEdit: function(){
                  return this.userInfo!=null && (this.userInfo.roles.includes("EDITOR") || this.userInfo.roles.includes("ADMIN"))
                 },
-                editMode: app.rivereditorstate.editMode,
                 askForRemove: true,
                 save:function() {
                     if (!this.river.title || !this.river.title.replace(/\s/g, '').length) {

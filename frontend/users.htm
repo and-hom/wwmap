@@ -27,7 +27,7 @@
 
 <div id="vue-app">
     <page link="users.htm">
-        <ask-role id="ask-role" :roles="['ADMIN', 'EDITOR', 'USER']" :okfn="function(userId, role) { setRole(userId, role) }"></ask-role>
+        <ask-role id="ask-role" :roles="['ADMIN', 'EDITOR', 'USER']" :ok-fn="function(userId, role) { setRole(userId, role) }"></ask-role>
 
         <div class="container-fluid" v-if="admin()">
             <div class="row">

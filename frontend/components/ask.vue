@@ -12,8 +12,9 @@
                     <p>{{ msg }}</p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" data-dismiss="modal" v-on:click="okfn()">Да</button>
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Нет</button>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal" v-on:click="okFn()">Да</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" v-on:click="noFn()">Нет</button>
+                    <button v-if="cancelBtn" type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
                 </div>
             </div>
         </div>
@@ -22,7 +23,33 @@
 
 <script>
     module.exports = {
-        props: ['id', 'msg', 'title', 'okfn'],
+        props: {
+            id: {
+                type: String,
+            },
+            msg: {
+                type: String,
+            },
+            title: {
+                type: String,
+            },
+            okFn: {
+                type: Function,
+                default: function () {
+
+                }
+            },
+            noFn: {
+                type: Function,
+                default: function () {
+
+                }
+            },
+            cancelBtn: {
+                type: Boolean,
+                default: false
+            },
+        },
         data: function() {
             return {
 

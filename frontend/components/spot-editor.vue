@@ -1,7 +1,7 @@
 <template>
     <div>
         <div style="display:none;" :id="initialSpot.id"></div>
-        <ask id="del-spot" title="Точно?" msg="Совсем удалить?" :okfn="function() { remove(); }"></ask>
+        <ask id="del-spot" title="Точно?" msg="Совсем удалить?" :ok-fn="function() { remove(); }"></ask>
 
         <div v-if="canEdit()" class="btn-toolbar justify-content-between">
             <div class="btn-group mr-2" role="group" aria-label="First group">
@@ -380,6 +380,15 @@
                     }
                     return null
                 },
+                editMode: {
+                    get:function() {
+                        return app.spoteditorstate.editMode
+                    },
+
+                    set:function(newVal) {
+                        app.spoteditorstate.editMode = newVal
+                    }
+                },
         },
         data:function() {
             return {
@@ -390,7 +399,6 @@
                 canEdit: function(){
                  return this.userInfo!=null && (this.userInfo.roles.includes("EDITOR") || this.userInfo.roles.includes("ADMIN"))
                 },
-                editMode: app.spoteditorstate.editMode,
                 askForRemove: false,
                 save:function() {
                     if (!this.spot.title || !this.spot.title.replace(/\s/g, '').length) {

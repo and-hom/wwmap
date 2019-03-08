@@ -22,7 +22,7 @@
                             class="btn btn-secondary">Не показывать
                     </button>
                     <ask :id="'del-video-' + image.id" title="Точно?" msg="Удалить видео?"
-                         :okfn="function() { removeImage(image.id); }"></ask>
+                         :ok-fn="function() { removeImage(image.id); }"></ask>
                     <button data-toggle="modal" :data-target="'#del-video-' + image.id" class="btn btn-danger">
                         Удалить
                     </button>

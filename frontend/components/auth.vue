@@ -12,7 +12,6 @@
 
 <script>
     module.exports = {
-        props: ['id', 'msg', 'title', 'okfn'],
         data: function () {
             return {
                 userInfo: getAuthorizedUserInfoOrNull(),

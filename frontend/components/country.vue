@@ -1,6 +1,6 @@
 <template>
     <li class="menu-item country-menu-item"><a
-            href="javascript:void(0);" v-on:click='changeExpandState(); selectCountry(); return false;' :class="countryClass()">{{ country.title }}</a>
+            href="javascript:void(0);" v-on:click='changeExpandState(); return false;' :class="countryClass()">{{ country.title }}</a>
         <ul>
             <region v-bind:key="region.id" v-bind:region="region" v-bind:country="country" v-for="region of regions"/>
         </ul>
@@ -35,12 +35,15 @@
         data: function() {
             return {
                 changeExpandState:function() {
-                    app.errMsg = null;
-                    if (app.treePath[this.country.id]) {
-                        Vue.delete(app.treePath, this.country.id)
-                    } else {
-                        showCountrySubentities(this.country.id)
-                    }
+                    let t = this;
+                    app.onTreeSwitch(function () {
+                        if (app.treePath[t.country.id]) {
+                            Vue.delete(app.treePath, t.country.id)
+                        } else {
+                            showCountrySubentities(t.country.id)
+                        }
+                        t.selectCountry();
+                    });
                     return false
                 },
                 selectCountry:function() {

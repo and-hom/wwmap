@@ -43,6 +43,13 @@
 <body>
 
 <div id="vue-app">
+    <ask id="close-spot-editor" title="Отменить редактирование?"
+         msg='Открыт редактор порога. Там могут быть ваши изменения. Для сохранения воспользуйтесь кнопкой "Сохранить" сверху. Закрыть редактор и сбросить изменения?'
+         :ok-fn="function() { spoteditorstate.editMode = false; if(closeCallback) {closeCallback()}}"></ask>
+    <ask id="close-river-editor" title="Отменить редактирование?"
+         msg='Открыт редактор реки. Там могут быть ваши изменения. Для сохранения воспользуйтесь кнопкой "Сохранить" сверху. Закрыть редактор и сбросить изменения?'
+         :ok-fn="function() { rivereditorstate.editMode = false; if(closeCallback) {closeCallback()} }"></ask>
+
     <page link="editor.htm">
         <div class="container-fluid" style="margin-top: 20px;">
             <div class="row">
@@ -210,7 +217,37 @@
           selectedRiver: getActiveId(RIVER_ACTIVE_ENTITY_LEVEL),
           selectedSpot: getActiveId(SPOT_ACTIVE_ENTITY_LEVEL),
           sensors: sensors,
-          errMsg: ""
+          errMsg: "",
+          closeCallback:function(){},
+          onTreeSwitch: function (callback) {
+              this.errMsg = null;
+              this.closeCallback = callback;
+              let t = this;
+
+              if (!this.spoteditorstate.editMode && !this.rivereditorstate.editMode) {
+                  callback();
+                  return;
+              }
+
+              if (this.spoteditorstate.editMode) {
+                  let spotEditorCloseDialog = $('#close-spot-editor');
+                  spotEditorCloseDialog.on('hidden.bs.modal', function (e) {
+                      t.closeCallback = function () {
+
+                      };
+                  });
+                  spotEditorCloseDialog.modal();
+              }
+              if (this.rivereditorstate.editMode) {
+                  let riverEditorCloseDialog = $('#close-river-editor');
+                  riverEditorCloseDialog.on('hidden.bs.modal', function (e) {
+                      t.closeCallback = function () {
+
+                      };
+                  });
+                  riverEditorCloseDialog.modal();
+              }
+          },
         }
     })
 

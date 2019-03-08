@@ -12,7 +12,7 @@
                     <p>{{msg}}</p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" v-for="role in roles" v-if="role!=currentRole" data-dismiss="modal" v-on:click="okfn(userId, role)">{{role}}</button>
+                    <button type="button" class="btn btn-primary" v-for="role in roles" v-if="role!=currentRole" data-dismiss="modal" v-on:click="okFn(userId, role)">{{role}}</button>
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
                 </div>
             </div>
@@ -23,7 +23,7 @@
 <script>
 
     module.exports = {
-        props: ['id', 'roles', 'okfn'],
+        props: ['id', 'roles', 'okFn'],
         created: function() {
             component = this
             $(document).ready(function(){

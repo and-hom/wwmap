@@ -1,5 +1,5 @@
 <template>
-    <li class="menu-item region-menu-item"><a href="javascript:void(0);" v-on:click='changeExpandState();selectRegion();return false;'
+    <li class="menu-item region-menu-item"><a href="javascript:void(0);" v-on:click='changeExpandState();return false;'
                                               :class="regionClass()">{{ region.title }}</a>
         <ul>
             <river v-bind:key="river.id" v-bind:river="river" :region="region" :country="country" v-for="river in region.rivers"/>
@@ -20,13 +20,16 @@
         },
         data: function () {
             return {
-                changeExpandState:function() {
-                        app.errMsg = null;
-                        if (this.region.rivers) {
-                            Vue.delete(this.region, "rivers")
+                changeExpandState: function () {
+                    let t = this;
+                    app.onTreeSwitch(function () {
+                        if (t.region.rivers) {
+                            Vue.delete(t.region, "rivers")
                         } else {
-                            Vue.set(this.region, "rivers", getRiversByRegion(this.country.id, this.region.id))
+                            Vue.set(t.region, "rivers", getRiversByRegion(t.country.id, t.region.id))
                         }
+                        t.selectRegion();
+                    });
                 },
                 selectRegion:function() {
                     setActiveEntity(this.country.id, this.region.id)
