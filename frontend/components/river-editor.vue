@@ -119,7 +119,7 @@
                                             </div>
                                             <div id="meteo-point-add" style="display: none">
                                                 <div style="padding-top:15px;">
-                                                    <ya-map-location v-bind:spot="meteoPoint" width="100%" height="600px" :editable="true"/>
+                                                    <ya-map-location v-bind:spot="meteoPoint" width="100%" height="600px" :editable="true" :ya-search="true"/>
                                                 </div>
                                                 <label style="padding-right: 10px;" for="meteo_point_title_input"><strong>Название:</strong></label><input
                                                     id="meteo_point_title_input" type="text" v-model="meteoPoint.title" style="margin-top: 10px; width: 80%;"/>
