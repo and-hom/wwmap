@@ -29,6 +29,11 @@ type RiverTitle struct {
 	Visible bool                   `json:"visible"`
 }
 
+type RiverWithRegion struct {
+	IdTitle
+	Region Region `json:"region"`
+}
+
 func (this RiverTitle) GetId() int64 {
 	return this.Id
 }
@@ -111,7 +116,7 @@ type WhiteWaterPointFull struct {
 	Approach string `json:"approach"`
 	Safety   string `json:"safety"`
 
-	River IdTitle `json:"river"`
+	River RiverWithRegion `json:"river"`
 
 	OrderIndex            int       `json:"order_index,string"`
 	AutomaticOrdering     bool      `json:"automatic_ordering"`

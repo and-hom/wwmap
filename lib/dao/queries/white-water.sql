@@ -19,6 +19,9 @@ white_water_rapid
     link,
     river_id,
     river.title as river_title,
+    region.id as region_id,
+    region.country_id as country_id,
+    region.fake as region_fake,
 
     lw_category,
     lw_description,
@@ -69,7 +72,9 @@ LIMIT $2 OFFSET $3
 
 --@by-river-full
 SELECT ___select-columns-full___
-FROM ___table___  LEFT OUTER JOIN river ON ___table___.river_id=river.id
+FROM ___table___
+LEFT OUTER JOIN river ON ___table___.river_id=river.id
+LEFT OUTER JOIN region ON river.region_id=region.id
 WHERE river_id=$1
 ORDER BY order_index ASC
 
@@ -96,6 +101,7 @@ INNER JOIN river ON ___table___.river_id=river.id
 SELECT ___select-columns-full___
 FROM ___table___
 INNER JOIN river ON ___table___.river_id=river.id
+LEFT OUTER JOIN region ON river.region_id=region.id
     WHERE ___table___.id=$1
 
 --@insert-full

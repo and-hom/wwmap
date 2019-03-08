@@ -172,7 +172,7 @@ function regionIdNvl(regionId) {
 }
 
 function nvlReturningId(region) {
-    if (region && region.id) {
+    if (region && region.id && !region.fake) {
         return region.id
     } else {
         return 0

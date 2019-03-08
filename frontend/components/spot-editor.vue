@@ -30,7 +30,7 @@
                                 </div>
                                 <div class="short-div">
                                     <strong>Река: </strong>
-                                    <v-select v-model="spot.river" label="name" :filterable="false" :options="options"
+                                    <v-select v-model="river" label="name" :filterable="false" :options="options"
                                               @search="onSearch">
                                         <template slot="no-options">
                                             Начните печатать название реки
@@ -405,17 +405,32 @@
                         this.showError("Нельзя сохранять порог без названия");
                         return false
                     }
+
+                    let oldRiver = this.spot.river;
+                    let riverChanged = this.river.id != oldRiver.id;
+                    this.spot.river = this.river;
+
                     updated = saveSpot(this.spot);
+
                     if (updated) {
+                        if (riverChanged) {
+                            console.log("Move spot between rivers:" + oldRiver.id + "->" + updated.river.id);
+                            hideRiverTree(oldRiver.region.country_id, nvlReturningId(oldRiver.region), oldRiver.id)
+                        }
                         this.spot = updated;
+                        this.river =  updated.river;
                         this.editMode=false;
                         this.reloadMainImg();
                         this.reloadImgs();
                         this.hideError();
 
-                        setActiveEntity(this.country.id, nvlReturningId(this.region), this.spot.river.id, updated.id);
-                        setActiveEntityState(this.country.id, nvlReturningId(this.region), this.spot.river.id, updated.id);
-                        showRiverTree(this.country.id, nvlReturningId(this.region), this.spot.river.id);
+                        let countryId = this.spot.river.region.country_id;
+                        let regionId = nvlReturningId(this.spot.river.region);
+                        let riverId = this.spot.river.id;
+
+                        setActiveEntity(countryId, regionId, riverId, updated.id);
+                        setActiveEntityState(countryId, regionId, riverId, updated.id);
+                        showRiverTree(countryId, regionId, riverId);
                         return true;
                     } else {
                         this.showError("Не удалось сохранить препятствие. Возможно, недостаточно прав");
@@ -424,6 +439,7 @@
                 },
                 reload:function() {
                     this.spot = getSpot(this.spot.id)
+                    this.river = this.spot.river;
                     this.reloadMainImg()
                     this.reloadImgs()
                     this.hideError()
@@ -467,6 +483,7 @@
                 vidIndex: null,
 
                 spot: null,
+                river: null,
                 editEndPoint: function () {
                     return Array.isArray(this.spot.point[0])
                 },
@@ -500,6 +517,7 @@
                     if (this.shouldReInit()) {
                         this.previousSpotId = this.initialSpot.id;
                         this.spot = this.initialSpot;
+                        this.river = this.initialSpot.river;
                         this.spotMainUrl = getSpotMainImageUrl(this.initialSpot.id);
                         this.images = getImages(this.initialSpot.id, "image");
                         this.schemas = getImages(this.initialSpot.id, "schema");

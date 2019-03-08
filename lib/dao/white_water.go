@@ -213,7 +213,7 @@ func scanWwPointFull(rows *sql.Rows, additionalVars ...interface{}) (WhiteWaterP
 	props := ""
 
 	fields := append([]interface{}{&wwp.Id, &wwp.Title, &pointString, &categoryString, &wwp.ShortDesc, &wwp.Link,
-		&wwp.River.Id, &wwp.River.Title,
+		&wwp.River.Id, &wwp.River.Title, &wwp.River.Region.Id, &wwp.River.Region.CountryId, &wwp.River.Region.Fake,
 		&lwCategoryString, &wwp.LowWaterDescription, &mwCategoryString, &wwp.MediumWaterDescription, &hwCategoryString, &wwp.HighWaterDescription,
 		&wwp.Orient, &wwp.Approach, &wwp.Safety,
 		&wwp.OrderIndex, &wwp.AutomaticOrdering, &lastAutoOrdering, &aliasesStr, &props}, additionalVars...)

@@ -125,24 +125,36 @@
     }
 
     function showCountrySubentities(id) {
-        Vue.set(app.treePath, id, {
+        let country = {
             rivers: getRiversByCountry(id),
             regions: getRegions(id)
-        })
+        };
+        Vue.set(app.treePath, id, country);
+        return country;
     }
 
     function showRegionTree(countryId, id) {
         var region = getById(app.treePath[countryId].regions,id);
-        Vue.set(region, "rivers", getRiversByRegion(countryId, id))
+        Vue.set(region, "rivers", getRiversByRegion(countryId, id));
     }
 
     function getRiverFromTree(countryId, regionId, id) {
-        var river;
+        let river;
+        let country = app.treePath[countryId];
+        if (!country) {
+            country = showCountrySubentities(countryId)
+        }
+
         if (regionId && regionId > 0) {
-            var region = getById(app.treePath[countryId].regions, regionId);
-            river = getById(region.rivers, id)
+            var region = getById(country.regions, regionId);
+            let rivers = region.rivers;
+            if (!rivers) {
+                rivers = getRiversByRegion(countryId, region.id);
+                Vue.set(region, "rivers", rivers);
+            }
+            river = getById(rivers, id)
         } else {
-            river = getById(app.treePath[countryId].rivers, id)
+            river = getById(country.rivers, id)
         }
         return river;
     }
@@ -150,6 +162,11 @@
     function showRiverTree(countryId, regionId, id) {
         var river = getRiverFromTree(countryId, regionId, id);
         Vue.set(river, "spots", getSpots(id))
+    }
+
+    function hideRiverTree(countryId, regionId, id) {
+        var river = getRiverFromTree(countryId, regionId, id);
+        Vue.delete(river, "spots")
     }
 
     function getSpotsFromTree(countryId, regionId, riverId) {

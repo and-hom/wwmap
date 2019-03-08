@@ -243,7 +243,7 @@ func (this *GeoHierarchyHandler) UploadGpx(w http.ResponseWriter, req *http.Requ
 	for _, wpt := range gpx_data.Waypoints {
 		spot := dao.WhiteWaterPointFull{}
 		spot.Title = wpt.Name
-		spot.River = dao.IdTitle{Id: riverId}
+		spot.River = dao.RiverWithRegion{IdTitle: dao.IdTitle{Id: riverId}}
 		spot.Point = geo.PointOrLine{Point: &geo.Point{Lat: wpt.Lat, Lon: wpt.Lon}}
 		spot.ShortDesc = wpt.Desc
 		spot.Category = model.SportCategory{Category: model.UNDEFINED_CATEGORY}

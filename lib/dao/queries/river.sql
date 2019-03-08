@@ -78,7 +78,9 @@ SELECT river.id as id, region_id, region.country_id, river.title, region.title A
     ORDER BY CASE river.title WHEN '-' THEN NULL ELSE river.title END ASC
 
 --@by-first-letters
-SELECT id, region_id, 0, title, '', FALSE, NULL, aliases, props, visible FROM river WHERE title ilike $1||'%' LIMIT $2
+SELECT river.id, region_id, country_id, river.title, '', fake, NULL, river.aliases, river.props, river.visible
+  FROM river LEFT OUTER JOIN region ON river.region_id=region.id
+  WHERE river.title ilike $1||'%' LIMIT $2
 
 --@update
 UPDATE river SET region_id=$2, title=$3, aliases=$4, description=$5, props=$6 WHERE id=$1
