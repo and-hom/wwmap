@@ -289,8 +289,8 @@
                     if (this.shouldReInit()) {
                         this.previousRiverId = this.initialRiver.id;
                         this.river = this.initialRiver;
+                        this.meteoPoint = this.getMeteoPointById(this.river.props.meteo_point);
                         this.center = getRiverCenter(this.river.id);
-                        this.meteoPoint = {id: null, title: null, point: this.center};
 
                         this.prevRegionId = nvlReturningId(this.river.region);
                         this.prevRegionFake = this.river.region.fake;
@@ -315,12 +315,13 @@
                     updated = saveRiver(this.river);
                     if (updated) {
                         this.river = updated;
+                        this.meteoPoint = this.getMeteoPointById(this.river.props.meteo_point);
                         this.editMode=false;
                         this.hideError();
-                        var new_region_id = nvlReturningId(updated.region)
-                        setActiveEntity(updated.region.country_id, new_region_id, updated.id)
-                        setActiveEntityState(updated.region.country_id, new_region_id, updated.id)
-                        showCountrySubentities(updated.region.country_id)
+                        var new_region_id = nvlReturningId(updated.region);
+                        setActiveEntity(updated.region.country_id, new_region_id, updated.id);
+                        setActiveEntityState(updated.region.country_id, new_region_id, updated.id);
+                        showCountrySubentities(updated.region.country_id);
 
                         if (new_region_id>0 && !updated.region.fake) {
                             showRegionTree(updated.region.country_id, new_region_id)
@@ -343,11 +344,13 @@
                     }
                 },
                 reload:function() {
-                    this.river = getRiver(this.river.id)
+                    this.river = getRiver(this.river.id);
+                    this.meteoPoint = this.getMeteoPointById(this.river.props.meteo_point);
                     this.hideError()
                 },
                 setVisible: function(visible) {
                     this.river = setRiverVisible(this.river.id, visible);
+                    this.meteoPoint = this.getMeteoPointById(this.river.props.meteo_point);
                     // set "visible" property to global storage to set icon in the left-side tree using reactivity of vue.js
                     var regionId = this.river.region.id;
                     if (this.river.region.fake) {
@@ -425,6 +428,16 @@
                 informerUrl: function() {return this.river.props.vodinfo_sensor ? "http://gis.vodinfo.ru/informer/draw/v2_" + this.river.props.vodinfo_sensor + "_400_300_30_ffffff_110_8_7_H_none.png" : null},
                 meteoPoint: null,
                 meteoPoints: getMeteoPoints(),
+                getMeteoPointById: function(id) {
+                    if (id) {
+                        for(let i=0;i<this.meteoPoints.length;i++) {
+                            if (this.meteoPoints[i].id == id) {
+                                return this.meteoPoints[i]
+                            }
+                        }
+                    }
+                    return {id: null, title: null, point: this.center}
+                },
                 addMeteoPoint: function () {
                     document.getElementById('meteo-point-add').style.display = 'block';
                     document.getElementById('meteo-point-select').style.display = 'none';
