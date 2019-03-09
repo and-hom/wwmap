@@ -21,3 +21,8 @@ OOMScoreAdjust=-1000
 
 ExecStart=/usr/bin/wwmap-t-cache
 TimeoutSec=300
+
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
