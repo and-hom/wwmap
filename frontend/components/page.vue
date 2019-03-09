@@ -107,18 +107,17 @@
                         ]
                     },
                     {
-                        href: "about.htm",
-                        title: "О проекте",
-                        allow: ['USER', 'ANONYMOUS'],
-                    },
-                    {
                         id: "1",
                         title: "Информация",
-                        allow: ['EDITOR', 'ADMIN'],
                         sub: [
                             {
                                 href: "docs.htm",
                                 title: "Прочитай меня",
+                                allow: ['EDITOR', 'ADMIN'],
+                            },
+                            {
+                                href: "tech.htm",
+                                title: "Технологии, источники данных",
                             },
                             {
                                 href: "about.htm",
