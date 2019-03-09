@@ -221,15 +221,16 @@
                                     <i class="fa fa-plus"></i>
                                     Выберите GPX-файл с точками препятствий.
                                 </file-upload>
-                                <button type="button" class="btn btn-success" v-if="!$refs.uploadGpx || !$refs.uploadGpx.active"
-                                        @click.prevent="$refs.uploadGpx.active = true">
+                                <button type="button" class="btn btn-success"
+                                        v-if="!$refs.uploadGpx || !$refs.uploadGpx.active"
+                                        @click.prevent="$refs.uploadGpx.active = true; gpxJustUploaded=true;">
                                     <i class="fa fa-arrow-up" aria-hidden="true"></i>
                                     Начать загрузку
                                 </button>
                                 <button type="button" class="btn btn-danger" v-else
                                         @click.prevent="$refs.uploadGpx.active = false">
                                     <i class="fa fa-stop" aria-hidden="true"></i>
-                                    Stop Upload
+                                    Остановить загрузку
                                 </button>
                             </div>
                         </div>
@@ -247,19 +248,13 @@
         components: {
           FileUpload: VueUploadComponent
         },
+        gpxJustUploaded: false,
         updated: function() {
-            this.resetToInitialIfRequired()
+            this.resetToInitialIfRequired();
 
-            if(this.$refs.uploadGpx && this.$refs.uploadGpx.value.length && this.$refs.uploadGpx.uploaded) {
-                if (this.imagesOutOfDate) {
-                    var t = this;
-                    setTimeout(function() {
-                        t.refresh()
-                    }, 700);
-                    this.imagesOutOfDate = false
-                } else {
-                    this.imagesOutOfDate = true
-                }
+            if(this.$refs.uploadGpx && this.$refs.uploadGpx.value.length && this.$refs.uploadGpx.uploaded && this.gpxJustUploaded) {
+                showRiverTree(this.river.region.country_id, nvlReturningId(this.river.region), this.river.id);
+                this.gpxJustUploaded = false;
             }
         },
         created: function() {
