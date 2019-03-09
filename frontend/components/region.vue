@@ -40,10 +40,7 @@
                     app.regioneditorstate.visible = false;
                     app.countryeditorstate.visible = false;
 
-                    app.regioneditorstate.region = getRegion(this.region.id)
-                    app.regioneditorstate.country = this.country
-                    app.regioneditorstate.editMode = false;
-                    app.regioneditorstate.visible = true
+                    selectRegion(this.country, this.region.id);
                 },
                 regionClass: function() {
                     if (this.region.id == app.selectedRegion) {

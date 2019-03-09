@@ -5,6 +5,7 @@
                 <button type="button" class="btn btn-primary" v-on:click="add_river()">Добавить реку без региона</button>
             </div>
         </div>
+        <h1>{{ country.title }}</h1>
     </div>
 </template>
 

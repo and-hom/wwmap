@@ -11,7 +11,7 @@
                     Редактирование
                 </button>
                 <button type="button" class="btn btn-success" v-if="editMode" v-on:click="editMode=!save()">Сохранить</button>
-                <button type="button" class="btn btn-secondary" v-if="editMode" v-on:click="editMode=false; reload()">Отменить</button>
+                <button type="button" class="btn btn-secondary" v-if="editMode" v-on:click="editMode=false; cancelEditing()">Отменить</button>
                 <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#del-river">Удалить
                 </button>
             </div>
@@ -343,6 +343,13 @@
                         return false;
                     }
                 },
+                cancelEditing:function() {
+                    if(this.river && this.river.id>0) {
+                        this.reload();
+                    } else {
+                        this.closeEditorAndShowRiver();
+                    }
+                },
                 reload:function() {
                     this.river = getRiver(this.river.id);
                     this.meteoPoint = this.getMeteoPointById(this.river.props.meteo_point);
@@ -363,14 +370,19 @@
                     if (!removeRiver(this.river.id)) {
                         this.showError("Can not delete")
                     } else {
-                        setActiveEntity(this.country.id, nvlReturningId(this.region))
-                        setActiveEntityState(this.country.id, nvlReturningId(this.region))
-                        if (this.river.region.fake) {
-                            showCountrySubentities(this.country.id)
-                        } else {
-                            showRegionTree(this.country.id, nvlReturningId(this.region))
-                        }
-                        app.rivereditorstate.visible = false;
+                        this.closeEditorAndShowRiver();
+                    }
+                },
+                closeEditorAndShowRiver: function() {
+                    setActiveEntity(this.country.id, nvlReturningId(this.region));
+                    setActiveEntityState(this.country.id, nvlReturningId(this.region));
+                    app.rivereditorstate.visible = false;
+                    if (this.river.region.fake || this.river.region.id == 0) {
+                        showCountrySubentities(this.country.id);
+                        selectCountry(this.country);
+                    } else {
+                        showRegionTree(this.country.id, nvlReturningId(this.river.region));
+                        selectRegion(this.country, nvlReturningId(this.river.region));
                     }
                 },
                 showError: function(errMsg) {

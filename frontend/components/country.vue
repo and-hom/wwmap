@@ -16,6 +16,9 @@
         created: function() {
             if (isActiveEntity(this.country.id)) {
                 showCountrySubentities(this.country.id)
+                if (getActiveEntityLevel()==COUNTRY_ACTIVE_ENTITY_LEVEL) {
+                    this.selectCountry()
+                }
             }
         },
         computed: {
@@ -47,17 +50,15 @@
                     return false
                 },
                 selectCountry:function() {
-                    setActiveEntity(this.country.id)
-                    setActiveEntityState(this.country.id)
+                    setActiveEntity(this.country.id);
+                    setActiveEntityState(this.country.id);
 
-                    app.spoteditorstate.visible = false
+                    app.spoteditorstate.visible = false;
                     app.rivereditorstate.visible=false;
                     app.regioneditorstate.visible = false;
                     app.countryeditorstate.visible = false;
 
-                    app.countryeditorstate.country = this.country
-                    app.countryeditorstate.editMode = false;
-                    app.countryeditorstate.visible = true
+                    selectCountry(this.country);
                 },
                 countryClass: function() {
                     if (this.country.id == app.selectedCountry) {

@@ -9,7 +9,7 @@
                     Редактирование
                 </button>
                 <button type="button" class="btn btn-success" v-if="editMode" v-on:click="editMode = !save()">Сохранить</button>
-                <button type="button" class="btn btn-secondary" v-if="editMode" v-on:click="editMode=!editMode; reload()">Отменить</button>
+                <button type="button" class="btn btn-secondary" v-if="editMode" v-on:click="editMode=!editMode; cancelEditing()">Отменить</button>
                 <button type="button" class="btn btn-danger" v-if="spot.id>0" data-toggle="modal" data-target="#del-spot">Удалить
                 </button>
             </div>
@@ -437,6 +437,13 @@
                         return false;
                     }
                 },
+                cancelEditing:function() {
+                  if(this.spot && this.spot.id>0) {
+                      this.reload();
+                  } else {
+                      this.closeEditorAndShowRiver();
+                  }
+                },
                 reload:function() {
                     this.spot = getSpot(this.spot.id)
                     this.river = this.spot.river;
@@ -456,15 +463,22 @@
                     this.vidIndex = null;
                 },
                 remove: function() {
-                    this.hideError()
+                    this.hideError();
                     if (!removeSpot(this.spot.id)) {
                         this.showError("Can not delete")
                     } else {
-                        setActiveEntity(this.country.id, nvlReturningId(this.region), this.spot.river.id)
-                        setActiveEntityState(this.country.id, nvlReturningId(this.region), this.spot.river.id)
-                        showRiverTree(this.country.id, nvlReturningId(this.region), this.spot.river.id)
-                        app.spoteditorstate.visible = false;
+                        this.closeEditorAndShowRiver()
                     }
+                },
+                closeEditorAndShowRiver: function() {
+                    let countryId = this.river.region.country_id;
+                    let regionId = nvlReturningId(this.river.region);
+                    let riverId = this.river.id;
+                    setActiveEntity(countryId, regionId, riverId);
+                    setActiveEntityState(countryId, regionId, riverId);
+                    showRiverTree(countryId, regionId, riverId);
+                    app.spoteditorstate.visible = false;
+                    selectRiver({id:this.river.region.country_id}, this.river.region, this.river.id);
                 },
                 showError: function(errMsg) {
                     app.errMsg = errMsg

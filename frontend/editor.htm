@@ -204,6 +204,29 @@
         app.rivereditorstate.country = country;
         app.rivereditorstate.region = region;
     }
+
+    function selectRiver(country, region, id) {
+        app.rivereditorstate.river = getRiver(id);
+        app.rivereditorstate.editMode = false;
+        app.rivereditorstate.reports=getReports(id);
+        app.rivereditorstate.country = country;
+        app.rivereditorstate.region = region;
+        app.rivereditorstate.visible = true;
+    }
+
+    function selectCountry(country) {
+        app.countryeditorstate.country = country;
+        app.countryeditorstate.editMode = false;
+        app.countryeditorstate.visible = true
+    }
+
+    function selectRegion(country, id) {
+        app.regioneditorstate.region = getRegion(id);
+        app.regioneditorstate.country = country;
+        app.regioneditorstate.editMode = false;
+        app.regioneditorstate.visible = true
+    }
+
     var app = new Vue({
         el: '#vue-app',
         data: {

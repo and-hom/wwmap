@@ -76,12 +76,7 @@
                     app.regioneditorstate.visible = false;
                     app.countryeditorstate.visible = false;
 
-                    app.rivereditorstate.river = getRiver(this.river.id);
-                    app.rivereditorstate.editMode = false;
-                    app.rivereditorstate.reports=getReports(this.river.id);
-                    app.rivereditorstate.country = this.country;
-                    app.rivereditorstate.region = this.region;
-                    app.rivereditorstate.visible = true;
+                    selectRiver(this.country, this.region, this.river.id);
 
                     return false
                 },
