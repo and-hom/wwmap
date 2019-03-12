@@ -93,6 +93,7 @@
 
                     component.addObjectManager();
                     component.addLabel();
+                    component.addClickHandler();
 
                 });
             })
@@ -112,9 +113,26 @@
                             this.map.geoObjects.remove(this.contour);
                         }
                         this.addLabel();
+                        this.addClickHandler();
 
                         this.map.geoObjects.remove(this.objectManager);
                         this.addObjectManager();
+                    }
+                },
+                addClickHandler: function () {
+                    let t = this;
+                    if (this.editable) {
+                        this.map.events.add('click', function (e) {
+                            let p = e.get('coords');
+                            if (t.endLabel) {
+                                t.endLabel.geometry.setCoordinates(p);
+                                t.setP(-1, p);
+                            } else {
+                                t.label.geometry.setCoordinates(p);
+                                t.setP(0, p);
+                            }
+                            t.refreshContour();
+                        });
                     }
                 },
                 objectManagerUrlTemplate: function () {
@@ -131,11 +149,11 @@
                 },
                 addObjectManager: function () {
                     var objectManager = new ymaps.RemoteObjectManager(this.objectManagerUrlTemplate(), {
-                        clusterHasBalloon: false,
-                        geoObjectOpenBalloonOnClick: false,
-                        geoObjectStrokeWidth: 3,
-                        splitRequests: false
-                })
+                            clusterHasBalloon: false,
+                            geoObjectOpenBalloonOnClick: false,
+                            geoObjectStrokeWidth: 3,
+                            splitRequests: false
+                        })
                     ;
                     this.map.geoObjects.add(objectManager);
                     this.objectManager = objectManager
@@ -165,15 +183,6 @@
                         component.setP(0, label.geometry.getCoordinates());
                         component.refreshContour();
                     });
-
-                    if (this.editable) {
-                        this.map.events.add('click', function (e) {
-                            let p = e.get('coords');
-                            label.geometry.setCoordinates(p);
-                            component.setP(0, p);
-                            component.refreshContour();
-                        });
-                    }
 
                     if (Array.isArray(this.spot.point[0])) {
                         var contour = new ymaps.GeoObject({
@@ -238,7 +247,8 @@
                 },
                 setP: function (i, p) {
                     if (Array.isArray(this.spot.point[0])) {
-                        this.spot.point[i] = p
+                        let idx = i < 0 ? (this.spot.point.length + i) : i;
+                        this.spot.point[idx] = p;
                     } else if (i == 0) {
                         this.spot.point = p;
                     } else {
