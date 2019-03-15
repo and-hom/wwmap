@@ -1,5 +1,5 @@
 const CACHED_TILES_TEMPLATE = 'http://wwmap.ru/maps/###/%z/%x/%y.png';
-const GOOGLE_SAT_TILES = 'http://khms' + Math.floor(Math.random()) % 4 + '.google.com/kh/v=818&src=app&x=%x&y=%y&z=%z&s=Gal';
+const GOOGLE_SAT_TILES = 'http://khms' + Math.floor(Math.random()) % 4 + '.google.com/kh/v=821&src=app&x=%x&y=%y&z=%z&s=Gal';
 
     function addCachedLayer(key, name, copyright, mapId, lower_scale, upper_scale) {
         return addLayer(key, name, copyright, CACHED_TILES_TEMPLATE.replace('###', mapId), lower_scale, upper_scale)
