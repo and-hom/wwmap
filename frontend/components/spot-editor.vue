@@ -2,6 +2,9 @@
     <div>
         <div style="display:none;" :id="initialSpot.id"></div>
         <ask id="del-spot" title="Точно?" msg="Совсем удалить?" :ok-fn="function() { remove(); }"></ask>
+        <ask id="mid-point-about" title="Опорные точки" :no-btn="false" ok-btn-title="Понятно"
+             msg='Иногда река в месте порога изгибается. Чтобы контур вокруг порога повторял этот изгиб, нужно добавить несколько опорных точек в середине. Они не несут смысловой нагрузки и нужны только для отрисовки'
+             :ok-fn="function() {}"></ask>
 
         <div v-if="canEdit()" class="btn-toolbar justify-content-between">
             <div class="btn-group mr-2" role="group" aria-label="First group">
@@ -109,7 +112,11 @@
                     <div class="row">
                         <div class="col-2">
                             <strong style="display: block; maring-bottom: 20px;">Расположение: </strong><br/>
-                            <a v-if="editEndPoint()" href="javascript:void(0);" v-on:click.stop="removeSpotEndPoint()" style="font-size: 80%;">Убрать конечную точку</a>
+                            <div v-if="editEndPoint()">
+                                <a href="javascript:void(0);" v-on:click.stop="removeSpotEndPoint()" style="font-size: 80%;">Убрать конечную точку</a><br/>
+                                <a href="javascript:void(0);" v-on:click.stop="addSpotAnchorPoint()" style="font-size: 80%;">Добавить опорную точку в середину</a><a target="_blank"
+                                    href="javascript:void(0)" data-toggle="modal" data-target="#mid-point-about"><img src="img/question_16.png"></a>
+                            </div>
                             <a v-else href="javascript:void(0);" v-on:click.stop="addSpotEndPoint()" style="font-size: 80%;">Препятствие протяжённое. Добавить конечную точку</a>
                         </div>
                         <div class="col-10">
@@ -165,7 +172,7 @@
                 </b-tab>
                 <b-tab title="Системные параметры">
                     <span class="wwmap-system-hint" style="padding-top: 10px;">Тут собраны настройки разных системных вещей для каждого порога в отдельности</span>
-                    <props :p="spot.props"/>
+                    <props v-if="spot.props" :p="spot.props"/>
                 </b-tab>
             </b-tabs>
         </div>
@@ -509,6 +516,15 @@
                         } else {
                             this.spot.point = [this.spot.point, this.spot.point];
                         }
+                    }
+                },
+                addSpotAnchorPoint: function () {
+                    if (Array.isArray(this.spot.point[0])) {
+                        let l = this.spot.point.length;
+                        let p1 = this.spot.point[l - 2];
+                        let p2 = this.spot.point[l - 1];
+                        let p = [(p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2];
+                        this.spot.point.splice(l - 1, 0, p);
                     }
                 },
                 removeSpotEndPoint: function () {

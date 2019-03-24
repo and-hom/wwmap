@@ -92,7 +92,7 @@
 
 
                     component.addObjectManager();
-                    component.addLabel();
+                    component.addLabels();
                     component.addClickHandler();
 
                 });
@@ -112,7 +112,12 @@
                             this.map.geoObjects.remove(this.endLabel);
                             this.map.geoObjects.remove(this.contour);
                         }
-                        this.addLabel();
+                        if (this.midPoints) {
+                            for (let i = 0; i < this.midPoints.length; i++) {
+                                this.map.geoObjects.remove(this.midPoints[i])
+                            }
+                        }
+                        this.addLabels();
                         this.addClickHandler();
 
                         this.map.geoObjects.remove(this.objectManager);
@@ -158,7 +163,7 @@
                     this.map.geoObjects.add(objectManager);
                     this.objectManager = objectManager
                 },
-                addLabel: function () {
+                addLabels: function () {
                     var component = this;
                     var props = {
                         hintContent: this.spot.title,
@@ -204,7 +209,7 @@
                         var endLabel = new ymaps.GeoObject({
                             geometry: {
                                 type: "Point",
-                                coordinates: this.getP(1),
+                                coordinates: this.getP(-1),
                             },
                             properties: {
                                 hintContent: this.spot.title + " конец",
@@ -213,14 +218,53 @@
                         }, {
                             preset: 'islands#yellowStretchyIcon',
                             draggable: this.editable,
-                            zIndex: 10000001,
-                            zIndexHover: 10000001,
-                            zIndexActive: 10000001,
+                            zIndex: 10001000,
+                            zIndexHover: 10001000,
+                            zIndexActive: 10001000,
                         });
                         endLabel.events.add('dragend', function () {
-                            component.setP(1, endLabel.geometry.getCoordinates());
+                            component.setP(-1, endLabel.geometry.getCoordinates());
                             component.refreshContour();
                         });
+
+                        if (this.spot.point.length > 2) {
+                            let midPoints = [];
+                            for (let i = 1; i < this.spot.point.length - 1; i++) {
+                                let pos = i;
+                                let properties = {
+                                    hintContent: "" + i,
+                                    iconContent: "" + i,
+                                };
+
+                                if (this.editable) {
+                                    properties.balloonContent = "<button class='del" + i + "'>Удалить</button>"
+                                }
+
+                                let midPoint = new ymaps.GeoObject({
+                                    geometry: {
+                                        type: "Point",
+                                        coordinates: this.getP(i),
+                                    },
+                                    properties: properties
+                                }, {
+                                    preset: 'islands#lightBlueStretchyIcon',
+                                    balloonContentLayout: component.createMidPointPopupLayout(pos - 1),
+                                    draggable: this.editable,
+                                    zIndex: 10000000 + i,
+                                    zIndexHover: 10000000 + i,
+                                    zIndexActive: 10000000 + i,
+                                });
+                                midPoint.events.add('dragend', function () {
+                                    component.setP(pos, midPoint.geometry.getCoordinates());
+                                    component.refreshContour();
+                                });
+                                midPoints.push(midPoint);
+                                this.map.geoObjects.add(midPoint);
+                            }
+                            this.midPoints = midPoints;
+                        } else {
+                            this.midPoints = null;
+                        }
 
                         this.map.geoObjects.add(endLabel);
                         this.endLabel = endLabel;
@@ -229,6 +273,32 @@
                     this.map.geoObjects.add(label);
                     this.label = label;
                 },
+                createMidPointPopupLayout: function (pos) {
+                    var component = this;
+
+                    var layout = ymaps.templateLayoutFactory.createClass(
+                        '<div class="item">' +
+                        '<h3>{{properties.title}}</h3>' +
+                        '<img src="{{properties.img}}">' +
+                        '<p>{{properties.description}}</p>' +
+                        '<button id="remove-placemark">Удалить</button>' +
+                        '</div>', {
+                            build: function () {
+                                layout.superclass.build.call(this);
+                                document.getElementById('remove-placemark').addEventListener('click', this.onRemove);
+                            },
+                            clear: function () {
+                                document.getElementById('remove-placemark').removeEventListener('click', this.onRemove);
+                                layout.superclass.clear.call(this);
+                            },
+                            onRemove: function () {
+                                component.map.geoObjects.remove(component.midPoints[pos]);
+                                component.spot.point.splice(pos + 1, 1);
+                                component.midPoints.splice(pos, 1);
+                            }
+                        });
+                    return layout;
+                },
                 refreshContour: function () {
                     if (this.contour && Array.isArray(this.spot.point[0])) {
                         for (let i = 0; i < this.spot.point.length; i++) {
@@ -236,9 +306,12 @@
                         }
                     }
                 },
+                pIdx: function (i) {
+                    return i < 0 ? (this.spot.point.length + i) : i;
+                },
                 getP: function (i) {
                     if (Array.isArray(this.spot.point[0])) {
-                        return this.spot.point[i];
+                        return this.spot.point[this.pIdx(i)];
                     } else if (i == 0) {
                         return this.spot.point;
                     } else {
@@ -247,8 +320,7 @@
                 },
                 setP: function (i, p) {
                     if (Array.isArray(this.spot.point[0])) {
-                        let idx = i < 0 ? (this.spot.point.length + i) : i;
-                        this.spot.point[idx] = p;
+                        this.spot.point[this.pIdx(i)] = p;
                     } else if (i == 0) {
                         this.spot.point = p;
                     } else {
@@ -295,7 +367,8 @@
                     result[0][1] = result[0][1] - margin * dy;
                     result[1][1] = result[1][1] + margin * dy;
                     return result
-                }
+                },
+                midPoints: null
             }
         }
     }

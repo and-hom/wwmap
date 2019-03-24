@@ -12,9 +12,9 @@
                     <p>{{ msg }}</p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" data-dismiss="modal" v-on:click="okFn()">Да</button>
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal" v-on:click="noFn()">Нет</button>
-                    <button v-if="cancelBtn" type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal" v-on:click="okFn()">{{okBtnTitle}}</button>
+                    <button v-if="noBtn" type="button" class="btn btn-secondary" data-dismiss="modal" v-on:click="noFn()">{{noBtnTitle}}</button>
+                    <button v-if="cancelBtn" type="button" class="btn btn-secondary" data-dismiss="modal">{{cancelBtnTitle}}</button>
                 </div>
             </div>
         </div>
@@ -33,6 +33,18 @@
             title: {
                 type: String,
             },
+            okBtnTitle: {
+                type: String,
+                default: "Да"
+            },
+            noBtnTitle: {
+                type: String,
+                default: "Нет"
+            },
+            cancelBtnTitle: {
+                type: String,
+                default: "Отмена"
+            },
             okFn: {
                 type: Function,
                 default: function () {
@@ -48,6 +60,10 @@
             cancelBtn: {
                 type: Boolean,
                 default: false
+            },
+            noBtn: {
+                type: Boolean,
+                default: true
             },
         },
         data: function() {
