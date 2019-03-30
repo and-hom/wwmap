@@ -1,4 +1,25 @@
-wwmap-frontend (0.0.41) UNRELEASED; urgency=medium
+wwmap-frontend (0.0.42) unstable; urgency=medium
+
+  * #4 Multi-segment long spot path
+  * #4 Spot editor fix: click changes last point position on map
+  * #4 for wwmap api v1
+  * Google sat version fix
+  * Technical info page
+  * #139 Fix cancel behaviour on not persisted entities
+  * #181 Yandex search control in meteo point editor
+  * #183 Display selected meteo point in editor
+  * #184 Prevent save spot/river with empyty name
+  * #185 Refresh tree on GPX upload to river
+  * #188 Hash and tree fix on move spot between rivers
+  * #191 Correct follow from search control to long spots (#4)
+  * #192 Replace table with divs for river menu
+  * #195 Show neighbour long spots (#4) in editor
+  * #196 Editor: Hide error on tree switch
+  * #197 Ask before close editor
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sat, 30 Mar 2019 19:15:44 +0300
+
+wwmap-frontend (0.0.41) unstable; urgency=medium
 
   * #4 Canyons support
   * #131 Level monitoring dashboard

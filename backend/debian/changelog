@@ -1,3 +1,12 @@
+wwmap-backend (0.0.43) unstable; urgency=medium
+
+  * #4 Don't export to GPX medium points of long spots
+  * #114 Services autostart
+  * #188 Hash and tree fix on move spot between rivers
+  * #184 Prevent save spot/river with empyty name
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sat, 30 Mar 2019 19:13:18 +0300
+
 wwmap-backend (0.0.42) unstable; urgency=medium
 
   * #4 Canyons support
