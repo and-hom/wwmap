@@ -54,14 +54,23 @@ func (this *GpxHandler) DownloadGpx(w http.ResponseWriter, req *http.Request) {
 				Name: categoryString + titleString,
 			})
 		} else {
-			for i, p := range *whitewaterPoint.Point.Line {
-				waypoints = append(waypoints, gpx.Wpt{
-					Lat:  p.Lat,
-					Lon:  p.Lon,
-					Cmt:  whitewaterPoint.Comment,
-					Name: categoryString + titleString + orderString(i, whitewaterPoint, transliterate),
-				})
-			}
+			pBegin := (*whitewaterPoint.Point.Line)[0]
+
+			endIdx := len(*whitewaterPoint.Point.Line) - 1
+			pEnd := (*whitewaterPoint.Point.Line)[endIdx]
+
+			waypoints = append(waypoints, gpx.Wpt{
+				Lat:  pBegin.Lat,
+				Lon:  pBegin.Lon,
+				Cmt:  whitewaterPoint.Comment,
+				Name: categoryString + titleString + orderString(0, whitewaterPoint, transliterate),
+			})
+			waypoints = append(waypoints, gpx.Wpt{
+				Lat:  pEnd.Lat,
+				Lon:  pEnd.Lon,
+				Cmt:  whitewaterPoint.Comment,
+				Name: categoryString + titleString + orderString(endIdx, whitewaterPoint, transliterate),
+			})
 		}
 	}
 	if len(whitewaterPoints) == 0 {
@@ -100,7 +109,7 @@ func orderStringRu(i int, spot dao.WhiteWaterPointWithRiverTitle) string {
 	case len(*spot.Point.Line) - 1:
 		return " (Кон.)"
 	default:
-		return fmt.Sprintf(" (тчк. %d)", i+2)
+		return fmt.Sprintf(" (тчк. %d)", i)
 	}
 }
 
@@ -111,6 +120,6 @@ func orderStringEn(i int, spot dao.WhiteWaterPointWithRiverTitle) string {
 	case len(*spot.Point.Line) - 1:
 		return " (Kon.)"
 	default:
-		return fmt.Sprintf(" (t4k. %d)", i+2)
+		return fmt.Sprintf(" (t4k. %d)", i)
 	}
 }
