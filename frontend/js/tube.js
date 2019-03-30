@@ -178,7 +178,7 @@ ymaps.modules.define("overlay.BiPlacemark", [
                 let dx_i = path[i + 1][0] - path[i][0];
                 let dy_i = path[i + 1][1] - path[i][1];
 
-                if (dx_i < placemarkRadius && dy_i < placemarkRadius) {
+                if (Math.abs(dx_i) < placemarkRadius && Math.abs(dy_i) < placemarkRadius) {
                     // if distance less then radius, remove point
                     path.splice(i + 1, 1);
                     i--;

@@ -14,7 +14,7 @@ WWMapSearchProvider.prototype.geocode = function (request, options) {
     xhr.open("POST", apiBase + "/search", true);
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.send(request);
-    xhr.onload = function(e) {
+    xhr.onload = function (e) {
         if (xhr.readyState === 4) {
             if (xhr.status === 200) {
                 var respData = JSON.parse(xhr.responseText);
@@ -22,12 +22,12 @@ WWMapSearchProvider.prototype.geocode = function (request, options) {
                 for (var i = 0, l = respData.spots.length; i < l; i++) {
                     var spot = respData.spots[i];
 
-                    geoObjects.add(new ymaps.Placemark(spot.point, {
+                    geoObjects.add(new ymaps.Placemark(spotToMediumPoint(spot), {
                         name: spot.title,
                         description: spot.river_title,
                         balloonContentBody: '<p>' + spot.title + ' (' + spot.river_title + ')' + '</p>',
                         boundedBy: spotToBounds(spot)
-                    },{
+                    }, {
                         iconLayout: 'default#image',
                         iconImageHref: respData.resource_base + '/img/empty-px.png',
                         iconImageSize: [1, 1],
@@ -45,7 +45,7 @@ WWMapSearchProvider.prototype.geocode = function (request, options) {
                         description: river.region.title,
                         balloonContentBody: '<p>' + river.title + '</p>',
                         boundedBy: river.bounds
-                    },{
+                    }, {
                         iconLayout: 'default#image',
                         iconImageHref: respData.resource_base + '/img/empty-px.png',
                         iconImageSize: [1, 1],
@@ -78,7 +78,7 @@ WWMapSearchProvider.prototype.geocode = function (request, options) {
 function spotToBounds(spot) {
     let margins = 0.003;
     if (Array.isArray(spot.point[0])) {
-        let p = spot.point;
+        let p = [spot.point[0], spot.point[spot.point.length - 1]];
         p[0][0] -= margins;
         p[0][1] -= margins;
         p[1][0] += margins;
@@ -86,6 +86,15 @@ function spotToBounds(spot) {
         return p
     } else {
         return [addToPoint(spot.point, -margins), addToPoint(spot.point, margins)];
+    }
+}
+
+function spotToMediumPoint(spot) {
+    if (Array.isArray(spot.point[0])) {
+        let p = [spot.point[0], spot.point[spot.point.length - 1]];
+        return [(p[0][0] + p[1][0]) / 2, (p[0][1] + p[1][1]) / 2,]
+    } else {
+        return spot.point;
     }
 }
 
@@ -218,7 +227,7 @@ WWMap.prototype.init = function () {
         splitRequests: false
     });
 
-    objectManager.setFilter(function(obj) {
+    objectManager.setFilter(function (obj) {
         if (obj.properties.category) {
             var objCategory = parseInt(obj.properties.category[0]);
             return t.catFilter === 1 || objCategory < 0 || objCategory >= t.catFilter;
@@ -359,7 +368,7 @@ function createLegend(wwmap) {
 function WWMapPopup(templateDivId, fromTemplates, divId, options) {
     this.divId = divId;
     if (fromTemplates) {
-        loadFragment(MAP_FRAGMENTS_URL, templateDivId, function(templateText) {
+        loadFragment(MAP_FRAGMENTS_URL, templateDivId, function (templateText) {
             $('body').prepend(templateText);
             t.templateDiv = $('#' + templateDivId);
         })
@@ -377,7 +386,7 @@ function WWMapPopup(templateDivId, fromTemplates, divId, options) {
     var t = this;
 
     // close on mouse click outside the window
-    if (!options || options.closeOnMouseClickOutside!==false) {
+    if (!options || options.closeOnMouseClickOutside !== false) {
         this.div.click(function (source) {
             var classAttr = $(source.target).attr('class');
             if (classAttr && classAttr.indexOf('wwmap-popup_are') > -1) {
@@ -387,7 +396,7 @@ function WWMapPopup(templateDivId, fromTemplates, divId, options) {
     }
 
     // close on escape pressed
-    if (!options || options.closeOnEscape!==false) {
+    if (!options || options.closeOnEscape !== false) {
         $(document).keyup(function (e) {
             if (e.key === "Escape") {
                 t.hide()
@@ -407,8 +416,12 @@ WWMapPopup.prototype.show = function (dataObject) {
     }
 
     this.div.html(html);
-    $("#" + this.divId + " input[name=cancel]").click(function() {return t.hide()});
-    $("#" + this.divId + " input[type=submit]").click(function() {return t.submit_form()});
+    $("#" + this.divId + " input[name=cancel]").click(function () {
+        return t.hide()
+    });
+    $("#" + this.divId + " input[type=submit]").click(function () {
+        return t.submit_form()
+    });
 
     initMailtoLinks();
     this.div.addClass("wwmap-show");
@@ -428,8 +441,8 @@ WWMapPopup.prototype.submit_form = function () {
             t.hide();
             form.trigger('reset')
         }).fail(function () {
-             window.alert(t.failMsg);
-        });
+        window.alert(t.failMsg);
+    });
     return false;
 };
 
@@ -518,13 +531,13 @@ function initWWMap(mapId, riversListId, catalogLinkType) {
 
     // initialize popup windows
     reportPopup = new WWMapPopup('report_popup_template', true, 'report_popup', {
-            submitUrl : apiBase + "/report",
-            okMsg:  "Запрос отправлен. Я прочитаю его по мере наличия свободного времени",
-            failMsg: "Что-то пошло не так...",
-            // To prevent contents lost
-            closeOnEscape: false,
-            closeOnMouseClickOutside: false
-        });
+        submitUrl: apiBase + "/report",
+        okMsg: "Запрос отправлен. Я прочитаю его по мере наличия свободного времени",
+        failMsg: "Что-то пошло не так...",
+        // To prevent contents lost
+        closeOnEscape: false,
+        closeOnMouseClickOutside: false
+    });
     var tutorialPopup = new WWMapPopup('info_popup_template', true, 'info_popup');
 
     // riverList
