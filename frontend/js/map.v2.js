@@ -78,12 +78,15 @@ WWMapSearchProvider.prototype.geocode = function (request, options) {
 function spotToBounds(spot) {
     let margins = 0.003;
     if (Array.isArray(spot.point[0])) {
-        let p = [spot.point[0], spot.point[spot.point.length - 1]];
-        p[0][0] -= margins;
-        p[0][1] -= margins;
-        p[1][0] += margins;
-        p[1][1] += margins;
-        return p
+        let pBegin = spot.point[0];
+        let pEnd = spot.point[spot.point.length - 1];
+
+        xMin = Math.min(pBegin[0],pEnd[0]);
+        xMax = Math.max(pBegin[0],pEnd[0]);
+        yMin = Math.min(pBegin[1],pEnd[1]);
+        yMax = Math.max(pBegin[1],pEnd[1]);
+
+        return [[xMin, yMin], [xMax, yMax]];
     } else {
         return [addToPoint(spot.point, -margins), addToPoint(spot.point, margins)];
     }
