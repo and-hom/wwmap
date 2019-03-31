@@ -34,7 +34,7 @@ type Pos struct {
 }
 
 func (this Pos) String() string {
-	return fmt.Sprintf("%s/%d/%d/%d", this.t, this.z, this.x, this.y);
+	return fmt.Sprintf("%s/%d/%d/%d", this.t, this.z, this.x, this.y)
 }
 
 type CdnUrlPattern struct {
@@ -45,9 +45,9 @@ type CdnUrlPattern struct {
 func (this CdnUrlPattern) mkUrl(pos Pos) string {
 	urlStrBuf := bytes.Buffer{}
 	err := this.template.Execute(&urlStrBuf, map[string]interface{}{
-		"x":pos.x,
-		"y":pos.y,
-		"z":pos.z,
+		"x": pos.x,
+		"y": pos.y,
+		"z": pos.z,
 	})
 	if err != nil {
 		log.Error("Can not create url", pos, err)
@@ -105,7 +105,7 @@ type DataHandler struct {
 }
 
 func (this *DataHandler) Init() {
-	this.Register("/{type}/{z}/{x}/{y}.png", HandlerFunctions{Get:this.tile, Head: this.tile})
+	this.Register("/{type}/{z}/{x}/{y}.png", HandlerFunctions{Get: this.tile, Head: this.tile})
 }
 
 func (this *DataHandler) initDefaultImageIfNecessary() {
@@ -123,19 +123,19 @@ func (this *DataHandler) fetchUrlToTmpFile(w http.ResponseWriter, url string) (s
 	log.Info("Fetch ", url)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		OnError500(w, err, "Can not create request for " + url)
+		OnError500(w, err, "Can not create request for "+url)
 		return "", err
 	}
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/601.7.7 (KHTML, like Gecko) Version/9.1.2 Safari/601.7.7")
 
 	resp, err := this.client.Do(req)
 	if err != nil {
-		OnError500(w, err, "Can not fetch tile file " + url)
+		OnError500(w, err, "Can not fetch tile file "+url)
 		return "", err
 	}
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNotFound {
 		err := errors.Errorf("GET %s returned %d", url, resp.StatusCode)
-		OnError(w, err, "Can not fetch tile file " + url, resp.StatusCode)
+		OnError(w, err, "Can not fetch tile file "+url, resp.StatusCode)
 		return "", err
 	}
 	defer resp.Body.Close()
@@ -150,11 +150,11 @@ func (this *DataHandler) fetchUrlToTmpFile(w http.ResponseWriter, url string) (s
 	if resp.StatusCode == http.StatusOK {
 		_, err = io.Copy(f, resp.Body)
 		if err != nil {
-			OnError500(w, err, "Can not write tile file " + f.Name())
+			OnError500(w, err, "Can not write tile file "+f.Name())
 			return "", err
 		}
 	} else {
-			this.initDefaultImageIfNecessary()
+		this.initDefaultImageIfNecessary()
 		log.Info("Use empty image for missing tile")
 		w.Write(this.defaultData)
 	}
@@ -165,7 +165,7 @@ func (this *DataHandler) fetchUrlToTmpFile(w http.ResponseWriter, url string) (s
 func (this *DataHandler) fetch(w http.ResponseWriter, pos Pos) error {
 	path := this.cachePath(pos)
 
-	pathLock := PathLock{key:path, mutexByUrl:&this.mutexByUrl}
+	pathLock := PathLock{key: path, mutexByUrl: &this.mutexByUrl}
 	pathLock.Lock()
 	defer pathLock.Unlock()
 
@@ -190,14 +190,14 @@ func (this *DataHandler) fetch(w http.ResponseWriter, pos Pos) error {
 	if err != nil {
 		return err
 	}
-	err = os.MkdirAll(filepath.Dir(path), os.ModeDir | 0777)
+	err = os.MkdirAll(filepath.Dir(path), os.ModeDir|0777)
 	if err != nil {
-		OnError500(w, err, "Can not create parent directory for file " + path)
+		OnError500(w, err, "Can not create parent directory for file "+path)
 		return err
 	}
 	err = os.Rename(tmpFile, path)
 	if err != nil {
-		OnError500(w, err, "Can not create file " + path)
+		OnError500(w, err, "Can not create file "+path)
 		return err
 	}
 	defer os.Remove(tmpFile)
@@ -220,10 +220,10 @@ func (this *DataHandler) tile(w http.ResponseWriter, req *http.Request) {
 		OnError(w, err, "z should be an integer", http.StatusBadRequest)
 	}
 	pos := Pos{
-		t : pathParams["type"],
-		x : int(x),
-		y : int(y),
-		z : int(z),
+		t: pathParams["type"],
+		x: int(x),
+		y: int(y),
+		z: int(z),
 	}
 
 	path := this.cachePath(pos)
@@ -234,18 +234,18 @@ func (this *DataHandler) tile(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 	} else if err != nil {
-		OnError500(w, err, "Can not get stat for tile file " + path)
+		OnError500(w, err, "Can not get stat for tile file "+path)
 		return
 	}
 
 	stat, err := os.Stat(path)
 	if err != nil {
-		OnError500(w, err, "Can not get stat for tile file " + path)
+		OnError500(w, err, "Can not get stat for tile file "+path)
 		return
 	}
 	modTime := stat.ModTime().In(GMT_LOC)
 	w.Header().Add("Last-Modified", modTime.Format(http.TimeFormat))
-	w.Header().Add("Expires", modTime.Add(24 * time.Hour).Format(http.TimeFormat))
+	w.Header().Add("Expires", modTime.Add(24*time.Hour).Format(http.TimeFormat))
 	w.Header().Add("Cache-Control", "public")
 
 	ifModSinceStr := req.Header.Get("If-Modified-Since")
@@ -263,7 +263,7 @@ func (this *DataHandler) tile(w http.ResponseWriter, req *http.Request) {
 		w.Header().Add("Content-Length", fmt.Sprintf("%d", stat.Size()))
 		f, err := os.Open(path)
 		if err != nil {
-			OnError500(w, err, "Can not read tile file " + path)
+			OnError500(w, err, "Can not read tile file "+path)
 			return
 		}
 		defer f.Close()
@@ -300,12 +300,12 @@ func typeCdnMapping(configuration config.TileCache) map[string]Mapping {
 				log.Fatalf("Can not process template %s %v+", urlPatternStr, err)
 			}
 			p[i] = CdnUrlPattern{
-				template: tmpl,
-				semaphore:make(chan int, 5),
+				template:  tmpl,
+				semaphore: make(chan int, 5),
 			}
 		}
 
-		typeCdnMapping[t] = Mapping{cdn:p}
+		typeCdnMapping[t] = Mapping{cdn: p}
 	}
 	return typeCdnMapping
 }
@@ -320,8 +320,8 @@ func main() {
 	r := mux.NewRouter()
 
 	handler := DataHandler{
-		Handler: Handler{R:r},
-		baseDir:configuration.BaseDir,
+		Handler:    Handler{R: r},
+		baseDir:    configuration.BaseDir,
 		urlMapping: typeCdnMapping(configuration),
 		client: &http.Client{
 			Timeout: 4 * time.Second,
@@ -334,8 +334,8 @@ func main() {
 
 	srv := &http.Server{
 		ReadTimeout: 5 * time.Second,
-		Addr:configuration.BindTo,
-		Handler: r,
+		Addr:        configuration.BindTo,
+		Handler:     WrapWithLogging(r, fullConfiguration),
 	}
 	err := srv.ListenAndServe()
 	if err != nil {

@@ -11,10 +11,8 @@ import (
 	. "github.com/and-hom/wwmap/lib/dao"
 	. "github.com/and-hom/wwmap/lib/handler"
 	"github.com/and-hom/wwmap/lib/notification"
-	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"net/http"
-	"os"
 	"time"
 )
 
@@ -127,20 +125,9 @@ func main() {
 	log.Infof("Starting http server on %s", configuration.Api.BindTo)
 	http.Handle("/", r)
 
-	err := http.ListenAndServe(configuration.Api.BindTo, createHttpHandler(configuration))
+	h := http.DefaultServeMux
+	err := http.ListenAndServe(configuration.Api.BindTo, WrapWithLogging(h, configuration))
 	if err != nil {
 		log.Fatalf("Can not start server: %v", err)
 	}
-}
-
-func createHttpHandler(configuration config.Configuration) http.Handler {
-	var h http.Handler = http.DefaultServeMux
-	logLevel, err := configuration.LogLevel.ToLogrus()
-	if err != nil {
-		log.Fatalf("Can not parse log level %s", configuration.LogLevel)
-	}
-	if logLevel == log.DebugLevel {
-		h = handlers.LoggingHandler(os.Stdout, h)
-	}
-	return h
 }

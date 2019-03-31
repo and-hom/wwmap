@@ -4,18 +4,21 @@ import (
 	"encoding/json"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
+	"github.com/and-hom/wwmap/lib/config"
 	. "github.com/and-hom/wwmap/lib/http"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"net/http"
+	"os"
 )
 
 const (
 	OPTIONS = "OPTIONS"
-	HEAD = "HEAD"
-	GET = "GET"
-	PUT = "PUT"
-	POST = "POST"
-	DELETE = "DELETE"
+	HEAD    = "HEAD"
+	GET     = "GET"
+	PUT     = "PUT"
+	POST    = "POST"
+	DELETE  = "DELETE"
 )
 
 type ApiHandler interface {
@@ -107,4 +110,15 @@ func (this *Handler) JsonAnswer(w http.ResponseWriter, f interface{}) {
 
 	w.Header().Add("Content-Type", "application/json")
 	w.Write(bytes)
+}
+
+func WrapWithLogging(h http.Handler, configuration config.Configuration) http.Handler {
+	logLevel, err := configuration.LogLevel.ToLogrus()
+	if err != nil {
+		log.Fatalf("Can not parse log level %s", configuration.LogLevel)
+	}
+	if logLevel == log.DebugLevel {
+		return handlers.LoggingHandler(os.Stdout, h)
+	}
+	return h
 }
