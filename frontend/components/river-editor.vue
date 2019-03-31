@@ -103,7 +103,7 @@
                                             <div class="wwmap-system-hint">Сейчас используется только для формирования ссылки на прогноз погоды.</div>
                                         </div>
                                         <div class="col-9">
-                                            <div id="meteo-point-select">
+                                            <div v-if="meteoPointSelectMode">
                                                 <div class="wwmap-system-hint">Выберите из списка или <button v-on:click.stop="addMeteoPoint">создайте</button></div>
                                                 <v-select v-model="meteoPoint" label="title" :options="meteoPoints" @input="onSelectMeteoPoint" >
                                                     <template slot="no-options">
@@ -117,7 +117,7 @@
                                                     </template>
                                                 </v-select>
                                             </div>
-                                            <div id="meteo-point-add" style="display: none">
+                                            <div v-else>
                                                 <div style="padding-top:15px;">
                                                     <ya-map-location v-bind:spot="meteoPoint" width="100%" height="600px" :editable="true" :ya-search="true"/>
                                                 </div>
@@ -289,8 +289,8 @@
                     if (this.shouldReInit()) {
                         this.previousRiverId = this.initialRiver.id;
                         this.river = this.initialRiver;
-                        this.meteoPoint = this.getMeteoPointById(this.river.props.meteo_point);
                         this.center = getRiverCenter(this.river.id);
+                        this.meteoPoint = this.getMeteoPointById(this.river.props.meteo_point);
 
                         this.prevRegionId = nvlReturningId(this.river.region);
                         this.prevRegionFake = this.river.region.fake;
@@ -439,6 +439,7 @@
                 activeSensor: {id:null, title:null},
                 informerUrl: function() {return this.river.props.vodinfo_sensor ? "http://gis.vodinfo.ru/informer/draw/v2_" + this.river.props.vodinfo_sensor + "_400_300_30_ffffff_110_8_7_H_none.png" : null},
                 meteoPoint: null,
+                meteoPointSelectMode: true,
                 meteoPoints: getMeteoPoints(),
                 getMeteoPointById: function(id) {
                     if (id) {
@@ -448,15 +449,14 @@
                             }
                         }
                     }
+                    console.log(this.center)
                     return {id: null, title: null, point: this.center}
                 },
                 addMeteoPoint: function () {
-                    document.getElementById('meteo-point-add').style.display = 'block';
-                    document.getElementById('meteo-point-select').style.display = 'none';
+                    this.meteoPointSelectMode = false;
                 },
                 onCancelAddMeteoPoint: function () {
-                    document.getElementById('meteo-point-add').style.display = 'none';
-                    document.getElementById('meteo-point-select').style.display = 'block';
+                    this.meteoPointSelectMode = true;
                 },
                 onAddMeteoPoint: function () {
                     this.onCancelAddMeteoPoint();
