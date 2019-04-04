@@ -79,6 +79,9 @@
                             'google#satellite'
                         ])
                     );
+                    myMap.controls.add('rulerControl', {
+                        scaleLine: true
+                    });
                     if (component.yaSearch) {
                         myMap.controls.add(new ymaps.control.SearchControl({
                             options: {
