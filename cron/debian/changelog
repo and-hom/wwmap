@@ -1,3 +1,9 @@
+wwmap-cron (0.0.25) unstable; urgency=medium
+
+  * #202 Huskytm image url fixed
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Fri, 05 Apr 2019 20:33:40 +0300
+
 wwmap-cron (0.0.24) unstable; urgency=medium
 
   * #177 Cron job logging
