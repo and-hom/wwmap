@@ -126,6 +126,16 @@ type WhiteWaterPointFull struct {
 	Props   map[string]interface{} `json:"props"`
 }
 
+func (this WhiteWaterPointFull) StartPoint() *Point {
+	if this.Point.Point != nil {
+		return this.Point.Point
+	}
+	if this.Point.Line != nil {
+		return &((*this.Point.Line)[0])
+	}
+	return nil
+}
+
 type WhiteWaterPointWithRiverTitle struct {
 	WhiteWaterPoint
 	RiverTitle string `json:"river_title"`

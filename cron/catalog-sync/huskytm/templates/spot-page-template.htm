@@ -37,7 +37,7 @@
             <strong>Расположение: </strong>
             <div id="map" style="width:300px; height: 250px;"></div>
             <div class="short-div">
-                <strong>Координаты:</strong><br/><strong>Широта:</strong>&nbsp;{{printf "%.7f" .Spot.Point.Lat}}<br/><strong>Долгота:</strong>&nbsp;{{printf "%.7f" .Spot.Point.Lon}}
+                <strong>Координаты:</strong><br/><strong>Широта:</strong>&nbsp;{{printf "%.7f" .Spot.StartPoint.Lat}}<br/><strong>Долгота:</strong>&nbsp;{{printf "%.7f" .Spot.Point.Lon}}
                 <br/>
                 <div><strong>К.с. нв/св/вв:</strong>&nbsp;{{catStr .Spot.LowWaterCategory}}/{{catStr .Spot.MediumWaterCategory}}/{{catStr .Spot.HighWaterCategory}}
                 </div>
