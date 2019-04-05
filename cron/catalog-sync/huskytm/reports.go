@@ -1,17 +1,17 @@
 package huskytm
 
 import (
-	. "github.com/and-hom/wwmap/cron/catalog-sync/common"
-	wp "github.com/and-hom/go-wordpress"
-	"net/http"
 	"fmt"
-	"time"
 	log "github.com/Sirupsen/logrus"
-	"strconv"
+	wp "github.com/and-hom/go-wordpress"
+	. "github.com/and-hom/wwmap/cron/catalog-sync/common"
 	"github.com/and-hom/wwmap/lib/dao"
-	"regexp"
-	"html"
 	"github.com/and-hom/wwmap/lib/util"
+	"html"
+	"net/http"
+	"regexp"
+	"strconv"
+	"time"
 )
 
 const REPORT_CATEGORY string = "8"
@@ -26,7 +26,7 @@ func GetReportProvider(login, password string, requestRateLimit time.Duration) (
 		BaseAPIURL: API_BASE, // example: `http://192.168.99.100:32777/wp-json/wp/v2`
 		Username:   login,
 		Password:   password,
-		Timeout: 10 * time.Second,
+		Timeout:    10 * time.Second,
 	})
 
 	tags, err := paginate(func(p interface{}) ([]interface{}, *http.Response, []byte, error) {
@@ -48,15 +48,15 @@ func GetReportProvider(login, password string, requestRateLimit time.Duration) (
 		tagsById[tag.Id] = tag.Name
 	}
 
-	s1 := ImgSearcher{expr:regexp.MustCompile(IMG_RE_1), titleIndex:1, urlIndex:2}
-	s2 := ImgSearcher{expr:regexp.MustCompile(IMG_RE_2), titleIndex:2, urlIndex:1}
+	s1 := ImgSearcher{expr: regexp.MustCompile(IMG_RE_1), titleIndex: 1, urlIndex: 2}
+	s2 := ImgSearcher{expr: regexp.MustCompile(IMG_RE_2), titleIndex: 2, urlIndex: 1}
 	return &HuskytmReportProvider{
-		client:client,
-		tags:tagsById,
-		images:make([]dao.Img, 0),
-		imgExprs:[]ImgSearcher{s1, s2},
-		cachedImgSearchResults:make(map[int][]ImgSearchResult),
-		rateLimit: util.NewRateLimit(requestRateLimit),
+		client:                 client,
+		tags:                   tagsById,
+		images:                 make([]dao.Img, 0),
+		imgExprs:               []ImgSearcher{s1, s2},
+		cachedImgSearchResults: make(map[int][]ImgSearchResult),
+		rateLimit:              util.NewRateLimit(requestRateLimit),
 	}, nil
 }
 
@@ -76,8 +76,8 @@ func (this *ImgSearcher) find(str string) []ImgSearchResult {
 	log.Info("Found ", len(found))
 	for i := 0; i < len(found); i++ {
 		result[i] = ImgSearchResult{
-			url:found[i][this.urlIndex],
-			title:html.UnescapeString(found[i][this.titleIndex]),
+			url:   found[i][this.urlIndex],
+			title: html.UnescapeString(found[i][this.titleIndex]),
 		}
 	}
 	return result
@@ -121,7 +121,7 @@ func (this *HuskytmReportProvider) ReportsSince(key time.Time) ([]dao.VoyageRepo
 		if err != nil {
 			return []dao.VoyageReport{}, key, err
 		}
-		if ! dateModified.After(key) {
+		if !dateModified.After(key) {
 			continue
 		}
 		if latest.Before(dateModified) {
@@ -151,15 +151,15 @@ func (this *HuskytmReportProvider) ReportsSince(key time.Time) ([]dao.VoyageRepo
 		title := post.Title.Rendered
 
 		ids = append(ids, dao.VoyageReport{
-			RemoteId:fmt.Sprintf("%d", post.ID),
-			Title: title,
-			Author: "Husky Team",
-			Url:post.Link,
+			RemoteId:      fmt.Sprintf("%d", post.ID),
+			Title:         title,
+			Author:        "Husky Team",
+			Url:           post.Link,
 			DatePublished: datePublished,
-			DateModified: dateModified,
-			DateOfTrip:getYear(title),
-			Source:SOURCE,
-			Tags: tags,
+			DateModified:  dateModified,
+			DateOfTrip:    getYear(title),
+			Source:        SOURCE,
+			Tags:          tags,
 		})
 	}
 	return ids, latest, nil
@@ -209,12 +209,20 @@ func (this *HuskytmReportProvider) cacheImages() error {
 			return err
 		}
 
+		url := m.MediaDetails.Sizes.Large.SourceURL
+		if url == "" {
+			url = m.MediaDetails.Sizes.Medium.SourceURL
+		}
+		if url == "" {
+			url = m.SourceURL
+		}
+
 		this.images[i] = dao.Img{
-			Source:SOURCE,
-			RemoteId: fmt.Sprintf("%d", m.ID),
-			RawUrl:m.SourceURL,
-			Url: m.MediaDetails.Sizes.Large.SourceURL,
-			PreviewUrl: m.MediaDetails.Sizes.Thumbnail.SourceURL,
+			Source:        SOURCE,
+			RemoteId:      fmt.Sprintf("%d", m.ID),
+			RawUrl:        m.SourceURL,
+			Url:           url,
+			PreviewUrl:    m.MediaDetails.Sizes.Thumbnail.SourceURL,
 			DatePublished: tm,
 			LabelsForSearch: []string{
 				m.Title.Rendered,
@@ -222,7 +230,7 @@ func (this *HuskytmReportProvider) cacheImages() error {
 				//m.Caption.Rendered,
 				//m.AltText,
 			},
-			Type:dao.IMAGE_TYPE_IMAGE,
+			Type: dao.IMAGE_TYPE_IMAGE,
 		}
 	}
 	//b,_ := json.Marshal(this.images)
