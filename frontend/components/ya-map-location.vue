@@ -53,6 +53,7 @@
                     } else {
                         addCachedLayer('osm#standard', 'OSM', 'OpenStreetMap contributors, CC-BY-SA', 'osm');
                         addLayer('google#satellite', 'Спутник Google', 'Изображения © DigitalGlobe,CNES / Airbus, 2018,Картографические данные © Google, 2018', GOOGLE_SAT_TILES);
+                        addLayer('bing#satellite', 'Спутник Bing', 'Изображения © Майкрософт (Microsoft), 2019', bingSatTiles);
                         addCachedLayer('ggc#standard', 'Топографическая карта', '', 'ggc', 0, 15)
                     }
 
@@ -76,7 +77,8 @@
                             'osm#standard',
                             'ggc#standard',
                             'yandex#satellite',
-                            'google#satellite'
+                            'google#satellite',
+                            'bing#satellite',
                         ])
                     );
                     myMap.controls.add('rulerControl', {
