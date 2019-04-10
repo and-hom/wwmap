@@ -1,3 +1,11 @@
+wwmap-frontend (0.0.43) unstable; urgency=medium
+
+  * #37 Bing satellite
+  * Ruller in editor map
+  * Meteo point editor fix
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Wed, 10 Apr 2019 20:49:37 +0300
+
 wwmap-frontend (0.0.42) unstable; urgency=medium
 
   * #4 Multi-segment long spot path
