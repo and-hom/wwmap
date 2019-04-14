@@ -19,7 +19,7 @@ function defaultPosition() {
 }
 
 function getLastPosition() {
-    lastPos = $.cookie(LAST_POS_COOKIE_NAME);
+    let lastPos = $.cookie(LAST_POS_COOKIE_NAME);
     if (lastPos) {
         return JSON.parse(lastPos)
     } else {
@@ -36,7 +36,7 @@ function defaultZoom() {
 }
 
 function getLastZoom() {
-    lastZoom = $.cookie(LAST_ZOOM_COOKIE_NAME);
+    let lastZoom = $.cookie(LAST_ZOOM_COOKIE_NAME);
     if (lastZoom) {
         return JSON.parse(lastZoom)
     } else {
@@ -49,9 +49,9 @@ function setLastZoom(z) {
 }
 
 function setLastPositionZoomType(pos, z, type) {
-    setLastPosition(pos)
-    setLastZoom(z)
-    setLastMapType(type)
+    setLastPosition(pos);
+    setLastZoom(z);
+    setLastMapType(type);
     window.location.hash = pos[0] + ',' + pos[1] + ',' + z + ',' + type.replace('#','-')
 }
 
@@ -59,10 +59,10 @@ function getLastPositionAndZoom() {
     var position;
     var zoom;
     var type;
-    var hash = window.location.hash
+    var hash = window.location.hash;
     if (hash) {
-        hash = hash.substr(1)
-        var params = hash.split(',')
+        hash = hash.substr(1);
+        var params = hash.split(',');
         if (params.length >= 2) {
             position = [parseFloat(params[0]), parseFloat(params[1])]
         }
@@ -96,7 +96,7 @@ function defaultMapType() {
 }
 
 function getLastMapType() {
-    lastMapType = $.cookie(LAST_MAP_TYPE_COOKIE_NAME);
+    let lastMapType = $.cookie(LAST_MAP_TYPE_COOKIE_NAME);
     if (lastMapType) {
         return JSON.parse(lastMapType)
     } else {
