@@ -70,7 +70,10 @@ function getLastPositionAndZoom() {
             zoom = parseInt(params[2])
         }
         if (params.length >= 4) {
-            type = params[3].replace('-','#')
+            let t = params[3].replace('-', '#');
+            if (ymaps.mapType.storage.get(t)) {
+                type = t;
+            }
         }
     }
 
@@ -98,10 +101,12 @@ function defaultMapType() {
 function getLastMapType() {
     let lastMapType = $.cookie(LAST_MAP_TYPE_COOKIE_NAME);
     if (lastMapType) {
-        return JSON.parse(lastMapType)
-    } else {
-        return defaultMapType()
+        let lastMapTypeStr = JSON.parse(lastMapType);
+        if (ymaps.mapType.storage.get(lastMapTypeStr)) {
+            return lastMapTypeStr
+        }
     }
+    return defaultMapType()
 }
 
 function setLastMapType(z) {
