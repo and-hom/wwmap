@@ -250,7 +250,7 @@
                                 };
 
                                 if (this.editable) {
-                                    properties.balloonContent = "<button class='del" + i + "'>Удалить</button>"
+                                    properties.balloonContent = "<button class='del" + i + "'>Удалить точку</button>"
                                 }
 
                                 let midPoint = new ymaps.GeoObject({
