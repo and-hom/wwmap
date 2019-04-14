@@ -29,6 +29,10 @@
             refreshOnChange: {
                 default: null
             },
+            defaultMap: {
+                type: String,
+                default: null
+            },
         },
         watch: {
             // This would be called anytime the value of title changes
@@ -62,14 +66,14 @@
                         myMap = new ymaps.Map("map", {
                             bounds: component.pBounds(),
                             controls: ["zoomControl"],
-                            type: "osm#standard"
+                            type: component.getDefaultMap(),
                         });
                     } else {
                         myMap = new ymaps.Map("map", {
                             center: component.pCenter(),
                             zoom: component.zoom,
                             controls: ["zoomControl"],
-                            type: "osm#standard"
+                            type: component.getDefaultMap(),
                         });
                     }
                     myMap.controls.add(
@@ -92,6 +96,10 @@
                             }
                         }));
                     }
+
+                    myMap.events.add('typechange', function (e) {
+                        component.setDefaultMap(myMap.getType());
+                    });
 
                     component.map = myMap;
 
@@ -372,6 +380,20 @@
                     result[0][1] = result[0][1] - margin * dy;
                     result[1][1] = result[1][1] + margin * dy;
                     return result
+                },
+                getDefaultMap: function () {
+                    if (this.defaultMap) {
+                        return this.defaultMap
+                    }
+
+                    let defaultMap = $.cookie("default_editor_map");
+                    if (defaultMap && ymaps.mapType.storage.get(defaultMap)) {
+                        return defaultMap
+                    }
+                    return "osm#standard"
+                },
+                setDefaultMap: function(type) {
+                    $.cookie("default_editor_map", type, {path: '/'})
                 },
                 midPoints: null
             }
