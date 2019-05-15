@@ -120,11 +120,18 @@ function WWMap(divId, bubbleTemplate, riverList, tutorialPopup, catalogLinkType)
 
     this.catFilter = 1;
 
-    addCachedLayer('osm#standard', 'OSM', 'OpenStreetMap contributors, CC-BY-SA', 'osm');
-    addLayer('google#satellite', 'Спутник Google', 'Изображения © DigitalGlobe,CNES / Airbus, 2018,Картографические данные © Google, 2018', GOOGLE_SAT_TILES);
-    addLayer('bing#satellite', 'Спутник Bing', 'Изображения © Майкрософт (Microsoft), 2019', bingSatTiles);
-    addCachedLayer('ggc#standard', 'Топографическая карта', '', 'ggc', 0, 15);
+    addCachedLayer('osm#standard', 'OSM (O)', 'OpenStreetMap contributors, CC-BY-SA', 'osm');
+    addLayer('google#satellite', 'Спутник Google (G)', 'Изображения © DigitalGlobe,CNES / Airbus, 2018,Картографические данные © Google, 2018', GOOGLE_SAT_TILES);
+    addLayer('bing#satellite', 'Спутник Bing (B)', 'Изображения © Майкрософт (Microsoft), 2019', bingSatTiles);
+    addCachedLayer('ggc#standard', 'Топографическая карта (T)', '', 'ggc', 0, 15);
     //      addLayer('marshruty.ru#genshtab', 'Маршруты.ру', 'marshruty.ru', MARSHRUTY_RU_TILES, 8)
+
+    // workaround to change Yandex Satellite map title
+    try {
+        ymaps.mapType.storage.get('yandex#satellite')._name = 'Спутник Yandex (Y)'
+    } catch (err) {
+        console.log(err)
+    }
 }
 
 WWMap.prototype.loadRivers = function (bounds) {
@@ -176,7 +183,7 @@ WWMap.prototype.init = function () {
         throw err
     }
     this.yMap = yMap;
-
+    let t = this;
 
     this.yMap.controls.add(
         new ymaps.control.TypeSelector([
@@ -188,6 +195,30 @@ WWMap.prototype.init = function () {
             ]
         )
     );
+    $(document).keyup(function (e) {
+        switch(e.key) {
+            case 'g':
+            case 'G':
+                t.yMap.setType('google#satellite');
+                break;
+            case 'b':
+            case 'B':
+                t.yMap.setType('bing#satellite');
+                break;
+            case 'y':
+            case 'Y':
+                t.yMap.setType('yandex#satellite');
+                break;
+            case 'o':
+            case 'O':
+                t.yMap.setType('osm#standard');
+                break;
+            case 't':
+            case 'T':
+                t.yMap.setType('ggc#standard');
+                break;
+        }
+    });
 
     this.yMap.controls.add(new ymaps.control.SearchControl({
         options: {
@@ -210,7 +241,6 @@ WWMap.prototype.init = function () {
         scaleLine: true
     });
 
-    var t = this;
     this.yMap.events.add('click', function (e) {
         t.yMap.balloon.close()
     });
