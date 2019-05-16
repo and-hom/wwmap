@@ -276,6 +276,12 @@
                     app.rivereditorstate.editMode = newVal
                 }
             },
+            meteoPoints: {
+                get:function () {
+                    console.log(this.canEdit())
+                    return this.canEdit() ? getMeteoPoints() : [];
+                }
+            },
         },
         data:function() {
             return {
@@ -440,7 +446,6 @@
                 informerUrl: function() {return this.river.props.vodinfo_sensor ? "http://gis.vodinfo.ru/informer/draw/v2_" + this.river.props.vodinfo_sensor + "_400_300_30_ffffff_110_8_7_H_none.png" : null},
                 meteoPoint: null,
                 meteoPointSelectMode: true,
-                meteoPoints: getMeteoPoints(),
                 getMeteoPointById: function(id) {
                     if (id) {
                         for(let i=0;i<this.meteoPoints.length;i++) {

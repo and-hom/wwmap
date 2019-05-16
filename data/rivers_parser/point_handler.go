@@ -1,16 +1,17 @@
 package main
 
 import (
+	"bytes"
 	"encoding/xml"
 	"fmt"
-	"bytes"
-	"github.com/kokardy/saxlike"
-	"os"
-	"strconv"
-	"log"
-	"github.com/and-hom/wwmap/lib/geo"
+	"github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/data"
 	"github.com/and-hom/wwmap/lib/dao"
+	"github.com/and-hom/wwmap/lib/geo"
+	"github.com/kokardy/saxlike"
+	"log"
+	"os"
+	"strconv"
 )
 
 type PointHandler struct {
@@ -21,13 +22,13 @@ type PointHandler struct {
 	points_by_way      map[int64][]geo.Point
 	found_count_by_way map[int64]int
 
-	cnt                int
-	foundcnt           int
-	Node               bool
-	Found              bool
-	Buffer             bytes.Buffer
+	cnt      int
+	foundcnt int
+	Node     bool
+	Found    bool
+	Buffer   bytes.Buffer
 
-	flush_way          func(int64, dao.WaterWay)
+	flush_way func(int64, dao.WaterWay)
 }
 
 func (h *PointHandler) StartDocument() {
@@ -41,7 +42,7 @@ func (h *PointHandler) StartDocument() {
 
 func (h *PointHandler) StartElement(element xml.StartElement) {
 	if element.Name.Local == "node" {
-		if h.cnt % 100000 == 0 {
+		if h.cnt%100000 == 0 {
 			fmt.Fprintf(os.Stderr, "%d nodes processed. %d found\n", h.cnt, h.foundcnt)
 		}
 		h.cnt += 1
@@ -66,8 +67,8 @@ func (h *PointHandler) StartElement(element xml.StartElement) {
 			log.Fatal(err)
 		}
 		coords := geo.Point{
-			Lat:lat,
-			Lon:lon,
+			Lat: lat,
+			Lon: lon,
 		}
 
 		for _, wayId := range ways {
@@ -98,30 +99,29 @@ func (h *PointHandler) EndDocument() {
 func (h *PointHandler) flush(wayId int64) {
 	points, _ := h.points_by_way[wayId]
 	nullPointCnt := 0
-	for i:=0;i<len(points);i++ {
-		if points[i].Lat == 0 && points[i].Lon==0 {
+	for i := 0; i < len(points); i++ {
+		if points[i].Lat == 0 && points[i].Lon == 0 {
 			nullPointCnt++
 		}
 	}
-	pointsNew := make([]geo.Point, len(points) - nullPointCnt)
-	idx :=0
-	for i:=0;i<len(points);i++ {
-		if !(points[i].Lat == 0 && points[i].Lon==0) {
+	pointsNew := make([]geo.Point, len(points)-nullPointCnt)
+	idx := 0
+	for i := 0; i < len(points); i++ {
+		if !(points[i].Lat == 0 && points[i].Lon == 0) {
 			pointsNew[idx] = points[i]
 			idx++
 		}
 	}
-	fmt.Printf("%d points of %d removed\n", nullPointCnt, len(points))
+	logrus.Debug("%d points of %d removed\n", nullPointCnt, len(points))
 
 	waterWayTmp, _ := h.waterwayIdx[wayId]
 	h.flush_way(wayId, dao.WaterWay{
-		OsmId: waterWayTmp.Id,
-		Title: waterWayTmp.Title,
+		OsmId:   waterWayTmp.Id,
+		Title:   waterWayTmp.Title,
 		Comment: waterWayTmp.Comment,
-		Type: waterWayTmp.Type,
-		Path: pointsNew,
+		Type:    waterWayTmp.Type,
+		Path:    pointsNew,
 	})
 
 	delete(h.points_by_way, wayId)
 }
-

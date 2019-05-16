@@ -111,7 +111,6 @@ func (this *RiverHandler) GetRiverCard(w http.ResponseWriter, req *http.Request)
 		wasVideo := false
 		wasImg := false
 		for j := 0; j < len(river.Spots[i].Images); j++ {
-			fmt.Println(river.Spots[i].Images[j].Type)
 			if !wasVideo && river.Spots[i].Images[j].Type == dao.IMAGE_TYPE_VIDEO {
 				videos = append(videos, ImgWithSpot{Img: river.Spots[i].Images[j], SpotTitle: river.Spots[i].Title})
 				wasVideo = true

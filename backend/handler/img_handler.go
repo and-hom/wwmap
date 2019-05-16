@@ -348,7 +348,9 @@ func (this *ImgHandler) GetPreview(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	if !found {
-		OnError(w, nil, "No main image set for spot", http.StatusNotFound)
+		OnErrorWithCustomLogging(w, nil, "No main image set for spot", http.StatusNotFound, func(msg string) {
+			logrus.Debug(msg)
+		})
 		return
 	}
 

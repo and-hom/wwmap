@@ -1,11 +1,11 @@
 package http
 
 import (
-	"net/http"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
-	"strings"
 	"github.com/and-hom/wwmap/lib/dao"
+	"net/http"
+	"strings"
 )
 
 func CorsHeaders(w http.ResponseWriter, methods ...string) {
@@ -18,10 +18,16 @@ func JsonResponse(w http.ResponseWriter) {
 	w.Header().Add("Content-Type", "application/json")
 }
 
-func OnError(w http.ResponseWriter, err error, msg string, statusCode int) {
+func OnErrorWithCustomLogging(w http.ResponseWriter, err error, msg string, statusCode int, logF func(string)) {
 	errStr := fmt.Sprintf("%s: %v", msg, err)
-	log.Errorf(errStr)
+	logF(errStr)
 	http.Error(w, errStr, statusCode)
+}
+
+func OnError(w http.ResponseWriter, err error, msg string, statusCode int) {
+	OnErrorWithCustomLogging(w, err, msg, statusCode, func(msg string) {
+		log.Error(msg)
+	})
 }
 
 func OnError500(w http.ResponseWriter, err error, msg string) {
@@ -48,7 +54,7 @@ func GetOauthProviderAndToken(r *http.Request) AuthProviderAndToken {
 	}
 
 	return AuthProviderAndToken{
-		AuthProvider:dao.AuthProvider(provider),
-		Token:token,
+		AuthProvider: dao.AuthProvider(provider),
+		Token:        token,
 	}
 }

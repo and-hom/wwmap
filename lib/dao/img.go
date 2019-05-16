@@ -2,11 +2,11 @@ package dao
 
 import (
 	"database/sql"
+	"fmt"
+	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/lib/dao/queries"
 	"github.com/pkg/errors"
 	"time"
-	"fmt"
-	log "github.com/Sirupsen/logrus"
 )
 
 type imgStorage struct {
@@ -15,35 +15,35 @@ type imgStorage struct {
 	findQuery            string
 	listQuery            string
 	listAllBySpotQuery   string
-	listAllByRiverQuery   string
-	listMainByRiverQuery   string
+	listAllByRiverQuery  string
+	listMainByRiverQuery string
 	insertLocalQuery     string
 	deleteQuery          string
 	setEnabledQuery      string
 	getMainForSpotQuery  string
 	setMainQuery         string
 	dropMainForSpotQuery string
-	deleteForSpot string
-	deleteForRiver string
+	deleteForSpot        string
+	deleteForRiver       string
 }
 
 func NewImgPostgresDao(postgresStorage PostgresStorage) ImgDao {
 	return imgStorage{
-		PostgresStorage: postgresStorage,
-		upsertQuery : queries.SqlQuery("img", "upsert"),
-		findQuery : queries.SqlQuery("img", "by-id"),
-		listQuery : queries.SqlQuery("img", "list"),
-		listAllBySpotQuery : queries.SqlQuery("img", "list-all-by-spot"),
-		listAllByRiverQuery : queries.SqlQuery("img", "list-all-by-river"),
-		listMainByRiverQuery : queries.SqlQuery("img", "list-main-by-river"),
-		insertLocalQuery : queries.SqlQuery("img", "insert-local"),
-		deleteQuery : queries.SqlQuery("img", "delete"),
-		setEnabledQuery : queries.SqlQuery("img", "set-enabled"),
-		getMainForSpotQuery: queries.SqlQuery("img", "get-main"),
-		setMainQuery: queries.SqlQuery("img", "set-main"),
+		PostgresStorage:      postgresStorage,
+		upsertQuery:          queries.SqlQuery("img", "upsert"),
+		findQuery:            queries.SqlQuery("img", "by-id"),
+		listQuery:            queries.SqlQuery("img", "list"),
+		listAllBySpotQuery:   queries.SqlQuery("img", "list-all-by-spot"),
+		listAllByRiverQuery:  queries.SqlQuery("img", "list-all-by-river"),
+		listMainByRiverQuery: queries.SqlQuery("img", "list-main-by-river"),
+		insertLocalQuery:     queries.SqlQuery("img", "insert-local"),
+		deleteQuery:          queries.SqlQuery("img", "delete"),
+		setEnabledQuery:      queries.SqlQuery("img", "set-enabled"),
+		getMainForSpotQuery:  queries.SqlQuery("img", "get-main"),
+		setMainQuery:         queries.SqlQuery("img", "set-main"),
 		dropMainForSpotQuery: queries.SqlQuery("img", "drop-main-for-spot"),
-		deleteForSpot: queries.SqlQuery("img", "delete-by-spot"),
-		deleteForRiver: queries.SqlQuery("img", "delete-by-river"),
+		deleteForSpot:        queries.SqlQuery("img", "delete-by-spot"),
+		deleteForRiver:       queries.SqlQuery("img", "delete-by-river"),
 	}
 }
 
@@ -138,18 +138,17 @@ func (this imgStorage) InsertLocal(wwId int64, _type ImageType, source string, u
 	id := *row[0].(*int64)
 	enabled := *row[1].(*bool)
 	result := Img{
-		Id:id,
-		WwId:wwId,
-		Source:source,
-		RemoteId:fmt.Sprintf("%d", id),
-		DatePublished:datePublished,
-		Url:"",
-		PreviewUrl:"",
-		Type:_type,
-		Enabled:enabled,
+		Id:            id,
+		WwId:          wwId,
+		Source:        source,
+		RemoteId:      fmt.Sprintf("%d", id),
+		DatePublished: datePublished,
+		Url:           "",
+		PreviewUrl:    "",
+		Type:          _type,
+		Enabled:       enabled,
 	}
 
-	fmt.Println(result)
 	return result, nil
 }
 

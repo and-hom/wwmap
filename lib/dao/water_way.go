@@ -3,7 +3,6 @@ package dao
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/lib/dao/queries"
 	"github.com/and-hom/wwmap/lib/geo"
@@ -143,7 +142,7 @@ func (this waterWayStorage) UnlinkRiver(id int64, tx interface{}) error {
 const DETECTION_MIN_DISTANCE_METERS = 30
 
 func (this waterWayStorage) DetectForRiver(riverId int64) ([]WaterWay, error) {
-	fmt.Println(this.detectForRiverQuery)
+	log.Debug(this.detectForRiverQuery)
 	result, err := this.doFindList(this.detectForRiverQuery, scanWaterWay, riverId, DETECTION_MIN_DISTANCE_METERS)
 	if err != nil {
 		return []WaterWay{}, err

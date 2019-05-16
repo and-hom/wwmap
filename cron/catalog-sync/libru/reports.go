@@ -1,7 +1,6 @@
 package libru
 
 import (
-	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/cron/catalog-sync/common"
@@ -78,13 +77,13 @@ func (this LibRuReportsProvider) ReportsSince(t time.Time) ([]dao.VoyageReport, 
 			return
 		}
 		author := DEFAULT_AUTHOR
-		title := link.Text();
+		title := link.Text()
 		titleLower := strings.ToLower(title)
 		if !strings.Contains(titleLower, "отчёт") && !strings.Contains(titleLower, "отчет") {
 			return
 		}
 		dateOfTrip := this.parseDateOfTrip(title)
-		if (dateOfTrip == zero) {
+		if dateOfTrip == zero {
 			return
 		}
 
@@ -126,7 +125,7 @@ func (this LibRuReportsProvider) getTags(title string) []string {
 func (this LibRuReportsProvider) parseDateOfTrip(title string) time.Time {
 	yearFound := yearRe.FindAllStringSubmatch(title, -1)
 	if len(yearFound) > 0 {
-		fmt.Println(yearFound)
+		log.Debug(yearFound)
 		y, err := strconv.ParseInt(yearFound[0][2], 10, 32)
 		if err != nil {
 			log.Errorf("Can not parse year: %s", yearFound[0])
