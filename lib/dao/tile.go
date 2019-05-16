@@ -1,6 +1,7 @@
 package dao
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"github.com/and-hom/wwmap/lib/dao/queries"
@@ -12,6 +13,7 @@ func NewTilePostgresDao(postgresStorage PostgresStorage) TileDao {
 	return &tileStorage{
 		PostgresStorage:   postgresStorage,
 		insideBoundsQuery: queries.SqlQuery("tile", "inside-bounds"),
+		byIdQuery:         queries.SqlQuery("tile", "spots-by-river-id"),
 		singleRiverQuery:  queries.SqlQuery("tile", "by-id"),
 	}
 }
@@ -19,6 +21,7 @@ func NewTilePostgresDao(postgresStorage PostgresStorage) TileDao {
 type tileStorage struct {
 	PostgresStorage
 	insideBoundsQuery string
+	byIdQuery         string
 	singleRiverQuery  string
 }
 
@@ -98,13 +101,34 @@ func (this *tileStorage) GetRiver(riverId int64, imgLimit int) (RiverWithSpotsEx
 	return river, nil
 }
 
+func (this *tileStorage) GetRiverById(riverId int64, imgLimit int) (RiverWithSpots, bool, error) {
+	rows, err := this.db.Query(this.byIdQuery, imgLimit, true, riverId)
+	if err != nil {
+		return RiverWithSpots{}, false, err
+	}
+	defer rows.Close()
+
+	rivers, err := this.listRivers(rows)
+	if err != nil {
+		return RiverWithSpots{}, false, err
+	}
+	if len(rivers) == 0 {
+		return RiverWithSpots{}, false, nil
+	}
+	return rivers[0], true, nil
+}
+
 func (this *tileStorage) ListRiversWithBounds(bbox geo.Bbox, imgLimit int, showUnpublished bool) ([]RiverWithSpots, error) {
-	rows, err := this.db.Query(this.insideBoundsQuery, bbox.Y1, bbox.X1, bbox.Y2, bbox.X2, imgLimit, showUnpublished)
+	rows, err := this.db.Query(this.insideBoundsQuery, imgLimit, showUnpublished, bbox.Y1, bbox.X1, bbox.Y2, bbox.X2)
 	if err != nil {
 		return []RiverWithSpots{}, err
 	}
 	defer rows.Close()
 
+	return this.listRivers(rows)
+}
+
+func (this *tileStorage) listRivers(rows *sql.Rows) ([]RiverWithSpots, error) {
 	rivers := make([]RiverWithSpots, 0)
 
 	lastSpotId := int64(-1)

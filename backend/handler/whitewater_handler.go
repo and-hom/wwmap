@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/backend/clustering"
 	"github.com/and-hom/wwmap/backend/ymaps"
 	"github.com/and-hom/wwmap/lib/dao"
@@ -54,6 +55,16 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 		}
 	}
 
+	riverIdStr := req.FormValue("river")
+	riverId := int64(0)
+	if riverIdStr != "" {
+		riverId, err = strconv.ParseInt(riverIdStr, 10, 64)
+		if err != nil {
+			OnError500(w, err, fmt.Sprintf("Can not parse river id %s", skipIdStr))
+			return
+		}
+	}
+
 	sessionId := req.FormValue("session_id")
 	allowed := false
 	if sessionId != "" {
@@ -66,20 +77,7 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 
 	var features []Feature
 
-	if onlyId == 0 {
-		rivers, err := this.TileDao.ListRiversWithBounds(bbox, PREVIEWS_COUNT, allowed)
-		if err != nil {
-			OnError500(w, err, fmt.Sprintf("Can not read whitewater points for bbox %s", bbox.String()))
-			return
-		}
-
-		features, err = ymaps.WhiteWaterPointsToYmaps(this.ClusterMaker, rivers, bbox, zoom,
-			this.ResourceBase, skip, this.processForWeb, getLinkMaker(req.FormValue("link_type")))
-		if err != nil {
-			OnError500(w, err, fmt.Sprintf("Can not cluster: %s", bbox.String()))
-			return
-		}
-	} else {
+	if onlyId != 0 {
 		spot, err := this.WhiteWaterDao.Find(onlyId)
 		if err != nil {
 			OnError500(w, err, fmt.Sprintf("Can not find whitewater point for id %d", onlyId))
@@ -107,6 +105,34 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 		}
 
 		features, err = ymaps.SingleWhiteWaterPointToYmaps(sp, rws, this.ResourceBase, this.processForWeb, getLinkMaker(req.FormValue("link_type")))
+	} else if riverId != 0 {
+		river, found, err := this.TileDao.GetRiverById(riverId, PREVIEWS_COUNT)
+		if err != nil {
+			OnError500(w, err, fmt.Sprintf("Can not read whitewater points for river id %d", riverId))
+			return
+		}
+		if !found {
+			OnErrorWithCustomLogging(w, nil, fmt.Sprintf("Spots for river %d not found", riverId), http.StatusNotFound, func(s string) {
+				logrus.Debug(s)
+			})
+			return
+		}
+
+		features = ymaps.WhiteWaterPointsToYmapsNoCluster([]dao.RiverWithSpots{river},
+			this.ResourceBase, skip, this.processForWeb, getLinkMaker(req.FormValue("link_type")))
+	} else {
+		rivers, err := this.TileDao.ListRiversWithBounds(bbox, PREVIEWS_COUNT, allowed)
+		if err != nil {
+			OnError500(w, err, fmt.Sprintf("Can not read whitewater points for bbox %s", bbox.String()))
+			return
+		}
+
+		features, err = ymaps.WhiteWaterPointsToYmaps(this.ClusterMaker, rivers, bbox, zoom,
+			this.ResourceBase, skip, this.processForWeb, getLinkMaker(req.FormValue("link_type")))
+		if err != nil {
+			OnError500(w, err, fmt.Sprintf("Can not cluster: %s", bbox.String()))
+			return
+		}
 	}
 
 	featureCollection := MkFeatureCollection(features)

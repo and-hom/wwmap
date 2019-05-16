@@ -45,6 +45,7 @@ func (this *GeoHierarchyHandler) Init() {
 	this.Register("/river/{riverId}/reports", HandlerFunctions{Get: this.ListRiverReports})
 	this.Register("/river/{riverId}/spots", HandlerFunctions{Get: this.ListSpots})
 	this.Register("/river/{riverId}/center", HandlerFunctions{Get: this.GetRiverCenter})
+	this.Register("/river/{riverId}/bounds", HandlerFunctions{Get: this.GetRiverBounds})
 	this.Register("/river/{riverId}/gpx", HandlerFunctions{Post: this.ForRoles(this.UploadGpx, dao.ADMIN, dao.EDITOR),
 		Put: this.ForRoles(this.UploadGpx, dao.ADMIN, dao.EDITOR)})
 	this.Register("/river/{riverId}/pdf", HandlerFunctions{Get: this.GetRiverPassportPdf})
@@ -212,6 +213,21 @@ func (this *GeoHierarchyHandler) GetRiverCenter(w http.ResponseWriter, r *http.R
 		return
 	}
 	this.JsonAnswer(w, centroid)
+}
+
+func (this *GeoHierarchyHandler) GetRiverBounds(w http.ResponseWriter, r *http.Request) {
+	pathParams := mux.Vars(r)
+	riverId, err := strconv.ParseInt(pathParams["riverId"], 10, 64)
+	if err != nil {
+		OnError(w, err, "Can not parse id", http.StatusBadRequest)
+		return
+	}
+	bounds, err := this.WhiteWaterDao.GetRiverBounds(riverId)
+	if err != nil {
+		OnError500(w, err, fmt.Sprintf("Can not get bounds of river %d", riverId))
+		return
+	}
+	this.JsonAnswer(w, bounds)
 }
 
 func (this *GeoHierarchyHandler) UploadGpx(w http.ResponseWriter, req *http.Request) {

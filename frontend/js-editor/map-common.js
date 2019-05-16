@@ -71,3 +71,43 @@ function bingSatTiles(tile, zoom) {
     bingTileUrlCache[key] = url;
     return url;
 }
+
+function addMapLayers() {
+    addCachedLayer('osm#standard', 'OSM (O)', 'OpenStreetMap contributors, CC-BY-SA', 'osm');
+    addLayer('google#satellite', 'Спутник Google (G)', 'Изображения © DigitalGlobe,CNES / Airbus, 2018,Картографические данные © Google, 2018', GOOGLE_SAT_TILES);
+    addLayer('bing#satellite', 'Спутник Bing (B)', 'Изображения © Майкрософт (Microsoft), 2019', bingSatTiles);
+    addCachedLayer('ggc#standard', 'Топографическая карта (T)', '', 'ggc', 0, 15);
+    // workaround to change Yandex Satellite map title
+    try {
+        ymaps.mapType.storage.get('yandex#satellite')._name = 'Спутник Yandex (Y)'
+    } catch (err) {
+        console.log(err)
+    }
+}
+
+function registerMapSwitchLayersHotkeys(map) {
+    $(document).keyup(function (e) {
+        switch (e.key) {
+            case 'g':
+            case 'G':
+                map.setType('google#satellite');
+                break;
+            case 'b':
+            case 'B':
+                map.setType('bing#satellite');
+                break;
+            case 'y':
+            case 'Y':
+                map.setType('yandex#satellite');
+                break;
+            case 'o':
+            case 'O':
+                map.setType('osm#standard');
+                break;
+            case 't':
+            case 'T':
+                map.setType('ggc#standard');
+                break;
+        }
+    });
+}

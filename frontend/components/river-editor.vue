@@ -141,7 +141,10 @@
         </div>
         <div v-else class="spot-display">
             <h1>{{ river.title }}</h1>
-            <img border='0' style="float:right;" :src="informerUrl()">
+            <div style="float:right;">
+                <img border='0' :src="informerUrl()">
+                <div id="map" style="width:650px; height: 450px;padding-left: 30px;"></div>
+            </div>
             <dl>
                 <dt>Показывать на карте:</dt>
                 <dd>
@@ -258,7 +261,8 @@
             }
         },
         created: function() {
-            this.resetToInitialIfRequired()
+            this.resetToInitialIfRequired();
+            this.showMap();
         },
         computed: {
             uploadPath: function() { return backendApiBase + "/river/" + this.river.id +"/gpx"},
@@ -278,7 +282,6 @@
             },
             meteoPoints: {
                 get:function () {
-                    console.log(this.canEdit())
                     return this.canEdit() ? getMeteoPoints() : [];
                 }
             },
@@ -295,7 +298,14 @@
                     if (this.shouldReInit()) {
                         this.previousRiverId = this.initialRiver.id;
                         this.river = this.initialRiver;
-                        this.center = getRiverCenter(this.river.id);
+                        this.bounds = getRiverBounds(this.river.id);
+                        this.center = [(this.bounds[0][0] + this.bounds[1][0]) / 2, (this.bounds[0][1] + this.bounds[1][1]) / 2];
+
+                        if(this.map) {
+                            this.objectManager.setUrlTemplate(backendApiBase + '/ymaps-tile-ww?bbox=%b&zoom=%z&river=' + this.river.id);
+                            this.map.setBounds(this.bounds);
+                        }
+
                         this.meteoPoint = this.getMeteoPointById(this.river.props.meteo_point);
 
                         this.prevRegionId = nvlReturningId(this.river.region);
@@ -343,6 +353,7 @@
                             this.prevRegionFake = updated.region.fake
                             this.prevCountryId = updated.region.country_id
                         }
+                        this.reloadMap();
                         return true;
                     } else {
                         this.showError("Не удалось сохранить реку. Возможно, недостаточно прав");
@@ -356,10 +367,11 @@
                         this.closeEditorAndShowRiver();
                     }
                 },
-                reload:function() {
+                reload: function () {
                     this.river = getRiver(this.river.id);
                     this.meteoPoint = this.getMeteoPointById(this.river.props.meteo_point);
-                    this.hideError()
+                    this.hideError();
+                    this.reloadMap();
                 },
                 setVisible: function(visible) {
                     this.river = setRiverVisible(this.river.id, visible);
@@ -468,7 +480,53 @@
                     this.meteoPoint = addMeteoPoint(this.meteoPoint);
                     this.meteoPoints = getMeteoPoints();
 
-                }
+                },
+                getDefaultMap: function () {
+                    let defaultMap = $.cookie("default_editor_map");
+                    if (defaultMap && ymaps.mapType.storage.get(defaultMap)) {
+                        return defaultMap
+                    }
+                    return "osm#standard"
+                },
+                showMap: function () {
+                    let t = this;
+                    ymaps.ready(function () {
+                        addMapLayers();
+
+                        let mapType = t.getDefaultMap();
+                        let map = new ymaps.Map("map", {
+                            bounds: t.bounds,
+                            type: mapType,
+                            controls: ["zoomControl"]
+                        });
+                        map.controls.add(
+                            new ymaps.control.TypeSelector([
+                                    'osm#standard',
+                                    'ggc#standard',
+                                    'yandex#satellite',
+                                    'google#satellite',
+                                    'bing#satellite',
+                                ]
+                            )
+                        );
+                        registerMapSwitchLayersHotkeys(map);
+                        var objectManager = new ymaps.RemoteObjectManager(backendApiBase + '/ymaps-tile-ww?bbox=%b&zoom=%z&river=' + t.river.id, {
+                            clusterHasBalloon: false,
+                            geoObjectOpenBalloonOnClick: false,
+                            geoObjectStrokeWidth: 3,
+                            splitRequests: true
+                        });
+                        map.geoObjects.add(objectManager);
+                        t.map = map;
+                        t.objectManager = objectManager;
+                    });
+                },
+                reloadMap: function() {
+                    if (this.map) {
+                        this.map.destroy();
+                    }
+                    this.showMap();
+                },
             }
         },
         methods: {
