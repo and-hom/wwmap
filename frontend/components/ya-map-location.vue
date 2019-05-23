@@ -55,10 +55,17 @@
                         component.label.geometry.setCoordinates(component.getP(0));
                         return
                     } else {
-                        addCachedLayer('osm#standard', 'OSM', 'OpenStreetMap contributors, CC-BY-SA', 'osm');
-                        addLayer('google#satellite', 'Спутник Google', 'Изображения © DigitalGlobe,CNES / Airbus, 2018,Картографические данные © Google, 2018', GOOGLE_SAT_TILES);
-                        addLayer('bing#satellite', 'Спутник Bing', 'Изображения © Майкрософт (Microsoft), 2019', bingSatTiles);
-                        addCachedLayer('ggc#standard', 'Топографическая карта', '', 'ggc', 0, 15)
+                        addCachedLayer('osm#standard', 'OSM (O)', 'OpenStreetMap contributors, CC-BY-SA', 'osm');
+                        addLayer('google#satellite', 'Спутник Google (G)', 'Изображения © DigitalGlobe,CNES / Airbus, 2018,Картографические данные © Google, 2018', GOOGLE_SAT_TILES);
+                        addLayer('bing#satellite', 'Спутник Bing (B)', 'Изображения © Майкрософт (Microsoft), 2019', bingSatTiles);
+                        addCachedLayer('ggc#standard', 'Топографическая карта (T)', '', 'ggc', 0, 15);
+
+                        // workaround to change Yandex Satellite map title
+                        try {
+                            ymaps.mapType.storage.get('yandex#satellite')._name = 'Спутник Yandex (Y)'
+                        } catch (err) {
+                            console.log(err)
+                        }
                     }
 
                     let myMap;
@@ -85,6 +92,31 @@
                             'bing#satellite',
                         ])
                     );
+                    $(document).keyup(function (e) {
+                        switch(e.key) {
+                            case 'g':
+                            case 'G':
+                                myMap.setType('google#satellite');
+                                break;
+                            case 'b':
+                            case 'B':
+                                myMap.setType('bing#satellite');
+                                break;
+                            case 'y':
+                            case 'Y':
+                                myMap.setType('yandex#satellite');
+                                break;
+                            case 'o':
+                            case 'O':
+                                myMap.setType('osm#standard');
+                                break;
+                            case 't':
+                            case 'T':
+                                myMap.setType('ggc#standard');
+                                break;
+                        }
+                    });
+
                     myMap.controls.add('rulerControl', {
                         scaleLine: true
                     });
