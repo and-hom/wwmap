@@ -183,6 +183,19 @@ func WhiteWaterPointsToYmaps(clusterMaker clustering.ClusterMaker, rivers []Rive
 	return result, nil
 }
 
+func WhiteWaterPointsToYmapsNoCluster(rivers []RiverWithSpots,
+	resourcesBase string, skipId int64, processImgForWeb func(img *Img), linkMaker LinkMaker) []Feature {
+	result := make([]Feature, 0)
+	for _, river := range rivers {
+		for _, spot := range river.Spots {
+			if spot.Id != skipId {
+				result = append(result, mkFeature(spot, river, true, resourcesBase, processImgForWeb, linkMaker))
+			}
+		}
+	}
+	return result
+}
+
 func SingleWhiteWaterPointToYmaps(spot Spot, river RiverWithSpots, resourcesBase string, processImgForWeb func(img *Img), linkMaker LinkMaker) ([]Feature, error) {
 	return []Feature{mkFeature(spot, river, true, resourcesBase, processImgForWeb, linkMaker)}, nil
 }

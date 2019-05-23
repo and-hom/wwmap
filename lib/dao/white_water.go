@@ -32,6 +32,7 @@ func NewWhiteWaterPostgresDao(postgresStorage PostgresStorage) WhiteWaterDao {
 		deleteQuery:                queries.SqlQuery("white-water", "delete"),
 		deleteForRiverQuery:        queries.SqlQuery("white-water", "delete-for-river"),
 		geomCenterByRiverQuery:     queries.SqlQuery("white-water", "geom-center-by-river"),
+		riverBoundsQuery:           queries.SqlQuery("white-water", "river-bounds"),
 		autoOrderingRiverIdsQuery:  queries.SqlQuery("white-water", "auto-ordering-river-ids"),
 		distanceFromBeginningQuery: queries.SqlQuery("white-water", "distance-from-beginning"),
 		updateOrderIdxQuery:        queries.SqlQuery("white-water", "update-order-idx"),
@@ -56,6 +57,7 @@ type whiteWaterStorage struct {
 	deleteQuery                string
 	deleteForRiverQuery        string
 	geomCenterByRiverQuery     string
+	riverBoundsQuery           string
 	autoOrderingRiverIdsQuery  string
 	distanceFromBeginningQuery string
 	updateOrderIdxQuery        string
@@ -391,6 +393,25 @@ func (this whiteWaterStorage) GetGeomCenterByRiver(riverId int64) (geo.Point, er
 		return geo.Point{0, 0}, nil
 	}
 	return p.(geo.Point), nil
+}
+
+func (this whiteWaterStorage) GetRiverBounds(riverId int64) (geo.Bbox, error) {
+	p, found, err := this.doFindAndReturn(this.riverBoundsQuery, func(rows *sql.Rows) (interface{}, error) {
+		pointString := ""
+		err := rows.Scan(&pointString)
+		if err != nil {
+			return geo.Bbox{}, err
+		}
+		fmt.Println(pointString)
+		return ParseBounds(pointString)
+	}, riverId)
+	if err != nil {
+		return geo.Bbox{}, err
+	}
+	if !found {
+		return geo.Bbox{0, 0, 0, 0}, nil
+	}
+	return p.(geo.Bbox), nil
 }
 
 func (this whiteWaterStorage) Props() PropertyManager {

@@ -136,6 +136,11 @@ SELECT center FROM (
     SELECT ST_AsGeoJSON(ST_Centroid(ST_Collect(point))) center FROM ___table___ WHERE river_id=$1
 ) sq WHERE center IS NOT NULL
 
+--@river-bounds
+SELECT bounds FROM (
+    SELECT ST_AsGeoJSON(ST_Extent(point)) bounds FROM ___table___ WHERE river_id=$1
+) sq WHERE bounds IS NOT NULL
+
 
 --@auto-ordering-river-ids
 SELECT river_id FROM ___table___
