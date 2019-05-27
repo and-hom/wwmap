@@ -1,3 +1,10 @@
+wwmap-t-cache (0.0.4) unstable; urgency=medium
+
+  * Log all requests in debug log level only
+  * #114 Services autostart
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Mon, 27 May 2019 07:02:02 +0300
+
 wwmap-t-cache (0.0.3) unstable; urgency=medium
 
   * #40 Use empty png for missing tiles

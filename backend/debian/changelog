@@ -1,3 +1,11 @@
+wwmap-backend (0.0.44) unstable; urgency=medium
+
+  * #216 River editor mini map
+  * #217 Logging fixes
+  * Log all requests in debug log level only
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Mon, 27 May 2019 06:53:18 +0300
+
 wwmap-backend (0.0.43) unstable; urgency=medium
 
   * #4 Don't export to GPX medium points of long spots
