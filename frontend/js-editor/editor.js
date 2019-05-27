@@ -83,6 +83,10 @@ function getRiverBounds(riverId) {
     return bounds
 }
 
+function emptyBounds(bounds) {
+    return bounds[0][0] == bounds[1][0] || bounds[0][1] == bounds[1][1];
+}
+
 function saveRiver(river) {
     return doPostJsonSync(backendApiBase + "/river/" + river.id, river, true)
 }

@@ -264,7 +264,6 @@
         },
         created: function() {
             this.resetToInitialIfRequired();
-            this.showMap();
         },
         computed: {
             uploadPath: function() { return backendApiBase + "/river/" + this.river.id +"/gpx"},
@@ -303,9 +302,15 @@
                         this.bounds = getRiverBounds(this.river.id);
                         this.center = [(this.bounds[0][0] + this.bounds[1][0]) / 2, (this.bounds[0][1] + this.bounds[1][1]) / 2];
 
-                        if(this.map) {
+                        let hideMap = emptyBounds(this.bounds);
+                        if (this.map && hideMap) {
+                            this.map.destroy();
+                            this.map = null;
+                        } else if (this.map) {
                             this.objectManager.setUrlTemplate(backendApiBase + '/ymaps-tile-ww?bbox=%b&zoom=%z&river=' + this.river.id);
                             this.map.setBounds(this.bounds);
+                        } else if (!this.map && !hideMap) {
+                            this.showMap();
                         }
 
                         this.meteoPoint = this.getMeteoPointById(this.river.props.meteo_point);
@@ -428,9 +433,9 @@
                         point: this.center,
                         aliases:[],
                         props:{},
-                    }
-                    app.spoteditorstate.country = this.country
-                    app.spoteditorstate.region = this.region
+                    };
+                    app.spoteditorstate.country = this.country;
+                    app.spoteditorstate.region = this.region;
                 },
 
                 regions: function() {
@@ -491,6 +496,9 @@
                     return "osm#standard"
                 },
                 showMap: function () {
+                    if (emptyBounds(this.bounds)) {
+                        return;
+                    }
                     let t = this;
                     ymaps.ready(function () {
                         addMapLayers();
