@@ -140,7 +140,9 @@
                     </b-tabs>
         </div>
         <div v-else class="spot-display">
-            <h1>{{ river.title }}</h1>
+            <h1>{{ river.title }}</h1>&nbsp;<a
+                id="gpx" :href="gpxUrl(false)" style="padding-right:10px;" alt="Скачать GPX с точками порогов">GPX</a>&nbsp;<a
+                id="gpx_en" :href="gpxUrl(true)" alt="Скачать GPX с точками порогов">GPX<sub>en</sub></a>
             <div style="float:right;">
                 <img border='0' :src="informerUrl()">
                 <div id="map" style="width:650px; height: 450px;padding-left: 30px;"></div>
@@ -527,6 +529,9 @@
                     }
                     this.showMap();
                 },
+                gpxUrl: function (transliterate) {
+                    return `${backendApiBase}/gpx/river/${this.river.id}?tr=${transliterate}`;
+                }
             }
         },
         methods: {
