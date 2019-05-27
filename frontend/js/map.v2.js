@@ -196,25 +196,20 @@ WWMap.prototype.init = function () {
         )
     );
     $(document).keyup(function (e) {
-        switch(e.key) {
-            case 'g':
-            case 'G':
+        switch (e.which) {
+            case 71: // G
                 t.yMap.setType('google#satellite');
                 break;
-            case 'b':
-            case 'B':
+            case 66: // B
                 t.yMap.setType('bing#satellite');
                 break;
-            case 'y':
-            case 'Y':
+            case 89: // Y
                 t.yMap.setType('yandex#satellite');
                 break;
-            case 'o':
-            case 'O':
+            case 79: // O
                 t.yMap.setType('osm#standard');
                 break;
-            case 't':
-            case 'T':
+            case 84: // T
                 t.yMap.setType('ggc#standard');
                 break;
         }
@@ -433,7 +428,7 @@ function WWMapPopup(templateDivId, fromTemplates, divId, options) {
     // close on escape pressed
     if (!options || options.closeOnEscape !== false) {
         $(document).keyup(function (e) {
-            if (e.key === "Escape") {
+            if (e.which == 27) { // Escape
                 t.hide()
             }
         });

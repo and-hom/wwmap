@@ -87,25 +87,20 @@ function addMapLayers() {
 
 function registerMapSwitchLayersHotkeys(map) {
     $(document).keyup(function (e) {
-        switch (e.key) {
-            case 'g':
-            case 'G':
+        switch (e.which) {
+            case 71: // G
                 map.setType('google#satellite');
                 break;
-            case 'b':
-            case 'B':
+            case 66: // B
                 map.setType('bing#satellite');
                 break;
-            case 'y':
-            case 'Y':
+            case 89: // Y
                 map.setType('yandex#satellite');
                 break;
-            case 'o':
-            case 'O':
+            case 79: // O
                 map.setType('osm#standard');
                 break;
-            case 't':
-            case 'T':
+            case 84: // T
                 map.setType('ggc#standard');
                 break;
         }
