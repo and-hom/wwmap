@@ -4,40 +4,36 @@
 
 _Например, в wordpress есть специальный плагин, чтобы подключить свой css к отдельной странице. Остальное возможно в рамках редактирования html страницы_
 
-1. Подключаем css отсюда: 
-    * https://wwmap.ru/css/map.v2.css
-    * https://wwmap.ru/css/lightbox.min.css
-2. Подключаем javascript
-```
-    <script type="text/javascript" src="https://wwmap.ru/js/jquery-3.1.1.min.js"></script>
-    <script type="text/javascript" src="https://wwmap.ru/js/jquery.tmpl.js"></script>
-    <script type="text/javascript" src="https://wwmap.ru/js/jquery.cookie.js"></script>
-    
-    <!-- этот скрипт нужен тольео для работы галереи фотографий во всплывающем окне порога на карте, как и css с таким же именем -->
-    <script type="text/javascript" src="https://wwmap.ru/js/lightbox.min.js"></script>
-    <script type="text/javascript" src="https://api-maps.yandex.ru/2.1/?lang=ru_RU"></script>
-
-    <script type="text/javascript" src="https://wwmap.ru/js/config.js"></script>
-    <script type="text/javascript" src="https://wwmap.ru/js/map.v2.js"></script>
-    <script type="text/javascript" src="https://wwmap.ru/js/tube.js"></script>
-```
-3. Добавляем div для карты. id произвольный. Возможно, задать размеры, поля и др. параметры области стилями:
-```
-<div style="width:100%;height 600px;" id="wwmap-container"></div>
-```
-4. Если нам нужна таблица с реками, ссылками на отчёты и GPX-файлы с точками порогов, то добавляем div и для неё в удобном месте страницы (я расположу его сразу под картой):
-```
-<div id="wwmap-rivers" class="wwmap-river-menu"></div>
-```
-5. Добавить javascript для инициализации и работы карты. В случае, если шаг 4 пропущен, второй параметр ф-ции initWWMap также можно опустить.
-```
-<script type="text/javascript">
-  $(document).ready(function() {
-    initWWMap("wwmap-container", "wwmap-rivers");
-  });
-</script>
-```
-6. При желании поменять ссылку, ведущую из краткого описания порога на карте.
+1. Подключаем javascript
+    ```html
+        <script type="text/javascript" src="https://api-maps.yandex.ru/2.1/?lang=ru_RU"></script>
+        <script type="text/javascript" src="https://wwmap.ru/js/map.v2.1.js"></script>
+    ```
+2. Добавляем div для карты. id произвольный. Возможно, задать размеры, поля и др. параметры области стилями:
+    ```html
+    <div style="width:100%;height 600px;" id="wwmap-container"></div>
+    ```
+3. Если нам нужна таблица с реками, ссылками на отчёты и GPX-файлы с точками порогов, то добавляем div и для неё в удобном месте страницы (я расположу его сразу под картой):
+    ```html
+    <div id="wwmap-rivers" class="wwmap-river-menu"></div>
+    ```
+4. Добавить javascript для инициализации и работы карты.
+    ```html
+    <script type="text/javascript">
+      $(document).ready(function() {
+        wwmap.initWWMap("wwmap-container", "wwmap-rivers");
+      });
+    </script>
+    ```
+    В случае, если шаг 3 пропущен, второй параметр ф-ции initWWMap также можно опустить:
+    ```html
+    <script type="text/javascript">
+      $(document).ready(function() {
+        wwmap.initWWMap("wwmap-container");
+      });
+    </script>
+    ```
+5. При желании поменять ссылку, ведущую из краткого описания порога на карте.
 Возможные варианты:
     * **none** - никогда не показывать ссылки в кратком описании порога на карте
     * по-умолчанию (когда ничего не указано) - показывать ссылку, указанную автором описания
@@ -45,20 +41,44 @@ _Например, в wordpress есть специальный плагин, ч
     * **huskytm** - показывать ссылку в каталог, выгруженный на huskytm.ru (только просмотр)
 
     Как сделать: поменять код из предыдущего пункта на такой (последним параметром указать значение из списка выше):
-```
-<script type="text/javascript">
-  $(document).ready(function() {
-    initWWMap("wwmap-container", "wwmap-rivers", "wwmap");
-  });
-</script>
-```
+    ```html
+    <script type="text/javascript">
+    $(document).ready(function() {
+        wwmap.initWWMap("wwmap-container", "wwmap-rivers", "wwmap");
+    });
+    </script>
+    ```
 
 ## Кастомизация
 ### Изменение шаблона списка рек
-1. Открываем https://wwmap.ru/map-components/map-html-components.htm. Ищем там элемент с ``id="rivers_template"`` - это стандартный шаблон списка рек.
-Копируем его себе в html (id можно не менять, этот файл не загружается напрямую). Подробнее про шаблонизатор можно почитать тут https://github.com/KanbanSolutions/jquery-tmpl
-2. Открываем https://wwmap.ru/js/map.v2.js. Ищем ф-цию ``function initWWMap(mapId, riversListId)``. Копируем её себе так, чтобы она перекрыла оригинал,
-ну или хотя бы так, чтобы именно она вызывалась на 5-м шаге из предыдущего абзаца.
+1. Открываем https://wwmap.ru/map-components/map-html-components-2.1.htm. Ищем там элемент с ``id="rivers_template"`` - это стандартный шаблон списка рек.
+Копируем его себе в html (id можно не менять, этот файл не загружается напрямую). Подробнее про шаблонизатор можно почитать тут https://github.com/KanbanSolutions/jquery-tmpl . Выглядит он, например, так:
+    ```html
+    <script type="text/x-jquery-tmpl" id="rivers_template">
+    <div class="wwmap-river-menu">
+        {%each rivers%}
+            <div class="wwmap-river-menu-item"><div class="wwmap-river-menu-title">
+                <a href="" style="padding-left:10px;" onclick="wwmap.show_river_info_popup(${id}); return false;">${title}</a>
+            </div><div class="wwmap-river-menu-controls">
+                <a href="" style="padding-left:10px;" onclick="wwmap.show_map_at(${bounds}); return false;"><img src="https://wwmap.ru/img/locate.png" width="25px" alt="Показать на карте" title="Показать на карте"/></a>
+                {%if canEdit%}
+                    <a href="https://wwmap.ru/editor.htm#${region.country_id},${region.id},${id}" target="_blank" style="margin-left:-6px;"><img src="https://wwmap.ru/img/edit.png" width="25px" alt="Редактор" title="Редактор"/></a>
+                {%/if%}
+            </div></div>
+        {%/each%}
+    </div>
+    </script>
+
+    ```
+2. Вместо wwmap.initWWap используем ф-цию `initWWMapCustomRiverList(mapId, riversListTemplateElement, catalogLinkType)`, например, так
+    ```html
+    <script type="text/javascript">
+    $(document).ready(function() {
+        let templateContainer = $("#wwmap-rivers");
+        wwmap.initWWMap("wwmap-container", templateContainer, "wwmap");
+    });
+    </script>
+    ```
 3. В скопированной на предыдущем шаге ф-ции ищем инициализацию списка рек: ``riverList = new RiverList($('#' + riversListId), 'rivers_template', true)``.
 Меняем ``true`` на ``false``. ``true`` - загружать шаблон из файла https://wwmap.ru/map-components/map-html-components.htm, ``false`` - брать с текущей страницы. Также
 при необходимости можно поправить id шаблона (второй параметр)
@@ -68,4 +88,33 @@ _Например, в wordpress есть специальный плагин, ч
     1. **year"** - год, в который совершён поход (не год публикации)
     1. **url"** - ссылка на отчёт
     1. **source_logo_url"** - логотип сайта, на котором размещён отчёт
+    
+    
+## Примечание
+При использовании vue.js div, в котором должна была отобразиться карта, имел сначала нулевой размер, и карта не отображалась. Пришлось вспользоваться вот таким приёмом:
+```javascript
+    $(document).ready(function() {
+
+     Vue.component('auth', httpVueLoader('components/auth.vue'));
+     Vue.component('page', httpVueLoader('components/page.vue'));
+
+     var app = new Vue({
+        el: '#vue-app',
+        data: {
+        },
+        mounted: loadMapWhenDivIsReady
+    });
+  });
+
+  function loadMapWhenDivIsReady() {
+      // Если div отображён, инициализируем карту
+      if($('#wwmap-container').outerWidth()) {
+          wwmap.initWWMap("wwmap-container", "wwmap-rivers", "wwmap")
+      } else {
+          // Через 100мс пытаемся ещё раз сделать то же самое
+          console.log("#div-container is not ready yet: has no offsetWidth");
+          setTimeout(loadMapWhenDivIsReady, 100);
+      }
+  }
+```
 

@@ -4,6 +4,10 @@
 
 DEB_VERSION = $(shell dpkg-parsechangelog --show-field Version)
 
+build:
+	npm i
+	./node_modules/webpack/bin/webpack.js --env.APP_ENV=production
+
 override_dh_auto_install:
 	install -d $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/img/report_sources
 	install -d $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/img/flags

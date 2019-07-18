@@ -17,15 +17,12 @@
     <script type="text/javascript" src="js-editor/tether.min.js"></script>
     <script type="text/javascript" src="https://wwmap.ru/js/jquery-3.1.1.min.js"></script>
     <script type="text/javascript" src="https://wwmap.ru/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="https://wwmap.ru/js/jquery.tmpl.js"></script>
     <script type="text/javascript" src="https://wwmap.ru/js/jquery.cookie.js"></script>
     <script type="text/javascript" src="https://wwmap.ru/js/lightbox.min.js"></script>
     <script type="text/javascript" src="https://api-maps.yandex.ru/2.1/?lang=ru_RU"></script>
 
     <script type="text/javascript" src="https://wwmap.ru/js/config.js"></script>
-    <script type="text/javascript" src="https://wwmap.ru/js/map.v2.js"></script>
-
-    <script type="text/javascript" src="https://wwmap.ru/js/tube.js"></script>
+    <script type="text/javascript" src="js/map.v2.1.js"></script>
 
     <script type="text/javascript" src="js-editor/api.js"></script>
     <script type="text/javascript" src="js-editor/auth.js"></script>
@@ -70,7 +67,7 @@
 
   function loadMapWhenDivIsReady() {
       if($('#wwmap-container').outerWidth()) {
-          initWWMap("wwmap-container", "wwmap-rivers", "wwmap")
+          wwmap.initWWMap("wwmap-container", "wwmap-rivers", "wwmap")
       } else {
           console.log("#div-container is not ready yet: has no offsetWidth");
           setTimeout(loadMapWhenDivIsReady, 100);
