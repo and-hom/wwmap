@@ -3,14 +3,11 @@ package main
 import (
 	"bytes"
 	"encoding/xml"
-	"fmt"
-	"github.com/Sirupsen/logrus"
+	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/data"
 	"github.com/and-hom/wwmap/lib/dao"
 	"github.com/and-hom/wwmap/lib/geo"
 	"github.com/kokardy/saxlike"
-	"log"
-	"os"
 	"strconv"
 )
 
@@ -20,7 +17,6 @@ type PointHandler struct {
 	waterwayIdx        map[int64]WaterWayTmp
 	waterwayReverseIdx map[int64][]int64
 	points_by_way      map[int64][]geo.Point
-	found_count_by_way map[int64]int
 
 	cnt      int
 	foundcnt int
@@ -28,35 +24,42 @@ type PointHandler struct {
 	Found    bool
 	Buffer   bytes.Buffer
 
-	flush_way func(int64, dao.WaterWay)
+	flush_way   func(int64, dao.WaterWay)
+	crossPoints []dao.WaterWayOsmRef
 }
 
-func (h *PointHandler) StartDocument() {
-	h.points_by_way = make(map[int64]([]geo.Point))
-	h.found_count_by_way = make(map[int64]int)
-	for wayId, refs := range h.waterwayIdx {
-		h.points_by_way[wayId] = make([]geo.Point, len(refs.PathPointRefs))
-		h.found_count_by_way[wayId] = 0
+func (this *PointHandler) StartDocument() {
+	this.points_by_way = make(map[int64]([]geo.Point))
+	for wayId, refs := range this.waterwayIdx {
+		this.points_by_way[wayId] = make([]geo.Point, len(refs.PathPointRefs))
 	}
 }
 
-func (h *PointHandler) StartElement(element xml.StartElement) {
+func (this *PointHandler) StartElement(element xml.StartElement) {
 	if element.Name.Local == "node" {
-		if h.cnt%100000 == 0 {
-			fmt.Fprintf(os.Stderr, "%d nodes processed. %d found\n", h.cnt, h.foundcnt)
+		if this.cnt%100000 == 0 {
+			log.Debugf("%d nodes processed. %d found\n", this.cnt, this.foundcnt)
 		}
-		h.cnt += 1
+		this.cnt += 1
 
 		id, err := strconv.ParseInt(data.Attr(element.Attr, "id"), 10, 64)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		ways, found := h.waterwayReverseIdx[id]
+		if id == 2376163737 {
+			log.Info("Point ", 2376163737)
+		}
+
+		wayIds, found := this.waterwayReverseIdx[id]
 		if !found {
 			return
 		}
-		h.foundcnt += 1
+		this.foundcnt += 1
+
+		if id == 2376163737 {
+			log.Info("Ways ", wayIds)
+		}
 
 		lat, err := strconv.ParseFloat(data.Attr(element.Attr, "lat"), 64)
 		if err != nil {
@@ -66,21 +69,41 @@ func (h *PointHandler) StartElement(element xml.StartElement) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		coords := geo.Point{
+
+		point := geo.Point{
 			Lat: lat,
 			Lon: lon,
 		}
 
-		for _, wayId := range ways {
-			waterWayTmp, _ := h.waterwayIdx[wayId]
-			pointsForWay, _ := h.points_by_way[wayId]
+		for _, wayId := range wayIds {
+			waterWayTmp, _ := this.waterwayIdx[wayId]
 
+			pos := -1
 			for idx, p := range waterWayTmp.PathPointRefs {
 				if p == id {
-					pointsForWay[idx] = coords
-					h.found_count_by_way[wayId] += 1
-					if h.found_count_by_way[wayId] == len(waterWayTmp.PathPointRefs) {
-						h.flush(wayId)
+					if pos >= 0 {
+						log.Errorf("Point %d duplicate. wwId = %d", id, wayId)
+					}
+					pos = idx
+					this.points_by_way[wayId][idx] = point
+				}
+			}
+
+			if pos < 0 {
+				log.Error("Point %d is not found for way %d", id, wayId)
+				continue
+			}
+		}
+
+		if len(wayIds) > 1 {
+			for i := 0; i < len(wayIds); i++ {
+				for j := 0; j < len(wayIds); j++ {
+					if wayIds[i] != wayIds[j] {
+						this.crossPoints = append(this.crossPoints, dao.WaterWayOsmRef{
+							Id:         wayIds[i],
+							RefId:      wayIds[j],
+							CrossPoint: point,
+						})
 					}
 				}
 			}
@@ -88,40 +111,47 @@ func (h *PointHandler) StartElement(element xml.StartElement) {
 	}
 }
 
-func (h *PointHandler) EndDocument() {
-	if len(h.points_by_way) > 0 {
-		for k, _ := range h.points_by_way {
-			h.flush(k)
+func (this *PointHandler) EndDocument() {
+	if len(this.points_by_way) > 0 {
+		for k, _ := range this.points_by_way {
+			this.flush(k)
 		}
 	}
 }
 
-func (h *PointHandler) flush(wayId int64) {
-	points, _ := h.points_by_way[wayId]
+func (this *PointHandler) flush(wayId int64) {
+	points, _ := this.points_by_way[wayId]
 	nullPointCnt := 0
 	for i := 0; i < len(points); i++ {
 		if points[i].Lat == 0 && points[i].Lon == 0 {
+			log.Errorf("null point %d id=%d  present for way %d", i, this.waterwayIdx[wayId].PathPointRefs[i], wayId)
 			nullPointCnt++
 		}
 	}
-	pointsNew := make([]geo.Point, len(points)-nullPointCnt)
-	idx := 0
-	for i := 0; i < len(points); i++ {
-		if !(points[i].Lat == 0 && points[i].Lon == 0) {
-			pointsNew[idx] = points[i]
-			idx++
+	// filter null points
+	if nullPointCnt > 0 {
+		log.Errorf("%d null points of %d present for way %d", nullPointCnt, len(points), wayId)
+		pointsNew := make([]geo.Point, len(points)-nullPointCnt)
+		idx := 0
+		for i := 0; i < len(points); i++ {
+			if !(points[i].Lat == 0 && points[i].Lon == 0) {
+				pointsNew[idx] = points[i]
+				idx++
+			}
 		}
+		points = pointsNew
 	}
-	logrus.Debug("%d points of %d removed\n", nullPointCnt, len(points))
 
-	waterWayTmp, _ := h.waterwayIdx[wayId]
-	h.flush_way(wayId, dao.WaterWay{
+	waterWayTmp, _ := this.waterwayIdx[wayId]
+	this.flush_way(wayId, dao.WaterWay{
 		OsmId:   waterWayTmp.Id,
 		Title:   waterWayTmp.Title,
 		Comment: waterWayTmp.Comment,
 		Type:    waterWayTmp.Type,
-		Path:    pointsNew,
+		WaterWaySimple: dao.WaterWaySimple{
+			Path: points,
+		},
 	})
 
-	delete(h.points_by_way, wayId)
+	delete(this.points_by_way, wayId)
 }

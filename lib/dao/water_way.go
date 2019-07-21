@@ -6,26 +6,36 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/lib/dao/queries"
 	"github.com/and-hom/wwmap/lib/geo"
+	"github.com/lib/pq"
+	"strings"
 )
 
 func NewWaterWayPostgresDao(postgresStorage PostgresStorage) WaterWayDao {
 	return waterWayStorage{
-		PostgresStorage:     postgresStorage,
-		insertQuery:         queries.SqlQuery("water-way", "insert"),
-		updateQuery:         queries.SqlQuery("water-way", "update"),
-		listQuery:           queries.SqlQuery("water-way", "list"),
-		unlinkRiverQuery:    queries.SqlQuery("water-way", "unlink-river"),
-		detectForRiverQuery: queries.SqlQuery("water-way", "detect-for-river"),
+		PostgresStorage:        postgresStorage,
+		insertQuery:            queries.SqlQuery("water-way", "insert"),
+		updateQuery:            queries.SqlQuery("water-way", "update"),
+		listQuery:              queries.SqlQuery("water-way", "list"),
+		unlinkRiverQuery:       queries.SqlQuery("water-way", "unlink-river"),
+		detectForRiverQuery:    queries.SqlQuery("water-way", "detect-for-river"),
+		bindToRiverQuery:       queries.SqlQuery("water-way", "bind-to-river"),
+		listByRiverIdsQuery:    queries.SqlQuery("water-way", "list-by-river-ids"),
+		listByBbox4RouterQuery: queries.SqlQuery("water-way", "list-by-bbox-4-router"),
+		listByBboxQuery:        queries.SqlQuery("water-way", "list-by-bbox"),
 	}
 }
 
 type waterWayStorage struct {
 	PostgresStorage
-	insertQuery         string
-	updateQuery         string
-	listQuery           string
-	unlinkRiverQuery    string
-	detectForRiverQuery string
+	insertQuery            string
+	updateQuery            string
+	listQuery              string
+	unlinkRiverQuery       string
+	detectForRiverQuery    string
+	bindToRiverQuery       string
+	listByRiverIdsQuery    string
+	listByBbox4RouterQuery string
+	listByBboxQuery        string
 }
 
 func (this waterWayStorage) AddWaterWays(waterways ...WaterWay) error {
@@ -33,7 +43,7 @@ func (this waterWayStorage) AddWaterWays(waterways ...WaterWay) error {
 	for i, p := range waterways {
 		vars[i] = p
 	}
-	return this.performUpdates("",
+	return this.performUpdates(this.insertQuery,
 		func(entity interface{}) ([]interface{}, error) {
 			waterway := entity.(WaterWay)
 
@@ -117,7 +127,10 @@ func scanWaterWay(rows *sql.Rows) (WaterWay, error) {
 	osmId := sql.NullInt64{}
 	riverId := sql.NullInt64{}
 	pathStr := ""
-	rows.Scan(&waterWay.Id, &osmId, &riverId, &waterWay.Title, &waterWay.Type, &waterWay.Comment, &pathStr)
+	err := rows.Scan(&waterWay.Id, &osmId, &riverId, &waterWay.Title, &waterWay.Type, &waterWay.Comment, &pathStr)
+	if err != nil {
+		return WaterWay{}, err
+	}
 	if osmId.Valid {
 		waterWay.OsmId = osmId.Int64
 	}
@@ -125,13 +138,41 @@ func scanWaterWay(rows *sql.Rows) (WaterWay, error) {
 		waterWay.RiverId = riverId.Int64
 	}
 	var path geo.LineString
-	err := json.Unmarshal([]byte(pathStr), &path)
+	err = json.Unmarshal([]byte(pathStr), &path)
 	if err != nil {
-		log.Errorf("Can not parse path \"%s\": %v", path, err)
+		log.Errorf("Can not parse path \"%s\": %v", pathStr, err)
 		return WaterWay{}, err
 	}
 	waterWay.Path = path.GetFlippedPath()
 
+	return waterWay, nil
+}
+
+func scanWaterWay4RouterNonFlipped(rows *sql.Rows) (WaterWay4Router, error) {
+	waterWay := WaterWay4Router{}
+	pathStr := ""
+	refsStr := ""
+	err := rows.Scan(&waterWay.Id, &pathStr, &refsStr)
+	if err != nil {
+		return WaterWay4Router{}, err
+	}
+	var path geo.LineString
+	err = json.Unmarshal([]byte(pathStr), &path)
+	if err != nil {
+		log.Errorf("Can not parse path \"%s\": %v", pathStr, err)
+		return WaterWay4Router{}, err
+	}
+	var refs []PgWaterWayRef
+	err = json.Unmarshal([]byte(refsStr), &refs)
+	if err != nil {
+		log.Errorf("Can not parse int64 array \"%s\": %v", refsStr, err)
+		return WaterWay4Router{}, err
+	}
+	waterWay.Refs = make(map[int64][]geo.Point)
+	for i := 0; i < len(refs); i++ {
+		waterWay.Refs[refs[i].RefId] = append(waterWay.Refs[refs[i].RefId], refs[i].CrossPoint.Coordinates)
+	}
+	waterWay.Path = path.Coordinates
 	return waterWay, nil
 }
 
@@ -148,4 +189,42 @@ func (this waterWayStorage) DetectForRiver(riverId int64) ([]WaterWay, error) {
 		return []WaterWay{}, err
 	}
 	return result.([]WaterWay), err
+}
+
+func (this waterWayStorage) BindToRiver(riverId int64, titleVariants []string) ([]int64, error) {
+	titleVariantsLower := make([]string, len(titleVariants))
+	for i := 0; i < len(titleVariants); i++ {
+		titleVariantsLower[i] = strings.ToLower(titleVariants[i])
+	}
+	return this.updateReturningId(this.bindToRiverQuery, ArrayMapper, false,
+		riverId, pq.Array(titleVariantsLower), DETECTION_MIN_DISTANCE_METERS)
+}
+
+func (this waterWayStorage) ListByRiverIds(riverIds ...int64) ([]WaterWay, error) {
+	result, err := this.doFindList(this.listByRiverIdsQuery, scanWaterWay, pq.Array(riverIds))
+	if err != nil {
+		return []WaterWay{}, err
+	}
+	return result.([]WaterWay), err
+}
+
+func (this waterWayStorage) ListByBboxNonFilpped(bbox geo.Bbox) ([]WaterWay4Router, error) {
+	result, err := this.doFindList(this.listByBbox4RouterQuery, scanWaterWay4RouterNonFlipped, bbox.Y1, bbox.X1, bbox.Y2, bbox.X2)
+	if err != nil {
+		return []WaterWay4Router{}, err
+	}
+	return result.([]WaterWay4Router), err
+}
+
+func (this waterWayStorage) ListByBbox(bbox geo.Bbox) ([]WaterWay, error) {
+	result, err := this.doFindList(this.listByBboxQuery, scanWaterWay, bbox.Y1, bbox.X1, bbox.Y2, bbox.X2)
+	if err != nil {
+		return []WaterWay{}, err
+	}
+	return result.([]WaterWay), err
+}
+
+type PgWaterWayRef struct {
+	RefId      int64        `json:"id"`
+	CrossPoint geo.GeoPoint `json:"cross_point"`
 }

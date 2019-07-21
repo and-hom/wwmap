@@ -159,7 +159,7 @@ func mkCluster(Id clustering.ClusterId, points []Spot, riverTitle string) Featur
 }
 
 func WhiteWaterPointsToYmaps(clusterMaker clustering.ClusterMaker, rivers []RiverWithSpots, bbox Bbox, zoom int,
-	resourcesBase string, skipId int64, processImgForWeb func(img *Img), linkMaker LinkMaker) ([]Feature, error) {
+	resourcesBase string, skipId int64, processImgForWeb func(img *Img), linkMaker LinkMaker, waterWays []WaterWay) ([]Feature, error) {
 	result := make([]Feature, 0)
 	for _, river := range rivers {
 		riverClusters, err := clusterMaker.Get(river, zoom, bbox)
@@ -177,6 +177,23 @@ func WhiteWaterPointsToYmaps(clusterMaker clustering.ClusterMaker, rivers []Rive
 			case clustering.Cluster:
 				result = append(result, mkCluster(id, obj.(clustering.Cluster).Points, river.Title))
 			}
+		}
+
+		for _, waterWay := range waterWays {
+			result = append(result, Feature{
+				Id:       waterWay.Id,
+				Type:     FEATURE,
+				Geometry: NewYmapsLineString(waterWay.Path...),
+				Properties: FeatureProperties{
+					HintContent: fmt.Sprintf("%s/%d", waterWay.Title, waterWay.OsmId),
+					Id:          waterWay.Id,
+
+					Title: waterWay.Title,
+				},
+				Options: FeatureOptions{
+					Id: waterWay.Id,
+				},
+			})
 		}
 	}
 

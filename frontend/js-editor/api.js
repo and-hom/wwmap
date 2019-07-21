@@ -9,6 +9,7 @@ function sendRequest(url , _type, auth) {
         xhr.send();
         return xhr
     } catch (err) {
+        console.log(err);
         return null
     }
 }

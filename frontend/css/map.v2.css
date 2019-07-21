@@ -238,3 +238,9 @@
     background-position: center center;
     background-size: 50px;
 }
+
+.wwmap-measure-btn-pressed {
+    /*box-shadow: 0 5px gray;*/
+    /*transition: all 2s linear;*/
+    background-color: #ffdb4d;
+}

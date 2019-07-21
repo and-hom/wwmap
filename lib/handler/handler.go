@@ -108,7 +108,7 @@ func (this *Handler) JsonAnswer(w http.ResponseWriter, f interface{}) {
 		return
 	}
 
-	w.Header().Add("Content-Type", "application/json")
+	SetJsonResponseHeaders(w)
 	w.Write(bytes)
 }
 

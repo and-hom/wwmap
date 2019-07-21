@@ -6,9 +6,9 @@ import (
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/lib/config"
+	"io"
 	"reflect"
 )
-
 
 type PostgresStorage struct {
 	db *sql.DB
@@ -155,8 +155,11 @@ func (this *PostgresStorage) insertReturningId(query string, args ...interface{}
 	return lastId, nil
 }
 
-func (this *PostgresStorage) updateReturningId(query string, mapper func(entity interface{}) ([]interface{}, error), values ...interface{}) ([]int64, error) {
-	rows, err := this.updateReturningColumns(query, mapper, values...)
+func (this *PostgresStorage) updateReturningId(query string,
+	mapper func(entity interface{}) ([]interface{}, error),
+	failOnEmptyResult bool, values ...interface{}) ([]int64, error) {
+
+	rows, err := this.updateReturningColumns(query, mapper, failOnEmptyResult, values...)
 	if err != nil {
 		return []int64{}, err
 	}
@@ -167,19 +170,34 @@ func (this *PostgresStorage) updateReturningId(query string, mapper func(entity 
 	return result, nil
 }
 
-func (this *PostgresStorage) updateReturningColumns(query string, mapper func(entity interface{}) ([]interface{}, error), values ...interface{}) ([][]interface{}, error) {
+func (this *PostgresStorage) updateReturningColumns(query string,
+	mapper func(entity interface{}) ([]interface{}, error),
+	failOnEmptyResult bool, values ...interface{}) ([][]interface{}, error) {
+
 	tx, err := this.db.Begin()
 	if err != nil {
 		return [][]interface{}{}, err
 	}
+	defer func() {
+		if err != nil {
+			err = tx.Rollback()
+			log.Error("Can't rollback: ", err)
+			return
+		}
+		err = tx.Commit()
+		if err != nil {
+			log.Error("Can't commit: ", err)
+		}
+	}()
 
 	stmt, err := tx.Prepare(query)
 	if err != nil {
 		return [][]interface{}{}, err
 	}
+	defer deferCloser(stmt)
 
-	result := make([][]interface{}, len(values))
-	for idx, value := range values {
+	result := make([][]interface{}, 0, len(values))
+	for _, value := range values {
 		args, err := mapper(value)
 		if err != nil {
 			return [][]interface{}{}, err
@@ -188,32 +206,29 @@ func (this *PostgresStorage) updateReturningColumns(query string, mapper func(en
 		if err != nil {
 			return [][]interface{}{}, err
 		}
+		defer deferCloser(rows)
+
 		colTypes, err := rows.ColumnTypes()
 		if err != nil {
 			return [][]interface{}{}, err
 		}
 		if rows.Next() {
-			result[idx] = make([]interface{}, len(colTypes))
+			resultValue := make([]interface{}, len(colTypes))
 			for i, t := range colTypes {
-				result[idx][i] = reflect.New(t.ScanType()).Interface()
+				resultValue[i] = reflect.New(t.ScanType()).Interface()
 			}
-			rows.Scan(result[idx]...)
-		} else {
+			err = rows.Scan(resultValue...)
+			if err != nil {
+				return [][]interface{}{}, err
+			}
+			result = append(result, resultValue)
+		} else if failOnEmptyResult {
 			return [][]interface{}{}, fmt.Errorf("Value is not inserted: %v+\n %s", args, query)
 		}
-		err = rows.Close()
-		if err != nil {
-			return [][]interface{}{}, err
-		}
 	}
-
-	err = stmt.Close()
-	if err != nil {
-		return [][]interface{}{}, err
-	}
-	err = tx.Commit()
-	if err != nil {
-		return [][]interface{}{}, err
+	if failOnEmptyResult && len(result) != len(values) {
+		return [][]interface{}{}, fmt.Errorf("Some values are not inserted. Values len is %d and result len is %d: %v+\n %s",
+			len(values), len(result), result, query)
 	}
 	return result, nil
 }
@@ -223,4 +238,11 @@ func (this *PostgresStorage) performUpdates(query string, mapper func(entity int
 		txHolder := tx.(PgTxHolder)
 		return (&txHolder).performUpdates(query, mapper, values...)
 	})
+}
+
+func deferCloser(closer io.Closer) {
+	err := closer.Close()
+	if err != nil {
+		log.Error("Can't close: ", err)
+	}
 }

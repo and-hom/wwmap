@@ -30,7 +30,7 @@ func (this levelStorage) Insert(entry Level) error {
 			Int64: int64(_e.Level),
 		}
 		return []interface{}{_e.SensorId, time.Time(_e.Date), _e.HourOfDay, levelValue}, nil
-	}, entry)
+	}, true, entry)
 	return err
 }
 

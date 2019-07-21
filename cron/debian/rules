@@ -34,7 +34,10 @@ build-meteo:
 build-level:
 	cd vodinfo-eye && cd pattern && go-bindata -pkg pattern . && cd .. && go build
 
-build: pre-build build-notifier build-catalog-sync build-db-clean build-spot-sort build-meteo build-level
+build-river-tracks-bind:
+	cd river-tracks-bind && go build
+
+build: pre-build build-notifier build-catalog-sync build-db-clean build-spot-sort build-meteo build-level build-river-tracks-bind
 
 override_dh_auto_install:
 	install -d $$(pwd)/debian/wwmap-cron/usr/share/wwmap/backup/
@@ -47,5 +50,6 @@ override_dh_auto_install:
 	install -D -m 0755 spot-sort/spot-sort $$(pwd)/debian/wwmap-cron/usr/bin/wwmap-spot-sort
 	install -D -m 0755 meteo/meteo $$(pwd)/debian/wwmap-cron/usr/bin/wwmap-meteo
 	install -D -m 0755 vodinfo-eye/vodinfo-eye $$(pwd)/debian/wwmap-cron/usr/bin/wwmap-vodinfo-eye
+	install -D -m 0755 river-tracks-bind/river-tracks-bind $$(pwd)/debian/wwmap-cron/usr/bin/wwmap-river-tracks-bind
 
 	install -D -m 0755 debian/wwmap-logrotate.d $$(pwd)/debian/wwmap-cron/etc/logrotate.d/wwmap-cron

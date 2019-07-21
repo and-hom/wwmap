@@ -22,7 +22,7 @@ func (this *DashboardHandler) Init() {
 }
 
 func (this *DashboardHandler) RefSites(w http.ResponseWriter, req *http.Request) {
-	JsonResponse(w)
+	SetJsonResponseHeaders(w)
 
 	refs, err := this.RefererStorage.List()
 	if err != nil {

@@ -82,8 +82,11 @@ SELECT river.id, region_id, country_id, river.title, '', fake, NULL, river.alias
   FROM river LEFT OUTER JOIN region ON river.region_id=region.id
   WHERE river.title ilike $1||'%' LIMIT $2
 
---@update
+--@update-full
 UPDATE river SET region_id=$2, title=$3, aliases=$4, description=$5, props=$6 WHERE id=$1
+
+--@update
+UPDATE river SET region_id=$2, title=$3, aliases=$4, props=$5 WHERE id=$1
 
 --@insert
 INSERT INTO river(region_id, title, aliases, description,props) VALUES($1,$2,$3,$4,$5) RETURNING id

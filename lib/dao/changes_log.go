@@ -25,7 +25,7 @@ func (this changesLogStorage) Insert(entry ChangesLogEntry) error {
 		_e := entity.(ChangesLogEntry)
 		return []interface{}{_e.ObjectType, _e.ObjectId, string(_e.AuthProvider),
 			_e.ExtId, _e.Login, string(_e.Type), _e.Description, time.Time(_e.Time)}, nil
-	}, entry)
+	}, true, entry)
 	return err
 }
 

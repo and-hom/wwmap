@@ -24,6 +24,7 @@ func NewRiverPostgresDao(postgresStorage PostgresStorage) RiverDao {
 		listByRegionFullQuery:   queries.SqlQuery("river", "by-region-full"),
 		listByFirstLettersQuery: queries.SqlQuery("river", "by-first-letters"),
 		insertQuery:             queries.SqlQuery("river", "insert"),
+		updateFullQuery:         queries.SqlQuery("river", "update-full"),
 		updateQuery:             queries.SqlQuery("river", "update"),
 		deleteQuery:             queries.SqlQuery("river", "delete"),
 		setVisibleQuery:         queries.SqlQuery("river", "set-visible"),
@@ -45,6 +46,7 @@ type riverStorage struct {
 	listByFirstLettersQuery string
 	insertQuery             string
 	updateQuery             string
+	updateFullQuery         string
 	deleteQuery             string
 	setVisibleQuery         string
 	findByTitlePartQuery    string
@@ -82,11 +84,7 @@ func (this riverStorage) ListByCountry(countryId int64) ([]RiverTitle, error) {
 }
 
 func (this riverStorage) ListByCountryFull(countryId int64) ([]River, error) {
-	found, err := this.doFindList(this.listByCountryFullQuery, riverMapperFull, countryId)
-	if err != nil {
-		return []River{}, err
-	}
-	return found.([]River), err
+	return this.listRiverFull(this.listByCountryFullQuery, countryId)
 }
 
 func (this riverStorage) ListByRegion(regionId int64) ([]RiverTitle, error) {
@@ -94,11 +92,7 @@ func (this riverStorage) ListByRegion(regionId int64) ([]RiverTitle, error) {
 }
 
 func (this riverStorage) ListByRegionFull(regionId int64) ([]River, error) {
-	found, err := this.doFindList(this.listByRegionFullQuery, riverMapperFull, regionId)
-	if err != nil {
-		return []River{}, err
-	}
-	return found.([]River), err
+	return this.listRiverFull(this.listByRegionFullQuery, regionId)
 }
 
 func (this riverStorage) ListByFirstLetters(query string, limit int) ([]RiverTitle, error) {
@@ -117,12 +111,12 @@ func (this riverStorage) Insert(river River) (int64, error) {
 	return this.insertReturningId(this.insertQuery, river.Region.Id, river.Title, string(aliasesB), river.Description, string(propsB))
 }
 
-func (this riverStorage) Save(rivers ...River) error {
+func (this riverStorage) SaveFull(rivers ...River) error {
 	vars := make([]interface{}, len(rivers))
 	for i, p := range rivers {
 		vars[i] = p
 	}
-	return this.performUpdates(this.updateQuery, func(entity interface{}) ([]interface{}, error) {
+	return this.performUpdates(this.updateFullQuery, func(entity interface{}) ([]interface{}, error) {
 		_river := entity.(River)
 		aliasesB, err := json.Marshal(_river.Aliases)
 		if err != nil {
@@ -134,6 +128,33 @@ func (this riverStorage) Save(rivers ...River) error {
 		}
 		return []interface{}{_river.Id, _river.Region.Id, _river.Title, string(aliasesB), _river.Description, string(propsB)}, nil
 	}, vars...)
+}
+
+func (this riverStorage) Save(rivers ...RiverTitle) error {
+	vars := make([]interface{}, len(rivers))
+	for i, p := range rivers {
+		vars[i] = p
+	}
+	return this.performUpdates(this.updateQuery, func(entity interface{}) ([]interface{}, error) {
+		_river := entity.(RiverTitle)
+		aliasesB, err := json.Marshal(_river.Aliases)
+		if err != nil {
+			return []interface{}{}, err
+		}
+		propsB, err := json.Marshal(_river.Props)
+		if err != nil {
+			return []interface{}{}, err
+		}
+		return []interface{}{_river.Id, _river.Region.Id, _river.Title, string(aliasesB), string(propsB)}, nil
+	}, vars...)
+}
+
+func (this riverStorage) listRiverFull(query string, queryParams ...interface{}) ([]River, error) {
+	found, err := this.doFindList(query, riverMapperFull, queryParams)
+	if err != nil {
+		return []River{}, err
+	}
+	return found.([]River), err
 }
 
 func (this riverStorage) listRiverTitles(query string, queryParams ...interface{}) ([]RiverTitle, error) {

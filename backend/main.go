@@ -38,6 +38,7 @@ func main() {
 	changesLogDao := NewChangesLogPostgresDao(storage)
 	meteoPointDao := NewMeteoPointPostgresDao(storage)
 	waterWayDao := NewWaterWayPostgresDao(storage)
+	waterWayRefDao := NewWaterWayRefPostgresDao(storage)
 	levelDao := NewLevelPostgresDao(storage)
 
 	clusterMaker := clustering.NewClusterMaker(configuration.ClusterizationParams)
@@ -72,6 +73,7 @@ func main() {
 		ChangesLogDao:   changesLogDao,
 		MeteoPointDao:   meteoPointDao,
 		WaterWayDao:     waterWayDao,
+		WaterWayRefDao:  waterWayRefDao,
 		AuthProviders: map[AuthProvider]passport.Passport{
 			YANDEX: passport.Yandex(15 * time.Minute),
 			GOOGLE: passport.Google(15 * time.Minute),

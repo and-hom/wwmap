@@ -33,7 +33,7 @@ func (this meteoPointStorage) Insert(point MeteoPoint) (MeteoPoint, error) {
 			return nil, err
 		}
 		return []interface{}{_e.Title, string(pointBytes), _e.CollectData}, nil
-	}, point)
+	}, true, point)
 	if err != nil {
 		return MeteoPoint{}, err
 	}

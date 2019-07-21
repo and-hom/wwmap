@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@turf/turf": "^5.1.6",
     "css-loader": "^3.1.0",
     "jqtpl-dsx": "^1.0.4",
     "jquery": "^3.1.1",

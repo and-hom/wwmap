@@ -41,6 +41,13 @@ func (this RiverTitle) GetProperties() map[string]interface{} {
 	return this.Props
 }
 
+func (this RiverTitle) TitleVariants() []string {
+	titleVariants := make([]string, len(this.Aliases)+1)
+	copy(titleVariants, this.Aliases)
+	titleVariants[len(this.Aliases)] = this.Title
+	return titleVariants
+}
+
 type River struct {
 	RiverTitle
 	Description  string       `json:"description"`
@@ -78,14 +85,34 @@ func (this RiverWithSpotsExt) GetProperties() map[string]interface{} {
 	return this.Props
 }
 
+type WaterWaySimple struct {
+	Id   int64   `json:"id"`
+	Path []Point `json:"path"`
+}
+
+type WaterWay4Router struct {
+	WaterWaySimple
+	Refs map[int64][]Point `json:"refs"`
+}
+
 type WaterWay struct {
-	Id      int64   `json:"id"`
-	OsmId   int64   `json:"osm_id"`
-	Title   string  `json:"title"`
-	Type    string  `json:"type"`
-	Path    []Point `json:"path"`
-	RiverId int64   `json:"river_id"`
-	Comment string  `json:"comment"`
+	WaterWaySimple
+	OsmId   int64  `json:"osm_id"`
+	Title   string `json:"title"`
+	Type    string `json:"type"`
+	RiverId int64  `json:"river_id"`
+	Comment string `json:"comment"`
+}
+
+type WaterWayRef struct {
+	RefId      int64 `json:"id"`
+	CrossPoint Point `json:"cross_point"`
+}
+
+type WaterWayOsmRef struct {
+	Id         int64
+	RefId      int64
+	CrossPoint Point
 }
 
 const EXPORT_PROP_PREFIX = "export_"
@@ -310,12 +337,13 @@ func (this AuthProvider) HumanName() string {
 }
 
 type User struct {
-	Id           int64        `json:"id"`
-	ExtId        string       `json:"ext_id"`
-	AuthProvider AuthProvider `json:"auth_provider"`
-	Role         Role         `json:"role"`
-	Info         UserInfo     `json:"info"`
-	SessionId    string       `json:"session_id"`
+	Id                  int64        `json:"id"`
+	ExtId               string       `json:"ext_id"`
+	AuthProvider        AuthProvider `json:"auth_provider"`
+	Role                Role         `json:"role"`
+	Info                UserInfo     `json:"info"`
+	SessionId           string       `json:"session_id"`
+	ExperimentalFeaures bool         `json:"experimental_features"`
 }
 
 type Country struct {

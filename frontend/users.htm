@@ -53,7 +53,7 @@
                             <td></td>
                         </tr>
                         </thead>
-                        <tr v-for="user in users">
+                        <tr v-for="user in users" :class="rowClass(user)">
                             <td>
                                 {{user.id}}
                             </td>
@@ -72,6 +72,7 @@
                             <td style="white-space: nowrap;">
                                 <button class="btn btn-primary" data-toggle="modal" data-target="#ask-role"
                                         :data-user-id="user.id" :data-current-role="user.role" :data-label="roleChangeText(user)">Сменить роль</button>
+                                <button class="btn btn-primary" style="width: 150px;" v-on:click="toggleExperimental(user)">{{experimentalFeatureSwitchText(user)}}</button>
                                 <log-dropdown object-type="USER" :object-id="user.id"/>
                             </td>
                         </tr>
@@ -111,8 +112,24 @@
             setRole: function(userId, role) {
                 this.users = doPostJsonSync(backendApiBase + '/user/' + userId + '/role', role, true)
             },
+            toggleExperimental: function(user) {
+                console.log(user)
+                this.users = doPostJsonSync(backendApiBase + '/user/' + user.id + '/experimental', !user.experimental_features, true)
+            },
             roleChangeText:function(user) {
                 return 'Сменить роль для ' + user.info.login + '. Текущая роль - ' + user.role
+            },
+            experimentalFeatureSwitchText:function(user) {
+                return user.experimental_features
+                    ? "Выкл эксперимент"
+                    : "Вкл эксперимент"
+            },
+            rowClass: function (user) {
+                let cssClass = "wwmap-user-row";
+                if (user.experimental_features) {
+                    cssClass += " wwmap-user-row-experimental"
+                }
+                return cssClass
             },
         }
     })
