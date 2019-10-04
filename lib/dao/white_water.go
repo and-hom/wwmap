@@ -37,6 +37,7 @@ func NewWhiteWaterPostgresDao(postgresStorage PostgresStorage) WhiteWaterDao {
 		distanceFromBeginningQuery: queries.SqlQuery("white-water", "distance-from-beginning"),
 		updateOrderIdxQuery:        queries.SqlQuery("white-water", "update-order-idx"),
 		findByTitlePartQuery:       queries.SqlQuery("white-water", "by-title-part"),
+		parentIds:                  queries.SqlQuery("white-water", "parent-ids"),
 	}
 }
 
@@ -61,6 +62,7 @@ type whiteWaterStorage struct {
 	autoOrderingRiverIdsQuery  string
 	distanceFromBeginningQuery string
 	updateOrderIdxQuery        string
+	parentIds                  string
 }
 
 func (this whiteWaterStorage) ListByBbox(bbox geo.Bbox) ([]WhiteWaterPointWithRiverTitle, error) {
@@ -447,9 +449,6 @@ func (this whiteWaterStorage) DistanceFromBeginning(riverId int64, path []geo.Po
 		wwpId := int64(0)
 		dist := 0
 		err := rows.Scan(&wwpId, &dist)
-		if err != nil {
-			result[wwpId] = dist
-		}
 		return idDistPair{wwpId, dist}, err
 	}, riverId, string(pathB), ORDERING_MIN_DISTANCE_METERS)
 	if err != nil {
@@ -468,4 +467,23 @@ func (this whiteWaterStorage) UpdateOrderIdx(idx map[int64]int) error {
 		params = append(params, []interface{}{id, val, now})
 	}
 	return this.performUpdates(this.updateOrderIdxQuery, ArrayMapper, params...)
+}
+
+func (this whiteWaterStorage) GetParentIds() (map[int64]SpotParentIds, error) {
+	result := make(map[int64]SpotParentIds)
+
+	_, err := this.doFindList(this.parentIds, func(rows *sql.Rows) (int, error) {
+		spotId := int64(0)
+		parentIds := SpotParentIds{}
+		err := rows.Scan(&spotId, &parentIds.RiverId, &parentIds.RegionId, &parentIds.CountryId, &parentIds.SpotTitle, &parentIds.RiverTitle)
+		if err == nil {
+			result[spotId] = parentIds
+		}
+		return 0, err
+	})
+
+	if err != nil {
+		return result, err
+	}
+	return result, nil
 }

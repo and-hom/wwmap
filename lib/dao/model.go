@@ -81,8 +81,25 @@ type RiverWithSpotsExt struct {
 func (this RiverWithSpotsExt) GetId() int64 {
 	return this.Id
 }
+
 func (this RiverWithSpotsExt) GetProperties() map[string]interface{} {
 	return this.Props
+}
+
+type RiverParentIds struct {
+	CountryId  int64  `json:"country_id"`
+	RegionId   int64  `json:"region_id"`
+	RiverTitle string `json:"river_title"`
+}
+
+type SpotParentIds struct {
+	RiverParentIds
+	RiverId   int64  `json:"river_id"`
+	SpotTitle string `json:"spot_title"`
+}
+
+type ImageParentIds struct {
+	SpotId int64 `json:"spot_id"`
 }
 
 type WaterWaySimple struct {

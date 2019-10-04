@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Панель показателей</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon"/>
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon"/>
+
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link type="text/css" rel="stylesheet" href="css/bootstrap-vue.css"/>
+
+    <script type="text/javascript" src="js-editor/polyfill.min.js"></script>
+    <script type="text/javascript" src="js-editor/tether.min.js"></script>
+    <script type="text/javascript" src="js-editor/jquery-3.2.1.slim.min.js"></script>
+    <script type="text/javascript" src="js-editor/bootstrap.min.js"></script>
+
+    <script type="text/javascript" src="js-editor/api.js"></script>
+    <script type="text/javascript" src="js-editor/auth.js"></script>
+    <script type="text/javascript" src="js-editor/vue.js"></script>
+    <script type="text/javascript" src="js-editor/http-vue-loader.js"></script>
+    <script type="text/javascript" src="js-editor/showdown.min.js"></script>
+</head>
+<body>
+
+<div id="vue-app">
+    <page link="log.htm">
+        <div style="margin-left:10px; margin-top: 10px;">
+            <h2>История изменений</h2>
+            <table class="table">
+                <thead>
+                <tr>
+                    <td>Id</td>
+                    <td>Время</td>
+                    <td>Пользователь</td>
+                    <td>Действие</td>
+                    <td>Тип/Id объекта</td>
+                    <td>Описание</td>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="entry in logs">
+                    <td>{{entry.id}}</td>
+                    <td>{{entry.time}}</td>
+
+                    <td v-if="entry.auth_provider=='yandex'">
+                        {{entry.login}}@yandex.ru
+                    </td>
+                    <td v-else-if="entry.auth_provider=='google'">
+                        Google: {{entry.login}}
+                    </td>
+                    <td v-else-if="entry.auth_provider=='vk'">
+                        <a :href="vkLink(entry.ext_id)">vk/{{entry.login}}</a>
+                    </td>
+                    <td v-else>
+                        {{entry.auth_provider}}/{{entry.ext_id}}
+                    </td>
+
+                    <td v-if="entry.type=='CREATE'">
+                        Создан
+                    </td>
+                    <td v-else-if="entry.type=='MODIFY'">
+                        Изменён
+                    </td>
+                    <td v-else-if="entry.type=='DELETE'">
+                        Удалён
+                    </td>
+                    <td v-else>
+                        {{entry.type}}
+                    </td>
+
+                    <td v-if="entry.object_type=='RIVER'">
+                        <a :href="getRiverUrl(entry.object_id)">{{getRiverTitle(entry.object_id)}}</a>
+                    </td>
+                    <td v-else-if="entry.object_type=='SPOT'">
+                        <a :href="getSpotUrl(entry.object_id)">{{getSpotTitle(entry.object_id)}}</a>
+                    </td>
+                    <td v-else-if="entry.object_type=='IMAGE'">
+                        <a :href="getImageUrl(entry.object_id)">{{getImageTitle(entry.object_id)}}</a>
+                    </td>
+                    <td v-else-if="entry.object_type=='USER'">
+                        Пользователь {{entry.object_id}}
+                    </td>
+                    <td v-else>
+                        {{entry.object_type}}/{{entry.object_id}}
+                    </td>
+                    <td>{{entry.description}}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </page>
+</div>
+
+<script type="text/javascript">
+    Vue.component('auth', httpVueLoader('components/auth.vue'));
+    Vue.component('page', httpVueLoader('components/page.vue'));
+
+    var app = new Vue({
+        el: '#vue-app',
+        data: {
+            logs: doGetJsonSync(backendApiBase + "/log", true),
+            riverById: doGetJsonSync(backendApiBase + "/river_base_ids", true),
+            spotById: doGetJsonSync(backendApiBase + "/spot_base_ids", true),
+            imgById: doGetJsonSync(backendApiBase + "/image_base_ids", true),
+
+            vkLink: function (vkId) {
+                return "https://vk.com/id" + vkId;
+            },
+
+            getRiverUrl: function (id) {
+                let riverData = this.riverById[id];
+                if (!riverData) {
+                    return "#"
+                }
+                return "https://wwmap.ru/editor.htm#" + riverData.country_id + "," + riverData.region_id + "," + id;
+            },
+
+            getRiverTitle: function (id) {
+                let riverData = this.riverById[id];
+                return !riverData ? "#" : riverData.river_title;
+            },
+
+            getSpotUrl: function (id) {
+                let spotData = this.spotById[id];
+                if (!spotData) {
+                    return "#"
+                }
+                return "https://wwmap.ru/editor.htm#" + spotData.country_id + "," + spotData.region_id + "," + spotData.river_id + "," + id;
+            },
+
+            getSpotTitle: function (id) {
+                let spotData = this.spotById[id];
+                return !spotData ? "#" : spotData.river_title + " / " + spotData.spot_title;
+            },
+
+            getImageUrl: function (id) {
+                let imgData = this.imgById[id];
+                if (!imgData || !imgData.spot_id) {
+                    return "#"
+                }
+                return this.getSpotUrl(imgData.spot_id);
+            },
+
+            getImageTitle: function (id) {
+                let imgData = this.imgById[id];
+                return !imgData || !imgData.spot_id ? "Изображение" : "Изображение для порога " + this.getSpotTitle(imgData.spot_id);
+            },
+        }
+    })
+
+</script>
+
+</body>
+</html>

@@ -57,6 +57,13 @@ func (this *GeoHierarchyHandler) Init() {
 		Post:   this.ForRoles(this.SaveSpot, dao.ADMIN, dao.EDITOR),
 		Put:    this.ForRoles(this.SaveSpot, dao.ADMIN, dao.EDITOR),
 		Delete: this.ForRoles(this.RemoveSpot, dao.ADMIN, dao.EDITOR)})
+
+	this.Register("/river_base_ids",
+		HandlerFunctions{Get: this.ForRoles(this.RiverParentIds, dao.ADMIN)})
+	this.Register("/spot_base_ids",
+		HandlerFunctions{Get: this.ForRoles(this.SpotParentIds, dao.ADMIN)})
+	this.Register("/image_base_ids",
+		HandlerFunctions{Get: this.ForRoles(this.ImageParentIds, dao.ADMIN)})
 }
 
 type RiverDto struct {
@@ -597,4 +604,31 @@ func (this *GeoHierarchyHandler) getRiverPassport(w http.ResponseWriter, req *ht
 	defer r.Close()
 	io.Copy(w, r)
 
+}
+
+func (this *GeoHierarchyHandler) RiverParentIds(w http.ResponseWriter, req *http.Request) {
+	ids, err := this.RiverDao.GetParentIds()
+	if err != nil {
+		OnError500(w, err, "Can not get rivers info")
+		return
+	}
+	this.JsonAnswer(w, ids)
+}
+
+func (this *GeoHierarchyHandler) SpotParentIds(w http.ResponseWriter, req *http.Request) {
+	ids, err := this.WhiteWaterDao.GetParentIds()
+	if err != nil {
+		OnError500(w, err, "Can not get rivers info")
+		return
+	}
+	this.JsonAnswer(w, ids)
+}
+
+func (this *GeoHierarchyHandler) ImageParentIds(w http.ResponseWriter, req *http.Request) {
+	ids, err := this.ImgDao.GetParentIds()
+	if err != nil {
+		OnError500(w, err, "Can not get rivers info")
+		return
+	}
+	this.JsonAnswer(w, ids)
 }

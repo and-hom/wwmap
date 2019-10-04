@@ -25,6 +25,7 @@ type imgStorage struct {
 	dropMainForSpotQuery string
 	deleteForSpot        string
 	deleteForRiver       string
+	parentIds            string
 }
 
 func NewImgPostgresDao(postgresStorage PostgresStorage) ImgDao {
@@ -44,6 +45,7 @@ func NewImgPostgresDao(postgresStorage PostgresStorage) ImgDao {
 		dropMainForSpotQuery: queries.SqlQuery("img", "drop-main-for-spot"),
 		deleteForSpot:        queries.SqlQuery("img", "delete-by-spot"),
 		deleteForRiver:       queries.SqlQuery("img", "delete-by-river"),
+		parentIds:            queries.SqlQuery("img", "parent-ids"),
 	}
 }
 
@@ -182,4 +184,24 @@ func (this imgStorage) RemoveBySpot(spotId int64, tx interface{}) error {
 
 func (this imgStorage) RemoveByRiver(riverId int64, tx interface{}) error {
 	return this.performUpdatesWithinTxOptionally(tx, this.deleteForRiver, IdMapper, riverId)
+}
+
+func (this imgStorage) GetParentIds() (map[int64]ImageParentIds, error) {
+	result := make(map[int64]ImageParentIds)
+
+	_, err := this.doFindList(this.parentIds, func(rows *sql.Rows) (int, error) {
+		imgId := int64(0)
+		parentIds := ImageParentIds{}
+		err := rows.Scan(&imgId, &parentIds.SpotId)
+
+		if err == nil {
+			result[imgId] = parentIds
+		}
+		return 0, err
+	})
+
+	if err != nil {
+		return result, err
+	}
+	return result, nil
 }

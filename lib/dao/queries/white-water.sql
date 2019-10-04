@@ -161,3 +161,13 @@ SELECT wwpts.id, ST_Length(ST_LineSubstring(
 
 --@update-order-idx
 UPDATE ___table___ SET order_index=$2,last_auto_ordering=$3  WHERE id=$1
+
+--@parent-ids
+SELECT ___table___.id AS spot_id, river.id AS river_id,
+       CASE WHEN region.fake THEN 0 ELSE region.id END AS region_id,
+       region.country_id AS country_id,
+       ___table___.title AS spot_title,
+       river.title AS river_title
+FROM ___table___
+         INNER JOIN river ON ___table___.river_id = river.id
+         INNER JOIN region ON river.region_id = region.id

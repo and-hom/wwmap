@@ -27,6 +27,7 @@ type RiverDao interface {
 	Save(river ...RiverTitle) error
 	SetVisible(id int64, visible bool) error
 	FindByTitlePart(tPart string, limit, offset int) ([]RiverTitle, error)
+	GetParentIds() (map[int64]RiverParentIds, error)
 }
 
 type WhiteWaterDao interface {
@@ -49,6 +50,7 @@ type WhiteWaterDao interface {
 	DistanceFromBeginning(riverId int64, path []Point) (map[int64]int, error)
 	UpdateOrderIdx(idx map[int64]int) error
 	FindByTitlePart(tPart string, limit, offset int) ([]WhiteWaterPointWithRiverTitle, error)
+	GetParentIds() (map[int64]SpotParentIds, error)
 }
 
 type NotificationDao interface {
@@ -102,6 +104,7 @@ type ImgDao interface {
 	GetMainForSpot(spotId int64) (Img, bool, error)
 	RemoveBySpot(spotId int64, tx interface{}) error
 	RemoveByRiver(spotId int64, tx interface{}) error
+	GetParentIds() (map[int64]ImageParentIds, error)
 }
 
 type TileDao interface {
@@ -152,6 +155,7 @@ type RefererDao interface {
 type ChangesLogDao interface {
 	Insert(entry ChangesLogEntry) error
 	List(objectType string, objectId int64, limit int) ([]ChangesLogEntry, error)
+	ListAll(limit int) ([]ChangesLogEntry, error)
 }
 
 type MeteoDao interface {
