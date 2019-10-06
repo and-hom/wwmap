@@ -61,7 +61,8 @@ func (this *UserInfoHandler) SessionStart(w http.ResponseWriter, r *http.Request
 			AuthProvider: authProvider,
 			Info:         dao.UserInfo{Login: info.Login},
 		}))
-		this.LogUserEvent(rWithUser, USER_LOG_ENTRY_TYPE, id, dao.ENTRY_TYPE_CREATE, info.Login)
+		this.LogUserEvent(rWithUser, USER_LOG_ENTRY_TYPE, id, dao.ENTRY_TYPE_CREATE,
+			fmt.Sprintf("%s (%s %s)", info.Login, info.FirstName, info.LastName))
 	}
 
 	infoDto := UserInfoDto{
@@ -138,15 +139,25 @@ func (this *UserInfoHandler) SetRole(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	user := dao.User{}
 	for i := 0; i < len(users); i++ {
 		if users[i].Id == userId && users[i].AuthProvider == dao.YANDEX {
 			this.sendChangeRoleMessage(users[i].AuthProvider, users[i].Id, users[i].Info, oldRole, newRole)
+		}
+		if users[i].Id == userId {
+			user = users[i]
 		}
 	}
 
 	this.JsonAnswer(w, users)
 
-	this.LogUserEvent(r, USER_LOG_ENTRY_TYPE, userId, dao.ENTRY_TYPE_MODIFY, fmt.Sprintf("%s => %s", oldRole, newRole))
+	loginPrefix := ""
+	if user.AuthProvider == dao.VK {
+		loginPrefix = string(user.AuthProvider) + "/"
+	}
+
+	this.LogUserEvent(r, USER_LOG_ENTRY_TYPE, userId, dao.ENTRY_TYPE_MODIFY, fmt.Sprintf("%s%s (%s %s) %s => %s",
+		loginPrefix, user.Info.Login, user.Info.FirstName, user.Info.LastName, oldRole, newRole))
 }
 
 func (this *UserInfoHandler) TestAuth(w http.ResponseWriter, r *http.Request) {
