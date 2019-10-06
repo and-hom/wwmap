@@ -171,3 +171,4 @@ SELECT ___table___.id AS spot_id, river.id AS river_id,
 FROM ___table___
          INNER JOIN river ON ___table___.river_id = river.id
          INNER JOIN region ON river.region_id = region.id
+WHERE ___table___.id = ANY($1)

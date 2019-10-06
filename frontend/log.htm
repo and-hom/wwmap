@@ -30,7 +30,6 @@
             <table class="table">
                 <thead>
                 <tr>
-                    <td>Id</td>
                     <td>Время</td>
                     <td>Пользователь</td>
                     <td>Действие</td>
@@ -40,7 +39,6 @@
                 </thead>
                 <tbody>
                 <tr v-for="entry in logs">
-                    <td>{{entry.id}}</td>
                     <td>{{entry.time}}</td>
 
                     <td v-if="entry.auth_provider=='yandex'">
@@ -69,16 +67,16 @@
                         {{entry.type}}
                     </td>
 
-                    <td v-if="entry.object_type=='RIVER'">
+                    <td v-if="isRiver(entry)">
                         <a :href="getRiverUrl(entry.object_id)">{{getRiverTitle(entry.object_id)}}</a>
                     </td>
-                    <td v-else-if="entry.object_type=='SPOT'">
+                    <td v-else-if="isSpot(entry)">
                         <a :href="getSpotUrl(entry.object_id)">{{getSpotTitle(entry.object_id)}}</a>
                     </td>
-                    <td v-else-if="entry.object_type=='IMAGE'">
+                    <td v-else-if="isImage(entry)">
                         <a :href="getImageUrl(entry.object_id)">{{getImageTitle(entry.object_id)}}</a>
                     </td>
-                    <td v-else-if="entry.object_type=='USER'">
+                    <td v-else-if="isUser(entry)">
                         Пользователь {{entry.object_id}}
                     </td>
                     <td v-else>
@@ -98,11 +96,24 @@
 
     var app = new Vue({
         el: '#vue-app',
+        created: function () {
+            this.logs = doGetJsonSync(backendApiBase + "/log", true);
+
+            this.riverIds = this.logs.filter(this.isRiver).map(this.getObjId).filter(this.distinct);
+            this.riverById = doPostJsonSync(backendApiBase + "/river_base_ids", this.riverIds, true);
+
+            this.imageIds = this.logs.filter(this.isImage).map(this.getObjId).filter(this.distinct);
+            this.imgById = doPostJsonSync(backendApiBase + "/image_base_ids", this.imageIds, true);
+
+            this.spotIds = this.logs
+                .filter(this.isSpot)
+                .map(this.getObjId)
+                .concat(Object.values(this.imageIds))
+                .filter(this.distinct);
+            this.spotById = doPostJsonSync(backendApiBase + "/spot_base_ids", this.spotIds, true);
+        },
         data: {
-            logs: doGetJsonSync(backendApiBase + "/log", true),
-            riverById: doGetJsonSync(backendApiBase + "/river_base_ids", true),
-            spotById: doGetJsonSync(backendApiBase + "/spot_base_ids", true),
-            imgById: doGetJsonSync(backendApiBase + "/image_base_ids", true),
+
 
             vkLink: function (vkId) {
                 return "https://vk.com/id" + vkId;
@@ -144,8 +155,28 @@
 
             getImageTitle: function (id) {
                 let imgData = this.imgById[id];
-                return !imgData || !imgData.spot_id ? "Изображение" : "Изображение для порога " + this.getSpotTitle(imgData.spot_id);
+                return "Изображение " + id
+                    + (!imgData || !imgData.spot_id ? "" :  " для порога " + this.getSpotTitle(imgData.spot_id));
             },
+
+            distinct: function (value, index, self) {
+                return self.indexOf(value) === index;
+            },
+            getObjId: function (logEntry) {
+                return logEntry.object_id
+            },
+            isRiver: function (logEntry) {
+                return logEntry.object_type == 'RIVER'
+            },
+            isSpot: function (logEntry) {
+                return logEntry.object_type == 'SPOT'
+            },
+            isImage: function (logEntry) {
+                return logEntry.object_type == 'IMAGE'
+            },
+            isUser: function (logEntry) {
+                return logEntry.object_type == 'USER'
+            }
         }
     })
 

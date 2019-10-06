@@ -469,7 +469,7 @@ func (this whiteWaterStorage) UpdateOrderIdx(idx map[int64]int) error {
 	return this.performUpdates(this.updateOrderIdxQuery, ArrayMapper, params...)
 }
 
-func (this whiteWaterStorage) GetParentIds() (map[int64]SpotParentIds, error) {
+func (this whiteWaterStorage) GetParentIds(spotIds []int64) (map[int64]SpotParentIds, error) {
 	result := make(map[int64]SpotParentIds)
 
 	_, err := this.doFindList(this.parentIds, func(rows *sql.Rows) (int, error) {
@@ -480,7 +480,7 @@ func (this whiteWaterStorage) GetParentIds() (map[int64]SpotParentIds, error) {
 			result[spotId] = parentIds
 		}
 		return 0, err
-	})
+	}, pq.Array(spotIds))
 
 	if err != nil {
 		return result, err

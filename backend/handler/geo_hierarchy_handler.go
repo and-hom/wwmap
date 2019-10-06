@@ -59,11 +59,11 @@ func (this *GeoHierarchyHandler) Init() {
 		Delete: this.ForRoles(this.RemoveSpot, dao.ADMIN, dao.EDITOR)})
 
 	this.Register("/river_base_ids",
-		HandlerFunctions{Get: this.ForRoles(this.RiverParentIds, dao.ADMIN)})
+		HandlerFunctions{Post: this.ForRoles(this.RiverParentIds, dao.ADMIN)})
 	this.Register("/spot_base_ids",
-		HandlerFunctions{Get: this.ForRoles(this.SpotParentIds, dao.ADMIN)})
+		HandlerFunctions{Post: this.ForRoles(this.SpotParentIds, dao.ADMIN)})
 	this.Register("/image_base_ids",
-		HandlerFunctions{Get: this.ForRoles(this.ImageParentIds, dao.ADMIN)})
+		HandlerFunctions{Post: this.ForRoles(this.ImageParentIds, dao.ADMIN)})
 }
 
 type RiverDto struct {
@@ -607,7 +607,14 @@ func (this *GeoHierarchyHandler) getRiverPassport(w http.ResponseWriter, req *ht
 }
 
 func (this *GeoHierarchyHandler) RiverParentIds(w http.ResponseWriter, req *http.Request) {
-	ids, err := this.RiverDao.GetParentIds()
+	riverIds := []int64{}
+	body, err := decodeJsonBody(req, &riverIds)
+	if err != nil {
+		OnError500(w, err, "Can not parse json from request body: "+body)
+		return
+	}
+
+	ids, err := this.RiverDao.GetParentIds(riverIds)
 	if err != nil {
 		OnError500(w, err, "Can not get rivers info")
 		return
@@ -616,7 +623,14 @@ func (this *GeoHierarchyHandler) RiverParentIds(w http.ResponseWriter, req *http
 }
 
 func (this *GeoHierarchyHandler) SpotParentIds(w http.ResponseWriter, req *http.Request) {
-	ids, err := this.WhiteWaterDao.GetParentIds()
+	spotIds := []int64{}
+	body, err := decodeJsonBody(req, &spotIds)
+	if err != nil {
+		OnError500(w, err, "Can not parse json from request body: "+body)
+		return
+	}
+
+	ids, err := this.WhiteWaterDao.GetParentIds(spotIds)
 	if err != nil {
 		OnError500(w, err, "Can not get rivers info")
 		return
@@ -625,7 +639,14 @@ func (this *GeoHierarchyHandler) SpotParentIds(w http.ResponseWriter, req *http.
 }
 
 func (this *GeoHierarchyHandler) ImageParentIds(w http.ResponseWriter, req *http.Request) {
-	ids, err := this.ImgDao.GetParentIds()
+	imgIds := []int64{}
+	body, err := decodeJsonBody(req, &imgIds)
+	if err != nil {
+		OnError500(w, err, "Can not parse json from request body: "+body)
+		return
+	}
+
+	ids, err := this.ImgDao.GetParentIds(imgIds)
 	if err != nil {
 		OnError500(w, err, "Can not get rivers info")
 		return

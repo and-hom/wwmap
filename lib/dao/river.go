@@ -281,7 +281,7 @@ func riverMapperFull(rows *sql.Rows) (River, error) {
 	return river, err
 }
 
-func (this riverStorage) GetParentIds() (map[int64]RiverParentIds, error) {
+func (this riverStorage) GetParentIds(riverIds []int64) (map[int64]RiverParentIds, error) {
 	result := make(map[int64]RiverParentIds)
 
 	_, err := this.doFindList(this.parentIds, func(rows *sql.Rows) (int, error) {
@@ -293,7 +293,7 @@ func (this riverStorage) GetParentIds() (map[int64]RiverParentIds, error) {
 			result[riverId] = parentIds
 		}
 		return 0, err
-	})
+	}, pq.Array(riverIds))
 
 	if err != nil {
 		return result, err

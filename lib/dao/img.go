@@ -5,6 +5,7 @@ import (
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/lib/dao/queries"
+	"github.com/lib/pq"
 	"github.com/pkg/errors"
 	"time"
 )
@@ -186,7 +187,7 @@ func (this imgStorage) RemoveByRiver(riverId int64, tx interface{}) error {
 	return this.performUpdatesWithinTxOptionally(tx, this.deleteForRiver, IdMapper, riverId)
 }
 
-func (this imgStorage) GetParentIds() (map[int64]ImageParentIds, error) {
+func (this imgStorage) GetParentIds(imgIds []int64) (map[int64]ImageParentIds, error) {
 	result := make(map[int64]ImageParentIds)
 
 	_, err := this.doFindList(this.parentIds, func(rows *sql.Rows) (int, error) {
@@ -198,7 +199,7 @@ func (this imgStorage) GetParentIds() (map[int64]ImageParentIds, error) {
 			result[imgId] = parentIds
 		}
 		return 0, err
-	})
+	}, pq.Array(imgIds))
 
 	if err != nil {
 		return result, err

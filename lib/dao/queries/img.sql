@@ -56,4 +56,4 @@ UPDATE image SET
 UPDATE image SET main_image=FALSE WHERE white_water_rapid_id=$1
 
 --@parent-ids
-SELECT id AS image_id, white_water_rapid_id AS spot_id FROM image
+SELECT id AS image_id, white_water_rapid_id AS spot_id FROM image WHERE image.id = ANY($1)
