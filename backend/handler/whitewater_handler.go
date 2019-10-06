@@ -29,6 +29,7 @@ func (this *WhiteWaterHandler) Init() {
 
 func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req *http.Request) {
 	this.collectReferer(req)
+	w.Header().Set("Content-Type", "application/javascript")
 
 	callback, bbox, zoom, err := this.tileParamsZ(w, req)
 	if err != nil {
