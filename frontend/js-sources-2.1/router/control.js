@@ -1,3 +1,5 @@
+import fileDownload from "js-file-download"
+
 export function createMeasurementToolControl(measurementTool) {
     let MeasurementControl = function (options) {
         MeasurementControl.superclass.constructor.call(this, options);
@@ -53,7 +55,11 @@ export function createMeasurementToolControl(measurementTool) {
             });
 
             measureDownloadBtn.bind('click', function (e) {
-                alert('Not implemented')
+                if(measurementTool.multiPath.segmentCount()>0) {
+                    fileDownload(measurementTool.multiPath.createGpx(), "track.gpx", "application/gpx+xml");
+                } else {
+                    alert("Добавьте линию")
+                }
             });
 
             measureRevertBtn.bind('click', function (e) {

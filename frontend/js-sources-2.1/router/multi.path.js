@@ -1,4 +1,5 @@
 import {mouseToCoords} from "./util";
+import {buildGPX, GarminBuilder} from "gpx-builder";
 
 const SEG_TYPE_INITIAL = "initial";
 const SEG_TYPE_LINE = "line";
@@ -147,6 +148,20 @@ MultiPath.prototype.pointEnd = function () {
 MultiPath.prototype.riverSegmentIdPrev = function () {
     let prevSeg = this.segments[this.segments.length - 2];
     return prevSeg.routingSegments[prevSeg.routingSegments.length - 1].lineId;
+};
+
+MultiPath.prototype.createGpx = function () {
+    let track = new GarminBuilder.MODELS.Track(
+        this.segments
+            .filter((s, idx) => idx != 0)
+            .map(function (s) {
+                let c = s.pathLine.geometry.getCoordinates();
+                return new GarminBuilder.MODELS.Segment(
+                    c.map(p => new GarminBuilder.MODELS.Point(p[0], p[1])));
+            }));
+    let model = new GarminBuilder();
+    model.setTracks([track]);
+    return buildGPX(model.toObject());
 };
 
 function PathSegment(registry, type, end, len, text) {
