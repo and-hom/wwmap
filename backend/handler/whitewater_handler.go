@@ -133,13 +133,14 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 			riverIds[i] = rivers[i].Id
 		}
 		//paths, err := this.WaterWayDao.ListByRiverIds(riverIds...)
-		paths, err := this.WaterWayDao.ListByBbox(bbox)
-		if err != nil {
-			OnError500(w, err, "aaaa")
-			return
-		}
+		//paths, err := this.WaterWayDao.ListByBbox(bbox)
+		//if err != nil {
+		//	OnError500(w, err, "aaaa")
+		//	return
+		//}
 
-		fmt.Println(len(paths))
+		paths := []dao.WaterWay{}
+
 		features, err = ymaps.WhiteWaterPointsToYmaps(this.ClusterMaker, rivers, bbox, zoom,
 			this.ResourceBase, skip, this.processForWeb, getLinkMaker(req.FormValue("link_type")),
 			paths)
