@@ -24,6 +24,9 @@ export function distanceText(lenMeters) {
 
 export function mouseToCoords(evt) {
     let map = evt.get('map');
+    if (!map) {
+        return null;
+    }
     let pixelPos = evt.get('position');
     let globalPxPos = map.converter.pageToGlobal(pixelPos);
     return map.options.get('projection').fromGlobalPixels(globalPxPos, map.getZoom());

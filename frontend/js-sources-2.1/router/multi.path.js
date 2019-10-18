@@ -55,6 +55,10 @@ MultiPath.prototype.pushEmptySegment = function () {
     this.map.geoObjects.add(newSegment.placemark);
     this.map.geoObjects.add(newSegment.pathLine);
 
+    if (this.onChangeSegmentCount) {
+        this.onChangeSegmentCount();
+    }
+
     return newSegment;
 };
 
@@ -76,6 +80,10 @@ MultiPath.prototype.removeLastSegments = function (n) {
         segCount = this.segments.length;
         this.length = this.segments.map((s, idx) => idx == segCount - 1 ? 0 : s.len).reduce((a, b) => a + b);
     }
+
+    if (this.onChangeSegmentCount) {
+        this.onChangeSegmentCount();
+    }
 };
 
 MultiPath.prototype.setStartMarkerPos = function (mapPos, lineId) {
@@ -95,11 +103,25 @@ MultiPath.prototype.show = function () {
     });
 };
 
+MultiPath.prototype.showLast = function () {
+    let seg = this.segments[this.segments.length - 1];
+    this.map.geoObjects.add(seg.placemark);
+    this.map.geoObjects.add(seg.pathLine);
+};
+
+
 MultiPath.prototype.hide = function () {
     this.segments.forEach((seg) => {
         this.map.geoObjects.remove(seg.placemark);
         this.map.geoObjects.remove(seg.pathLine);
     });
+};
+
+
+MultiPath.prototype.hideLast = function () {
+    let seg = this.segments[this.segments.length - 1];
+    this.map.geoObjects.remove(seg.placemark);
+    this.map.geoObjects.remove(seg.pathLine);
 };
 
 MultiPath.prototype.setLine = function (mapPos, riverSegId, length) {
@@ -151,9 +173,12 @@ MultiPath.prototype.riverSegmentIdPrev = function () {
 };
 
 MultiPath.prototype.createGpx = function () {
+    if (this.segments.length < 3) {
+        return
+    }
     let track = new GarminBuilder.MODELS.Track(
         this.segments
-            .filter((s, idx) => idx != 0)
+            .filter((s, idx) => idx != 0 && idx != (this.segments.length - 1))
             .map(function (s) {
                 let c = s.pathLine.geometry.getCoordinates();
                 return new GarminBuilder.MODELS.Segment(

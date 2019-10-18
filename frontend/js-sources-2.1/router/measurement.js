@@ -6,6 +6,9 @@ import {RiverTreeWalker} from "./tree.walker"
 
 
 export function WWMapMeasurementTool(map, objectManager, apiBase) {
+    this.enabled = false;
+    this.edit = true;
+
     this.trackStorage = new TrackStorage(apiBase);
 
     this.map = map;
@@ -20,7 +23,7 @@ export function WWMapMeasurementTool(map, objectManager, apiBase) {
     this.reset();
 
     $(document).keyup((e) => {
-        if (e.key === "Escape") {
+        if (e.key === "Escape" && this.edit) {
             this.multiPath.removeLastSegments(1);
         }
     });
@@ -30,19 +33,19 @@ export function WWMapMeasurementTool(map, objectManager, apiBase) {
 
 WWMapMeasurementTool.prototype.addEvents = function (n) {
     this.objectManager.objects.events.add(['click'], e => {
-        if (!this.enabled) {
+        if (!this.enabled || !this.edit) {
             return
         }
-        this.multiPath.pushEmptySegment(mouseToCoords(e));
+        this.multiPath.pushEmptySegment();
     });
     this.objectManager.objects.events.add('mousemove', e => {
         this.onMouseMoved(e.get('position'));
     });
     this.map.events.add('click', e => {
-        if (!this.enabled) {
+        if (!this.enabled || !this.edit) {
             return
         }
-        this.multiPath.pushEmptySegment(mouseToCoords(e));
+        this.multiPath.pushEmptySegment();
     });
     // this.map.events.add('contextmenu', e => {
     //     this.showHideLastMarker();
@@ -67,26 +70,27 @@ WWMapMeasurementTool.prototype.disable = function () {
     this.enabled = false;
 };
 
-// WWMapMeasurementTool.prototype.showHideLastPlacemark = function () {
-//     if (this.showLastMarker) {
-//         if (this.markers.length > 1) {
-//             this.map.geoObjects.remove(this.markers[this.markers.length - 1].placemark);
-//             this.path.geometry.setCoordinates(this.fixedPath);
-//         }
-//         this.showLastMarker = false;
-//     } else {
-//         if (this.markers.length > 1) {
-//             this.map.geoObjects.add(this.markers[this.markers.length - 1].placemark);
-//         }
-//         this.showLastMarker = true;
-//     }
-// };
+WWMapMeasurementTool.prototype.setEditMode = function (edit) {
+    if (edit) {
+        this.multiPath.showLast();
+    } else {
+        this.multiPath.hideLast();
+    }
+    this.edit = edit;
+};
+
+WWMapMeasurementTool.prototype.hasDrawnPath = function () {
+    return this.multiPath.segmentCount() > 1;
+};
 
 WWMapMeasurementTool.prototype.reset = function () {
     if (this.multiPath) {
         this.multiPath.hide();
     }
     this.multiPath = new MultiPath(this.pos, this.map);
+    if(this.enabled) {
+        this.multiPath.show();
+    }
 };
 
 WWMapMeasurementTool.prototype.onViewportChanged = function () {
@@ -138,7 +142,7 @@ WWMapMeasurementTool.prototype.moveFirstPoint = function (cursorPosPx, epsilon_m
 };
 
 WWMapMeasurementTool.prototype.onMouseMoved = function (cursorPosPx) {
-    if (!cursorPosPx || /*!this.showLastMarker ||*/ !this.enabled
+    if (!cursorPosPx || /*!this.showLastMarker ||*/ !this.enabled || !this.edit
         || this.trackStorage.rivers.length == 0 && !(this.multiPath.segmentCount() > 0 && this.currentLine)) {
         return
     }
