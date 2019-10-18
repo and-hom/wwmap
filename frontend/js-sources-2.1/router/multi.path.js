@@ -6,7 +6,6 @@ const SEG_TYPE_LINE = "line";
 
 export function MultiPath(initialPos, map) {
     let initialSeg = new PathSegment(this, SEG_TYPE_INITIAL, initialPos, 0, "0");
-    initialSeg.routingSegments = [new RoutingSegment(-1, initialPos, [initialPos, initialPos])];
     this.segments = [initialSeg];
     this.map = map;
     this.length = 0;
@@ -29,12 +28,6 @@ MultiPath.prototype.createMarker = function (mapPos, text) {
     marker.events.add('click', (e) => {
         this.pushEmptySegment(mouseToCoords(e));
     });
-    // marker.events.add('contextmenu', () => {
-    //     this.showHideLastPlacemark();
-    // });
-    // marker.events.add('mousemove', (e) => {
-    //     this.mouseToCoords(e.get('position'));
-    // });
     marker.properties.set("iconContent", text);
     return marker;
 };
@@ -45,11 +38,11 @@ MultiPath.prototype.pushEmptySegment = function () {
     let lastSeg = this.segments[lastSegIdx];
     let pos = lastSeg.end;
 
-    let riverSegId = lastSeg.routingSegments[lastSeg.routingSegments.length - 1].lineId;
+    let riverSegId = lastSeg.lineId;
     this.length += lastSeg.len;
 
     let newSegment = new PathSegment(this, SEG_TYPE_LINE, pos, 0, lenText(this.length));
-    newSegment.routingSegments = [new RoutingSegment(riverSegId, pos, [pos, pos])];
+    newSegment.lineId = riverSegId;
     this.segments.push(newSegment);
 
     this.map.geoObjects.add(newSegment.placemark);
@@ -91,7 +84,7 @@ MultiPath.prototype.setStartMarkerPos = function (mapPos, lineId) {
     s0.placemark.geometry.setCoordinates(mapPos);
     s0.pathLine.geometry.setCoordinates([mapPos, mapPos]);
     s0.end = mapPos;
-    s0.routingSegments[0].lineId = lineId;
+    s0.lineId = lineId;
 };
 
 MultiPath.prototype.show = function () {
@@ -140,7 +133,7 @@ MultiPath.prototype.setLine = function (mapPos, riverSegId, length) {
     lastSeg.placemark.geometry.setCoordinates(mapPos);
     let path = [prevSeg.end, mapPos];
     lastSeg.pathLine.geometry.setCoordinates(path);
-    lastSeg.routingSegments = [new RoutingSegment(riverSegId, mapPos, path)];
+    lastSeg.lineId = riverSegId;
 };
 
 
@@ -159,7 +152,7 @@ MultiPath.prototype.setTrack = function (path, riverSegId, length) {
     lastSeg.placemark.properties.set("iconContent", lenText(this.length + lastSeg.len));
     lastSeg.placemark.geometry.setCoordinates(mapPos);
     lastSeg.pathLine.geometry.setCoordinates(path);
-    lastSeg.routingSegments = [new RoutingSegment(riverSegId, mapPos, path)];
+    lastSeg.lineId = riverSegId;
 };
 
 
@@ -168,8 +161,7 @@ MultiPath.prototype.pointEnd = function () {
 };
 
 MultiPath.prototype.riverSegmentIdPrev = function () {
-    let prevSeg = this.segments[this.segments.length - 2];
-    return prevSeg.routingSegments[prevSeg.routingSegments.length - 1].lineId;
+    return this.segments[this.segments.length - 2].lineId;
 };
 
 MultiPath.prototype.createGpx = function () {
@@ -195,18 +187,9 @@ function PathSegment(registry, type, end, len, text) {
     this.len = len;
     this.placemark = registry.createMarker(end, text);
     this.pathLine = createSlice([end, end]);
-    this.routingSegments = [];
+    this.lineId = -1;
     this.type = type;
 }
-
-PathSegment.prototype.getCoordinates = function () {
-    // return this.routingSegments.length == 0
-    //     ? []
-    //     : this.routingSegments
-    //         .map(x => x.path)
-    //         .reduce((a, e) => a.concat(e));
-    return []
-};
 
 PathSegment.prototype.removeFromMap = function () {
     this.registry.map.geoObjects.remove(this.placemark);

@@ -16,9 +16,6 @@ export function WWMapMeasurementTool(map, objectManager, apiBase) {
 
     this.pos = map.getCenter();
 
-    // зачем?
-    this.showLastMarker = true;
-
     this.multiPath = null;
     this.reset();
 
@@ -47,9 +44,6 @@ WWMapMeasurementTool.prototype.addEvents = function (n) {
         }
         this.multiPath.pushEmptySegment();
     });
-    // this.map.events.add('contextmenu', e => {
-    //     this.showHideLastMarker();
-    // });
     this.map.events.add('boundschange', e => {
         this.onViewportChanged(this.map.getBounds());
     });
@@ -142,7 +136,7 @@ WWMapMeasurementTool.prototype.moveFirstPoint = function (cursorPosPx, epsilon_m
 };
 
 WWMapMeasurementTool.prototype.onMouseMoved = function (cursorPosPx) {
-    if (!cursorPosPx || /*!this.showLastMarker ||*/ !this.enabled || !this.edit
+    if (!cursorPosPx ||  !this.enabled || !this.edit
         || this.trackStorage.rivers.length == 0 && !(this.multiPath.segmentCount() > 0 && this.currentLine)) {
         return
     }
