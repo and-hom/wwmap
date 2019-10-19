@@ -1,5 +1,4 @@
 import {mouseToCoords} from "./util";
-import {buildGPX, GarminBuilder} from "gpx-builder";
 
 const SEG_TYPE_INITIAL = "initial";
 const SEG_TYPE_LINE = "line";
@@ -174,17 +173,29 @@ MultiPath.prototype.createGpx = function () {
     if (this.segments.length < 3) {
         return
     }
-    let track = new GarminBuilder.MODELS.Track(
-        this.segments
-            .filter((s, idx) => idx != 0 && idx != (this.segments.length - 1))
-            .map(function (s) {
-                let c = s.pathLine.geometry.getCoordinates();
-                return new GarminBuilder.MODELS.Segment(
-                    c.map(p => new GarminBuilder.MODELS.Point(p[0], p[1])));
-            }));
-    let model = new GarminBuilder();
-    model.setTracks([track]);
-    return buildGPX(model.toObject());
+    var doc = document.implementation.createDocument("", "", null);
+    var gpxEl = doc.createElement("gpx");
+    var trkEl = doc.createElement("trk");
+    this.segments
+        .filter((s, idx) => idx != 0 && idx != (this.segments.length - 1))
+        .forEach(function (s) {
+            var trkSegEl = doc.createElement("trkseg");
+
+            let c = s.pathLine.geometry.getCoordinates();
+            c.forEach(p => {
+                let trkPtEl = doc.createElement("trkpt");
+                trkPtEl.setAttribute("lat", p[0]);
+                trkPtEl.setAttribute("lon", p[1]);
+                trkSegEl.appendChild(trkPtEl);
+            });
+
+            trkEl.appendChild(trkSegEl);
+        });
+
+    gpxEl.appendChild(trkEl);
+    doc.appendChild(gpxEl);
+    var xmlSerializer = new XMLSerializer();
+    return '<?xml version="1.0" encoding="UTF-8"?>' + xmlSerializer.serializeToString(doc)
 };
 
 function PathSegment(registry, type, end, len, text) {

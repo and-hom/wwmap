@@ -39,6 +39,11 @@ module.exports = env => {
         module: {
             rules: [
                 {
+                    test: /js-sources-2\.1\/.*?\.js$/,
+                    exclude: /node_modules/,
+                    loader: "babel-loader"
+                },
+                {
                     test: /js-sources-2\.1\/config\.js$/,
                     loader: 'file-replace-loader',
                     options: {
