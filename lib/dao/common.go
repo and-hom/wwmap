@@ -206,7 +206,6 @@ func (this *PostgresStorage) updateReturningColumns(query string,
 		if err != nil {
 			return [][]interface{}{}, err
 		}
-		defer deferCloser(rows)
 
 		colTypes, err := rows.ColumnTypes()
 		if err != nil {
@@ -225,6 +224,7 @@ func (this *PostgresStorage) updateReturningColumns(query string,
 		} else if failOnEmptyResult {
 			return [][]interface{}{}, fmt.Errorf("Value is not inserted: %v+\n %s", args, query)
 		}
+		deferCloser(rows)
 	}
 	if failOnEmptyResult && len(result) != len(values) {
 		return [][]interface{}{}, fmt.Errorf("Some values are not inserted. Values len is %d and result len is %d: %v+\n %s",
