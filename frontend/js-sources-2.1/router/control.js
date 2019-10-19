@@ -1,4 +1,5 @@
 import fileDownload from "js-file-download"
+import {WWMapPopup} from "../popup";
 
 export function createMeasurementToolControl(measurementTool) {
     let MeasurementControl = function (options) {
@@ -26,14 +27,15 @@ export function createMeasurementToolControl(measurementTool) {
         _onGetChildElement: function (parentDomContainer) {
             // Создаем HTML-элемент с текстом.
             var content = '<div class="wwmap-route-control">' +
-                '<button class="ymaps-2-1-73-float-button-text, wwmap-measure-btn" title="Расстояние по реке"><img style="height:24px" src="img/ruller.png"/><img style="height:24px"/></button>' +
+                '<button class="ymaps-2-1-73-float-button-text, wwmap-measure-btn" title="Расстояние по реке"><img style="height:24px" src="http://wwmap.ru/img/ruller.png"/><img style="height:24px"/></button>' +
 
-                '<button class="ymaps-2-1-73-float-button-text, wwmap-measure-ok-btn" style="display: none;" title="Закончить редактирование"><img style="height:24px" src="img/ok.png"/><img style="height:24px"/></button>' +
-                '<button class="ymaps-2-1-73-float-button-text, wwmap-measure-revert-btn" style="display: none;" title="Удалить последнюю точку (Esc)"><img style="height:24px" src="img/revert.png"/></button>' +
-                '<button class="ymaps-2-1-73-float-button-text, wwmap-measure-delete-btn" style="display: none;" title="Очистить трек"><img style="height:24px" src="img/del.png"/></button>' +
+                '<button class="ymaps-2-1-73-float-button-text, wwmap-measure-ok-btn" style="display: none;" title="Закончить редактирование"><img style="height:24px" src="http://wwmap.ru/img/ok.png"/><img style="height:24px"/></button>' +
+                '<button class="ymaps-2-1-73-float-button-text, wwmap-measure-revert-btn" style="display: none;" title="Удалить последнюю точку (Esc)"><img style="height:24px" src="http://wwmap.ru/img/revert.png"/></button>' +
+                '<button class="ymaps-2-1-73-float-button-text, wwmap-measure-delete-btn" style="display: none;" title="Очистить трек"><img style="height:24px" src="http://wwmap.ru/img/del.png"/></button>' +
 
-                '<button class="ymaps-2-1-73-float-button-text, wwmap-measure-edit-btn" style="display: none;" title="Продолжить редактирование"><img style="height:24px" src="img/edit.png"/></button>' +
-                '<button class="ymaps-2-1-73-float-button-text, wwmap-measure-download-btn" style="display: none;" title="Скачать GPX"><img style="height:24px" src="img/download.png"/></button>' +
+                '<button class="ymaps-2-1-73-float-button-text, wwmap-measure-edit-btn" style="display: none;" title="Продолжить редактирование"><img style="height:24px" src="http://wwmap.ru/img/edit.png"/></button>' +
+                '<button class="ymaps-2-1-73-float-button-text, wwmap-measure-download-btn" style="display: none;" title="Скачать GPX"><img style="height:24px" src="http://wwmap.ru/img/download.png"/></button>' +
+                '<button class="ymaps-2-1-73-float-button-text, wwmap-measure-help-btn" style="display: none;" title="Справка об измерении пути по реке"><img style="height:24px" src="http://wwmap.ru/img/help.png"/></button>' +
                 '</div>';
             this._$content = $(content).appendTo(parentDomContainer);
 
@@ -45,6 +47,8 @@ export function createMeasurementToolControl(measurementTool) {
 
             var measureDownloadBtn = $('.wwmap-measure-download-btn');
             var measureEditBtn = $('.wwmap-measure-edit-btn');
+
+            var measureHelpBtn = $('.wwmap-measure-help-btn');
 
             let refreshMeasurementButtons = function () {
                 let exportModeStyle = measurementTool.edit || !measurementTool.hasDrawnPath() ? 'none' : 'inline-block';
@@ -70,12 +74,15 @@ export function createMeasurementToolControl(measurementTool) {
                     measureCompleteBtn.css('display', 'none');
                     measureRevertBtn.css('display', 'none');
                     measureDeleteBtn.css('display', 'none');
+
+                    measureHelpBtn.css('display', 'none');
                 } else {
                     measureOnOffBtn.addClass("wwmap-measure-btn-pressed");
                     measureOnOffBtn.attr('title', 'Выключить измерение расстояний по реке');
                     measurementTool.enable();
 
                     refreshMeasurementButtons();
+                    measureHelpBtn.css('display', 'inline-block');
                 }
             });
 
@@ -104,6 +111,11 @@ export function createMeasurementToolControl(measurementTool) {
 
             measureDeleteBtn.bind('click', function (e) {
                 measurementTool.reset();
+            });
+
+            let tutorialPopup = new WWMapPopup('info_popup_measurement_template', true, 'info_popup_measurement');
+            measureHelpBtn.bind('click', function (e) {
+                tutorialPopup.show();
             });
 
             measurementTool.multiPath.onChangeSegmentCount = refreshMeasurementButtons;
