@@ -253,7 +253,6 @@
         components: {
           FileUpload: VueUploadComponent
         },
-        gpxJustUploaded: false,
         updated: function() {
             this.resetToInitialIfRequired();
 
@@ -537,6 +536,8 @@
                     }
                     this.showMap();
                 },
+
+                gpxJustUploaded: false,
                 gpxUrl: function (transliterate) {
                     return `${backendApiBase}/gpx/river/${this.river.id}?tr=${transliterate}`;
                 }
