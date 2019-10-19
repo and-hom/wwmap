@@ -91,7 +91,10 @@ MultiPath.prototype.setStartMarkerPos = function (mapPos, lineId) {
 };
 
 MultiPath.prototype.show = function () {
-    this.segments.forEach((seg) => {
+    this.segments.forEach((seg, idx) => {
+        if (!this.measurementTool.edit && idx == this.segments.length - 1) {
+            return
+        }
         this.map.geoObjects.add(seg.placemark);
         if (seg.type != SEG_TYPE_INITIAL) {
             this.map.geoObjects.add(seg.pathLine);
