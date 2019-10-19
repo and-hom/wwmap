@@ -68,16 +68,13 @@
                     </td>
 
                     <td v-if="isRiver(entry)">
-                        <a v-if="entry.type!='DELETE'" :href="getRiverUrl(entry.object_id)">{{getRiverTitle(entry.object_id)}}</a>
-                        <span v-else>Река {{entry.object_id}}</span>
+                        <a :href="getRiverUrl(entry.object_id)">{{getRiverTitle(entry.object_id)}}</a>
                     </td>
                     <td v-else-if="isSpot(entry)">
-                        <a v-if="entry.type!='DELETE'" :href="getSpotUrl(entry.object_id)">{{getSpotTitle(entry.object_id)}}</a>
-                        <span v-else>Порог {{entry.object_id}}</span>
+                        <a :href="getSpotUrl(entry.object_id)">{{getSpotTitle(entry.object_id)}}</a>
                     </td>
                     <td v-else-if="isImage(entry)">
-                        <a v-if="entry.type!='DELETE'" :href="getImageUrl(entry.object_id)">{{getImageTitle(entry.object_id)}}</a>
-                        <span v-else>Изображение {{entry.object_id}}</span>
+                        <a :href="getImageUrl(entry.object_id)">{{getImageTitle(entry.object_id)}}</a>
                     </td>
                     <td v-else-if="isUser(entry)">
                         Пользователь {{entry.object_id}}
@@ -132,7 +129,7 @@
 
             getRiverTitle: function (id) {
                 let riverData = this.riverById[id];
-                return !riverData ? "#" : riverData.river_title;
+                return !riverData ? ("Река " + id) : riverData.river_title;
             },
 
             getSpotUrl: function (id) {
@@ -145,7 +142,7 @@
 
             getSpotTitle: function (id) {
                 let spotData = this.spotById[id];
-                return !spotData ? "#" : spotData.river_title + " / " + spotData.spot_title;
+                return !spotData ? ("Порог " + id) : spotData.river_title + " / " + spotData.spot_title;
             },
 
             getImageUrl: function (id) {
