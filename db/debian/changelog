@@ -1,3 +1,9 @@
+wwmap-db (0.0.25) unstable; urgency=medium
+
+  * #209 Measurement tool to get distance along river
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sat, 19 Oct 2019 17:06:25 +0300
+
 wwmap-db (0.0.24) unstable; urgency=medium
 
   * #4 Change geometry constraint for spot POINT -> POINT OR LINESTRING

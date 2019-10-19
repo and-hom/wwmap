@@ -1,3 +1,11 @@
+wwmap-frontend (0.0.45) unstable; urgency=medium
+
+  * #209 Measurement tool to get distance along river
+  * #223 Audit log page
+  * #230 Mime type application/javascrit for jsonp
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sat, 19 Oct 2019 17:05:48 +0300
+
 wwmap-frontend (0.0.44) unstable; urgency=medium
 
   * #37 Google sat version fix

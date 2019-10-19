@@ -1,3 +1,10 @@
+wwmap-cron (0.0.26) unstable; urgency=medium
+
+  * #209 Email template for experimental features on/off
+  * #209 Bind tracks to rivers cron task
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sat, 19 Oct 2019 17:07:40 +0300
+
 wwmap-cron (0.0.25) unstable; urgency=medium
 
   * #202 Huskytm image url fixed
