@@ -27,7 +27,7 @@ export function createMeasurementToolControl(measurementTool) {
         _onGetChildElement: function (parentDomContainer) {
             // Создаем HTML-элемент с текстом.
             var content = '<div class="wwmap-route-control">' +
-                '<button class="ymaps-2-1-73-float-button-text, wwmap-measure-btn" title="Расстояние по реке"><img style="height:24px" src="http://wwmap.ru/img/ruller.png"/><img style="height:24px"/></button>' +
+                '<button class="ymaps-2-1-73-float-button-text, wwmap-measure-btn" title="Расстояние по реке"><img style="height:24px" src="http://wwmap.ru/img/ruler.png"/><img style="height:24px"/></button>' +
 
                 '<button class="ymaps-2-1-73-float-button-text, wwmap-measure-ok-btn" style="display: none;" title="Закончить редактирование"><img style="height:24px" src="http://wwmap.ru/img/ok.png"/><img style="height:24px"/></button>' +
                 '<button class="ymaps-2-1-73-float-button-text, wwmap-measure-revert-btn" style="display: none;" title="Удалить последнюю точку (Esc)"><img style="height:24px" src="http://wwmap.ru/img/revert.png"/></button>' +
