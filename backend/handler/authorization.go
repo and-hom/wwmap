@@ -276,7 +276,7 @@ func (this *UserInfoHandler) sendChangeExperimentalModeMessage(authProvider dao.
 		Object:     dao.IdTitle{Id: userId, Title: info.Login},
 		Comment:    comment,
 		Recipient:  dao.NotificationRecipient{Provider: dao.NOTIFICATION_PROVIDER_EMAIL, Recipient: notification.YandexEmail(info.Login)},
-		Classifier: "experimental-features",
+		Classifier: "user-experimental-features",
 		SendBefore: time.Now(), // send as soon as possible
 	})
 	if err != nil {
