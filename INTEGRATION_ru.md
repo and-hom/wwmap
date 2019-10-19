@@ -5,22 +5,29 @@
 _Например, в wordpress есть специальный плагин, чтобы подключить свой css к отдельной странице. Остальное возможно в рамках редактирования html страницы_
 
 1. Подключаем javascript
+
     ```html
         <script type="text/javascript" src="https://api-maps.yandex.ru/2.1/?lang=ru_RU"></script>
         <script type="text/javascript" src="https://wwmap.ru/js/map.v2.1.js"></script>
-     
-        // Потребуется только для вызова document.ready в п.4
+    ```
+ 
+        Потребуется только для вызова document.ready в п.4
+
+    ```html
         <script type="text/javascript" src="https://wwmap.ru/js/jquery-3.1.1.min.js"></script>
     ```
 2. Добавляем div для карты. id произвольный. Возможно, задать размеры, поля и др. параметры области стилями:
+
     ```html
     <div style="width:100%;height 600px;" id="wwmap-container"></div>
     ```
 3. Если нам нужна таблица с реками, ссылками на отчёты и GPX-файлы с точками порогов, то добавляем div и для неё в удобном месте страницы (я расположу его сразу под картой):
+
     ```html
     <div id="wwmap-rivers" class="wwmap-river-menu"></div>
     ```
 4. Добавить javascript для инициализации и работы карты.
+
     ```html
     <script type="text/javascript">
       $(document).ready(function() {
@@ -56,6 +63,7 @@ _Например, в wordpress есть специальный плагин, ч
 ### Изменение шаблона списка рек
 1. Открываем https://wwmap.ru/map-components/map-html-components-2.1.htm. Ищем там элемент с ``id="rivers_template"`` - это стандартный шаблон списка рек.
 Копируем его себе в html (id можно не менять, этот файл не загружается напрямую). Подробнее про шаблонизатор можно почитать тут https://github.com/KanbanSolutions/jquery-tmpl . Выглядит он, например, так:
+
     ```html
     <script type="text/x-jquery-tmpl" id="rivers_template">
     <div class="wwmap-river-menu">
@@ -74,6 +82,7 @@ _Например, в wordpress есть специальный плагин, ч
 
     ```
 2. Вместо wwmap.initWWap используем ф-цию `initWWMapCustomRiverList(mapId, riversListTemplateElement, catalogLinkType)`, например, так
+
     ```html
     <script type="text/javascript">
     $(document).ready(function() {
@@ -95,6 +104,7 @@ _Например, в wordpress есть специальный плагин, ч
     
 ## Примечание
 При использовании vue.js div, в котором должна была отобразиться карта, имел сначала нулевой размер, и карта не отображалась. Пришлось вспользоваться вот таким приёмом:
+
 ```javascript
     $(document).ready(function() {
 
