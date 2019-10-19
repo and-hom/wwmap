@@ -48,7 +48,7 @@
                         Google: {{entry.login}}
                     </td>
                     <td v-else-if="entry.auth_provider=='vk'">
-                        <a :href="vkLink(entry.ext_id)">vk/{{entry.login}}</a>
+                        <a target="_blank" :href="vkLink(entry.ext_id)">vk/{{entry.login}}</a>
                     </td>
                     <td v-else>
                         {{entry.auth_provider}}/{{entry.ext_id}}
