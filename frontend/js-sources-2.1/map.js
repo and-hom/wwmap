@@ -92,6 +92,9 @@ WWMap.prototype.init = function () {
         )
     );
     $(document).keyup(function (e) {
+        if (!e || !e.target || !e.target.tagName || e.target.tagName.toUpperCase()=='INPUT') {
+            return
+        }
         switch (e.which) {
             case 71: // G
                 t.yMap.setType('google#satellite');
