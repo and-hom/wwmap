@@ -57,6 +57,13 @@ func (this *GeoHierarchyHandler) Init() {
 		Post:   this.ForRoles(this.SaveSpot, dao.ADMIN, dao.EDITOR),
 		Put:    this.ForRoles(this.SaveSpot, dao.ADMIN, dao.EDITOR),
 		Delete: this.ForRoles(this.RemoveSpot, dao.ADMIN, dao.EDITOR)})
+
+	this.Register("/river_base_ids",
+		HandlerFunctions{Post: this.ForRoles(this.RiverParentIds, dao.ADMIN)})
+	this.Register("/spot_base_ids",
+		HandlerFunctions{Post: this.ForRoles(this.SpotParentIds, dao.ADMIN)})
+	this.Register("/image_base_ids",
+		HandlerFunctions{Post: this.ForRoles(this.ImageParentIds, dao.ADMIN)})
 }
 
 type RiverDto struct {
@@ -384,6 +391,12 @@ func (this *GeoHierarchyHandler) RemoveRiver(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
+	river, err := this.RiverDao.Find(riverId)
+	if err != nil {
+		OnError500(w, err, fmt.Sprintf("Can not get river: %d %v", riverId, err))
+		return
+	}
+
 	imgs, err := this.ImgDao.ListAllByRiver(riverId)
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not get images for river: %d %v", riverId, err))
@@ -417,7 +430,7 @@ func (this *GeoHierarchyHandler) RemoveRiver(w http.ResponseWriter, r *http.Requ
 		OnError500(w, err, fmt.Sprintf("Can not remove river by id: %d", riverId))
 		return
 	}
-	this.LogUserEvent(r, RIVER_LOG_ENTRY_TYPE, riverId, dao.ENTRY_TYPE_DELETE, "")
+	this.LogUserEvent(r, RIVER_LOG_ENTRY_TYPE, riverId, dao.ENTRY_TYPE_DELETE, river.Title)
 }
 
 func (this *GeoHierarchyHandler) writeRiver(riverId int64, w http.ResponseWriter) {
@@ -522,6 +535,12 @@ func (this *GeoHierarchyHandler) RemoveSpot(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	spot, err := this.WhiteWaterDao.Find(spotId)
+	if err != nil {
+		OnError500(w, err, fmt.Sprintf("Can not get spot by id: %d", spotId))
+		return
+	}
+
 	imgs, err := this.ImgDao.ListAllBySpot(spotId)
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not list images for spot by id: %d", spotId))
@@ -542,7 +561,7 @@ func (this *GeoHierarchyHandler) RemoveSpot(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	this.LogUserEvent(r, SPOT_LOG_ENTRY_TYPE, spotId, dao.ENTRY_TYPE_DELETE, "")
+	this.LogUserEvent(r, SPOT_LOG_ENTRY_TYPE, spotId, dao.ENTRY_TYPE_DELETE, spot.Title)
 }
 
 func (this *GeoHierarchyHandler) removeImageData(req *http.Request, imgs []dao.Img) {
@@ -597,4 +616,52 @@ func (this *GeoHierarchyHandler) getRiverPassport(w http.ResponseWriter, req *ht
 	defer r.Close()
 	io.Copy(w, r)
 
+}
+
+func (this *GeoHierarchyHandler) RiverParentIds(w http.ResponseWriter, req *http.Request) {
+	riverIds := []int64{}
+	body, err := decodeJsonBody(req, &riverIds)
+	if err != nil {
+		OnError500(w, err, "Can not parse json from request body: "+body)
+		return
+	}
+
+	ids, err := this.RiverDao.GetParentIds(riverIds)
+	if err != nil {
+		OnError500(w, err, "Can not get rivers info")
+		return
+	}
+	this.JsonAnswer(w, ids)
+}
+
+func (this *GeoHierarchyHandler) SpotParentIds(w http.ResponseWriter, req *http.Request) {
+	spotIds := []int64{}
+	body, err := decodeJsonBody(req, &spotIds)
+	if err != nil {
+		OnError500(w, err, "Can not parse json from request body: "+body)
+		return
+	}
+
+	ids, err := this.WhiteWaterDao.GetParentIds(spotIds)
+	if err != nil {
+		OnError500(w, err, "Can not get rivers info")
+		return
+	}
+	this.JsonAnswer(w, ids)
+}
+
+func (this *GeoHierarchyHandler) ImageParentIds(w http.ResponseWriter, req *http.Request) {
+	imgIds := []int64{}
+	body, err := decodeJsonBody(req, &imgIds)
+	if err != nil {
+		OnError500(w, err, "Can not parse json from request body: "+body)
+		return
+	}
+
+	ids, err := this.ImgDao.GetParentIds(imgIds)
+	if err != nil {
+		OnError500(w, err, "Can not get rivers info")
+		return
+	}
+	this.JsonAnswer(w, ids)
 }

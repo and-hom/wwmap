@@ -11,13 +11,15 @@ func NewChangesLogPostgresDao(postgresStorage PostgresStorage) ChangesLogDao {
 		PostgresStorage: postgresStorage,
 		insertQuery:     queries.SqlQuery("changes-log", "insert"),
 		listQuery:       queries.SqlQuery("changes-log", "list"),
+		listAllQuery:    queries.SqlQuery("changes-log", "list-all"),
 	}
 }
 
 type changesLogStorage struct {
 	PostgresStorage
-	insertQuery string
-	listQuery   string
+	insertQuery  string
+	listQuery    string
+	listAllQuery string
 }
 
 func (this changesLogStorage) Insert(entry ChangesLogEntry) error {
@@ -30,12 +32,20 @@ func (this changesLogStorage) Insert(entry ChangesLogEntry) error {
 }
 
 func (this changesLogStorage) List(objectType string, objectId int64, limit int) ([]ChangesLogEntry, error) {
-	lst, err := this.doFindList(this.listQuery, func(rows *sql.Rows) (ChangesLogEntry, error) {
+	return this.list(this.listQuery, objectType, objectId, limit)
+}
+
+func (this changesLogStorage) ListAll(limit int) ([]ChangesLogEntry, error) {
+	return this.list(this.listAllQuery, limit)
+}
+
+func (this changesLogStorage) list(query string, args ...interface{}) ([]ChangesLogEntry, error) {
+	lst, err := this.doFindList(query, func(rows *sql.Rows) (ChangesLogEntry, error) {
 		result := ChangesLogEntry{}
 		err := rows.Scan(&result.Id, &result.ObjectType, &result.ObjectId, &result.AuthProvider, &result.ExtId,
 			&result.Login, &result.Type, &result.Description, &result.Time)
 		return result, err
-	}, objectType, objectId, limit)
+	}, args...)
 	if err != nil {
 		return []ChangesLogEntry{}, err
 	}

@@ -94,7 +94,7 @@
                     {
                         id: "2",
                         title: "Администрирование",
-                        allow: ['EDITOR', 'ADMIN'],
+                        allow: ['ADMIN'],
                         sub: [
                             {
                                 href: "users.htm",
@@ -103,6 +103,10 @@
                             {
                                 href: "dashboard.htm",
                                 title: "Панель показателей",
+                            },
+                            {
+                                href: "log.htm",
+                                title: "История изменений",
                             },
                         ]
                     },

@@ -17,7 +17,7 @@ type SystemHandler struct {
 
 func CreateSystemHandler(app *App, version string) *SystemHandler {
 	var versionJson, versionMarshalErr = json.Marshal(version)
-	return &SystemHandler{*app, versionJson, versionMarshalErr,}
+	return &SystemHandler{*app, versionJson, versionMarshalErr}
 }
 
 func (this *SystemHandler) Init() {
@@ -37,6 +37,15 @@ func (this *SystemHandler) Version(w http.ResponseWriter, req *http.Request) {
 
 func (this *SystemHandler) Log(w http.ResponseWriter, req *http.Request) {
 	objectType := req.FormValue("object_type")
+	if objectType == "" {
+		lastRows, err := this.ChangesLogDao.ListAll(300)
+		if err != nil {
+			OnError500(w, err, "Can not fetch log entries")
+		}
+		this.JsonAnswer(w, lastRows)
+		return
+	}
+
 	objectId, err := strconv.ParseInt(req.FormValue("object_id"), 10, 64)
 	if err != nil {
 		OnError(w, err, "Can not parse object id", http.StatusBadRequest)

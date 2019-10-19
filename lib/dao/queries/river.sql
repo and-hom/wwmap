@@ -112,3 +112,10 @@ WHERE ___table___.id=ANY(
     )
 GROUP BY river.id, region_id, region.country_id, region.title, region.fake
 LIMIT $3 OFFSET $4
+
+--@parent-ids
+SELECT ___table___.id AS river_id, CASE WHEN region.fake THEN 0 ELSE region.id END AS region_id, region.country_id AS country_id,
+       ___table___.title AS river_title
+    FROM ___table___
+    INNER JOIN region ON ___table___.region_id = region.id
+WHERE ___table___.id = ANY($1)

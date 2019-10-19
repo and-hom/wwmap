@@ -29,6 +29,7 @@ func NewRiverPostgresDao(postgresStorage PostgresStorage) RiverDao {
 		deleteQuery:             queries.SqlQuery("river", "delete"),
 		setVisibleQuery:         queries.SqlQuery("river", "set-visible"),
 		findByTitlePartQuery:    queries.SqlQuery("river", "by-title-part"),
+		parentIds:               queries.SqlQuery("river", "parent-ids"),
 	}
 }
 
@@ -50,6 +51,7 @@ type riverStorage struct {
 	deleteQuery             string
 	setVisibleQuery         string
 	findByTitlePartQuery    string
+	parentIds               string
 }
 
 func (this riverStorage) FindTitles(titles []string) ([]RiverTitle, error) {
@@ -277,4 +279,24 @@ func riverMapperFull(rows *sql.Rows) (River, error) {
 	}
 	err = json.Unmarshal([]byte(spotCounters), &river.SpotCounters)
 	return river, err
+}
+
+func (this riverStorage) GetParentIds(riverIds []int64) (map[int64]RiverParentIds, error) {
+	result := make(map[int64]RiverParentIds)
+
+	_, err := this.doFindList(this.parentIds, func(rows *sql.Rows) (int, error) {
+		riverId := int64(0)
+		parentIds := RiverParentIds{}
+		err := rows.Scan(&riverId, &parentIds.RegionId, &parentIds.CountryId, &parentIds.RiverTitle)
+
+		if err == nil {
+			result[riverId] = parentIds
+		}
+		return 0, err
+	}, pq.Array(riverIds))
+
+	if err != nil {
+		return result, err
+	}
+	return result, nil
 }
