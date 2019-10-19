@@ -391,6 +391,12 @@ func (this *GeoHierarchyHandler) RemoveRiver(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
+	river, err := this.RiverDao.Find(riverId)
+	if err != nil {
+		OnError500(w, err, fmt.Sprintf("Can not get river: %d %v", riverId, err))
+		return
+	}
+
 	imgs, err := this.ImgDao.ListAllByRiver(riverId)
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not get images for river: %d %v", riverId, err))
@@ -424,7 +430,7 @@ func (this *GeoHierarchyHandler) RemoveRiver(w http.ResponseWriter, r *http.Requ
 		OnError500(w, err, fmt.Sprintf("Can not remove river by id: %d", riverId))
 		return
 	}
-	this.LogUserEvent(r, RIVER_LOG_ENTRY_TYPE, riverId, dao.ENTRY_TYPE_DELETE, "")
+	this.LogUserEvent(r, RIVER_LOG_ENTRY_TYPE, riverId, dao.ENTRY_TYPE_DELETE, river.Title)
 }
 
 func (this *GeoHierarchyHandler) writeRiver(riverId int64, w http.ResponseWriter) {
@@ -529,6 +535,12 @@ func (this *GeoHierarchyHandler) RemoveSpot(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	spot, err := this.WhiteWaterDao.Find(spotId)
+	if err != nil {
+		OnError500(w, err, fmt.Sprintf("Can not get spot by id: %d", spotId))
+		return
+	}
+
 	imgs, err := this.ImgDao.ListAllBySpot(spotId)
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not list images for spot by id: %d", spotId))
@@ -549,7 +561,7 @@ func (this *GeoHierarchyHandler) RemoveSpot(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	this.LogUserEvent(r, SPOT_LOG_ENTRY_TYPE, spotId, dao.ENTRY_TYPE_DELETE, "")
+	this.LogUserEvent(r, SPOT_LOG_ENTRY_TYPE, spotId, dao.ENTRY_TYPE_DELETE, spot.Title)
 }
 
 func (this *GeoHierarchyHandler) removeImageData(req *http.Request, imgs []dao.Img) {

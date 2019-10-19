@@ -38,7 +38,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr v-for="entry in logs">
+                <tr v-for="entry in logs" :class="rowStyle(entry.type)">
                     <td>{{entry.time}}</td>
 
                     <td v-if="entry.auth_provider=='yandex'">
@@ -68,13 +68,16 @@
                     </td>
 
                     <td v-if="isRiver(entry)">
-                        <a :href="getRiverUrl(entry.object_id)">{{getRiverTitle(entry.object_id)}}</a>
+                        <a v-if="entry.type!='DELETE'" :href="getRiverUrl(entry.object_id)">{{getRiverTitle(entry.object_id)}}</a>
+                        <span v-else>Река {{entry.object_id}}</span>
                     </td>
                     <td v-else-if="isSpot(entry)">
-                        <a :href="getSpotUrl(entry.object_id)">{{getSpotTitle(entry.object_id)}}</a>
+                        <a v-if="entry.type!='DELETE'" :href="getSpotUrl(entry.object_id)">{{getSpotTitle(entry.object_id)}}</a>
+                        <span v-else>Порог {{entry.object_id}}</span>
                     </td>
                     <td v-else-if="isImage(entry)">
-                        <a :href="getImageUrl(entry.object_id)">{{getImageTitle(entry.object_id)}}</a>
+                        <a v-if="entry.type!='DELETE'" :href="getImageUrl(entry.object_id)">{{getImageTitle(entry.object_id)}}</a>
+                        <span v-else>Изображение {{entry.object_id}}</span>
                     </td>
                     <td v-else-if="isUser(entry)">
                         Пользователь {{entry.object_id}}
@@ -122,7 +125,7 @@
             getRiverUrl: function (id) {
                 let riverData = this.riverById[id];
                 if (!riverData) {
-                    return "#"
+                    return null
                 }
                 return "https://wwmap.ru/editor.htm#" + riverData.country_id + "," + riverData.region_id + "," + id;
             },
@@ -135,7 +138,7 @@
             getSpotUrl: function (id) {
                 let spotData = this.spotById[id];
                 if (!spotData) {
-                    return "#"
+                    return null
                 }
                 return "https://wwmap.ru/editor.htm#" + spotData.country_id + "," + spotData.region_id + "," + spotData.river_id + "," + id;
             },
@@ -148,7 +151,7 @@
             getImageUrl: function (id) {
                 let imgData = this.imgById[id];
                 if (!imgData || !imgData.spot_id) {
-                    return "#"
+                    return null
                 }
                 return this.getSpotUrl(imgData.spot_id);
             },
@@ -176,7 +179,19 @@
             },
             isUser: function (logEntry) {
                 return logEntry.object_type == 'USER'
-            }
+            },
+
+            rowStyle: function(entryType) {
+                switch (entryType) {
+                    case 'CREATE':
+                        return 'wwmap-changes-log-create';
+                    case 'MODIFY':
+                        return 'wwmap-changes-log-change';
+                    case 'DELETE':
+                        return 'wwmap-changes-log-delete';
+                }
+                return ""
+            },
         }
     })
 
