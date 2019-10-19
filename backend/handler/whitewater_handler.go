@@ -24,6 +24,7 @@ const PREVIEWS_COUNT int = 20
 
 func (this *WhiteWaterHandler) Init() {
 	this.Register("/ymaps-tile-ww", HandlerFunctions{Get: this.TileWhiteWaterHandler})
+	this.Register("/router-data", HandlerFunctions{Get: this.RouterData})
 	this.Register("/search", HandlerFunctions{Post: this.search})
 }
 
@@ -127,8 +128,22 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 			return
 		}
 
+		riverIds := make([]int64, len(rivers))
+		for i := 0; i < len(rivers); i++ {
+			riverIds[i] = rivers[i].Id
+		}
+		//paths, err := this.WaterWayDao.ListByRiverIds(riverIds...)
+		//paths, err := this.WaterWayDao.ListByBbox(bbox)
+		//if err != nil {
+		//	OnError500(w, err, "aaaa")
+		//	return
+		//}
+
+		paths := []dao.WaterWay{}
+
 		features, err = ymaps.WhiteWaterPointsToYmaps(this.ClusterMaker, rivers, bbox, zoom,
-			this.ResourceBase, skip, this.processForWeb, getLinkMaker(req.FormValue("link_type")))
+			this.ResourceBase, skip, this.processForWeb, getLinkMaker(req.FormValue("link_type")),
+			paths)
 		if err != nil {
 			OnError500(w, err, fmt.Sprintf("Can not cluster: %s", bbox.String()))
 			return
@@ -138,6 +153,31 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 	featureCollection := MkFeatureCollection(features)
 
 	w.Write(this.JsonpAnswer(callback, featureCollection, "{}"))
+}
+
+func (this *WhiteWaterHandler) RouterData(w http.ResponseWriter, req *http.Request) {
+	_, bbox, _, err := this.tileParamsZ(w, req)
+	ways, err := this.WaterWayDao.ListByBboxNonFilpped(bbox)
+	if err != nil {
+		OnError500(w, err, fmt.Sprintf("Can not get waterways for bbox: %s", bbox.String()))
+		return
+	}
+	waysMap := make(map[int64]dao.WaterWay4Router)
+	for i := 0; i < len(ways); i++ {
+		waysMap[ways[i].Id] = ways[i]
+	}
+	this.JsonAnswer(w, RouterDataResp{
+		Tracks: waysMap,
+	})
+}
+
+func (this *WhiteWaterHandler) RouterStaticData(w http.ResponseWriter, req *http.Request) {
+	ids, err := this.WaterWayRefDao.RefsById()
+	if err != nil {
+		OnError500(w, err, "Can not get waterway ids")
+		return
+	}
+	this.JsonAnswer(w, ids)
 }
 
 func getLinkMaker(linkType string) ymaps.LinkMaker {
@@ -182,4 +222,8 @@ type SearchResp struct {
 	Spots        []dao.WhiteWaterPointWithRiverTitle `json:"spots"`
 	Rivers       []dao.RiverTitle                    `json:"rivers"`
 	ResourceBase string                              `json:"resource_base"`
+}
+
+type RouterDataResp struct {
+	Tracks map[int64]dao.WaterWay4Router `json:"tracks"`
 }

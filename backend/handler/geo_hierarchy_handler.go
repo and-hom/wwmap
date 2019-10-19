@@ -334,7 +334,7 @@ func (this *GeoHierarchyHandler) SaveRiver(w http.ResponseWriter, r *http.Reques
 	var id int64
 	var logEntryType dao.ChangesLogEntryType
 	if river.Id > 0 {
-		err = this.RiverDao.Save(riverForDb)
+		err = this.RiverDao.SaveFull(riverForDb)
 		id = river.Id
 		logEntryType = dao.ENTRY_TYPE_MODIFY
 	} else {

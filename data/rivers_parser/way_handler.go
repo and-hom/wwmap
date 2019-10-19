@@ -3,27 +3,26 @@ package main
 import (
 	"encoding/xml"
 	"fmt"
+	"github.com/and-hom/wwmap/data"
 	"github.com/kokardy/saxlike"
+	"log"
 	"os"
 	"strconv"
-	"log"
-	"github.com/and-hom/wwmap/data"
 )
 
-
 type WaterWayTmp struct {
-	Id            int64 `json:"id"`
-	Title         string `json:"title"`
-	Type          string `json:"type"`
-	ParentId      int64 `json:"parentId"`
-	Comment       string `json:"comment"`
+	Id            int64   `json:"id"`
+	Title         string  `json:"title"`
+	Type          string  `json:"type"`
+	ParentId      int64   `json:"parentId"`
+	Comment       string  `json:"comment"`
 	PathPointRefs []int64 `json:"path_point_refs"`
 }
 
 var supported_types = map[string]bool{
 	//"ditch", // канава
 	"stream": true, // ручей
-	"river": true,
+	"river":  true,
 	//"drain",  // дренаж
 	//"riverbank",
 	//"canal",
@@ -34,10 +33,10 @@ var supported_types = map[string]bool{
 	//"lock_gate",
 	//"drystream",
 	//"boatyard",
-	"oxbow": true, // старица
-	"water": true,
+	"oxbow":     true, // старица
+	"water":     true,
 	"waterfall": true,
-	"rapids": true,
+	"rapids":    true,
 	//"ditch.",
 	//"wadi", // ??
 	"brook": true, // ручей
@@ -47,7 +46,7 @@ var supported_types = map[string]bool{
 	//"hazard", // опасность. всего один объект
 	//"abandoned", // заброшенное
 	//"reservoir",
-	"riverbank;river" : true,
+	"riverbank;river": true,
 	//"riverside",
 	//"tidal",
 
@@ -59,77 +58,76 @@ type WayIterHandler struct {
 	WayObjIndex       map[int64]WaterWayTmp
 	WayObjectsByPoint map[int64][]int64
 
-	way               bool
-	found             bool
+	way   bool
+	found bool
 
-	cnt               int
-	foundcnt          int
+	cnt      int
+	foundcnt int
 
-	currentWay        WaterWayTmp
-	fileName          string
+	currentWay WaterWayTmp
+	fileName   string
 }
 
-func (h *WayIterHandler) StartDocument() {
-	h.re_init()
-	h.way = false
-	h.found = false
+func (this *WayIterHandler) StartDocument() {
+	this.re_init()
+	this.way = false
+	this.found = false
 }
 
-func (h *WayIterHandler) re_init() {
-	h.WayObjIndex = make(map[int64]WaterWayTmp)
-	h.WayObjectsByPoint = make(map[int64][]int64)
+func (this *WayIterHandler) re_init() {
+	this.WayObjIndex = make(map[int64]WaterWayTmp)
+	this.WayObjectsByPoint = make(map[int64][]int64)
 }
 
-func (h *WayIterHandler) StartElement(element xml.StartElement) {
+func (this *WayIterHandler) StartElement(element xml.StartElement) {
 	if element.Name.Local == "way" {
-		h.cnt += 1
-		h.way = true
+		this.cnt += 1
+		this.way = true
 		var err error
 		wayId, err := strconv.ParseInt(data.Attr(element.Attr, "id"), 10, 64)
 		if err != nil {
 			log.Fatal(err)
 		}
-		h.currentWay = WaterWayTmp{Id:wayId, Comment: h.fileName}
+		this.currentWay = WaterWayTmp{Id: wayId, Comment: this.fileName}
 	}
-	if h.way && element.Name.Local == "tag" && data.Attr(element.Attr, "k") == "name" {
-		h.currentWay.Title = data.Attr(element.Attr, "v")
+	if this.way && element.Name.Local == "tag" && data.Attr(element.Attr, "k") == "name" {
+		this.currentWay.Title = data.Attr(element.Attr, "v")
 	}
-	if h.way && element.Name.Local == "tag" && data.Attr(element.Attr, "k") == "waterway" {
-		h.currentWay.Type = data.Attr(element.Attr, "v")
-		h.foundcnt += 1
-		h.found = true
+	if this.way && element.Name.Local == "tag" && data.Attr(element.Attr, "k") == "waterway" {
+		this.currentWay.Type = data.Attr(element.Attr, "v")
+		this.foundcnt += 1
+		this.found = true
 	}
-	if h.way && element.Name.Local == "nd" {
-		h.way = true
+	if this.way && element.Name.Local == "nd" {
+		this.way = true
 		refIdInt, err := strconv.ParseInt(data.Attr(element.Attr, "ref"), 10, 64)
 		if err != nil {
 			log.Fatal(err)
 		}
-		h.currentWay.PathPointRefs = append(h.currentWay.PathPointRefs, refIdInt)
+		this.currentWay.PathPointRefs = append(this.currentWay.PathPointRefs, refIdInt)
 	}
 }
 
-func (h *WayIterHandler) EndElement(element xml.EndElement) {
-	if h.found && h.currentWay.Title != "" && element.Name.Local == "way" {
-		_, sutable_type := supported_types[h.currentWay.Type]
+func (this *WayIterHandler) EndElement(element xml.EndElement) {
+	if this.found && this.currentWay.Title != "" && element.Name.Local == "way" {
+		_, sutable_type := supported_types[this.currentWay.Type]
 		if !sutable_type {
 			return
 		}
-		if h.cnt % 1000 == 0 {
-			fmt.Fprintf(os.Stderr, "%d ways processed\t%d waterways found\n", h.cnt, h.foundcnt)
+		if this.cnt%1000 == 0 {
+			fmt.Fprintf(os.Stderr, "%d ways processed\t%d waterways found\n", this.cnt, this.foundcnt)
 		}
-		h.found = false
-		h.way = false
+		this.found = false
+		this.way = false
 
-		h.WayObjIndex[h.currentWay.Id] = h.currentWay
-		for _, refId := range h.currentWay.PathPointRefs {
-			arr, ref_found := h.WayObjectsByPoint[refId]
+		this.WayObjIndex[this.currentWay.Id] = this.currentWay
+		for _, refId := range this.currentWay.PathPointRefs {
+			arr, ref_found := this.WayObjectsByPoint[refId]
 			if ref_found {
-				arr = append(arr, h.currentWay.Id)
+				this.WayObjectsByPoint[refId] = append(arr, this.currentWay.Id)
 			} else {
-				h.WayObjectsByPoint[refId] = []int64{h.currentWay.Id}
+				this.WayObjectsByPoint[refId] = []int64{this.currentWay.Id}
 			}
 		}
 	}
 }
-

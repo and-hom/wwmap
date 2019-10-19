@@ -9,3 +9,4 @@
 0 23 * * * wwmap wwmap-spot-sort >> /var/log/wwmap/cron/spot-sort.log 2>&1
 0 */6 * * * wwmap wwmap-meteo >> /var/log/wwmap/cron/meteo.log 2>&1
 0 6-22/4 * * * wwmap wwmap-vodinfo-eye >> /var/log/wwmap/cron/vodinfo-eye.log 2>&1
+0 23 * * * wwmap wwmap-river-tracks-bind >> /var/log/wwmap/cron/river-tracks-bind.log 2>&1

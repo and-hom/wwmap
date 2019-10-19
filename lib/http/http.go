@@ -14,7 +14,7 @@ func CorsHeaders(w http.ResponseWriter, methods ...string) {
 	w.Header().Add("Access-Control-Allow-Headers", "origin, x-csrftoken, content-type, accept, authorization")
 }
 
-func JsonResponse(w http.ResponseWriter) {
+func SetJsonResponseHeaders(w http.ResponseWriter) {
 	w.Header().Add("Content-Type", "application/json")
 }
 

@@ -21,6 +21,6 @@ func (this meteoStorage) Insert(entry Meteo) error {
 	_, err := this.updateReturningId(this.insertQuery, func(entity interface{}) ([]interface{}, error) {
 		_e := entity.(Meteo)
 		return []interface{}{_e.PointId, time.Time(_e.Date), string(_e.Daytime), _e.Temp, _e.Rain}, nil
-	}, entry)
+	}, true, entry)
 	return err
 }

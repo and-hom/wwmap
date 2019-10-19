@@ -2,18 +2,18 @@ package dao
 
 import (
 	"database/sql"
-	"github.com/lib/pq"
 	"github.com/and-hom/wwmap/lib/dao/queries"
+	"github.com/lib/pq"
 	"time"
 )
 
 func NewNotificationPostgresDao(postgresStorage PostgresStorage) NotificationDao {
 	return notificationStorage{
-		PostgresStorage : postgresStorage,
-		insertQuery : queries.SqlQuery("notification", "insert"),
-		listUnreadQuery : queries.SqlQuery("notification", "list-unread"),
-		unreadRecipientsQuery : queries.SqlQuery("notification", "unread-provider-recipient-classifier"),
-		markReadQuery : queries.SqlQuery("notification", "mark-read"),
+		PostgresStorage:       postgresStorage,
+		insertQuery:           queries.SqlQuery("notification", "insert"),
+		listUnreadQuery:       queries.SqlQuery("notification", "list-unread"),
+		unreadRecipientsQuery: queries.SqlQuery("notification", "unread-provider-recipient-classifier"),
+		markReadQuery:         queries.SqlQuery("notification", "mark-read"),
 	}
 }
 
@@ -36,8 +36,8 @@ func (this notificationStorage) Add(notifications ...Notification) error {
 		return []interface{}{notification.Title,
 			notification.Object.Id, notification.Object.Title, notification.Comment,
 			notification.Recipient.Provider, notification.Recipient.Recipient, notification.Classifier, notification.SendBefore}, nil
-	}, params...)
-	return err;
+	}, true, params...)
+	return err
 }
 
 func (this notificationStorage) ListUnreadRecipients(nowTime time.Time) ([]NotificationRecipientWithClassifier, error) {
@@ -71,6 +71,6 @@ func (this notificationStorage) ListUnreadByRecipient(rc NotificationRecipientWi
 func (this notificationStorage) MarkRead(ids []int64) error {
 	return this.performUpdates(this.markReadQuery,
 		func(ids interface{}) ([]interface{}, error) {
-			return []interface{}{ids}, nil;
+			return []interface{}{ids}, nil
 		}, pq.Array(ids))
 }

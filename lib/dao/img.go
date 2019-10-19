@@ -49,11 +49,10 @@ func NewImgPostgresDao(postgresStorage PostgresStorage) ImgDao {
 
 func (this imgStorage) Upsert(imgs ...Img) ([]Img, error) {
 
-	ids, err := this.updateReturningId(this.upsertQuery,
-		func(entity interface{}) ([]interface{}, error) {
-			_img := entity.(Img)
-			return []interface{}{_img.ReportId, _img.WwId, _img.Source, _img.RemoteId, _img.Url, _img.PreviewUrl, _img.DatePublished, _img.Type}, nil
-		}, this.toInterface(imgs...)...)
+	ids, err := this.updateReturningId(this.upsertQuery, func(entity interface{}) ([]interface{}, error) {
+		_img := entity.(Img)
+		return []interface{}{_img.ReportId, _img.WwId, _img.Source, _img.RemoteId, _img.Url, _img.PreviewUrl, _img.DatePublished, _img.Type}, nil
+	}, true, this.toInterface(imgs...)...)
 
 	if err != nil {
 		return []Img{}, err
@@ -127,7 +126,7 @@ func (this imgStorage) GetMainForSpot(spotId int64) (Img, bool, error) {
 
 func (this imgStorage) InsertLocal(wwId int64, _type ImageType, source string, urlBase string, previewUrlBase string, datePublished time.Time) (Img, error) {
 	params := []interface{}{wwId, _type, source, datePublished}
-	vals, err := this.updateReturningColumns(this.insertLocalQuery, ArrayMapper, params)
+	vals, err := this.updateReturningColumns(this.insertLocalQuery, ArrayMapper, true, params)
 	if err != nil {
 		return Img{}, err
 	}

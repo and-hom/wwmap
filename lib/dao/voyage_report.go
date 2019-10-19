@@ -2,20 +2,20 @@ package dao
 
 import (
 	"database/sql"
-	"time"
-	"github.com/lib/pq"
 	"encoding/json"
-	"github.com/and-hom/wwmap/lib/dao/queries"
 	log "github.com/Sirupsen/logrus"
+	"github.com/and-hom/wwmap/lib/dao/queries"
+	"github.com/lib/pq"
+	"time"
 )
 
 func NewVoyageReportPostgresDao(postgresStorage PostgresStorage) VoyageReportDao {
-	return voyageReportStorage{PostgresStorage:postgresStorage,
-		upsertQuery: queries.SqlQuery("voyage-report", "upsert"),
-		getLastIdQuery: queries.SqlQuery("voyage-report", "get-last-id"),
-		listQuery: queries.SqlQuery("voyage-report", "list"),
+	return voyageReportStorage{PostgresStorage: postgresStorage,
+		upsertQuery:          queries.SqlQuery("voyage-report", "upsert"),
+		getLastIdQuery:       queries.SqlQuery("voyage-report", "get-last-id"),
+		listQuery:            queries.SqlQuery("voyage-report", "list"),
 		upsertRiverLinkQuery: queries.SqlQuery("voyage-report", "upsert-river-link"),
-		listAllQuery: queries.SqlQuery("voyage-report", "list-all"),
+		listAllQuery:         queries.SqlQuery("voyage-report", "list-all"),
 		deleteRiverLinkQuery: queries.SqlQuery("voyage-report", "delete-river-link"),
 	}
 }
@@ -35,15 +35,15 @@ func (this voyageReportStorage) UpsertVoyageReports(reports ...VoyageReport) ([]
 	for i := 0; i < len(reports); i++ {
 		reports_i[i] = reports[i]
 	}
-	ids, err := this.updateReturningId(this.upsertQuery,
-		func(entity interface{}) ([]interface{}, error) {
-			_report := entity.(VoyageReport)
-			tags, err := json.Marshal(_report.Tags)
-			if err != nil {
-				return []interface{}{}, err
-			}
-			return []interface{}{_report.Title, _report.RemoteId, _report.Source, _report.Url, _report.DatePublished, _report.DateModified, _report.DateOfTrip, tags, _report.Author}, nil
-		}, reports_i...)
+	ids, err := this.updateReturningId(this.upsertQuery, func(entity interface{}) ([]interface{}, error) {
+		_report := entity.(VoyageReport)
+		tags, err := json.Marshal(_report.Tags)
+		if err != nil {
+			return []interface{}{}, err
+		}
+		return []interface{}{_report.Title, _report.RemoteId, _report.Source, _report.Url, _report.DatePublished,
+			_report.DateModified, _report.DateOfTrip, tags, _report.Author}, nil
+	}, true, reports_i...)
 
 	if err != nil {
 		return []VoyageReport{}, err

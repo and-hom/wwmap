@@ -21,12 +21,13 @@ type UserInfoHandler struct {
 }
 
 type UserInfoDto struct {
-	AuthProvider dao.AuthProvider `json:"auth_provider"`
-	Login        string           `json:"login"`
-	FirstName    string           `json:"first_name"`
-	LastName     string           `json:"last_name"`
-	Roles        []dao.Role       `json:"roles"`
-	SessionId    string           `json:"session_id"`
+	AuthProvider        dao.AuthProvider `json:"auth_provider"`
+	Login               string           `json:"login"`
+	FirstName           string           `json:"first_name"`
+	LastName            string           `json:"last_name"`
+	Roles               []dao.Role       `json:"roles"`
+	SessionId           string           `json:"session_id"`
+	ExperimentalFeaures bool             `json:"experimental_features"`
 }
 
 func (this *UserInfoHandler) Init() {
@@ -35,6 +36,7 @@ func (this *UserInfoHandler) Init() {
 	this.Register("/auth-test", HandlerFunctions{Get: this.TestAuth})
 	this.Register("/user", HandlerFunctions{Get: this.ForRoles(this.ListUsers, dao.ADMIN)})
 	this.Register("/user/{userId}/role", HandlerFunctions{Post: this.ForRoles(this.SetRole, dao.ADMIN)})
+	this.Register("/user/{userId}/experimental", HandlerFunctions{Post: this.ForRoles(this.SetExperimentalFeatures, dao.ADMIN)})
 	this.Register("/vk/token", HandlerFunctions{Get: this.GetVkToken})
 }
 
@@ -65,12 +67,13 @@ func (this *UserInfoHandler) SessionStart(w http.ResponseWriter, r *http.Request
 	}
 
 	infoDto := UserInfoDto{
-		FirstName:    info.FirstName,
-		LastName:     info.LastName,
-		Login:        info.Login,
-		Roles:        []dao.Role{role},
-		AuthProvider: authProvider,
-		SessionId:    sessionId,
+		FirstName:           info.FirstName,
+		LastName:            info.LastName,
+		Login:               info.Login,
+		Roles:               []dao.Role{role},
+		AuthProvider:        authProvider,
+		SessionId:           sessionId,
+		ExperimentalFeaures: false,
 	}
 
 	this.JsonAnswer(w, infoDto)
@@ -85,12 +88,13 @@ func (this *UserInfoHandler) GetUserInfo(w http.ResponseWriter, r *http.Request)
 	}
 
 	infoDto := UserInfoDto{
-		FirstName:    user.Info.FirstName,
-		LastName:     user.Info.LastName,
-		Login:        user.Info.Login,
-		Roles:        []dao.Role{user.Role},
-		AuthProvider: user.AuthProvider,
-		SessionId:    user.SessionId,
+		FirstName:           user.Info.FirstName,
+		LastName:            user.Info.LastName,
+		Login:               user.Info.Login,
+		Roles:               []dao.Role{user.Role},
+		AuthProvider:        user.AuthProvider,
+		SessionId:           user.SessionId,
+		ExperimentalFeaures: user.ExperimentalFeaures,
 	}
 
 	this.JsonAnswer(w, infoDto)
@@ -149,6 +153,44 @@ func (this *UserInfoHandler) SetRole(w http.ResponseWriter, r *http.Request) {
 	this.LogUserEvent(r, USER_LOG_ENTRY_TYPE, userId, dao.ENTRY_TYPE_MODIFY, fmt.Sprintf("%s => %s", oldRole, newRole))
 }
 
+func (this *UserInfoHandler) SetExperimentalFeatures(w http.ResponseWriter, r *http.Request) {
+	pathParams := mux.Vars(r)
+	userId, err := strconv.ParseInt(pathParams["userId"], 10, 64)
+	if err != nil {
+		OnError(w, err, "Can not parse id", http.StatusBadRequest)
+		return
+	}
+
+	experimentalFeatures := false
+	body, err := decodeJsonBody(r, &experimentalFeatures)
+	if err != nil {
+		OnError500(w, err, "Can not unmarshall request body: "+body)
+		return
+	}
+
+	newExperimentalMode, oldExperimentalMode, err := this.UserDao.SetExperimentalFeatures(userId, experimentalFeatures)
+	if err != nil {
+		OnError500(w, err, "Can not set experimental features mode")
+		return
+	}
+
+	users, err := this.UserDao.List()
+	if err != nil {
+		OnError500(w, err, "Can not list users")
+		return
+	}
+
+	for i := 0; i < len(users); i++ {
+		if users[i].Id == userId && users[i].AuthProvider == dao.YANDEX {
+			this.sendChangeExperimentalModeMessage(users[i].AuthProvider, users[i].Id, users[i].Info, oldExperimentalMode, newExperimentalMode)
+		}
+	}
+
+	this.JsonAnswer(w, users)
+
+	this.LogUserEvent(r, USER_LOG_ENTRY_TYPE, userId, dao.ENTRY_TYPE_MODIFY, fmt.Sprintf("Exp. %t => %t", oldExperimentalMode, newExperimentalMode))
+}
+
 func (this *UserInfoHandler) TestAuth(w http.ResponseWriter, r *http.Request) {
 	_, found, err := this.CheckRoleAllowed(r, dao.ADMIN)
 	if err != nil {
@@ -205,6 +247,25 @@ func (this *UserInfoHandler) sendChangeRoleMessage(authProvider dao.AuthProvider
 		Comment:    fmt.Sprintf("%s => %s", oldRole, newRole),
 		Recipient:  dao.NotificationRecipient{Provider: dao.NOTIFICATION_PROVIDER_EMAIL, Recipient: notification.YandexEmail(info.Login)},
 		Classifier: "user-roles",
+		SendBefore: time.Now(), // send as soon as possible
+	})
+	if err != nil {
+		log.Errorf("Can not send message to user %d: %v", userId, err)
+	}
+}
+
+func (this *UserInfoHandler) sendChangeExperimentalModeMessage(authProvider dao.AuthProvider, userId int64, info dao.UserInfo, old bool, new bool) {
+	comment := ""
+	if new {
+		comment = "включены"
+	} else {
+		comment = "выключены"
+	}
+	err := this.NotificationDao.Add(dao.Notification{
+		Object:     dao.IdTitle{Id: userId, Title: info.Login},
+		Comment:    comment,
+		Recipient:  dao.NotificationRecipient{Provider: dao.NOTIFICATION_PROVIDER_EMAIL, Recipient: notification.YandexEmail(info.Login)},
+		Classifier: "experimental-features",
 		SendBefore: time.Now(), // send as soon as possible
 	})
 	if err != nil {

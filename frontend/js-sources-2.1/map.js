@@ -1,7 +1,9 @@
 import {WWMapSearchProvider} from "./searchProvider";
 import {createLegend} from "./legend";
-import {CACHED_TILES_TEMPLATE, GOOGLE_SAT_TILES, bingSatTiles, getLastPositionAndZoom, setLastPositionZoomType} from './util';
+import {CACHED_TILES_TEMPLATE, GOOGLE_SAT_TILES, bingSatTiles, getLastPositionAndZoom, setLastPositionZoomType, getWwmapUserInfoForMapControls} from './util';
 import {apiBase} from "./config";
+import {createMeasurementToolControl} from "./router/control";
+import {WWMapMeasurementTool} from "./router/measurement";
 
 export function WWMap(divId, bubbleTemplate, riverList, tutorialPopup, catalogLinkType) {
     this.divId = divId;
@@ -165,6 +167,12 @@ WWMap.prototype.init = function () {
 
     this.yMap.geoObjects.add(objectManager);
     this.objectManager = objectManager;
+
+    this.measurementTool = new WWMapMeasurementTool(yMap, objectManager, backendApiBase);
+    var info = getWwmapUserInfoForMapControls();
+    if (info && info.experimental_features) {
+        this.yMap.controls.add(createMeasurementToolControl(this.measurementTool), {});
+    }
 
     this.loadRivers(this.yMap.getBounds())
 };

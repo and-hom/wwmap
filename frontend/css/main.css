@@ -13,3 +13,10 @@ ul {
 .role-user {
     color: green
 }
+
+.wwmap-user-row {
+
+}
+.wwmap-user-row-experimental {
+    background-color: #f77;
+}

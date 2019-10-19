@@ -23,7 +23,8 @@ type RiverDao interface {
 	ListByRegionFull(regionId int64) ([]River, error)
 	ListByFirstLetters(query string, limit int) ([]RiverTitle, error)
 	Insert(river River) (int64, error)
-	Save(river ...River) error
+	SaveFull(river ...River) error
+	Save(river ...RiverTitle) error
 	SetVisible(id int64, visible bool) error
 	FindByTitlePart(tPart string, limit, offset int) ([]RiverTitle, error)
 }
@@ -63,6 +64,18 @@ type WaterWayDao interface {
 	ForEachWaterWay(transformer func(WaterWay) (WaterWay, error), tmpTable string) error
 	DetectForRiver(riverId int64) ([]WaterWay, error)
 	UnlinkRiver(id int64, tx interface{}) error
+	BindToRiver(riverId int64, titleVariants []string) ([]int64, error)
+	ListByRiverIds(riverIds ...int64) ([]WaterWay, error)
+	ListByBbox(bbox Bbox) ([]WaterWay, error)
+	ListByBboxNonFilpped(bbox Bbox) ([]WaterWay4Router, error)
+}
+
+type WaterWayOsmRefDao interface {
+	Insert(refs ...WaterWayOsmRef) error
+}
+
+type WaterWayRefDao interface {
+	RefsById() (map[int64][]int64, error)
 }
 
 type VoyageReportDao interface {
@@ -108,6 +121,7 @@ type UserDao interface {
 	List() ([]User, error)
 	ListByRole(role Role) ([]User, error)
 	SetRole(userId int64, role Role) (Role, Role, error)
+	SetExperimentalFeatures(userId int64, enable bool) (bool, bool, error)
 	GetBySession(sessionId string) (User, error)
 }
 
