@@ -4,11 +4,12 @@ import {buildGPX, GarminBuilder} from "gpx-builder";
 const SEG_TYPE_INITIAL = "initial";
 const SEG_TYPE_LINE = "line";
 
-export function MultiPath(initialPos, map) {
+export function MultiPath(initialPos, map, measurementTool) {
     let initialSeg = new PathSegment(this, SEG_TYPE_INITIAL, initialPos, 0, "0");
     this.segments = [initialSeg];
     this.map = map;
     this.length = 0;
+    this.measurementTool = measurementTool;
 }
 
 MultiPath.prototype.segmentCount = function () {
@@ -26,7 +27,9 @@ MultiPath.prototype.createMarker = function (mapPos, text) {
         preset: 'islands#redStretchyIcon',
     });
     marker.events.add('click', (e) => {
-        this.pushEmptySegment(mouseToCoords(e));
+        if (this.measurementTool.enabled && this.measurementTool.edit) {
+            this.pushEmptySegment(mouseToCoords(e));
+        }
     });
     marker.properties.set("iconContent", text);
     return marker;

@@ -1,4 +1,4 @@
-import {flip, mouseToCoords} from "./util";
+import {flip} from "./util";
 import {TrackStorage} from "./track.storage";
 import * as turf from '@turf/turf';
 import {MultiPath} from "./multi.path";
@@ -30,25 +30,29 @@ export function WWMapMeasurementTool(map, objectManager, apiBase) {
 
 WWMapMeasurementTool.prototype.addEvents = function (n) {
     this.objectManager.objects.events.add(['click'], e => {
-        if (!this.enabled || !this.edit) {
-            return
+        if (this.enabled && this.edit) {
+            this.multiPath.pushEmptySegment();
         }
-        this.multiPath.pushEmptySegment();
     });
     this.objectManager.objects.events.add('mousemove', e => {
-        this.onMouseMoved(e.get('position'));
+        if (this.enabled && this.edit) {
+            this.onMouseMoved(e.get('position'));
+        }
     });
     this.map.events.add('click', e => {
-        if (!this.enabled || !this.edit) {
-            return
+        if (this.enabled && this.edit) {
+            this.multiPath.pushEmptySegment();
         }
-        this.multiPath.pushEmptySegment();
     });
     this.map.events.add('boundschange', e => {
-        this.onViewportChanged(this.map.getBounds());
+        if (this.enabled && this.edit) {
+            this.onViewportChanged(this.map.getBounds());
+        }
     });
     this.map.events.add('mousemove', e => {
-        this.onMouseMoved(e.get('position'));
+        if (this.enabled && this.edit) {
+            this.onMouseMoved(e.get('position'));
+        }
     });
 };
 
@@ -81,7 +85,7 @@ WWMapMeasurementTool.prototype.reset = function () {
     if (this.multiPath) {
         this.multiPath.hide();
     }
-    this.multiPath = new MultiPath(this.pos, this.map);
+    this.multiPath = new MultiPath(this.pos, this.map, this);
     if(this.enabled) {
         this.multiPath.show();
     }
