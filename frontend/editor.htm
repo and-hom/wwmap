@@ -49,7 +49,7 @@
          :ok-fn="function() { spoteditorstate.editMode = false; if(closeCallback) {closeCallback()}}"></ask>
     <ask id="close-river-editor" title="Отменить редактирование?"
          msg='Открыт редактор реки. Там могут быть ваши изменения. Для сохранения воспользуйтесь кнопкой "Сохранить" сверху. Закрыть редактор и сбросить изменения?'
-         :ok-fn="function() { rivereditorstate.editMode = false; if(closeCallback) {closeCallback()} }"></ask>
+         :ok-fn="function() { rivereditorstate.pageMode = 'view'; if(closeCallback) {closeCallback()} }"></ask>
 
     <page link="editor.htm">
         <div class="container-fluid" style="margin-top: 20px;">
@@ -195,7 +195,7 @@
         app.countryeditorstate.visible = false;
 
         app.rivereditorstate.visible = true;
-        app.rivereditorstate.editMode = true;
+        app.rivereditorstate.pageMode = 'edit';
         app.rivereditorstate.river = {
             id: 0,
             region: region,
@@ -208,7 +208,7 @@
 
     function selectRiver(country, region, id) {
         app.rivereditorstate.river = getRiver(id);
-        app.rivereditorstate.editMode = false;
+        app.rivereditorstate.pageMode = 'view';
         app.rivereditorstate.reports=getReports(id);
         app.rivereditorstate.country = country;
         app.rivereditorstate.region = region;
@@ -241,7 +241,7 @@
           },
           "rivereditorstate": {
             "visible": false,
-            "editMode": false
+            "pageMode": 'view'
           },
           "regioneditorstate": {
             "visible": false,
@@ -265,7 +265,7 @@
               this.closeCallback = callback;
               let t = this;
 
-              if (!this.spoteditorstate.editMode && !this.rivereditorstate.editMode) {
+              if (!this.spoteditorstate.editMode && this.rivereditorstate.pageMode!='edit') {
                   callback();
                   return;
               }
@@ -279,7 +279,7 @@
                   });
                   spotEditorCloseDialog.modal();
               }
-              if (this.rivereditorstate.editMode) {
+              if (this.rivereditorstate.pageMode == 'edit') {
                   let riverEditorCloseDialog = $('#close-river-editor');
                   riverEditorCloseDialog.on('hidden.bs.modal', function (e) {
                       t.closeCallback = function () {

@@ -6,12 +6,12 @@
 
         <div v-if="canEdit()" class="btn-toolbar justify-content-between">
             <div class="btn-group mr-2" role="group">
-                <button v-if="river.id && !editMode" type="button" class="btn btn-primary" v-on:click="add_spot()">Добавить препятствие</button>
-                <button type="button" class="btn btn-info" v-if="!editMode" v-on:click="editMode=true; hideError();">
+                <button v-if="river.id && pageMode != 'edit'" type="button" class="btn btn-primary" v-on:click="add_spot()">Добавить препятствие</button>
+                <button type="button" class="btn btn-info" v-if="pageMode != 'edit'" v-on:click="pageMode='edit'; hideError();">
                     Редактирование
                 </button>
-                <button type="button" class="btn btn-success" v-if="editMode" v-on:click="editMode=!save()">Сохранить</button>
-                <button type="button" class="btn btn-secondary" v-if="editMode" v-on:click="editMode=false; cancelEditing()">Отменить</button>
+                <button type="button" class="btn btn-success" v-if="pageMode == 'edit'" v-on:click="pageMode=save() ? 'view' : 'edit'">Сохранить</button>
+                <button type="button" class="btn btn-secondary" v-if="pageMode == 'edit'" v-on:click="pageMode='view'; cancelEditing()">Отменить</button>
                 <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#del-river">Удалить
                 </button>
             </div>
@@ -20,7 +20,7 @@
             </div>
         </div>
 
-        <div v-if="editMode" class="spot-editor-panel" style="padding-top:15px;">
+        <div v-if="pageMode == 'edit'" class="spot-editor-panel" style="padding-top:15px;">
                     <b-tabs>
                         <b-tab title="Главное" active>
                             <input v-model.trim="river.title" style="display:block"/>
@@ -29,10 +29,10 @@
                                 <dd>
                                     <span style="padding-left:40px;" v-if="river.visible">Да</span>
                                     <span style="padding-left:40px;" v-else>Нет</span>&nbsp;&nbsp;&nbsp;
-                                    <button type="button" class="btn btn-info" v-if="canEdit() && !editMode && !river.visible" v-on:click="setVisible(true); hideError();">
+                                    <button type="button" class="btn btn-info" v-if="canEdit() && pageMode != 'edit' && !river.visible" v-on:click="setVisible(true); hideError();">
                                         Показывать на карте
                                     </button>
-                                    <button type="button" class="btn btn-info" v-if="canEdit() && !editMode && river.visible" v-on:click="setVisible(false); hideError();">
+                                    <button type="button" class="btn btn-info" v-if="canEdit() && pageMode != 'edit' && river.visible" v-on:click="setVisible(false); hideError();">
                                         Скрыть на карте
                                     </button>
                                     <div style="padding-left:40px;" class="wwmap-system-hint">Нужно, когда мы не хотим выставлять наполовину размеченную и описанную реку.
@@ -152,10 +152,10 @@
                 <dd>
                     <span style="padding-left:40px;" v-if="river.visible">Да</span>
                     <span style="padding-left:40px;" v-else>Нет</span>&nbsp;&nbsp;&nbsp;
-                    <button type="button" class="btn btn-info" v-if="canEdit() && !editMode && !river.visible" v-on:click="setVisible(true); hideError();">
+                    <button type="button" class="btn btn-info" v-if="canEdit() && pageMode != 'edit' && !river.visible" v-on:click="setVisible(true); hideError();">
                         Показывать на карте
                     </button>
-                    <button type="button" class="btn btn-info" v-if="canEdit() && !editMode && river.visible" v-on:click="setVisible(false); hideError();">
+                    <button type="button" class="btn btn-info" v-if="canEdit() && pageMode != 'edit' && river.visible" v-on:click="setVisible(false); hideError();">
                         Скрыть на карте
                     </button>
                     <div  v-if="canEdit()" style="padding-left:40px;" class="wwmap-system-hint">Нужно, когда мы не хотим выставлять наполовину размеченную и описанную реку.
@@ -271,13 +271,13 @@
                     Authorization: getWwmapSessionId()
                 }
             },
-            editMode: {
+            pageMode: {
                 get:function() {
-                    return app.rivereditorstate.editMode
+                    return app.rivereditorstate.pageMode
                 },
 
                 set:function(newVal) {
-                    app.rivereditorstate.editMode = newVal
+                    app.rivereditorstate.pageMode = newVal
                 }
             },
             meteoPoints: {
@@ -338,7 +338,7 @@
                     if (updated) {
                         this.river = updated;
                         this.meteoPoint = this.getMeteoPointById(this.river.props.meteo_point);
-                        this.editMode=false;
+                        this.pageMode='view';
                         this.hideError();
                         var new_region_id = nvlReturningId(updated.region);
                         setActiveEntity(updated.region.country_id, new_region_id, updated.id);
@@ -419,7 +419,7 @@
 
                 files: [],
                 add_spot: function() {
-                    app.spoteditorstate.visible = false
+                    app.spoteditorstate.visible = false;
                     app.rivereditorstate.visible = false;
 
                     app.spoteditorstate.visible = true;
@@ -472,7 +472,6 @@
                             }
                         }
                     }
-                    console.log(this.center)
                     return {id: null, title: null, point: this.center}
                 },
                 addMeteoPoint: function () {
@@ -540,7 +539,7 @@
                 gpxJustUploaded: false,
                 gpxUrl: function (transliterate) {
                     return `${backendApiBase}/gpx/river/${this.river.id}?tr=${transliterate}`;
-                }
+                },
             }
         },
         methods: {
