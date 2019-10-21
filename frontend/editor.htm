@@ -15,6 +15,7 @@
     <script type="text/javascript" src="js-editor/polyfill.min.js"></script>
     <script type="text/javascript" src="js-editor/tether.min.js"></script>
     <script type="text/javascript" src="js/jquery-3.1.1.min.js"></script>
+    <script type="text/javascript" src="js-editor/jquery.uuid.js"></script>
     <script type="text/javascript" src="js/jquery.cookie.js"></script>
     <script type="text/javascript" src="js-editor/popper.min.js"></script>
     <script type="text/javascript" src="js-editor/bootstrap.min.js"></script>
@@ -265,7 +266,7 @@
               this.closeCallback = callback;
               let t = this;
 
-              if (!this.spoteditorstate.editMode && this.rivereditorstate.pageMode!='edit') {
+              if (!this.spoteditorstate.editMode && this.rivereditorstate.pageMode!='edit' && this.rivereditorstate.pageMode!='batch-edit') {
                   callback();
                   return;
               }
@@ -279,7 +280,7 @@
                   });
                   spotEditorCloseDialog.modal();
               }
-              if (this.rivereditorstate.pageMode == 'edit') {
+              if (this.rivereditorstate.pageMode == 'edit' || this.rivereditorstate.pageMode == 'batch-edit') {
                   let riverEditorCloseDialog = $('#close-river-editor');
                   riverEditorCloseDialog.on('hidden.bs.modal', function (e) {
                       t.closeCallback = function () {
