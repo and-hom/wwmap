@@ -22,20 +22,27 @@ function doGetJsonSync(url, auth) {
     return null
 }
 
-function doDeleteSync(url, auth) {
+function doDeleteSync(url, auth, failResponseBodyCallback) {
     var xhr = sendRequest(url, "DELETE", auth);
-    return (xhr && xhr.status === 200)
+    let resp = (xhr && xhr.status === 200);
+    if (xhr && failResponseBodyCallback) {
+        failResponseBodyCallback(xhr.response, xhr.status)
+    }
+    return resp;
 }
 
-function doDeleteWithJsonRespSync(url, auth) {
+function doDeleteWithJsonRespSync(url, auth, failResponseBodyCallback) {
     var xhr = sendRequest(url, "DELETE", auth);
     if (xhr && xhr.status === 200) {
         return JSON.parse(xhr.response)
     }
+    if (xhr && failResponseBodyCallback) {
+        failResponseBodyCallback(xhr.response, xhr.status)
+    }
     return null
 }
 
-function doPostJsonSync(url, value, auth) {
+function doPostJsonSync(url, value, auth, failResponseBodyCallback) {
     var xhr = new XMLHttpRequest();
     xhr.open('POST', url, false);
     xhr.setRequestHeader("Content-Type", "application/json");
@@ -43,7 +50,10 @@ function doPostJsonSync(url, value, auth) {
     var data = JSON.stringify(value);
     xhr.send(data);
     if (xhr.status === 200) {
-        return JSON.parse(xhr.response)
+        return JSON.parse(xhr.response, xhr.status)
+    }
+    if (xhr && failResponseBodyCallback) {
+        failResponseBodyCallback(xhr.response)
     }
     return null
 }

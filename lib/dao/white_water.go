@@ -88,15 +88,15 @@ func (this whiteWaterStorage) FindByTitlePart(tPart string, limit, offset int) (
 	return this.list(this.findByTitlePartQuery, pq.Array(strings.Fields(tPart)), limit, offset)
 }
 
-func (this whiteWaterStorage) Find(id int64) (WhiteWaterPointWithRiverTitle, error) {
+func (this whiteWaterStorage) Find(id int64) (WhiteWaterPointWithRiverTitle, bool, error) {
 	found, err := this.list(this.byIdQuery, id)
 	if err != nil {
-		return WhiteWaterPointWithRiverTitle{}, err
+		return WhiteWaterPointWithRiverTitle{}, false, err
 	}
 	if len(found) == 0 {
-		return WhiteWaterPointWithRiverTitle{}, fmt.Errorf("Spot with id %d not found", id)
+		return WhiteWaterPointWithRiverTitle{}, false, nil
 	}
-	return found[0], nil
+	return found[0], true, nil
 }
 
 func (this whiteWaterStorage) FindFull(id int64) (WhiteWaterPointFull, error) {

@@ -6,12 +6,16 @@
 
         <div v-if="canEdit()" class="btn-toolbar justify-content-between">
             <div class="btn-group mr-2" role="group">
-                <button v-if="river.id && pageMode != 'edit'" type="button" class="btn btn-primary" v-on:click="add_spot()">Добавить препятствие</button>
-                <button type="button" class="btn btn-info" v-if="pageMode != 'edit'" v-on:click="pageMode='edit'; hideError();">
+                <button v-if="river.id && pageMode == 'view'" type="button" class="btn btn-primary" v-on:click="add_spot()">Добавить препятствие</button>
+                <button type="button" class="btn btn-info" v-if="pageMode == 'view'" v-on:click="pageMode='edit'; hideError();">
                     Редактирование
                 </button>
+                <button type="button" class="btn btn-success" v-if="river.id && pageMode == 'view'" v-on:click="spots = getSpots(river.id); pageMode='batch-edit'; hideError();">
+                    Пакетное редактирование и загрузка GPX
+                </button>
                 <button type="button" class="btn btn-success" v-if="pageMode == 'edit'" v-on:click="pageMode=save() ? 'view' : 'edit'">Сохранить</button>
-                <button type="button" class="btn btn-secondary" v-if="pageMode == 'edit'" v-on:click="pageMode='view'; cancelEditing()">Отменить</button>
+                <button type="button" class="btn btn-success" v-if="pageMode == 'batch-edit'" v-on:click="pageMode=saveSpotsBatch() ? 'view' : 'batch-edit'">Сохранить</button>
+                <button type="button" class="btn btn-secondary" v-if="pageMode != 'view'" v-on:click="pageMode='view'; cancelEditing()">Отменить</button>
                 <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#del-river">Удалить
                 </button>
             </div>
@@ -139,58 +143,8 @@
                         </b-tab>
                     </b-tabs>
         </div>
-        <div v-else class="spot-display">
-            <h1>{{ river.title }}</h1>&nbsp;<a
-                id="gpx" :href="gpxUrl(false)" style="padding-right:10px;" alt="Скачать GPX с точками порогов">GPX</a>&nbsp;<a
-                id="gpx_en" :href="gpxUrl(true)" alt="Скачать GPX с точками порогов">GPX<sub>en</sub></a>
-            <div style="float:right;">
-                <img border='0' :src="informerUrl()">
-                <div id="map" style="width:650px; height: 450px;padding-left: 30px;"></div>
-            </div>
-            <dl>
-                <dt>Показывать на карте:</dt>
-                <dd>
-                    <span style="padding-left:40px;" v-if="river.visible">Да</span>
-                    <span style="padding-left:40px;" v-else>Нет</span>&nbsp;&nbsp;&nbsp;
-                    <button type="button" class="btn btn-info" v-if="canEdit() && pageMode != 'edit' && !river.visible" v-on:click="setVisible(true); hideError();">
-                        Показывать на карте
-                    </button>
-                    <button type="button" class="btn btn-info" v-if="canEdit() && pageMode != 'edit' && river.visible" v-on:click="setVisible(false); hideError();">
-                        Скрыть на карте
-                    </button>
-                    <div  v-if="canEdit()" style="padding-left:40px;" class="wwmap-system-hint">Нужно, когда мы не хотим выставлять наполовину размеченную и описанную реку.
-                    Если добавляешь часть порогов, а остальные планируешь на потом, не делай реку видимой на карте.</div>
-                    <div v-else></div>
-                </dd>
-                <dt v-if="river.region.id>0">Регион:</dt>
-                <dd v-if="river.region.id>0">
-                    <div style="padding-left:40px;">
-                        <div v-if="river.region.fake">{{country.title}}</div>
-                        <div v-else>{{river.region.title}}</div>
-                    </div>
-                </dd>
-                <dt>Описание:</dt>
-                <dd>
-                    <div style="padding-left:40px;">
-                        {{river.description}}
-                    </div>
-
-                </dd>
-                <dt>Другие варианты названия для автоматического поиска отчётов:</dt>
-                <dd>
-                    <ul>
-                        <li v-for="alias in river.aliases">{{alias}}</li>
-                    </ul>
-                </dd>
-                <dt>Отчёты:
-                </dt>
-                <dd>
-                    <div style="padding-left:40px;" class="wwmap-system-hint" v-if="canEdit()">Поиск отчётов происходит раз в сутки ночью. Наберитесь терпения.</div>
-                    <ul>
-                        <li v-for="report in reports"><a target="_blank" :href="report.url">{{report.title}}</a></li>
-                    </ul>
-                </dd>
-            </dl>
+        <div v-else-if="pageMode == 'batch-edit'" class="spot-editor-panel" style="padding-top:15px;">
+            <div style="margin-bottom: 20px">Изменения вступят в силу после нажатия кнопки <b>Сохранить</b> выше</div>
 
             <div v-if="canEdit() && river.id">
                 <template>
@@ -242,10 +196,216 @@
                     </div>
                 </template>
             </div>
+                <button type="button" class="btn btn-success" v-on:click="spots.push({id:0, river_id: river.id, river: {id: river.id}})">Добавить</button>
+            <div v-for="(spot, index) in spots"
+                 :class="'container module ' + (spotsForDeleteIds.includes(spot.id) ? 'deleted-spot' : '')">
+                <div class="collapse wwmap-collapse" :id="'wwmap-collapse_'+index" aria-expanded="false">
+                    <div class="row">
+                        <div class="col-6">
+                            <input v-model.trim="spot.title" style="display:block; width: 100%; padding-bottom: 10px;   "/>
+                            <div style="padding-top:4px;">
+                                <strong>Широта:</strong>&nbsp;{{ spotPoint0(spot)[0] }}&nbsp;&nbsp;&nbsp;<strong>Долгота:</strong>&nbsp;{{ spotPoint0(spot)[1] }}
+                            </div>
+                            <ya-map-location :ref="'locationEdit_'+index" v-bind:spot="spot" width="100%" height="400px"
+                                             :editable="true" :ya-search="true" v-bind:refresh-on-change="spot.point"/>
+                        </div>
+                        <div class="col-4">
+                            <div>
+                                <strong>Категория сложности: </strong><a target="_blank"
+                                                                         href="https://huskytm.ru/rules2018-2019/#categories_tab"><img
+                                    src="img/question_16.png"></a>
+                            </div>
+                            <div>
+                                <dl style="padding-left:40px;">
+                                    <dt>По классификатору</dt>
+                                    <dd>
+                                        <select v-model="spot.category">
+                                            <option v-for="cat in all_categories" v-bind:value="cat.id">{{cat.title}}
+                                            </option>
+                                        </select>
+                                    </dd>
+                                    <dt>Низкий уровень воды</dt>
+                                    <dd>
+                                        <select v-model="spot.lw_category">
+                                            <option v-for="cat in all_categories" v-bind:value="cat.id">{{cat.title}}
+                                            </option>
+                                        </select>
+                                    </dd>
+                                    <dt>Средний уровень воды</dt>
+                                    <dd>
+                                        <select v-model="spot.mw_category">
+                                            <option v-for="cat in all_categories" v-bind:value="cat.id">{{cat.title}}
+                                            </option>
+                                        </select>
+                                    </dd>
+                                    <dt>Высокий уровень воды</dt>
+                                    <dd>
+                                        <select v-model="spot.hw_category">
+                                            <option v-for="cat in all_categories" v-bind:value="cat.id">{{cat.title}}
+                                            </option>
+                                        </select>
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+                        <div class="col2">
+                            <button v-if="spotsForDeleteIds.includes(spot.id)" type="button" class="btn btn-secondary"
+                                    v-on:click="spotsForDeleteIds = spotsForDeleteIds.filter(function(x) {
+                          return x!=spot.id;
+                        })">Не удалять
+                            </button>
+                            <button v-else type="button" class="btn btn-danger"
+                                    v-on:click="spot.id ? spotsForDeleteIds.push(spot.id) : spots.splice(index, 1)">
+                                Удалить
+                            </button>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-2"><strong>Описание: </strong></div>
+                        <div class="col-10"><textarea rows="10" cols="120" v-model="spot.short_description"></textarea>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-2"><strong>Ориентиры:</strong></div>
+                        <div class="col-10"><textarea rows="10" style="width:100%" v-model="spot.orient"></textarea>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-2"><strong>Подход/выход:</strong></div>
+                        <div class="col-10"><textarea rows="10" cols="120" v-model="spot.approach"></textarea></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-2"><strong>Страховка:</strong></div>
+                        <div class="col-10"><textarea rows="10" cols="120" v-model="spot.safety"></textarea></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-2"><strong>Описание для низкого уровня воды:</strong></div>
+                        <div class="col-10"><textarea rows="10" cols="120" v-model="spot.lw_description"></textarea>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-2"><strong>Описание для среднего уровня воды:</strong></div>
+                        <div class="col-10"><textarea rows="10" cols="120" v-model="spot.mw_description"></textarea>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-2"><strong>Описание для высокого уровня воды:</strong></div>
+                        <div class="col-10"><textarea rows="10" cols="120" v-model="spot.hw_description"></textarea>
+                        </div>
+                    </div>
+                    <hr/>
+                    <div class="row">
+                        <div class="col-12"><strong>Другие варианты названия для поиска изображений:</strong>
+                            <div class="wwmap-system-hint" style="margin-bottom: 7px;">Каждое альтернативное название на
+                                новой строке
+                            </div>
+                            <textarea v-bind:text-content="spot.aliases"
+                                      v-on:input="spot.aliases = parseAliases($event.target.value)"
+                                      rows="10" cols="120">{{ spot.aliases ? spot.aliases.join('\n') : '' }}</textarea>
+                        </div>
+                    </div>
+                </div>
+                <div style="width: 100%; height: 30px; margin-top: 10px;margin-bottom: 10px; background: #cccccc;">
+                    <a role="button" class="collapsed collapse-control" data-toggle="collapse"
+                       :href="'#wwmap-collapse_'+index" aria-expanded="false"
+                       :aria-controls="'wwmap-collapse_'+index"></a>
+                </div>
+            </div>
+            <button v-if="spots.length>0" type="button" class="btn btn-success" v-on:click="spots.push({id:0, river_id: river.id, river: {id: river.id}})">Добавить
+            </button>
+        </div>
+        <div v-else class="spot-display">
+            <h1>{{ river.title }}</h1>&nbsp;<a
+                id="gpx" :href="gpxUrl(false)" style="padding-right:10px;" alt="Скачать GPX с точками порогов">GPX</a>&nbsp;<a
+                id="gpx_en" :href="gpxUrl(true)" alt="Скачать GPX с точками порогов">GPX<sub>en</sub></a>
+            <div style="float:right;">
+                <img border='0' :src="informerUrl()">
+                <div id="map" style="width:650px; height: 450px;padding-left: 30px;"></div>
+            </div>
+            <dl>
+                <dt>Показывать на карте:</dt>
+                <dd>
+                    <span style="padding-left:40px;" v-if="river.visible">Да</span>
+                    <span style="padding-left:40px;" v-else>Нет</span>&nbsp;&nbsp;&nbsp;
+                    <button type="button" class="btn btn-info" v-if="canEdit() && pageMode != 'edit' && !river.visible" v-on:click="setVisible(true); hideError();">
+                        Показывать на карте
+                    </button>
+                    <button type="button" class="btn btn-info" v-if="canEdit() && pageMode != 'edit' && river.visible" v-on:click="setVisible(false); hideError();">
+                        Скрыть на карте
+                    </button>
+                    <div  v-if="canEdit()" style="padding-left:40px;" class="wwmap-system-hint">Нужно, когда мы не хотим выставлять наполовину размеченную и описанную реку.
+                    Если добавляешь часть порогов, а остальные планируешь на потом, не делай реку видимой на карте.</div>
+                    <div v-else></div>
+                </dd>
+                <dt v-if="river.region.id>0">Регион:</dt>
+                <dd v-if="river.region.id>0">
+                    <div style="padding-left:40px;">
+                        <div v-if="river.region.fake">{{country.title}}</div>
+                        <div v-else>{{river.region.title}}</div>
+                    </div>
+                </dd>
+                <dt>Описание:</dt>
+                <dd>`
+                    <div style="padding-left:40px;">
+                        {{river.description}}
+                    </div>
+
+                </dd>
+                <dt>Другие варианты названия для автоматического поиска отчётов:</dt>
+                <dd>
+                    <ul>
+                        <li v-for="alias in river.aliases">{{alias}}</li>
+                    </ul>
+                </dd>
+                <dt>Отчёты:
+                </dt>
+                <dd>
+                    <div style="padding-left:40px;" class="wwmap-system-hint" v-if="canEdit()">Поиск отчётов происходит раз в сутки ночью. Наберитесь терпения.</div>
+                    <ul>
+                        <li v-for="report in reports"><a target="_blank" :href="report.url">{{report.title}}</a></li>
+                    </ul>
+                </dd>
+            </dl>
         </div>
 
     </div>
 </template>
+<style type="text/css">
+    .module {
+        margin-left: 10px;
+        padding-left: 0;
+        padding-bottom: 35px;
+        padding-top: 15px;
+        border-top: #555555;
+        border-top-style: dashed;
+    }
+
+    .module .collapse-control.collapsed:after {
+        content: 'Развернуть';
+    }
+
+    .module .collapse-control:not(.collapsed):after {
+        content: 'Свернуть';
+    }
+
+    .module .wwmap-collapse.collapse:not(.show) {
+        display: block;
+        height: 660px;
+        overflow: hidden;
+    }
+
+    .module .wwmap-collapse.collapsing {
+        display: block;
+    }
+
+    .module .row {
+        margin-left: 0;
+    }
+
+    .deleted-spot {
+        background: #ffeeee;
+    }
+</style>
 
 <script>
     module.exports = {
@@ -256,9 +416,15 @@
         updated: function() {
             this.resetToInitialIfRequired();
 
+            let t = this;
             if(this.$refs.uploadGpx && this.$refs.uploadGpx.value.length && this.$refs.uploadGpx.uploaded && this.gpxJustUploaded) {
                 showRiverTree(this.river.region.country_id, nvlReturningId(this.river.region), this.river.id);
                 this.gpxJustUploaded = false;
+                for(let i=0; i< this.$refs.uploadGpx.value.length; i++) {
+                    this.$refs.uploadGpx.value[i].response.forEach(function (x) {
+                        t.spots.push(x);
+                    });
+                }
             }
         },
         created: function() {
@@ -366,6 +532,71 @@
                         return false;
                     }
                 },
+                saveSpotsBatch: function () {
+                    try {
+                        this.hideError();
+                        let forDelete = this.spotsForDeleteIds;
+                        let deleteErrors = "";
+                        let saveErrors = "";
+
+                        let removed = forDelete.map(function (id) {
+                            let failMsg = "";
+                            let httpStatusCode = 200;
+                            let success = removeSpot(id, function (msg, httpCode) {
+                                if(httpCode!=404) {
+                                    failMsg = msg;
+                                }
+                                httpStatusCode = httpCode;
+                            });
+                            if (!success) {
+                                deleteErrors += failMsg;
+                            }
+                            return httpStatusCode == 404 ||success;
+                        });
+                        let saved = this.spots.filter(function (spot) {
+                            return !forDelete.includes(spot.id);
+                        }).map(function(spot) {
+                            let failMsg = "";
+                            let success = saveSpot(spot, function (msg) {
+                                failMsg = msg;
+                                console.log(failMsg)
+                            });
+                            if (!success) {
+                                saveErrors += failMsg;
+                            }
+                            return success;
+                        });
+
+                        console.log(saved)
+                        let failCount = removed.concat(saved).filter(function (x) {
+                            return !x;
+                        }).length;
+
+                        console.log(failCount, saveErrors, deleteErrors)
+                        if (failCount != 0) {
+                            if (saveErrors) {
+                                this.showError("Не получилось сохранить: " + saveErrors);
+                            } else if (deleteErrors) {
+                                this.showError("Не получилось удалить: " + deleteErrors);
+                            }
+                            return false;
+                        }
+                    } catch (e) {
+                        this.showError("Не получилось сохранить: " + e);
+                        console.log(e);
+                        return false
+                    }
+
+
+                    let countryId = this.river.region.country_id;
+                    let regionId = nvlReturningId(this.river.region);
+                    let riverId = this.river.id;
+
+                    showRiverTree(countryId, regionId, riverId);
+
+                    this.hideError();
+                    return true;
+                },
                 cancelEditing:function() {
                     if(this.river && this.river.id>0) {
                         this.reload();
@@ -376,6 +607,7 @@
                 reload: function () {
                     this.river = getRiver(this.river.id);
                     this.meteoPoint = this.getMeteoPointById(this.river.props.meteo_point);
+                    this.spotsForDeleteIds = [];
                     this.hideError();
                     this.reloadMap();
                 },
@@ -539,6 +771,18 @@
                 gpxJustUploaded: false,
                 gpxUrl: function (transliterate) {
                     return `${backendApiBase}/gpx/river/${this.river.id}?tr=${transliterate}`;
+                },
+
+                spots: [],
+                spotsForDeleteIds: [],
+                getSpots: getSpotsFull,
+                all_categories:all_categories,
+                spotPoint0: function(spot) {
+                    if (Array.isArray(spot.point[0])) {
+                        return spot.point[0]
+                    } else {
+                        return spot.point
+                    }
                 },
             }
         },

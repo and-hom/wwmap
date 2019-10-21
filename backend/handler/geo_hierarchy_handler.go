@@ -44,10 +44,12 @@ func (this *GeoHierarchyHandler) Init() {
 		Delete: this.ForRoles(this.RemoveRiver, dao.ADMIN, dao.EDITOR)})
 	this.Register("/river/{riverId}/reports", HandlerFunctions{Get: this.ListRiverReports})
 	this.Register("/river/{riverId}/spots", HandlerFunctions{Get: this.ListSpots})
+	this.Register("/river/{riverId}/spots-full", HandlerFunctions{Get: this.ListSpotsFull})
 	this.Register("/river/{riverId}/center", HandlerFunctions{Get: this.GetRiverCenter})
 	this.Register("/river/{riverId}/bounds", HandlerFunctions{Get: this.GetRiverBounds})
-	this.Register("/river/{riverId}/gpx", HandlerFunctions{Post: this.ForRoles(this.UploadGpx, dao.ADMIN, dao.EDITOR),
-		Put: this.ForRoles(this.UploadGpx, dao.ADMIN, dao.EDITOR)})
+	this.Register("/river/{riverId}/gpx", HandlerFunctions{
+		Post: this.ForRoles(this.UploadGpx, dao.ADMIN, dao.EDITOR),
+		Put:  this.ForRoles(this.UploadGpx, dao.ADMIN, dao.EDITOR)})
 	this.Register("/river/{riverId}/pdf", HandlerFunctions{Get: this.GetRiverPassportPdf})
 	this.Register("/river/{riverId}/html", HandlerFunctions{Get: this.GetRiverPassportHtml})
 	this.Register("/river/{riverId}/visible", HandlerFunctions{
@@ -199,12 +201,28 @@ func (this *GeoHierarchyHandler) ListSpots(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	voyageReports, err := this.WhiteWaterDao.ListByRiver(riverId)
+	spots, err := this.WhiteWaterDao.ListByRiver(riverId)
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not list spots of river %d", riverId))
 		return
 	}
-	this.JsonAnswer(w, voyageReports)
+	this.JsonAnswer(w, spots)
+}
+
+func (this *GeoHierarchyHandler) ListSpotsFull(w http.ResponseWriter, r *http.Request) {
+	pathParams := mux.Vars(r)
+	riverId, err := strconv.ParseInt(pathParams["riverId"], 10, 64)
+	if err != nil {
+		OnError(w, err, "Can not parse id", http.StatusBadRequest)
+		return
+	}
+
+	spots, err := this.WhiteWaterDao.ListByRiverFull(riverId)
+	if err != nil {
+		OnError500(w, err, fmt.Sprintf("Can not list spots of river %d", riverId))
+		return
+	}
+	this.JsonAnswer(w, spots)
 }
 
 func (this *GeoHierarchyHandler) GetRiverCenter(w http.ResponseWriter, r *http.Request) {
@@ -263,6 +281,7 @@ func (this *GeoHierarchyHandler) UploadGpx(w http.ResponseWriter, req *http.Requ
 		return
 	}
 
+	spots := make([]dao.WhiteWaterPointFull, 0, len(gpx_data.Waypoints))
 	for _, wpt := range gpx_data.Waypoints {
 		spot := dao.WhiteWaterPointFull{}
 		spot.Title = wpt.Name
@@ -271,14 +290,18 @@ func (this *GeoHierarchyHandler) UploadGpx(w http.ResponseWriter, req *http.Requ
 		spot.ShortDesc = wpt.Desc
 		spot.Category = model.SportCategory{Category: model.UNDEFINED_CATEGORY}
 		spot.Aliases = []string{}
-		_, err = this.WhiteWaterDao.InsertWhiteWaterPointFull(spot)
+		spotId, err := this.WhiteWaterDao.InsertWhiteWaterPointFull(spot)
 		if err != nil {
 			OnError500(w, err, "Can not insert spot")
 			return
 		}
+		spot.Id = spotId
+		spots = append(spots, spot)
 	}
 
 	this.LogUserEvent(req, RIVER_LOG_ENTRY_TYPE, riverId, dao.ENTRY_TYPE_MODIFY, "Upload GPX")
+
+	this.JsonAnswer(w, spots)
 }
 
 func (this *GeoHierarchyHandler) GetRiver(w http.ResponseWriter, r *http.Request) {
@@ -535,9 +558,13 @@ func (this *GeoHierarchyHandler) RemoveSpot(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	spot, err := this.WhiteWaterDao.Find(spotId)
+	spot, found, err := this.WhiteWaterDao.Find(spotId)
 	if err != nil {
-		OnError500(w, err, fmt.Sprintf("Can not get spot by id: %d", spotId))
+		OnError500(w, err, fmt.Sprintf("Can not select spot by id: %d", spotId))
+		return
+	}
+	if !found {
+		OnError(w, err, fmt.Sprintf("Spot with id %d not found", spotId), http.StatusNotFound)
 		return
 	}
 

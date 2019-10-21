@@ -37,7 +37,7 @@ type WhiteWaterDao interface {
 	InsertWhiteWaterPointFull(whiteWaterPoints WhiteWaterPointFull) (int64, error)
 	UpdateWhiteWaterPoints(whiteWaterPoints ...WhiteWaterPoint) error
 	UpdateWhiteWaterPointsFull(whiteWaterPoints ...WhiteWaterPointFull) error
-	Find(id int64) (WhiteWaterPointWithRiverTitle, error)
+	Find(id int64) (WhiteWaterPointWithRiverTitle, bool, error)
 	FindFull(id int64) (WhiteWaterPointFull, error)
 	ListByBbox(bbox Bbox) ([]WhiteWaterPointWithRiverTitle, error)
 	ListByRiver(riverId int64) ([]WhiteWaterPointWithRiverTitle, error)
