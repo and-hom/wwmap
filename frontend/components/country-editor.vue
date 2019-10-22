@@ -1,5 +1,6 @@
 <template>
     <div>
+        <window-title v-bind:text="country.title"></window-title>
         <div v-if="canEdit()" class="btn-toolbar">
             <div class="btn-group mr-2" role="group">
                 <button type="button" class="btn btn-primary" v-on:click="add_river()">Добавить реку без региона</button>
