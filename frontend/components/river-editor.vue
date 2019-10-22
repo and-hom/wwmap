@@ -196,9 +196,10 @@
                     </div>
                 </template>
             </div>
-                <button type="button" class="btn btn-success" v-on:click="spots.push({id:0, river_id: river.id, river: {id: river.id}})">Добавить</button>
+                <button type="button" class="btn btn-success" v-on:click="spots.push({id:0, river_id: river.id, river: {id: river.id}, point: [0,0] })">Добавить</button>
             <div v-for="(spot, index) in spots"
                  :class="'container module ' + (spotsForDeleteIds.includes(spot.id) ? 'deleted-spot' : '')">
+                <div class="crossline"></div>
                 <div class="collapse wwmap-collapse" :id="'wwmap-collapse_'+index" aria-expanded="false">
                     <div class="row">
                         <div class="col-6">
@@ -250,6 +251,7 @@
                         </div>
                         <div class="col2">
                             <button v-if="spotsForDeleteIds.includes(spot.id)" type="button" class="btn btn-secondary"
+                                    style="z-index: 100000"
                                     v-on:click="spotsForDeleteIds = spotsForDeleteIds.filter(function(x) {
                           return x!=spot.id;
                         })">Не удалять
@@ -305,13 +307,14 @@
                         </div>
                     </div>
                 </div>
-                <div style="width: 100%; height: 30px; margin-top: 10px;margin-bottom: 10px; background: #cccccc;">
-                    <a role="button" class="collapsed collapse-control" data-toggle="collapse"
-                       :href="'#wwmap-collapse_'+index" aria-expanded="false"
-                       :aria-controls="'wwmap-collapse_'+index"></a>
-                </div>
+                <button class="btn btn-light collapsed collapse-control"
+                        style="width: 100%; height: 40px; margin-top: 10px;"
+                        aria-expanded="false"
+                        data-toggle="collapse"
+                        :data-target="'#wwmap-collapse_'+index"
+                        :aria-controls="'wwmap-collapse_'+index"></button>
             </div>
-            <button v-if="spots.length>0" type="button" class="btn btn-success" v-on:click="spots.push({id:0, river_id: river.id, river: {id: river.id}})">Добавить
+            <button v-if="spots.length>0" type="button" class="btn btn-success" v-on:click="spots.push({id:0, river_id: river.id, river: {id: river.id}, point: [0,0] })">Добавить
             </button>
         </div>
         <div v-else class="spot-display">
@@ -373,24 +376,23 @@
 <style type="text/css">
     .module {
         margin-left: 10px;
-        padding-left: 0;
-        padding-bottom: 35px;
-        padding-top: 15px;
+        margin-bottom: 35px;
+        margin-top: 15px;
         border-top: #555555;
         border-top-style: dashed;
     }
 
     .module .collapse-control.collapsed:after {
-        content: 'Развернуть';
+        content: "Развернуть"
     }
 
     .module .collapse-control:not(.collapsed):after {
-        content: 'Свернуть';
+        content: "Свернуть";
     }
 
     .module .wwmap-collapse.collapse:not(.show) {
         display: block;
-        height: 660px;
+        height: 290px;
         overflow: hidden;
     }
 
@@ -404,6 +406,25 @@
 
     .deleted-spot {
         background: #ffeeee;
+        position: relative;
+        height: 290px;
+        overflow: hidden;
+    }
+
+    .deleted-spot .collapse-control {
+        display: none;
+    }
+
+    .deleted-spot .crossline {
+        width: 100%;
+        height: 1px;
+        z-index: 10000;
+        border-bottom: 5px solid red;
+        -webkit-transform:
+                translateY(145px)
+                translateX(-15px)
+                rotate(14deg);
+        position: absolute;
     }
 </style>
 
