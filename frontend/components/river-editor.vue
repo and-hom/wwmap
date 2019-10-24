@@ -196,125 +196,147 @@
                     </div>
                 </template>
             </div>
-                <button type="button" class="btn btn-success" v-on:click="spots.push({id:0, river_id: river.id, river: {id: river.id}, point: [0,0] })">Добавить</button>
-            <div v-for="(spot, index) in spots"
-                 :class="'container module ' + (spotsForDeleteIds.includes(spot.id) ? 'deleted-spot' : '')">
-                <div class="crossline"></div>
-                <div class="collapse wwmap-collapse" :id="'wwmap-collapse_'+index" aria-expanded="false">
-                    <div class="row">
-                        <div class="col-6">
-                            <input v-model.trim="spot.title" style="display:block; width: 100%; padding-bottom: 10px;   "/>
-                            <div style="padding-top:4px;">
-                                <strong>Широта:</strong>&nbsp;{{ spotPoint0(spot)[0] }}&nbsp;&nbsp;&nbsp;<strong>Долгота:</strong>&nbsp;{{ spotPoint0(spot)[1] }}
+            <button type="button" class="btn btn-success" v-on:click="addEmptySpotToBatch()">Добавить в конец</button>
+            <div>
+                <div class="list-group" id="spot-list">
+                <div v-for="(spot, index) in spots"
+                     :class="'container spot-edit-row ' + (spotsForDeleteIds.includes(spot.id) ? 'deleted-spot' : '')">
+                    <div class="crossline"></div>
+                    <div class="collapse wwmap-collapse" :id="'wwmap-collapse_'+index" aria-expanded="false">
+                        <div class="spot-index" v-if="!spot.automatic_ordering && spot.order_index!='0'">{{spot.order_index}}</div>
+                        <div class="row">
+                            <div class="col-6">
+                                <input v-model.trim="spot.title"
+                                       style="display:block; width: 100%; padding-bottom: 10px;   "/>
+                                <div style="padding-top:4px;">
+                                    <strong>Широта:</strong>&nbsp;{{ spotPoint0(spot)[0] }}&nbsp;&nbsp;&nbsp;<strong>Долгота:</strong>&nbsp;{{
+                                    spotPoint0(spot)[1] }}
+                                </div>
+                                <ya-map-location :ref="'locationEdit_'+index" v-bind:spot="spot" width="100%"
+                                                 height="400px"
+                                                 :editable="true" :ya-search="true"
+                                                 v-bind:refresh-on-change="spot.point"/>
                             </div>
-                            <ya-map-location :ref="'locationEdit_'+index" v-bind:spot="spot" width="100%" height="400px"
-                                             :editable="true" :ya-search="true" v-bind:refresh-on-change="spot.point"/>
-                        </div>
-                        <div class="col-4">
-                            <div>
-                                <strong>Категория сложности: </strong><a target="_blank"
-                                                                         href="https://huskytm.ru/rules2018-2019/#categories_tab"><img
-                                    src="img/question_16.png"></a>
+                            <div class="col-4">
+                                <div>
+                                    <strong>Категория сложности: </strong><a target="_blank"
+                                                                             href="https://huskytm.ru/rules2018-2019/#categories_tab"><img
+                                        src="img/question_16.png"></a>
+                                </div>
+                                <div>
+                                    <dl style="padding-left:40px;">
+                                        <dt>По классификатору</dt>
+                                        <dd>
+                                            <select v-model="spot.category">
+                                                <option v-for="cat in all_categories" v-bind:value="cat.id">
+                                                    {{cat.title}}
+                                                </option>
+                                            </select>
+                                        </dd>
+                                        <dt>Низкий уровень воды</dt>
+                                        <dd>
+                                            <select v-model="spot.lw_category">
+                                                <option v-for="cat in all_categories" v-bind:value="cat.id">
+                                                    {{cat.title}}
+                                                </option>
+                                            </select>
+                                        </dd>
+                                        <dt>Средний уровень воды</dt>
+                                        <dd>
+                                            <select v-model="spot.mw_category">
+                                                <option v-for="cat in all_categories" v-bind:value="cat.id">
+                                                    {{cat.title}}
+                                                </option>
+                                            </select>
+                                        </dd>
+                                        <dt>Высокий уровень воды</dt>
+                                        <dd>
+                                            <select v-model="spot.hw_category">
+                                                <option v-for="cat in all_categories" v-bind:value="cat.id">
+                                                    {{cat.title}}
+                                                </option>
+                                            </select>
+                                        </dd>
+                                    </dl>
+                                </div>
                             </div>
-                            <div>
-                                <dl style="padding-left:40px;">
-                                    <dt>По классификатору</dt>
-                                    <dd>
-                                        <select v-model="spot.category">
-                                            <option v-for="cat in all_categories" v-bind:value="cat.id">{{cat.title}}
-                                            </option>
-                                        </select>
-                                    </dd>
-                                    <dt>Низкий уровень воды</dt>
-                                    <dd>
-                                        <select v-model="spot.lw_category">
-                                            <option v-for="cat in all_categories" v-bind:value="cat.id">{{cat.title}}
-                                            </option>
-                                        </select>
-                                    </dd>
-                                    <dt>Средний уровень воды</dt>
-                                    <dd>
-                                        <select v-model="spot.mw_category">
-                                            <option v-for="cat in all_categories" v-bind:value="cat.id">{{cat.title}}
-                                            </option>
-                                        </select>
-                                    </dd>
-                                    <dt>Высокий уровень воды</dt>
-                                    <dd>
-                                        <select v-model="spot.hw_category">
-                                            <option v-for="cat in all_categories" v-bind:value="cat.id">{{cat.title}}
-                                            </option>
-                                        </select>
-                                    </dd>
-                                </dl>
-                            </div>
-                        </div>
-                        <div class="col2">
-                            <button v-if="spotsForDeleteIds.includes(spot.id)" type="button" class="btn btn-secondary"
-                                    style="z-index: 100000"
-                                    v-on:click="spotsForDeleteIds = spotsForDeleteIds.filter(function(x) {
+                            <div class="col2">
+                                <div class="draggable">
+                                    Для сортировки тащи меня вверх или вниз
+                                </div>
+                                <div>
+                                    <button v-if="spotsForDeleteIds.includes(spot.id)" type="button"
+                                            class="btn btn-secondary"
+                                            style="z-index: 100000"
+                                            v-on:click="spotsForDeleteIds = spotsForDeleteIds.filter(function(x) {
                           return x!=spot.id;
                         })">Не удалять
-                            </button>
-                            <button v-else type="button" class="btn btn-danger"
-                                    v-on:click="spot.id ? spotsForDeleteIds.push(spot.id) : spots.splice(index, 1)">
-                                Удалить
-                            </button>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-2"><strong>Описание: </strong></div>
-                        <div class="col-10"><textarea rows="10" cols="120" v-model="spot.short_description"></textarea>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-2"><strong>Ориентиры:</strong></div>
-                        <div class="col-10"><textarea rows="10" style="width:100%" v-model="spot.orient"></textarea>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-2"><strong>Подход/выход:</strong></div>
-                        <div class="col-10"><textarea rows="10" cols="120" v-model="spot.approach"></textarea></div>
-                    </div>
-                    <div class="row">
-                        <div class="col-2"><strong>Страховка:</strong></div>
-                        <div class="col-10"><textarea rows="10" cols="120" v-model="spot.safety"></textarea></div>
-                    </div>
-                    <div class="row">
-                        <div class="col-2"><strong>Описание для низкого уровня воды:</strong></div>
-                        <div class="col-10"><textarea rows="10" cols="120" v-model="spot.lw_description"></textarea>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-2"><strong>Описание для среднего уровня воды:</strong></div>
-                        <div class="col-10"><textarea rows="10" cols="120" v-model="spot.mw_description"></textarea>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-2"><strong>Описание для высокого уровня воды:</strong></div>
-                        <div class="col-10"><textarea rows="10" cols="120" v-model="spot.hw_description"></textarea>
-                        </div>
-                    </div>
-                    <hr/>
-                    <div class="row">
-                        <div class="col-12"><strong>Другие варианты названия для поиска изображений:</strong>
-                            <div class="wwmap-system-hint" style="margin-bottom: 7px;">Каждое альтернативное название на
-                                новой строке
+                                    </button>
+                                    <button v-else type="button" class="btn btn-danger"
+                                            v-on:click="spot.id ? spotsForDeleteIds.push(spot.id) : spots.splice(index, 1)">
+                                        Удалить
+                                    </button>
+                                </div>
                             </div>
-                            <textarea v-bind:text-content="spot.aliases"
-                                      v-on:input="spot.aliases = parseAliases($event.target.value)"
-                                      rows="10" cols="120">{{ spot.aliases ? spot.aliases.join('\n') : '' }}</textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-2"><strong>Описание: </strong></div>
+                            <div class="col-10"><textarea rows="10" cols="120"
+                                                          v-model="spot.short_description"></textarea>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-2"><strong>Ориентиры:</strong></div>
+                            <div class="col-10"><textarea rows="10" style="width:100%" v-model="spot.orient"></textarea>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-2"><strong>Подход/выход:</strong></div>
+                            <div class="col-10"><textarea rows="10" cols="120" v-model="spot.approach"></textarea></div>
+                        </div>
+                        <div class="row">
+                            <div class="col-2"><strong>Страховка:</strong></div>
+                            <div class="col-10"><textarea rows="10" cols="120" v-model="spot.safety"></textarea></div>
+                        </div>
+                        <div class="row">
+                            <div class="col-2"><strong>Описание для низкого уровня воды:</strong></div>
+                            <div class="col-10"><textarea rows="10" cols="120" v-model="spot.lw_description"></textarea>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-2"><strong>Описание для среднего уровня воды:</strong></div>
+                            <div class="col-10"><textarea rows="10" cols="120" v-model="spot.mw_description"></textarea>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-2"><strong>Описание для высокого уровня воды:</strong></div>
+                            <div class="col-10"><textarea rows="10" cols="120" v-model="spot.hw_description"></textarea>
+                            </div>
+                        </div>
+                        <hr/>
+                        <div class="row">
+                            <div class="col-12"><strong>Другие варианты названия для поиска изображений:</strong>
+                                <div class="wwmap-system-hint" style="margin-bottom: 7px;">Каждое альтернативное
+                                    название на
+                                    новой строке
+                                </div>
+                                <textarea v-bind:text-content="spot.aliases"
+                                          v-on:input="spot.aliases = parseAliases($event.target.value)"
+                                          rows="10"
+                                          cols="120">{{ spot.aliases ? spot.aliases.join('\n') : '' }}</textarea>
+                            </div>
                         </div>
                     </div>
+                    <button class="btn btn-light collapsed collapse-control"
+                            style="width: 100%; height: 40px; margin-top: 10px;"
+                            aria-expanded="false"
+                            data-toggle="collapse"
+                            :data-target="'#wwmap-collapse_'+index"
+                            :aria-controls="'wwmap-collapse_'+index"></button>
                 </div>
-                <button class="btn btn-light collapsed collapse-control"
-                        style="width: 100%; height: 40px; margin-top: 10px;"
-                        aria-expanded="false"
-                        data-toggle="collapse"
-                        :data-target="'#wwmap-collapse_'+index"
-                        :aria-controls="'wwmap-collapse_'+index"></button>
             </div>
-            <button v-if="spots.length>0" type="button" class="btn btn-success" v-on:click="spots.push({id:0, river_id: river.id, river: {id: river.id}, point: [0,0] })">Добавить
+            </div>
+            <button v-if="spots.length>0" type="button" class="btn btn-success" v-on:click="addEmptySpotToBatch()">Добавить
             </button>
         </div>
         <div v-else class="spot-display">
@@ -374,7 +396,7 @@
     </div>
 </template>
 <style type="text/css">
-    .module {
+    .spot-edit-row {
         margin-left: 10px;
         margin-bottom: 35px;
         margin-top: 15px;
@@ -382,25 +404,25 @@
         border-top-style: dashed;
     }
 
-    .module .collapse-control.collapsed:after {
+    .spot-edit-row .collapse-control.collapsed:after {
         content: "Развернуть"
     }
 
-    .module .collapse-control:not(.collapsed):after {
+    .spot-edit-row .collapse-control:not(.collapsed):after {
         content: "Свернуть";
     }
 
-    .module .wwmap-collapse.collapse:not(.show) {
+    .spot-edit-row .wwmap-collapse.collapse:not(.show) {
         display: block;
         height: 290px;
         overflow: hidden;
     }
 
-    .module .wwmap-collapse.collapsing {
+    .spot-edit-row .wwmap-collapse.collapsing {
         display: block;
     }
 
-    .module .row {
+    .spot-edit-row .row {
         margin-left: 0;
     }
 
@@ -426,6 +448,23 @@
                 rotate(14deg);
         position: absolute;
     }
+
+    .draggable {
+        width: 140px;
+        height: 140px;
+        margin-top: 50px;
+        margin-bottom: 20px;
+        border: 1px;
+        border-style: dashed;
+        text-align: center;
+        padding-top: 30px;
+        cursor: grab;
+    }
+
+    .spot-index {
+        margin-top: 10px;
+        float: left;
+    }
 </style>
 
 <script>
@@ -446,6 +485,41 @@
                         t.spots.push(x);
                     });
                 }
+            }
+
+            if (this.pageMode == 'batch-edit' && !this.sortable) {
+                let el = document.getElementById('spot-list');
+                this.sortable = new Sortable(el, {
+                    animation: 100,
+                    group: 'spotList',
+                    draggable: '.spot-edit-row',
+                    handle: '.draggable',
+                    sort: true,
+                    filter: '.sortable-disabled',
+                    chosenClass: 'active',
+                    onEnd: function(/**Event*/evt) {
+                        if (t.spotIndexes.length <= evt.newIndex || t.spotIndexes.length <= evt.oldIndex || t.spotIndexes.length < t.spots.length) {
+                            if (t.spotIndexes.length == 0) {
+                                t.spotIndexes = t.spots.map((_, idx) => idx)
+                            } else {
+                                let maxEl = Math.max(...t.spotIndexes);
+                                for (let i = t.spotIndexes.length, idx=0; i < t.spots.length; i++, idx++) {
+                                    spotIndexes.push(maxEl + idx);
+                                }
+                            }
+                        }
+                        let el1 = t.spotIndexes[evt.oldIndex];
+                        t.spotIndexes.splice(evt.oldIndex, 1);
+                        t.spotIndexes.splice(evt.newIndex, 0, el1);
+
+                        for (let i=0; i<t.spots.length;i++) {
+                            let spotIdx = t.spotIndexes[i];
+                            t.spots[spotIdx].order_index = "" + (i + 1);
+                            t.spots[spotIdx].automatic_ordering = false;
+
+                        }
+                    }
+                });
             }
         },
         created: function() {
@@ -580,7 +654,6 @@
                             let failMsg = "";
                             let success = saveSpot(spot, function (msg) {
                                 failMsg = msg;
-                                console.log(failMsg)
                             });
                             if (!success) {
                                 saveErrors += failMsg;
@@ -588,12 +661,10 @@
                             return success;
                         });
 
-                        console.log(saved)
                         let failCount = removed.concat(saved).filter(function (x) {
                             return !x;
                         }).length;
 
-                        console.log(failCount, saveErrors, deleteErrors)
                         if (failCount != 0) {
                             if (saveErrors) {
                                 this.showError("Не получилось сохранить: " + saveErrors);
@@ -795,6 +866,7 @@
                 },
 
                 spots: [],
+                spotIndexes: [],
                 spotsForDeleteIds: [],
                 getSpots: getSpotsFull,
                 all_categories:all_categories,
@@ -804,6 +876,17 @@
                     } else {
                         return spot.point
                     }
+                },
+                addEmptySpotToBatch: function () {
+                    let orderIndex = this.spotIndexes.length == 0 ? this.spots.length : (Math.max(...this.spotIndexes) + 1);
+                    this.spots.push({
+                        id: 0,
+                        river_id: this.river.id,
+                        river: {id: this.river.id},
+                        point: [0, 0],
+                        order_index: "" + (orderIndex + 1),
+                        automatic_ordering: false
+                    })
                 },
             }
         },
