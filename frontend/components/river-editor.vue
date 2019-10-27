@@ -900,7 +900,8 @@
                         river: {id: this.river.id},
                         point: location,
                         order_index: "" + (orderIndex + 1),
-                        automatic_ordering: false
+                        automatic_ordering: false,
+                        aliases: [],
                     })
                 },
             }
