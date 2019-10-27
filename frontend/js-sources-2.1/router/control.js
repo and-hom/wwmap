@@ -58,8 +58,8 @@ export function createMeasurementToolControl(measurementTool) {
                 measureEditBtn.css('display', exportModeStyle);
 
                 measureCompleteBtn.css('display', measurementTool.edit && measurementTool.hasDrawnPath()  ? 'inline-block' : 'none');
-                measureRevertBtn.css('display', editModeStyle);
-                measureDeleteBtn.css('display', editModeStyle);
+                measureRevertBtn.css('display', measurementTool.edit && measurementTool.multiPath.segmentCount() > 0  ? 'inline-block' : 'none');
+                measureDeleteBtn.css('display', measurementTool.edit && measurementTool.multiPath.segmentCount() > 0 ? 'inline-block' : 'none');
             };
 
             measureOnOffBtn.bind('click', function (e) {
