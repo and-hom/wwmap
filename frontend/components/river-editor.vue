@@ -889,18 +889,32 @@
                     }
                 },
                 addEmptySpotToBatch: function () {
-                    let orderIndex = this.spotIndexes.length == 0 ? this.spots.length : (Math.max(...this.spotIndexes) + 1);
+                    let orderIndex;
+                    let automaticOrdering;
+
+                    if (this.spotIndexes.length != 0) {
+                        orderIndex = Math.max(...this.spotIndexes) + 2; // order_index starts from 1
+                        automaticOrdering = false;
+                    } else if (this.spots.every(s => !s.automatic_ordering)) {
+                        orderIndex = Math.max(...this.spots.map(s => s.order_index)) + 1;
+                        automaticOrdering = false;
+                    } else {
+                        orderIndex = 0;
+                        automaticOrdering = true;
+                    }
+
                     let location = this.spots.map(s => s.point).reduce((p1, p2) => [p1[0] + p2[0], p1[1] + p2[1]], [0, 0]);
                     if (this.spots.length > 0) {
                         location = [location[0] / this.spots.length, location[1] / this.spots.length]
                     }
+
                     this.spots.push({
                         id: 0,
                         river_id: this.river.id,
                         river: {id: this.river.id},
                         point: location,
-                        order_index: "" + (orderIndex + 1),
-                        automatic_ordering: false,
+                        order_index: "" + (orderIndex),
+                        automatic_ordering: automaticOrdering,
                         aliases: [],
                     })
                 },
