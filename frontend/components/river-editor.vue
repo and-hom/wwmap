@@ -10,7 +10,7 @@
                 <button type="button" class="btn btn-info" v-if="pageMode == 'view'" v-on:click="pageMode='edit'; hideError();">
                     Редактирование
                 </button>
-                <button type="button" class="btn btn-success" v-if="river.id && pageMode == 'view'" v-on:click="spots = getSpots(river.id); pageMode='batch-edit'; hideError();">
+                <button type="button" class="btn btn-success" v-if="river.id && pageMode == 'view'" v-on:click="spots = getSpots(river.id); spotIndexes=[]; pageMode='batch-edit'; hideError();">
                     Пакетное редактирование и загрузка GPX
                 </button>
                 <button type="button" class="btn btn-success" v-if="pageMode == 'edit'" v-on:click="pageMode=save() ? 'view' : 'edit'">Сохранить</button>
@@ -464,6 +464,15 @@
     .spot-index {
         margin-top: 10px;
         float: left;
+        font-size: large;
+        font-weight: bold;
+        color: #555555;
+        border: solid;
+        border-radius: 40px;
+        min-width: 30px;
+        height: 30px;
+        text-align: center;
+        line-height: 21px;
     }
 </style>
 
@@ -487,10 +496,12 @@
                 }
             }
 
-            if (this.pageMode == 'batch-edit' && !this.sortable) {
-                let el = document.getElementById('spot-list');
+            let el = document.getElementById('spot-list');
+            if (!el) {
+                this.sortable = null;
+            } else if (this.pageMode == 'batch-edit' && !this.sortable) {
                 this.sortable = new Sortable(el, {
-                    animation: 100,
+                    animation: 150,
                     group: 'spotList',
                     draggable: '.spot-edit-row',
                     handle: '.draggable',
@@ -879,11 +890,15 @@
                 },
                 addEmptySpotToBatch: function () {
                     let orderIndex = this.spotIndexes.length == 0 ? this.spots.length : (Math.max(...this.spotIndexes) + 1);
+                    let location = this.spots.map(s => s.point).reduce((p1, p2) => [p1[0] + p2[0], p1[1] + p2[1]], [0, 0]);
+                    if (this.spots.length > 0) {
+                        location = [location[0] / this.spots.length, location[1] / this.spots.length]
+                    }
                     this.spots.push({
                         id: 0,
                         river_id: this.river.id,
                         river: {id: this.river.id},
-                        point: [0, 0],
+                        point: location,
                         order_index: "" + (orderIndex + 1),
                         automatic_ordering: false
                     })
