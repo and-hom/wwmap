@@ -213,9 +213,13 @@
                                     <strong>Широта:</strong>&nbsp;{{ spotPoint0(spot)[0] }}&nbsp;&nbsp;&nbsp;<strong>Долгота:</strong>&nbsp;{{
                                     spotPoint0(spot)[1] }}
                                 </div>
-                                <ya-map-location :ref="'locationEdit_'+index" v-bind:spot="spot" width="100%"
+                                <ya-map-location :ref="'locationEdit_'+index"
+                                                 v-bind:spot="spot"
+                                                 width="100%"
                                                  height="400px"
-                                                 :editable="true" :ya-search="true"
+                                                 :editable="true"
+                                                 :ya-search="true"
+                                                 :switch-type-hotkeys="false"
                                                  v-bind:refresh-on-change="spot.point"/>
                             </div>
                             <div class="col-4">

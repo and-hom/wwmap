@@ -33,6 +33,10 @@
                 type: String,
                 default: null
             },
+            switchTypeHotkeys: {
+                type: Boolean,
+                default: true
+            },
         },
         watch: {
             // This would be called anytime the value of title changes
@@ -82,7 +86,9 @@
                             'bing#satellite',
                         ])
                     );
-                    registerMapSwitchLayersHotkeys(myMap);
+                    if (this.switchTypeHotkeys) {
+                        registerMapSwitchLayersHotkeys(myMap);
+                    }
 
                     myMap.controls.add('rulerControl', {
                         scaleLine: true
