@@ -40,6 +40,8 @@ MultiPath.prototype.pushEmptySegment = function () {
     let lastSeg = this.segments[lastSegIdx];
     let pos = lastSeg.end;
 
+    lastSeg.pathLine.options.set("strokeStyle", "solid");
+
     let riverSegId = lastSeg.lineId;
     this.length += lastSeg.len;
 
@@ -238,6 +240,7 @@ function RoutingSegment(lineId, mapPos, path) {
 function createSlice(coords) {
     return new ymaps.Polyline(coords, {}, {
         strokeColor: "#FF0000",
+        strokeStyle: "dot",
         strokeWidth: 5,
         zIndex: 1000,
     });
