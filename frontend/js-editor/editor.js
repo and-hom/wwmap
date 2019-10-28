@@ -46,16 +46,20 @@ function getSpots(riverId) {
     return doGetJsonSync(backendApiBase + "/river/" + riverId + "/spots")
 }
 
+function getSpotsFull(riverId) {
+    return doGetJsonSync(backendApiBase + "/river/" + riverId + "/spots-full")
+}
+
 function getSpot(spotId) {
     return doGetJsonSync(backendApiBase + "/spot/" + spotId)
 }
 
-function saveSpot(spot) {
-    return doPostJsonSync(backendApiBase + "/spot/" + spot.id, spot, true)
+function saveSpot(spot, failResponseBodyCallback) {
+    return doPostJsonSync(backendApiBase + "/spot/" + spot.id, spot, true, failResponseBodyCallback)
 }
 
-function removeSpot(id) {
-    return doDeleteSync(backendApiBase + "/spot/" + id, true)
+function removeSpot(id, failResponseBodyCallback) {
+    return doDeleteSync(backendApiBase + "/spot/" + id, true, failResponseBodyCallback)
 }
 
 function getAllRegions() {

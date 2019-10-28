@@ -1,5 +1,5 @@
 <template>
-    <div id="map" :style="mapDivStyle()"></div>
+    <div :id="uniqueId" :style="mapDivStyle()"></div>
 </template>
 
 <script>
@@ -60,13 +60,13 @@
 
                     let myMap;
                     if (Array.isArray(component.spot.point[0])) {
-                        myMap = new ymaps.Map("map", {
+                        myMap = new ymaps.Map(component.uniqueId, {
                             bounds: component.pBounds(),
                             controls: ["zoomControl"],
                             type: component.getDefaultMap(),
                         });
                     } else {
-                        myMap = new ymaps.Map("map", {
+                        myMap = new ymaps.Map(component.uniqueId, {
                             center: component.pCenter(),
                             zoom: component.zoom,
                             controls: ["zoomControl"],
@@ -394,7 +394,8 @@
                 setDefaultMap: function(type) {
                     $.cookie("default_editor_map", type, {path: '/'})
                 },
-                midPoints: null
+                midPoints: null,
+                uniqueId: $.uuid()
             }
         }
     }

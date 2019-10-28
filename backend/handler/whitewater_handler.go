@@ -80,9 +80,13 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 	var features []Feature
 
 	if onlyId != 0 {
-		spot, err := this.WhiteWaterDao.Find(onlyId)
+		spot, found, err := this.WhiteWaterDao.Find(onlyId)
 		if err != nil {
-			OnError500(w, err, fmt.Sprintf("Can not find whitewater point for id %d", onlyId))
+			OnError500(w, err, fmt.Sprintf("Can not select whitewater point for id %d", onlyId))
+			return
+		}
+		if !found {
+			OnError(w, err, fmt.Sprintf("Can not find whitewater point for id %d", onlyId), http.StatusNotFound)
 			return
 		}
 		sp := dao.Spot{
