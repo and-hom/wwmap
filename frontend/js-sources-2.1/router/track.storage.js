@@ -8,7 +8,7 @@ export function TrackStorage(apiBase) {
 TrackStorage.prototype.setBounds = function (rect, extPoint, zoom) {
     let extRect = extPoint ? extendBounds(rect, extPoint) : rect;
     if (!contains(this.bounds, extRect)) {
-        let loadingRect = multiply(extRect, 2);
+        let loadingRect = multiply(extRect, 3);
         this.loadRivers(loadingRect, zoom);
         this.bounds = loadingRect;
     }
