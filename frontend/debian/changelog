@@ -1,3 +1,15 @@
+wwmap-frontend (0.0.46) unstable; urgency=medium
+
+  * #209 Icon improvement
+  * #209 Points added to GPX download
+  * #209 Add tracks between last point and furrent position to track storage to draw over the screen paths
+  * #209 Hide map baloons on path editing
+  * #214 Hotkeys fix: don't switch map on type in the input element
+  * #234 Batch spot editor for river
+  * #239 Editor object name in browser window title
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Mon, 28 Oct 2019 22:11:03 +0300
+
 wwmap-frontend (0.0.45) unstable; urgency=medium
 
   * #209 Measurement tool to get distance along river

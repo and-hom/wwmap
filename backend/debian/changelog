@@ -1,3 +1,9 @@
+wwmap-backend (0.0.46) unstable; urgency=medium
+
+  * #234 Batch spot editor for river
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Mon, 28 Oct 2019 22:17:43 +0300
+
 wwmap-backend (0.0.45) unstable; urgency=medium
 
   * #209 Measurement tool to get distance along river
