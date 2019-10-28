@@ -164,10 +164,6 @@ WWMap.prototype.init = function () {
         return true
     });
 
-    objectManager.objects.events.add(['click'], function (e) {
-        objectManager.objects.balloon.open(e.get('objectId'));
-    });
-
     this.yMap.geoObjects.add(objectManager);
     this.objectManager = objectManager;
 
@@ -176,6 +172,12 @@ WWMap.prototype.init = function () {
     if (info && info.experimental_features) {
         this.yMap.controls.add(createMeasurementToolControl(this.measurementTool), {});
     }
+
+    objectManager.objects.events.add(['click'], function (e) {
+        if (!t.measurementTool.enabled || !t.measurementTool.edit) {
+            objectManager.objects.balloon.open(e.get('objectId'));
+        }
+    });
 
     this.loadRivers(this.yMap.getBounds())
 };

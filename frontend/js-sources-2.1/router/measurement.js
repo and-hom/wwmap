@@ -28,7 +28,8 @@ export function WWMapMeasurementTool(map, objectManager, apiBase) {
     this.addEvents();
 }
 
-WWMapMeasurementTool.prototype.addEvents = function (n) {
+WWMapMeasurementTool.prototype.addEvents = function () {
+    let t = this;
     this.objectManager.objects.events.add(['click'], e => {
         if (this.enabled && this.edit) {
             this.multiPath.pushEmptySegment();
@@ -36,7 +37,10 @@ WWMapMeasurementTool.prototype.addEvents = function (n) {
     });
     this.objectManager.objects.events.add('mousemove', e => {
         if (this.enabled && this.edit) {
-            this.onMouseMoved(e.get('position'));
+            let coords = e.get('coords');
+            if (coords) {
+                this.onMouseMoved(t.coordsToMouse(coords), coords);
+            }
         }
     });
     this.map.events.add('click', e => {
@@ -46,12 +50,12 @@ WWMapMeasurementTool.prototype.addEvents = function (n) {
     });
     this.map.events.add('boundschange', e => {
         if (this.enabled && this.edit) {
-            this.onViewportChanged(this.map.getBounds());
+            this.onViewportChanged();
         }
     });
     this.map.events.add('mousemove', e => {
         if (this.enabled && this.edit) {
-            this.onMouseMoved(e.get('position'));
+            this.onMouseMoved(e.get('position'), e.get('coords'));
         }
     });
 };
@@ -71,6 +75,7 @@ WWMapMeasurementTool.prototype.disable = function () {
 WWMapMeasurementTool.prototype.setEditMode = function (edit) {
     if (edit) {
         this.multiPath.showLast();
+        this.onViewportChanged();
     } else {
         this.multiPath.hideLast();
     }
@@ -89,13 +94,15 @@ WWMapMeasurementTool.prototype.reset = function () {
     if(this.enabled) {
         this.multiPath.show();
     }
+    this.onViewportChanged();
 };
 
 WWMapMeasurementTool.prototype.onViewportChanged = function () {
-    if (!this.enabled) {
+    if (!this.enabled || !this.edit) {
         return;
     }
-    this.trackStorage.setBounds(this.map.getBounds(), this.map.getZoom());
+    let lastFixedPoint = this.multiPath.segmentCount() > 0 ? this.multiPath.pointEnd() : null;
+    this.trackStorage.setBounds(this.map.getBounds(), lastFixedPoint, this.map.getZoom());
 };
 
 const sensitivity_px = 2;
@@ -121,8 +128,8 @@ WWMapMeasurementTool.prototype.getComputeMarkerPos = function (cursorPosFlipped,
     return markerPos;
 };
 
-WWMapMeasurementTool.prototype.moveFirstPoint = function (cursorPosPx, epsilon_m) {
-    let cursorPosFlipped = flip(this.mouseToCoords(cursorPosPx));
+WWMapMeasurementTool.prototype.moveFirstPoint = function (cursorPosPx, coords, epsilon_m) {
+    let cursorPosFlipped = flip(coords ? coords : this.mouseToCoords(cursorPosPx));
 
     if (this.currentLine) {
         let nearestRiverPathFlipped = turf.lineString(this.currentLine.path);
@@ -139,7 +146,7 @@ WWMapMeasurementTool.prototype.moveFirstPoint = function (cursorPosPx, epsilon_m
     this.multiPath.setStartMarkerPos(markerPos, this.currentLine ? this.currentLine.id : -1);
 };
 
-WWMapMeasurementTool.prototype.onMouseMoved = function (cursorPosPx) {
+WWMapMeasurementTool.prototype.onMouseMoved = function (cursorPosPx, coords) {
     if (!cursorPosPx ||  !this.enabled || !this.edit
         || this.trackStorage.rivers.length == 0 && !(this.multiPath.segmentCount() > 0 && this.currentLine)) {
         return
@@ -148,7 +155,7 @@ WWMapMeasurementTool.prototype.onMouseMoved = function (cursorPosPx) {
     // mouse sensivity optimization
     if (this.pixelPos && cursorPosPx && (
         Math.abs(this.pixelPos[0] - cursorPosPx[0]) < sensitivity_px
-        || Math.abs(this.pixelPos[1] - cursorPosPx[1]) <= sensitivity_px)) {
+        && Math.abs(this.pixelPos[1] - cursorPosPx[1]) <= sensitivity_px)) {
         return;
     }
 
@@ -157,11 +164,11 @@ WWMapMeasurementTool.prototype.onMouseMoved = function (cursorPosPx) {
 
     // move first marker before drawing started
     if (this.multiPath.segmentCount() == 0) {
-        this.moveFirstPoint(cursorPosPx, epsilon_m);
+        this.moveFirstPoint(cursorPosPx, coords, epsilon_m);
         return;
     }
 
-    let cursorPosYMap = this.mouseToCoords(cursorPosPx);
+    let cursorPosYMap = coords ? coords : this.mouseToCoords(cursorPosPx);
     let cursorPosFlipped = flip(cursorPosYMap);
 
     let nearestRiver = this.currentLine;
@@ -207,6 +214,12 @@ WWMapMeasurementTool.prototype.onMouseMoved = function (cursorPosPx) {
 WWMapMeasurementTool.prototype.mouseToCoords = function (pixelPos) {
     let globalPxPos = this.map.converter.pageToGlobal(pixelPos);
     return this.map.options.get('projection').fromGlobalPixels(globalPxPos, this.map.getZoom());
+};
+
+WWMapMeasurementTool.prototype.coordsToMouse = function (coords) {
+    let prj = this.map.options.get('projection');
+    let globalPx = prj.toGlobalPixels(coords, this.map.getZoom());
+    return this.map.converter.globalToPage(globalPx);
 };
 
 WWMapMeasurementTool.prototype.getGeomNearestRiver = function (cursorPosFlipped) {
