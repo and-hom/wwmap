@@ -1,5 +1,6 @@
 <template>
     <div>
+        <window-title v-bind:text="river.title"></window-title>
         <ask id="del-river" title="Точно?"
              msg="Совсем удалить? Все пороги будут также удалены! Да, совсем! Восстановить будет никак нельзя!"
              :ok-fn="function() { remove(); }"></ask>
