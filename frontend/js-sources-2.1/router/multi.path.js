@@ -178,7 +178,7 @@ MultiPath.prototype.createGpx = function () {
     var trkEl = doc.createElement("trk");
     this.segments
         .filter((s, idx) => idx != 0 && idx != (this.segments.length - 1))
-        .forEach(function (s) {
+        .forEach(s => {
             var trkSegEl = doc.createElement("trkseg");
 
             let c = s.pathLine.geometry.getCoordinates();
@@ -190,6 +190,23 @@ MultiPath.prototype.createGpx = function () {
             });
 
             trkEl.appendChild(trkSegEl);
+        });
+
+
+    let l = 0;
+    this.segments
+        .filter((s, idx) => idx != (this.segments.length - 1))
+        .forEach((s, idx) => {
+            var nameEl = doc.createElement("name");
+            l += s.len;
+            nameEl.innerHTML = idx == 0 ? "0" : (idx + " (" + lenText(l) + ")");
+
+            var wptEl = doc.createElement("wpt");
+            wptEl.setAttribute("lat", s.end[0]);
+            wptEl.setAttribute("lon", s.end[1]);
+
+            wptEl.append(nameEl);
+            gpxEl.append(wptEl);
         });
 
     gpxEl.appendChild(trkEl);
