@@ -5,9 +5,10 @@ export function TrackStorage(apiBase) {
     this.zoom = 14;
 }
 
-TrackStorage.prototype.setBounds = function (rect, zoom) {
-    if (!contains(this.bounds, rect)) {
-        let loadingRect = multiply(rect, 2);
+TrackStorage.prototype.setBounds = function (rect, extPoint, zoom) {
+    let extRect = extPoint ? extendBounds(rect, extPoint) : rect;
+    if (!contains(this.bounds, extRect)) {
+        let loadingRect = multiply(extRect, 2);
         this.loadRivers(loadingRect, zoom);
         this.bounds = loadingRect;
     }
@@ -21,6 +22,18 @@ TrackStorage.prototype.loadRivers = function (rect, zoom) {
         t.rivers = data.tracks;
     });
 };
+
+
+function extendBounds(bounds, point) {
+    if (bounds[0][0] < point[0] && point[0] < bounds[1][0] &&
+        bounds[0][1] < point[1] && point[1] < bounds[1][1]) {
+        return bounds;
+    }
+    return [
+        [Math.min(bounds[0][0], point[0]), Math.min(bounds[0][1], point[1])],
+        [Math.max(bounds[1][0], point[0]), Math.max(bounds[1][1], point[1])]
+    ]
+}
 
 function contains(b1, b2) {
     return b1[0][0] < b2[0][0] && b1[1][0] > b2[1][0]

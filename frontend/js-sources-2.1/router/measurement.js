@@ -50,7 +50,7 @@ WWMapMeasurementTool.prototype.addEvents = function () {
     });
     this.map.events.add('boundschange', e => {
         if (this.enabled && this.edit) {
-            this.onViewportChanged(this.map.getBounds());
+            this.onViewportChanged();
         }
     });
     this.map.events.add('mousemove', e => {
@@ -75,6 +75,7 @@ WWMapMeasurementTool.prototype.disable = function () {
 WWMapMeasurementTool.prototype.setEditMode = function (edit) {
     if (edit) {
         this.multiPath.showLast();
+        this.onViewportChanged();
     } else {
         this.multiPath.hideLast();
     }
@@ -93,13 +94,15 @@ WWMapMeasurementTool.prototype.reset = function () {
     if(this.enabled) {
         this.multiPath.show();
     }
+    this.onViewportChanged();
 };
 
 WWMapMeasurementTool.prototype.onViewportChanged = function () {
-    if (!this.enabled) {
+    if (!this.enabled || !this.edit) {
         return;
     }
-    this.trackStorage.setBounds(this.map.getBounds(), this.map.getZoom());
+    let lastFixedPoint = this.multiPath.segmentCount() > 0 ? this.multiPath.pointEnd() : null;
+    this.trackStorage.setBounds(this.map.getBounds(), lastFixedPoint, this.map.getZoom());
 };
 
 const sensitivity_px = 2;
