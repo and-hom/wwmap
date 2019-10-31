@@ -1,5 +1,7 @@
 #!/bin/sh
 
+#DEBHELPER#
+
 mkdir -p /var/lib/wwmap/backend
 mkdir -p /var/lib/wwmap/backend/images/full
 mkdir -p /var/lib/wwmap/backend/images/preview
