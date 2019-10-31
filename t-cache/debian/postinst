@@ -1,4 +1,6 @@
 #!/bin/sh
 
+#DEBHELPER#
+
 mkdir -p /var/lib/wwmap/t-cache
 chown wwmap:wwmap /var/lib/wwmap/t-cache
