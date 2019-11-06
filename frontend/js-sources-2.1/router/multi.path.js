@@ -72,6 +72,9 @@ MultiPath.prototype.removeLastSegments = function (n) {
             this.map.geoObjects.remove(this.segments[segCount - i - 1].pathLine);
         }
         this.mapPos = prevSeg.placemark.geometry.coordinates;
+        if(prevSeg.pathLine) {
+            prevSeg.pathLine.options.set("strokeStyle", "dot");
+        }
         this.segments.splice(-n, n);
 
         segCount = this.segments.length;
