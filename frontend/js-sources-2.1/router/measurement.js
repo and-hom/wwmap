@@ -19,12 +19,6 @@ export function WWMapMeasurementTool(map, objectManager, apiBase) {
     this.multiPath = null;
     this.reset();
 
-    $(document).keyup((e) => {
-        if (e.key === "Escape" && this.edit) {
-            this.multiPath.removeLastSegments(1);
-        }
-    });
-
     this.addEvents();
 }
 

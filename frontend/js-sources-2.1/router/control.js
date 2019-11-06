@@ -6,6 +6,15 @@ export function createMeasurementToolControl(measurementTool) {
         MeasurementControl.superclass.constructor.call(this, options);
         this._$content = null;
         this._geocoderDeferred = null;
+
+
+        $(document).keyup((e) => {
+            if (e.key === "Escape" && measurementTool.edit) {
+                if(!measurementTool.multiPath.removeLastSegments(1)) {
+                    this.disable();
+                }
+            }
+        });
     };
 
     ymaps.util.augment(MeasurementControl, ymaps.collection.Item, {
@@ -62,20 +71,25 @@ export function createMeasurementToolControl(measurementTool) {
                 measureDeleteBtn.css('display', measurementTool.edit && measurementTool.multiPath.segmentCount() > 0 ? 'inline-block' : 'none');
             };
 
+            this.disable = function() {
+                measureOnOffBtn.removeClass("wwmap-measure-btn-pressed");
+                measureOnOffBtn.attr('title', 'Расстояние по реке');
+                measurementTool.disable();
+
+                measureDownloadBtn.css('display', 'none');
+                measureEditBtn.css('display', 'none');
+
+                measureCompleteBtn.css('display', 'none');
+                measureRevertBtn.css('display', 'none');
+                measureDeleteBtn.css('display', 'none');
+
+                measureHelpBtn.css('display', 'none');
+            };
+
+            let t = this;
             measureOnOffBtn.bind('click', function (e) {
                 if (measurementTool.enabled) {
-                    measureOnOffBtn.removeClass("wwmap-measure-btn-pressed");
-                    measureOnOffBtn.attr('title', 'Расстояние по реке');
-                    measurementTool.disable();
-
-                    measureDownloadBtn.css('display', 'none');
-                    measureEditBtn.css('display', 'none');
-
-                    measureCompleteBtn.css('display', 'none');
-                    measureRevertBtn.css('display', 'none');
-                    measureDeleteBtn.css('display', 'none');
-
-                    measureHelpBtn.css('display', 'none');
+                    t.disable();
                 } else {
                     measureOnOffBtn.addClass("wwmap-measure-btn-pressed");
                     measureOnOffBtn.attr('title', 'Выключить измерение расстояний по реке');

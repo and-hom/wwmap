@@ -84,6 +84,8 @@ MultiPath.prototype.removeLastSegments = function (n) {
     if (this.onChangeSegmentCount) {
         this.onChangeSegmentCount();
     }
+
+    return n > 0;
 };
 
 MultiPath.prototype.setStartMarkerPos = function (mapPos, lineId) {
