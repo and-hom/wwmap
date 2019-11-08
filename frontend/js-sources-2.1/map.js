@@ -157,7 +157,7 @@ WWMap.prototype.init = function () {
     });
 
     objectManager.setFilter(function (obj) {
-        if (obj.properties.category) {
+        if (obj.properties.category && t.catFilter) {
             var objCategory = parseInt(obj.properties.category[0]);
             return t.catFilter === 1 || objCategory < 0 || objCategory >= t.catFilter;
         }
@@ -167,19 +167,19 @@ WWMap.prototype.init = function () {
     this.yMap.geoObjects.add(objectManager);
     this.objectManager = objectManager;
 
+    objectManager.objects.events.add(['click'], function (e) {
+        if (!t.measurementTool || !t.measurementTool.enabled || !t.measurementTool.edit) {
+            objectManager.objects.balloon.open(e.get('objectId'));
+        }
+    });
+
+    this.loadRivers(this.yMap.getBounds());
+
     this.measurementTool = new WWMapMeasurementTool(yMap, objectManager, backendApiBase);
     var info = getWwmapUserInfoForMapControls();
     if (info && info.experimental_features) {
         this.yMap.controls.add(createMeasurementToolControl(this.measurementTool), {});
     }
-
-    objectManager.objects.events.add(['click'], function (e) {
-        if (!t.measurementTool.enabled || !t.measurementTool.edit) {
-            objectManager.objects.balloon.open(e.get('objectId'));
-        }
-    });
-
-    this.loadRivers(this.yMap.getBounds())
 };
 
 WWMap.prototype.setBounds = function (bounds, opts) {
