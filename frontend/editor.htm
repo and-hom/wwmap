@@ -24,6 +24,8 @@
     <script type="text/javascript" src="js-editor/bootstrap-vue.js"></script>
     <script type="text/javascript" src="js-editor/sensors.js"></script>
     <script type="text/javascript" src="js-editor/sortable.min.js"></script>
+    <script type="text/javascript" src="js-editor/inputmask.min.js"></script>
+    <script type="text/javascript" src="js-editor/coord-marshaller.js"></script>
 
     <!--gallery-->
     <link rel="stylesheet" type="text/css" href="css/blueimp-gallery.min.css">
@@ -100,7 +102,9 @@
     Vue.component('window-title', httpVueLoader('components/window-title.vue'));
     Vue.component('ask', httpVueLoader('components/ask.vue'));
     Vue.component('auth', httpVueLoader('components/auth.vue'));
+    Vue.component('lat-lon-input', httpVueLoader('components/lat-lon-input.vue'));
     Vue.component('ya-map-location', httpVueLoader('components/ya-map-location.vue'));
+    Vue.component('ya-map-location-and-coords', httpVueLoader('components/ya-map-location-and-coords.vue'));
     Vue.component('img-upload', httpVueLoader('components/img-upload.vue'));
     Vue.component('video-add', httpVueLoader('components/video-add.vue'));
     Vue.component('category', httpVueLoader('components/category.vue'));

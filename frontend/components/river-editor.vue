@@ -209,18 +209,15 @@
                             <div class="col-6">
                                 <input v-model.trim="spot.title"
                                        style="display:block; width: 100%; padding-bottom: 10px;   "/>
-                                <div style="padding-top:4px;">
-                                    <strong>Широта:</strong>&nbsp;{{ spotPoint0(spot)[0] }}&nbsp;&nbsp;&nbsp;<strong>Долгота:</strong>&nbsp;{{
-                                    spotPoint0(spot)[1] }}
-                                </div>
-                                <ya-map-location :ref="'locationEdit_'+index"
-                                                 v-bind:spot="spot"
-                                                 width="100%"
-                                                 height="400px"
-                                                 :editable="true"
-                                                 :ya-search="true"
-                                                 :switch-type-hotkeys="false"
-                                                 v-bind:refresh-on-change="spot.point"/>
+                                <ya-map-location-and-coords :ref="'locationEdit_'+index"
+                                                            v-bind:spot="spot"
+                                                            width="100%"
+                                                            height="400px"
+                                                            :editable="true"
+                                                            :ya-search="true"
+                                                            :switch-type-hotkeys="false"
+                                                            v-bind:refresh-on-change="spot.point"
+                                                            :show-map-by-default="false"/>
                             </div>
                             <div class="col-4">
                                 <div>
@@ -702,7 +699,7 @@
 
                     showRiverTree(countryId, regionId, riverId);
 
-                    this.hideError();
+                    this.reload();
                     return true;
                 },
                 cancelEditing:function() {
