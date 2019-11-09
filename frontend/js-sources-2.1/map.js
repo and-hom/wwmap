@@ -1,5 +1,6 @@
 import {WWMapSearchProvider} from "./searchProvider";
 import {createLegend} from "./legend";
+import {show_map_at_and_highlight_river} from "./main";
 import {CACHED_TILES_TEMPLATE, GOOGLE_SAT_TILES, bingSatTiles, getLastPositionAndZoom, setLastPositionZoomType, getWwmapUserInfoForMapControls} from './util';
 import {apiBase} from "./config";
 import {createMeasurementToolControl} from "./router/control";
@@ -116,12 +117,24 @@ WWMap.prototype.init = function () {
         }
     });
 
-    this.yMap.controls.add(new ymaps.control.SearchControl({
+    let searchControl = new ymaps.control.SearchControl({
         options: {
             provider: new WWMapSearchProvider(),
             placeholderContent: 'Река или порог'
         }
-    }));
+    });
+    searchControl.events.add('resultselect', function (e) {
+        let index = e.get('index');
+
+        searchControl.getResult(index).then(function (value) {
+            if (value && value.properties && value.properties._data && value.properties._data.type == 'river') {
+                show_map_at_and_highlight_river(value.properties._data.boundedBy, value.properties._data.id)
+            }
+        }, function (err) {
+            console.log('Ошибка: ' + err);
+        });
+    }, this);
+    this.yMap.controls.add(searchControl);
 
     if (this.tutorialPopup) {
         this.yMap.controls.add(this.createHelpBtn(), {

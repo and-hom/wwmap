@@ -46,7 +46,9 @@ WWMapSearchProvider.prototype.geocode = function (request, options) {
                         name: river.title,
                         description: river.region.title,
                         balloonContentBody: '<p>' + river.title + '</p>',
-                        boundedBy: river.bounds
+                        boundedBy: river.bounds,
+                        id: river.id,
+                        type: "river"
                     }, {
                         iconLayout: 'default#image',
                         iconImageHref: respData.resource_base + '/img/empty-px.png',
