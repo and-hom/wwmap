@@ -24,7 +24,7 @@ export function createLegend() {
         _onGetChildElement: function (parentDomContainer) {
             // Создаем HTML-элемент с текстом.
             var content = '<div class="wwmap-legend">';
-            for (i = 0; i <= 6; i++) {
+            for (let i = 0; i <= 6; i++) {
                 content += '<div class="cat' + i + ' cat-bold"></div>'
             }
             content += '</div>';
