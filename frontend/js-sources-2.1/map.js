@@ -114,6 +114,9 @@ WWMap.prototype.init = function () {
             case 84: // T
                 t.yMap.setType('ggc#standard');
                 break;
+            case 27: // Escape
+                t.hideSelectedRiverTracks();
+                break;
         }
     });
 
