@@ -70,6 +70,7 @@ type WaterWayDao interface {
 	ListByRiverIds(riverIds ...int64) ([]WaterWay, error)
 	ListByBbox(bbox Bbox) ([]WaterWay, error)
 	ListByBboxNonFilpped(bbox Bbox) ([]WaterWay4Router, error)
+	ListByRiverIdNonFlipped(riverId int64) ([]WaterWay4Router, error)
 }
 
 type WaterWayOsmRefDao interface {

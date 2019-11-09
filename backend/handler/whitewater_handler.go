@@ -25,6 +25,7 @@ const PREVIEWS_COUNT int = 20
 func (this *WhiteWaterHandler) Init() {
 	this.Register("/ymaps-tile-ww", HandlerFunctions{Get: this.TileWhiteWaterHandler})
 	this.Register("/router-data", HandlerFunctions{Get: this.RouterData})
+	this.Register("/river-path-segments", HandlerFunctions{Get: this.RiverPathSegments})
 	this.Register("/search", HandlerFunctions{Post: this.search})
 }
 
@@ -158,6 +159,20 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 	featureCollection := MkFeatureCollection(features)
 
 	w.Write(this.JsonpAnswer(callback, featureCollection, "{}"))
+}
+
+func (this *WhiteWaterHandler) RiverPathSegments(w http.ResponseWriter, req *http.Request) {
+	riverId, err := strconv.ParseInt(req.FormValue("riverId"), 10, 64)
+	if err != nil {
+		OnError(w, err, "Can not parse id", http.StatusBadRequest)
+		return
+	}
+	ways, err := this.WaterWayDao.ListByRiverIdNonFlipped(riverId)
+	if err != nil {
+		OnError(w, err, "Can not select paths", http.StatusBadRequest)
+		return
+	}
+	this.JsonAnswer(w, ways)
 }
 
 func (this *WhiteWaterHandler) RouterData(w http.ResponseWriter, req *http.Request) {

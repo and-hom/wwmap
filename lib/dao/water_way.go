@@ -12,30 +12,32 @@ import (
 
 func NewWaterWayPostgresDao(postgresStorage PostgresStorage) WaterWayDao {
 	return waterWayStorage{
-		PostgresStorage:        postgresStorage,
-		insertQuery:            queries.SqlQuery("water-way", "insert"),
-		updateQuery:            queries.SqlQuery("water-way", "update"),
-		listQuery:              queries.SqlQuery("water-way", "list"),
-		unlinkRiverQuery:       queries.SqlQuery("water-way", "unlink-river"),
-		detectForRiverQuery:    queries.SqlQuery("water-way", "detect-for-river"),
-		bindToRiverQuery:       queries.SqlQuery("water-way", "bind-to-river"),
-		listByRiverIdsQuery:    queries.SqlQuery("water-way", "list-by-river-ids"),
-		listByBbox4RouterQuery: queries.SqlQuery("water-way", "list-by-bbox-4-router"),
-		listByBboxQuery:        queries.SqlQuery("water-way", "list-by-bbox"),
+		PostgresStorage:           postgresStorage,
+		insertQuery:               queries.SqlQuery("water-way", "insert"),
+		updateQuery:               queries.SqlQuery("water-way", "update"),
+		listQuery:                 queries.SqlQuery("water-way", "list"),
+		unlinkRiverQuery:          queries.SqlQuery("water-way", "unlink-river"),
+		detectForRiverQuery:       queries.SqlQuery("water-way", "detect-for-river"),
+		bindToRiverQuery:          queries.SqlQuery("water-way", "bind-to-river"),
+		listByRiverIdsQuery:       queries.SqlQuery("water-way", "list-by-river-ids"),
+		listByRiverId4RouterQuery: queries.SqlQuery("water-way", "list-by-river-id-4-router"),
+		listByBbox4RouterQuery:    queries.SqlQuery("water-way", "list-by-bbox-4-router"),
+		listByBboxQuery:           queries.SqlQuery("water-way", "list-by-bbox"),
 	}
 }
 
 type waterWayStorage struct {
 	PostgresStorage
-	insertQuery            string
-	updateQuery            string
-	listQuery              string
-	unlinkRiverQuery       string
-	detectForRiverQuery    string
-	bindToRiverQuery       string
-	listByRiverIdsQuery    string
-	listByBbox4RouterQuery string
-	listByBboxQuery        string
+	insertQuery               string
+	updateQuery               string
+	listQuery                 string
+	unlinkRiverQuery          string
+	detectForRiverQuery       string
+	bindToRiverQuery          string
+	listByRiverIdsQuery       string
+	listByRiverId4RouterQuery string
+	listByBbox4RouterQuery    string
+	listByBboxQuery           string
 }
 
 func (this waterWayStorage) AddWaterWays(waterways ...WaterWay) error {
@@ -148,6 +150,25 @@ func scanWaterWay(rows *sql.Rows) (WaterWay, error) {
 	return waterWay, nil
 }
 
+func scanWaterWayTiny(rows *sql.Rows) (WaterWay4Router, error) {
+	waterWay := WaterWay4Router{}
+	pathStr := ""
+	refsStr := ""
+	err := rows.Scan(&waterWay.Id, &pathStr, &refsStr)
+	if err != nil {
+		return WaterWay4Router{}, err
+	}
+	var path geo.LineString
+	err = json.Unmarshal([]byte(pathStr), &path)
+	if err != nil {
+		log.Errorf("Can not parse path \"%s\": %v", pathStr, err)
+		return WaterWay4Router{}, err
+	}
+	waterWay.Path = path.GetFlippedPath()
+
+	return waterWay, nil
+}
+
 func scanWaterWay4RouterNonFlipped(rows *sql.Rows) (WaterWay4Router, error) {
 	waterWay := WaterWay4Router{}
 	pathStr := ""
@@ -210,6 +231,14 @@ func (this waterWayStorage) ListByRiverIds(riverIds ...int64) ([]WaterWay, error
 
 func (this waterWayStorage) ListByBboxNonFilpped(bbox geo.Bbox) ([]WaterWay4Router, error) {
 	result, err := this.doFindList(this.listByBbox4RouterQuery, scanWaterWay4RouterNonFlipped, bbox.Y1, bbox.X1, bbox.Y2, bbox.X2)
+	if err != nil {
+		return []WaterWay4Router{}, err
+	}
+	return result.([]WaterWay4Router), err
+}
+
+func (this waterWayStorage) ListByRiverIdNonFlipped(riverId int64) ([]WaterWay4Router, error) {
+	result, err := this.doFindList(this.listByRiverId4RouterQuery, scanWaterWayTiny, riverId)
 	if err != nil {
 		return []WaterWay4Router{}, err
 	}

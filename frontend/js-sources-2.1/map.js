@@ -28,6 +28,8 @@ export function WWMap(divId, bubbleTemplate, riverList, tutorialPopup, catalogLi
     } catch (err) {
         console.log(err)
     }
+
+    this.selectedRiverTracks = null;
 }
 
 WWMap.prototype.loadRivers = function (bounds) {
@@ -92,7 +94,7 @@ WWMap.prototype.init = function () {
         )
     );
     $(document).keyup(function (e) {
-        if (!e || !e.target || !e.target.tagName || e.target.tagName.toUpperCase()=='INPUT') {
+        if (!e || !e.target || !e.target.tagName || e.target.tagName.toUpperCase() == 'INPUT') {
             return
         }
         switch (e.which) {
@@ -184,6 +186,41 @@ WWMap.prototype.init = function () {
 
 WWMap.prototype.setBounds = function (bounds, opts) {
     this.yMap.setBounds(bounds, opts)
+};
+
+WWMap.prototype.hideSelectedRiverTracks = function () {
+    if (!this.selectedRiverTracks) {
+        return;
+    }
+
+    for (let i = 0; i < this.selectedRiverTracks.length; i++) {
+        this.yMap.geoObjects.remove(this.selectedRiverTracks[i]);
+    }
+
+    this.selectedRiverTracks = null;
+};
+
+WWMap.prototype.setSelectedRiverTracks = function (tracks) {
+    let mapObjects = [];
+    for (let i = 0; i < tracks.length; i++) {
+        let mapObject = new ymaps.GeoObject({
+            geometry: {
+                type: "LineString",
+                coordinates: tracks[i].path
+            },
+            properties: {
+                hintContent: tracks[i].Id,
+                // balloonContent: ""
+            }
+        }, {
+            strokeColor: "#0000FF",
+            strokeWidth: 5
+        });
+        mapObjects.push(mapObject);
+        this.yMap.geoObjects.add(mapObject);
+    }
+
+    this.selectedRiverTracks = mapObjects;
 };
 
 function addCachedLayer(key, name, copyright, mapId, lower_scale, upper_scale) {

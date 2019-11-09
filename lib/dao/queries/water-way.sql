@@ -28,6 +28,9 @@ UPDATE ___table___ SET river_id=$1 WHERE id IN (SELECT id FROM way_ids) RETURNIN
 --@list-by-river-ids
 SELECT ___select-fields___ FROM ___table___ WHERE river_id=ANY($1)
 
+--@list-by-river-id-4-router
+SELECT id, ST_AsGeoJSON(path_simplified), '[]' FROM ___table___ WHERE river_id=$1
+
 --@list-by-bbox-4-router
 WITH
     rivers_in_area AS (select * FROM waterway WHERE path && ST_MakeEnvelope($1,$2,$3,$4)),
