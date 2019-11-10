@@ -1,3 +1,9 @@
+wwmap-backend (0.0.48) unstable; urgency=medium
+
+  * #209 Performance fix: fast nearset river check 
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sun, 10 Nov 2019 19:30:12 +0300
+
 wwmap-backend (0.0.47) unstable; urgency=medium
 
   * #114 Enable wwmap services by default
