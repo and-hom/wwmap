@@ -894,7 +894,10 @@
                     let orderIndex;
                     let automaticOrdering;
 
-                    if (this.spotIndexes.length != 0) {
+                    if (this.spots.length == 0) {
+                        orderIndex = 0;
+                        automaticOrdering = false;
+                    } else if (this.spotIndexes.length != 0) {
                         orderIndex = Math.max(...this.spotIndexes) + 2; // order_index starts from 1
                         automaticOrdering = false;
                     } else if (this.spots.every(s => !s.automatic_ordering)) {
