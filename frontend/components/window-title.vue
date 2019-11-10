@@ -10,10 +10,10 @@
             },
         },
         created: function() {
-            document.title = this.text;
+            document.title = this.text ? this.text : "";
         },
         updated: function() {
-            document.title = this.text;
+            document.title = this.text ? this.text : "" ;
         }
     }
 </script>
