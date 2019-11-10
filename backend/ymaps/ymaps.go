@@ -152,6 +152,7 @@ func mkCluster(Id clustering.ClusterId, points []Spot, riverTitle string) Featur
 
 			Title:    Id.Title,
 			Category: &model.SportCategory{Category: riverCats.Max},
+			Id:       Id.RiverId,
 		}, Options: FeatureOptions{
 			Preset: categoryClusterIcon(riverCats.Avg),
 		},

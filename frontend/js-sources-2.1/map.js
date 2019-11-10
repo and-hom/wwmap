@@ -1,6 +1,6 @@
 import {WWMapSearchProvider} from "./searchProvider";
 import {createLegend} from "./legend";
-import {show_map_at_and_highlight_river} from "./main";
+import {show_map_at_and_highlight_river, highlight_river} from "./main";
 import {CACHED_TILES_TEMPLATE, GOOGLE_SAT_TILES, bingSatTiles, getLastPositionAndZoom, setLastPositionZoomType, getWwmapUserInfoForMapControls} from './util';
 import {apiBase} from "./config";
 import {createMeasurementToolControl} from "./router/control";
@@ -188,6 +188,13 @@ WWMap.prototype.init = function () {
     objectManager.objects.events.add(['click'], function (e) {
         if (!t.measurementTool || !t.measurementTool.enabled || !t.measurementTool.edit) {
             objectManager.objects.balloon.open(e.get('objectId'));
+        }
+    });
+    objectManager.clusters.events.add('click', function (e) {
+        let objectId = e.get('objectId');
+        let cluster = objectManager.clusters.getById(objectId);
+        if(cluster && cluster.properties && cluster.properties.id) {
+            highlight_river(cluster.properties.id)
         }
     });
 

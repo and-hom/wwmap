@@ -13,7 +13,10 @@ var wwMap;
 
 export function show_map_at_and_highlight_river(bounds, riverId) {
     show_map_at(bounds);
+    highlight_river(riverId)
+}
 
+export function highlight_river(riverId) {
     wwMap.hideSelectedRiverTracks();
 
     $.get(apiBase + "/river-path-segments?riverId=" + riverId, function (data) {
