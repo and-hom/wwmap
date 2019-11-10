@@ -20,13 +20,22 @@ SELECT ___select-fields___ FROM ___table___ WHERE id=ANY(SELECT id FROM way_ids)
 
 --@bind-to-river
 WITH
-	wwpts AS (SELECT point::geography as point FROM white_water_rapid WHERE river_id=$1),
-	ways AS (SELECT id,path::geography as path FROM waterway WHERE lower(title) = ANY($2)),
-	way_ids AS (SELECT distinct id FROM wwpts INNER JOIN ways ON ST_Distance(path,point)<$3)
-UPDATE ___table___ SET river_id=$1 WHERE id IN (SELECT id FROM way_ids) RETURNING id
+    alias_query AS (SELECT id, jsonb_array_elements_text(aliases) AS alias FROM river),
+    river_rects_query AS (SELECT river_id, ST_Envelope(ST_Extent(point)) as bounds FROM white_water_rapid GROUP BY river_id),
+    rivers_query AS (SELECT river.id, title, alias_query.alias AS alias, bounds
+        FROM river
+        LEFT OUTER JOIN alias_query ON river.id = alias_query.id
+        INNER JOIN river_rects_query ON river.id = river_rects_query.river_id)
+UPDATE ___table___ SET river_id=rivers_query.id
+    FROM rivers_query
+    WHERE  (___table___.title=rivers_query.title OR ___table___.title=rivers_query.alias)
+      AND ST_Distance(___table___.path::geography, rivers_query.bounds::geography) < $1
 
 --@list-by-river-ids
 SELECT ___select-fields___ FROM ___table___ WHERE river_id=ANY($1)
+
+--@list-by-river-id-4-router
+SELECT id, ST_AsGeoJSON(path_simplified), '[]' FROM ___table___ WHERE river_id=$1
 
 --@list-by-bbox-4-router
 WITH

@@ -11,11 +11,21 @@ require('./tube');
 
 var wwMap;
 
+export function show_map_at_and_highlight_river(bounds, riverId) {
+    show_map_at(bounds);
+
+    wwMap.hideSelectedRiverTracks();
+
+    $.get(apiBase + "/river-path-segments?riverId=" + riverId, function (data) {
+        wwMap.setSelectedRiverTracks(data);
+    });
+}
+
 export function show_map_at(bounds) {
     wwMap.setBounds(bounds, {
         checkZoomRange: true,
         duration: 200
-    })
+    });
 }
 
 var riverList;

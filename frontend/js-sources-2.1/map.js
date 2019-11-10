@@ -1,5 +1,6 @@
 import {WWMapSearchProvider} from "./searchProvider";
 import {createLegend} from "./legend";
+import {show_map_at_and_highlight_river} from "./main";
 import {CACHED_TILES_TEMPLATE, GOOGLE_SAT_TILES, bingSatTiles, getLastPositionAndZoom, setLastPositionZoomType, getWwmapUserInfoForMapControls} from './util';
 import {apiBase} from "./config";
 import {createMeasurementToolControl} from "./router/control";
@@ -28,6 +29,8 @@ export function WWMap(divId, bubbleTemplate, riverList, tutorialPopup, catalogLi
     } catch (err) {
         console.log(err)
     }
+
+    this.selectedRiverTracks = null;
 }
 
 WWMap.prototype.loadRivers = function (bounds) {
@@ -92,7 +95,7 @@ WWMap.prototype.init = function () {
         )
     );
     $(document).keyup(function (e) {
-        if (!e || !e.target || !e.target.tagName || e.target.tagName.toUpperCase()=='INPUT') {
+        if (!e || !e.target || !e.target.tagName || e.target.tagName.toUpperCase() == 'INPUT') {
             return
         }
         switch (e.which) {
@@ -111,15 +114,30 @@ WWMap.prototype.init = function () {
             case 84: // T
                 t.yMap.setType('ggc#standard');
                 break;
+            case 27: // Escape
+                t.hideSelectedRiverTracks();
+                break;
         }
     });
 
-    this.yMap.controls.add(new ymaps.control.SearchControl({
+    let searchControl = new ymaps.control.SearchControl({
         options: {
             provider: new WWMapSearchProvider(),
             placeholderContent: 'Река или порог'
         }
-    }));
+    });
+    searchControl.events.add('resultselect', function (e) {
+        let index = e.get('index');
+
+        searchControl.getResult(index).then(function (value) {
+            if (value && value.properties && value.properties._data && value.properties._data.type == 'river') {
+                show_map_at_and_highlight_river(value.properties._data.boundedBy, value.properties._data.id)
+            }
+        }, function (err) {
+            console.log('Ошибка: ' + err);
+        });
+    }, this);
+    this.yMap.controls.add(searchControl);
 
     if (this.tutorialPopup) {
         this.yMap.controls.add(this.createHelpBtn(), {
@@ -184,6 +202,41 @@ WWMap.prototype.init = function () {
 
 WWMap.prototype.setBounds = function (bounds, opts) {
     this.yMap.setBounds(bounds, opts)
+};
+
+WWMap.prototype.hideSelectedRiverTracks = function () {
+    if (!this.selectedRiverTracks) {
+        return;
+    }
+
+    for (let i = 0; i < this.selectedRiverTracks.length; i++) {
+        this.yMap.geoObjects.remove(this.selectedRiverTracks[i]);
+    }
+
+    this.selectedRiverTracks = null;
+};
+
+WWMap.prototype.setSelectedRiverTracks = function (tracks) {
+    let mapObjects = [];
+    for (let i = 0; i < tracks.length; i++) {
+        let mapObject = new ymaps.GeoObject({
+            geometry: {
+                type: "LineString",
+                coordinates: tracks[i].path
+            },
+            properties: {
+                hintContent: tracks[i].Id,
+                // balloonContent: ""
+            }
+        }, {
+            strokeColor: "#0000FF",
+            strokeWidth: 5
+        });
+        mapObjects.push(mapObject);
+        this.yMap.geoObjects.add(mapObject);
+    }
+
+    this.selectedRiverTracks = mapObjects;
 };
 
 function addCachedLayer(key, name, copyright, mapId, lower_scale, upper_scale) {
