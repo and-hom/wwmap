@@ -1,3 +1,9 @@
+wwmap-frontend (0.0.51) unstable; urgency=medium
+
+  * #248 Highlight river on cluster expand 
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sun, 10 Nov 2019 20:34:59 +0300
+
 wwmap-frontend (0.0.50) unstable; urgency=medium
 
   * #209 Performance fix: fast nearset river check 
