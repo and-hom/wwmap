@@ -1,3 +1,10 @@
+wwmap-frontend (0.0.49) unstable; urgency=medium
+
+  * #248 Highlight selected river on map
+  * Fix "undefined" window title
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sun, 10 Nov 2019 18:07:20 +0300
+
 wwmap-frontend (0.0.48) unstable; urgency=medium
 
   * #234 Fix: correct spot index on add to empty list

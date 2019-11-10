@@ -1,3 +1,10 @@
+wwmap-backend (0.0.47) unstable; urgency=medium
+
+  * #114 Enable wwmap services by default
+  * #248 Highlight selected river on map
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sun, 10 Nov 2019 18:06:09 +0300
+
 wwmap-backend (0.0.46) unstable; urgency=medium
 
   * #234 Batch spot editor for river
