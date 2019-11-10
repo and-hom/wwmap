@@ -12,21 +12,13 @@ func main() {
 	configuration.ChangeLogLevel()
 	storage := dao.NewPostgresStorage(configuration.Db)
 
-	//riverDao := dao.NewRiverPostgresDao(storage)
 	waterWayDao := dao.NewWaterWayPostgresDao(storage)
+
+	//log.Info("Simplify waterways preserving ref points")
 
 	log.Info("Bind tracks to rivers")
 	err := waterWayDao.BindWaterwaysToRivers()
 	if err != nil {
 		log.Fatalf("Can't bind tracks to river: ", err)
 	}
-
-	//rivers, err := riverDao.ListAll()
-	//if err != nil {
-	//	log.Fatal("Can't list rivers", err)
-	//}
-
-	//for _, river := range rivers {
-	//
-	//}
 }
