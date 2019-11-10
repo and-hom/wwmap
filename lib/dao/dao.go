@@ -66,7 +66,7 @@ type WaterWayDao interface {
 	ForEachWaterWay(transformer func(WaterWay) (WaterWay, error), tmpTable string) error
 	DetectForRiver(riverId int64) ([]WaterWay, error)
 	UnlinkRiver(id int64, tx interface{}) error
-	BindToRiver(riverId int64, titleVariants []string) ([]int64, error)
+	BindWaterwaysToRivers() error
 	ListByRiverIds(riverIds ...int64) ([]WaterWay, error)
 	ListByBbox(bbox Bbox) ([]WaterWay, error)
 	ListByBboxNonFilpped(bbox Bbox) ([]WaterWay4Router, error)
