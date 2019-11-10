@@ -193,6 +193,7 @@ func scanWaterWay4RouterNonFlipped(rows *sql.Rows) (WaterWay4Router, error) {
 		waterWay.Refs[refs[i].RefId] = append(waterWay.Refs[refs[i].RefId], refs[i].CrossPoint.Coordinates)
 	}
 	waterWay.Path = path.Coordinates
+	waterWay.Bounds = path.GetBounds(4.0)
 	return waterWay, nil
 }
 

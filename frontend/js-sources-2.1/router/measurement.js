@@ -101,12 +101,20 @@ WWMapMeasurementTool.prototype.onViewportChanged = function () {
 
 const sensitivity_px = 2;
 
-WWMapMeasurementTool.prototype.getComputeMarkerPos = function (cursorPosFlipped, epsilon_m) {
+WWMapMeasurementTool.prototype.getComputedMarkerPos = function (cursorPosFlipped, epsilon_m) {
     let markerPos;
     let minDist = epsilon_m * 2;
     this.currentLine = null;
     for (let id in this.trackStorage.rivers) {
         let river = this.trackStorage.rivers[id];
+
+        // !!! Performance workaround!
+        if(cursorPosFlipped[0] < river.bounds[0][0] || cursorPosFlipped[0]>river.bounds[1][0] ||
+            cursorPosFlipped[1] < river.bounds[0][1] || cursorPosFlipped[1]>river.bounds[1][1]) {
+            continue
+        }
+        // !!! End of workaround
+
         let dst = turf.pointToLineDistance(cursorPosFlipped, turf.lineString(river.path), {units: 'meters'});
         if (dst < minDist) {
             minDist = dst;
@@ -136,7 +144,7 @@ WWMapMeasurementTool.prototype.moveFirstPoint = function (cursorPosPx, coords, e
         }
     }
 
-    let markerPos = this.getComputeMarkerPos(cursorPosFlipped, epsilon_m);
+    let markerPos = this.getComputedMarkerPos(cursorPosFlipped, epsilon_m);
     this.multiPath.setStartMarkerPos(markerPos, this.currentLine ? this.currentLine.id : -1);
 };
 
@@ -185,7 +193,7 @@ WWMapMeasurementTool.prototype.onMouseMoved = function (cursorPosPx, coords) {
         return;
     }
 
-    let markerPos = this.getComputeMarkerPos(cursorPosFlipped, epsilon_m);
+    let markerPos = this.getComputedMarkerPos(cursorPosFlipped, epsilon_m);
 
     // search for sutable neighbout tracks
     if (this.currentLine) {

@@ -109,7 +109,8 @@ type WaterWaySimple struct {
 
 type WaterWay4Router struct {
 	WaterWaySimple
-	Refs map[int64][]Point `json:"refs"`
+	Bounds Bbox              `json:"bounds"`
+	Refs   map[int64][]Point `json:"refs"`
 }
 
 type WaterWay struct {
