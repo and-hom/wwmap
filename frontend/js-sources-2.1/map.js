@@ -236,8 +236,8 @@ WWMap.prototype.setSelectedRiverTracks = function (tracks) {
                 // balloonContent: ""
             }
         }, {
-            strokeColor: "#0000FF",
-            strokeWidth: 5
+            strokeColor: "#0000FFAA",
+            strokeWidth: 3
         });
         mapObjects.push(mapObject);
         this.yMap.geoObjects.add(mapObject);
