@@ -145,7 +145,7 @@ WWMap.prototype.init = function () {
         });
     }
 
-    this.yMap.controls.add(createLegend(), {
+    this.yMap.controls.add(createLegend(t), {
         float: 'left'
     });
 

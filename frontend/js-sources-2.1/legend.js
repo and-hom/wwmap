@@ -1,4 +1,4 @@
-export function createLegend() {
+export function createLegend(wwmap) {
     let Legend = function (options) {
         Legend.superclass.constructor.call(this, options);
         this._$content = null;
