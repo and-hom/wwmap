@@ -28,7 +28,7 @@ WITH
         INNER JOIN river_rects_query ON river.id = river_rects_query.river_id)
 UPDATE ___table___ SET river_id=rivers_query.id
     FROM rivers_query
-    WHERE  (___table___.title=rivers_query.title OR ___table___.title=rivers_query.alias)
+    WHERE  (lower(___table___.title)=lower(rivers_query.title) OR lower(___table___.title)=lower(rivers_query.alias))
       AND ST_Distance(___table___.path::geography, rivers_query.bounds::geography) < $1
 
 --@list-by-river-ids
