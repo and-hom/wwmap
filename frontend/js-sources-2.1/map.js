@@ -200,7 +200,7 @@ WWMap.prototype.init = function () {
 
     this.loadRivers(this.yMap.getBounds());
 
-    this.measurementTool = new WWMapMeasurementTool(yMap, objectManager, backendApiBase);
+    this.measurementTool = new WWMapMeasurementTool(yMap, objectManager, apiBase);
     var info = getWwmapUserInfoForMapControls();
     if (info && info.experimental_features) {
         this.yMap.controls.add(createMeasurementToolControl(this.measurementTool), {});
