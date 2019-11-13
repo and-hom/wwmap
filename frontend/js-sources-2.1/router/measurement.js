@@ -197,7 +197,7 @@ WWMapMeasurementTool.prototype.onMouseMoved = function (cursorPosPx, coords) {
 
     // search for sutable neighbout tracks
     if (this.currentLine) {
-        let walker = new RiverTreeWalker(this.trackStorage, this.multiPath.riverSegmentIdPrev(), this.currentLine.id, 12);
+        let walker = new RiverTreeWalker(this.trackStorage, this.multiPath.riverSegmentIdPrev(), this.currentLine.id, 24);
         let found = walker.searchRiver();
         if (found) {
             this.currentLine = found.river;
