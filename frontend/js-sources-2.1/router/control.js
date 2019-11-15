@@ -1,5 +1,6 @@
 import fileDownload from "js-file-download"
 import {WWMapPopup} from "../popup";
+import {MIN_ZOOM_SUPPORTED} from "./measurement"
 
 export function createMeasurementToolControl(measurementTool) {
     let MeasurementControl = function (options) {
@@ -36,6 +37,7 @@ export function createMeasurementToolControl(measurementTool) {
         _onGetChildElement: function (parentDomContainer) {
             // Создаем HTML-элемент с текстом.
             var content = '<div class="wwmap-route-control">' +
+                '<div class="wwmap-overzoom-msg" style="display: none; background: #ff000099; font-size: x-small; color: #331100">Измерения пути при масштабе менее '+MIN_ZOOM_SUPPORTED+' не поддерживаются.</div> ' +
                 '<button class="ymaps-2-1-73-float-button-text, wwmap-measure-btn" title="Расстояние по реке"><img style="height:24px" src="http://wwmap.ru/img/ruler.png"/><img style="height:24px"/></button>' +
 
                 '<button class="ymaps-2-1-73-float-button-text, wwmap-measure-ok-btn" style="display: none;" title="Закончить редактирование"><img style="height:24px" src="http://wwmap.ru/img/ok.png"/><img style="height:24px"/></button>' +
@@ -59,6 +61,8 @@ export function createMeasurementToolControl(measurementTool) {
 
             var measureHelpBtn = $('.wwmap-measure-help-btn');
 
+            var overZoomMessage = $('.wwmap-overzoom-msg');
+
             let refreshMeasurementButtons = function () {
                 let exportModeStyle = measurementTool.edit || !measurementTool.hasDrawnPath() ? 'none' : 'inline-block';
                 let editModeStyle = measurementTool.edit ? 'inline-block' : 'none';
@@ -69,6 +73,10 @@ export function createMeasurementToolControl(measurementTool) {
                 measureCompleteBtn.css('display', measurementTool.edit && measurementTool.hasDrawnPath()  ? 'inline-block' : 'none');
                 measureRevertBtn.css('display', measurementTool.edit && measurementTool.multiPath.segmentCount() > 0  ? 'inline-block' : 'none');
                 measureDeleteBtn.css('display', measurementTool.edit && measurementTool.multiPath.segmentCount() > 0 ? 'inline-block' : 'none');
+            };
+
+            let refreshOverZoom = function (overZoom) {
+                overZoomMessage.css('display', overZoom ? 'inline-block' : 'none');
             };
 
             this.disable = function() {
@@ -84,6 +92,7 @@ export function createMeasurementToolControl(measurementTool) {
                 measureDeleteBtn.css('display', 'none');
 
                 measureHelpBtn.css('display', 'none');
+                refreshOverZoom(false);
             };
 
             let t = this;
@@ -133,6 +142,7 @@ export function createMeasurementToolControl(measurementTool) {
             });
 
             measurementTool.multiPath.onChangeSegmentCount = refreshMeasurementButtons;
+            measurementTool.overZoomCallback = refreshOverZoom;
         },
 
         onDragStart: function (e) {

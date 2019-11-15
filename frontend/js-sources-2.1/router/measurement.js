@@ -4,9 +4,11 @@ import * as turf from '@turf/turf';
 import {MultiPath} from "./multi.path";
 import {RiverTreeWalker} from "./tree.walker"
 
+export const MIN_ZOOM_SUPPORTED = 9;
 
 export function WWMapMeasurementTool(map, objectManager, apiBase) {
     this.enabled = false;
+    this.overZoom = false;
     this.edit = true;
 
     this.trackStorage = new TrackStorage(apiBase);
@@ -25,12 +27,12 @@ export function WWMapMeasurementTool(map, objectManager, apiBase) {
 WWMapMeasurementTool.prototype.addEvents = function () {
     let t = this;
     this.objectManager.objects.events.add(['click'], e => {
-        if (this.enabled && this.edit) {
+        if (this.enabled && this.edit && !this.overZoom) {
             this.multiPath.pushEmptySegment();
         }
     });
     this.objectManager.objects.events.add('mousemove', e => {
-        if (this.enabled && this.edit) {
+        if (this.enabled && this.edit && !this.overZoom) {
             let coords = e.get('coords');
             if (coords) {
                 this.onMouseMoved(t.coordsToMouse(coords), coords);
@@ -38,7 +40,7 @@ WWMapMeasurementTool.prototype.addEvents = function () {
         }
     });
     this.map.events.add('click', e => {
-        if (this.enabled && this.edit) {
+        if (this.enabled && this.edit && !this.overZoom) {
             this.multiPath.pushEmptySegment();
         }
     });
@@ -48,7 +50,7 @@ WWMapMeasurementTool.prototype.addEvents = function () {
         }
     });
     this.map.events.add('mousemove', e => {
-        if (this.enabled && this.edit) {
+        if (this.enabled && this.edit && !this.overZoom) {
             this.onMouseMoved(e.get('position'), e.get('coords'));
         }
     });
@@ -95,6 +97,19 @@ WWMapMeasurementTool.prototype.onViewportChanged = function () {
     if (!this.enabled || !this.edit) {
         return;
     }
+
+    if (this.map.getZoom() < MIN_ZOOM_SUPPORTED) {
+        this.overZoom = true;
+        if (this.overZoomCallback) {
+            this.overZoomCallback(true)
+        }
+        return;
+    }
+    this.overZoom = false;
+    if (this.overZoomCallback) {
+        this.overZoomCallback(false)
+    }
+
     let lastFixedPoint = this.multiPath.segmentCount() > 0 ? this.multiPath.pointEnd() : null;
     this.trackStorage.setBounds(this.map.getBounds(), lastFixedPoint, this.map.getZoom());
 };
@@ -150,7 +165,7 @@ WWMapMeasurementTool.prototype.moveFirstPoint = function (cursorPosPx, coords, e
 };
 
 WWMapMeasurementTool.prototype.onMouseMoved = function (cursorPosPx, coords) {
-    if (!cursorPosPx ||  !this.enabled || !this.edit) {
+    if (!cursorPosPx ||  !this.enabled || !this.edit || this.overZoom) {
         return
     }
 
