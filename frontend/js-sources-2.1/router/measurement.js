@@ -105,8 +105,9 @@ WWMapMeasurementTool.prototype.getComputedMarkerPos = function (cursorPosFlipped
     let markerPos;
     let minDist = epsilon_m * 2;
     this.currentLine = null;
-    for (let id in this.trackStorage.rivers) {
-        let river = this.trackStorage.rivers[id];
+    let rivers = this.trackStorage.getRivers(cursorPosFlipped[1], cursorPosFlipped[0]);
+    for (let id in rivers) {
+        let river = rivers[id];
 
         // !!! Performance workaround!
         if(cursorPosFlipped[0] < river.bounds[0][0] || cursorPosFlipped[0]>river.bounds[1][0] ||
@@ -149,8 +150,7 @@ WWMapMeasurementTool.prototype.moveFirstPoint = function (cursorPosPx, coords, e
 };
 
 WWMapMeasurementTool.prototype.onMouseMoved = function (cursorPosPx, coords) {
-    if (!cursorPosPx ||  !this.enabled || !this.edit
-        || this.trackStorage.rivers.length == 0 && !(this.multiPath.segmentCount() > 0 && this.currentLine)) {
+    if (!cursorPosPx ||  !this.enabled || !this.edit) {
         return
     }
 
@@ -247,7 +247,7 @@ WWMapMeasurementTool.prototype.makePath = function (start, end, found) {
 
     for (let i = 0; i < ids.length; i++) {
         let id = ids[i];
-        let track = this.trackStorage.rivers[id];
+        let track = this.trackStorage.getRiver(id);
         let toPoint;
         if (i == ids.length - 1) {
             toPoint = end;
