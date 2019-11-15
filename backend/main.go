@@ -40,6 +40,7 @@ func main() {
 	waterWayDao := NewWaterWayPostgresDao(storage)
 	waterWayRefDao := NewWaterWayRefPostgresDao(storage)
 	levelDao := NewLevelPostgresDao(storage)
+	dbVersionDao := NewDbVersionPostgresDao(storage)
 
 	clusterMaker := clustering.NewClusterMaker(configuration.ClusterizationParams)
 
@@ -116,7 +117,7 @@ func main() {
 			App:      app,
 			LevelDao: levelDao,
 		},
-		handler.CreateSystemHandler(&app, version),
+		handler.CreateSystemHandler(&app, dbVersionDao, version),
 		&handler.MeteoHandler{app},
 	}
 

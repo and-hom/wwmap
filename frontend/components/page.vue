@@ -17,7 +17,7 @@
         <slot></slot>
         <footer v-if="showFooter" class="footer">
             <div class="container wwmap-footer">
-                <span>Версия бэкенда:&nbsp;{{backVersion}}</span><span>Версия фронтенда:&nbsp;{{frontVersion}}</span><span>Контакт для связи:&nbsp;<a
+                <span>Версия бэкенда:&nbsp;{{backVersion}}</span><span>Версия фронтенда:&nbsp;{{frontVersion}}</span><span>Версия базы:&nbsp;{{dbVersion}}</span><span>Контакт для связи:&nbsp;<a
                     href="mailto:info@wwmap.ru">info@wwmap.ru</a></span>
             </div>
         </footer>
@@ -177,6 +177,7 @@
                     return "dropdown-item"
                 },
                 backVersion: getBackendVersion(),
+                dbVersion: getDbVersion(),
                 frontVersion: frontendVersion
             }
         },

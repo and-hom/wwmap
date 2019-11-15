@@ -174,3 +174,7 @@ type LevelDao interface {
 	List(fromDate JSONDate) (map[string][]Level, error)
 	RemoveNullsBefore(fromDate JSONDate) error
 }
+
+type DbVersionDao interface {
+	GetDbVersion() (int, error)
+}

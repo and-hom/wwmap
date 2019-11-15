@@ -1,7 +1,7 @@
 backendApiBase = "http://localhost:7007";
 frontendVersion = "development";
 
-function sendRequest(url , _type, auth) {
+function sendRequest(url, _type, auth) {
     var xhr = new XMLHttpRequest();
     xhr.open(_type, url, false);
     addAuth(xhr, auth);
@@ -69,8 +69,21 @@ function addAuth(xhr, auth) {
 }
 
 function getBackendVersion() {
-    return doGetJsonSync(backendApiBase + "/version")
+    try {
+        return doGetJsonSync(backendApiBase + "/version")
+    } catch (e) {
+        console.log(e);
+    }
 }
+
+function getDbVersion() {
+    try {
+        return doGetJsonSync(backendApiBase + "/db-version")
+    } catch (e) {
+        console.log(e);
+    }
+}
+
 
 function parseParams(paramsStr) {
     if (!paramsStr) {
@@ -79,9 +92,9 @@ function parseParams(paramsStr) {
 
     var paramsArr = paramsStr.split('&');
     var params = {};
-    for (var i=0; i < paramsArr.length; i++) {
+    for (var i = 0; i < paramsArr.length; i++) {
         var keyValue = paramsArr[i].split('=');
-        if( keyValue.length < 2 ) {
+        if (keyValue.length < 2) {
             continue
         }
         var key = keyValue[0];

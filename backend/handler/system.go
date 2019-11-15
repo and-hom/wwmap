@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"encoding/json"
 	"github.com/and-hom/wwmap/lib/dao"
 	. "github.com/and-hom/wwmap/lib/handler"
 	. "github.com/and-hom/wwmap/lib/http"
@@ -11,28 +10,31 @@ import (
 
 type SystemHandler struct {
 	App
-	versionJson       []byte
-	versionMarshalErr error
+	DbVersionDao dao.DbVersionDao
+	version      string
 }
 
-func CreateSystemHandler(app *App, version string) *SystemHandler {
-	var versionJson, versionMarshalErr = json.Marshal(version)
-	return &SystemHandler{*app, versionJson, versionMarshalErr}
+func CreateSystemHandler(app *App, dbVersionDao dao.DbVersionDao, version string) *SystemHandler {
+	return &SystemHandler{*app, dbVersionDao, version}
 }
 
 func (this *SystemHandler) Init() {
 	this.Register("/version", HandlerFunctions{Get: this.Version})
+	this.Register("/db-version", HandlerFunctions{Get: this.DbVersion})
 	this.Register("/log", HandlerFunctions{Get: this.ForRoles(this.Log, dao.ADMIN)})
 }
 
 func (this *SystemHandler) Version(w http.ResponseWriter, req *http.Request) {
-	if this.versionMarshalErr != nil {
-		OnError500(w, this.versionMarshalErr, "Can not marshal version to json")
-	}
-	_, err := w.Write(this.versionJson)
+	this.JsonAnswer(w, this.version)
+}
+
+func (this *SystemHandler) DbVersion(w http.ResponseWriter, req *http.Request) {
+	dbVersion, err := this.DbVersionDao.GetDbVersion()
 	if err != nil {
-		OnError500(w, err, "Can not write version to response")
+		OnError500(w, err, "Can't select schema version")
+		return
 	}
+	this.JsonAnswer(w, dbVersion)
 }
 
 func (this *SystemHandler) Log(w http.ResponseWriter, req *http.Request) {
