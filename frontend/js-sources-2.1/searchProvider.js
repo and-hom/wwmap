@@ -42,10 +42,9 @@ WWMapSearchProvider.prototype.geocode = function (request, options) {
                 for (i = 0, l = respData.rivers.length; i < l; i++) {
                     var river = respData.rivers[i];
 
-                    geoObjects.add(new ymaps.Placemark(center(river.bounds), {
+                    geoObjects.add(new ymaps.Rectangle(river.bounds, {
                         name: river.title,
                         description: river.region.title,
-                        balloonContentBody: '<p>' + river.title + '</p>',
                         boundedBy: river.bounds,
                         id: river.id,
                         type: "river"
@@ -54,6 +53,9 @@ WWMapSearchProvider.prototype.geocode = function (request, options) {
                         iconImageHref: respData.resource_base + '/img/empty-px.png',
                         iconImageSize: [1, 1],
                         iconImageOffset: [-1, -1],
+                        hasBalloon: false,
+                        fill: false,
+                        strokeWidth: 0,
 
                         id: river.id
                     }));

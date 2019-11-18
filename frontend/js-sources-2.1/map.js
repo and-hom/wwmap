@@ -130,8 +130,16 @@ WWMap.prototype.init = function () {
         let index = e.get('index');
 
         searchControl.getResult(index).then(function (value) {
-            if (value && value.properties && value.properties._data && value.properties._data.type == 'river') {
-                show_map_at_and_highlight_river(value.properties._data.boundedBy, value.properties._data.id)
+            if(!value) {
+                return
+            }
+
+            let id = value.properties.get("id");
+            let type = value.properties.get("type");
+            let bounds = value.properties.get("boundedBy");
+
+            if (id && bounds && type && type == 'river') {
+                highlight_river(id)
             }
         }, function (err) {
             console.log('Ошибка: ' + err);
