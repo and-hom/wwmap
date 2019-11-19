@@ -15,9 +15,9 @@
             <auth></auth>
         </nav>
         <slot></slot>
-        <footer v-if="showFooter" class="footer">
+        <footer class="footer">
             <div class="container wwmap-footer">
-                <span>Версия бэкенда:&nbsp;{{backVersion}}</span><span>Версия фронтенда:&nbsp;{{frontVersion}}</span><span>Версия базы:&nbsp;{{dbVersion}}</span><span>Контакт для связи:&nbsp;<a
+                <span v-if="showTechInfo"><span>Версия бэкенда:&nbsp;{{backVersion}}</span><span>Версия фронтенда:&nbsp;{{frontVersion}}</span><span>Версия базы:&nbsp;{{dbVersion}}</span></span><span>Контакт для связи:&nbsp;<a
                     href="mailto:info@wwmap.ru">info@wwmap.ru</a></span>
             </div>
         </footer>
@@ -63,7 +63,7 @@
     module.exports = {
         props: ['link'],
         computed: {
-            showFooter: function () {
+            showTechInfo: function () {
                 var userInfo = getAuthorizedUserInfoOrNull();
                 return userInfo && ['EDITOR', 'ADMIN'].filter(function (r) {
                     return userInfo.roles.includes(r)
