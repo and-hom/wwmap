@@ -116,8 +116,14 @@ func (this *Loader) insertWaterWayLoop() {
 			log.Debug("Flush buf")
 			err := this.waterWayDao.AddWaterWays(buf...)
 			if err != nil {
-				log.Fatal("Can not insert: ", err)
-				return
+				log.Error("Can not insert (start query per row insertion): ", err)
+				for _, ww := range buf {
+					err = this.waterWayDao.AddWaterWays(ww)
+					if err != nil {
+						log.Error("Can not insert row: ", ww.OsmId, err)
+					}
+				}
+
 			}
 			buf = buf[:0]
 		}

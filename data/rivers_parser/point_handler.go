@@ -57,10 +57,6 @@ func (this *PointHandler) StartElement(element xml.StartElement) {
 		}
 		this.foundcnt += 1
 
-		if id == 2376163737 {
-			log.Info("Ways ", wayIds)
-		}
-
 		lat, err := strconv.ParseFloat(data.Attr(element.Attr, "lat"), 64)
 		if err != nil {
 			log.Fatal(err)
