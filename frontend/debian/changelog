@@ -1,3 +1,17 @@
+wwmap-frontend (0.0.52) unstable; urgency=medium
+
+  * #209 overzoom message
+  * #209 load rivers with partitioning
+  * #209 routing path search deepth increased to 24
+  * #248 River highlight line style changed
+  * #253 Download spot coords as table
+  * #254 Fix river coordinates in search control and removed river balloon for search result
+  * Database version in footer
+  * Category filter fix
+  * Enable batch spot editor for all editors and admins
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Tue, 19 Nov 2019 22:18:31 +0300
+
 wwmap-frontend (0.0.51) unstable; urgency=medium
 
   * #248 Highlight river on cluster expand 

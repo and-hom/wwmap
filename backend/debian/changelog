@@ -1,3 +1,10 @@
+wwmap-backend (0.0.50) unstable; urgency=medium
+
+  * #253 Download spot coords as table
+  * Database version in footer for admin/editor
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Tue, 19 Nov 2019 22:17:37 +0300
+
 wwmap-backend (0.0.49) unstable; urgency=medium
 
   * #248 Highlight river on cluster expand
