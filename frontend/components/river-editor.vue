@@ -342,9 +342,7 @@
             </button>
         </div>
         <div v-else class="spot-display">
-            <h1>{{ river.title }}</h1>&nbsp;<a
-                id="gpx" :href="gpxUrl(false)" style="padding-right:10px;" alt="Скачать GPX с точками порогов">GPX</a>&nbsp;<a
-                id="gpx_en" :href="gpxUrl(true)" alt="Скачать GPX с точками порогов">GPX<sub>en</sub></a>
+            <h1>{{ river.title }}</h1>
             <div style="float:right;">
                 <img border='0' :src="informerUrl()">
                 <div id="map" style="width:650px; height: 450px;padding-left: 30px;"></div>
@@ -371,8 +369,18 @@
                         <div v-else>{{river.region.title}}</div>
                     </div>
                 </dd>
+                <dt>Скачать:</dt>
+                <dd>
+                    <div style="padding-left:40px;"><a
+                            id="gpx" :href="gpxUrl(false)" style="padding-right:10px;" alt="Скачать GPX с точками порогов">GPX</a>&nbsp;<a
+                            id="gpx_en" :href="gpxUrl(true)" alt="Скачать GPX с точками порогов">GPX<sub>en</sub></a><br/><a
+                            id="csv" :href="csvUrl(false)" style="padding-right:10px;" alt="Скачать пороги таблицей">CSV</a>&nbsp;<a
+                            id="csv_en" :href="csvUrl(true)" alt="Скачать пороги таблицей">CSV<sub>en</sub></a>
+                    </div>
+
+                </dd>
                 <dt>Описание:</dt>
-                <dd>`
+                <dd>
                     <div style="padding-left:40px;">
                         {{river.description}}
                     </div>
@@ -875,7 +883,10 @@
 
                 gpxJustUploaded: false,
                 gpxUrl: function (transliterate) {
-                    return `${backendApiBase}/gpx/river/${this.river.id}?tr=${transliterate}`;
+                    return `${backendApiBase}/downloads/river/${this.river.id}/gpx?tr=${transliterate}`;
+                },
+                csvUrl: function (transliterate) {
+                    return `${backendApiBase}/downloads/river/${this.river.id}/csv?tr=${transliterate}`;
                 },
 
                 spots: [],

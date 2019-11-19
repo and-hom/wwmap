@@ -605,7 +605,7 @@ function show_river_info_popup(id) {
     $.get(apiBase + "/river-card/" + id, function (data) {
         var dataObj = JSON.parse(data);
         dataObj.canEdit = canEdit();
-        dataObj.apiUrl = apiBase + "/gpx/river";
+        dataObj.apiUrl = apiBase + "/downloads/river";
         dataObj.apiBase = apiBase;
         riverList.riverInfoPopup.show(dataObj);
     });
