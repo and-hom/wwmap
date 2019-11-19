@@ -11,7 +11,7 @@
                 <button type="button" class="btn btn-info" v-if="pageMode == 'view'" v-on:click="pageMode='edit'; hideError();">
                     Редактирование
                 </button>
-                <button type="button" class="btn btn-success" v-if="river.id && pageMode == 'view' && userInfo.experimental_features" v-on:click="spots = getSpots(river.id); spotIndexes=[]; pageMode='batch-edit'; hideError();">
+                <button type="button" class="btn btn-success" v-if="river.id && pageMode == 'view'" v-on:click="spots = getSpots(river.id); spotIndexes=[]; pageMode='batch-edit'; hideError();">
                     Пакетное редактирование и загрузка GPX
                 </button>
                 <button type="button" class="btn btn-success" v-if="pageMode == 'edit'" v-on:click="pageMode=save() ? 'view' : 'edit'">Сохранить</button>
