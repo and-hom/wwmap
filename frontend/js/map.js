@@ -28,7 +28,7 @@
             $('#rivers').html('');
             var dataObj = {
                 "rivers" : JSON.parse(data),
-                "apiUrl": apiBase + "/gpx/river",
+                "apiUrl": apiBase + "/downloads/river",
                 "apiBase": apiBase
             }
             for (i in dataObj.rivers) {

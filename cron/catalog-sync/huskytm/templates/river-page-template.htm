@@ -14,8 +14,8 @@
     </tr>
     <tr>
         <td colspan="2"><strong>Пороги</strong>&nbsp;&nbsp;<a
-                href="https://wwmap.ru/api/gpx/river/{{.River.Id}}">GPX</a>&nbsp;<a
-                href="https://wwmap.ru/api/gpx/river/{{.River.Id}}?tr=true">GPX<sub>en</sub></a></td>
+                href="https://wwmap.ru/api/downloads/river/{{.River.Id}}/gpx">GPX</a>&nbsp;<a
+                href="https://wwmap.ru/api/downloads/river/{{.River.Id}}/gpx?tr=true">GPX<sub>en</sub></a></td>
         <td rowspan="{{ inc (len .Links) }}">
             <div id="map" style="width:500px; height: 450px;"></div>
             {{ if index .River.Props "vodinfo_sensor" }}

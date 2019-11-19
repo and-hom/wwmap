@@ -91,7 +91,7 @@ func main() {
 	}
 
 	_handlers := []ApiHandler{
-		&handler.GpxHandler{app},
+		&handler.DownloadsHandler{app},
 		&handler.RiverHandler{
 			App:                      app,
 			ResourceBase:             configuration.Content.ResourceBase,

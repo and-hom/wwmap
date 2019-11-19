@@ -875,7 +875,7 @@
 
                 gpxJustUploaded: false,
                 gpxUrl: function (transliterate) {
-                    return `${backendApiBase}/gpx/river/${this.river.id}?tr=${transliterate}`;
+                    return `${backendApiBase}/downloads/river/${this.river.id}/gpx?tr=${transliterate}`;
                 },
 
                 spots: [],
