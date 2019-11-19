@@ -1,5 +1,3 @@
-import * as turf from '@turf/turf';
-
 export function RiverTreeWalker(trackStorage, id, toId, maxSearchDepth) {
     this.toId = toId;
     this.trackStorage = trackStorage;
@@ -22,7 +20,7 @@ RiverTreeWalker.prototype.searchRiverInternal = function (lvl) {
     let result = [];
     for (let i = 0; i < this.elements.length; i++) {
         let element = this.elements[i];
-        let river = this.trackStorage.rivers[element.id];
+        let river = this.trackStorage.getRiver(element.id);
         if (!river) {
             continue
         }

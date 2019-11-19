@@ -4,9 +4,11 @@ import * as turf from '@turf/turf';
 import {MultiPath} from "./multi.path";
 import {RiverTreeWalker} from "./tree.walker"
 
+export const MIN_ZOOM_SUPPORTED = 9;
 
 export function WWMapMeasurementTool(map, objectManager, apiBase) {
     this.enabled = false;
+    this.overZoom = false;
     this.edit = true;
 
     this.trackStorage = new TrackStorage(apiBase);
@@ -25,12 +27,12 @@ export function WWMapMeasurementTool(map, objectManager, apiBase) {
 WWMapMeasurementTool.prototype.addEvents = function () {
     let t = this;
     this.objectManager.objects.events.add(['click'], e => {
-        if (this.enabled && this.edit) {
+        if (this.enabled && this.edit && !this.overZoom) {
             this.multiPath.pushEmptySegment();
         }
     });
     this.objectManager.objects.events.add('mousemove', e => {
-        if (this.enabled && this.edit) {
+        if (this.enabled && this.edit && !this.overZoom) {
             let coords = e.get('coords');
             if (coords) {
                 this.onMouseMoved(t.coordsToMouse(coords), coords);
@@ -38,7 +40,7 @@ WWMapMeasurementTool.prototype.addEvents = function () {
         }
     });
     this.map.events.add('click', e => {
-        if (this.enabled && this.edit) {
+        if (this.enabled && this.edit && !this.overZoom) {
             this.multiPath.pushEmptySegment();
         }
     });
@@ -48,7 +50,7 @@ WWMapMeasurementTool.prototype.addEvents = function () {
         }
     });
     this.map.events.add('mousemove', e => {
-        if (this.enabled && this.edit) {
+        if (this.enabled && this.edit && !this.overZoom) {
             this.onMouseMoved(e.get('position'), e.get('coords'));
         }
     });
@@ -95,6 +97,19 @@ WWMapMeasurementTool.prototype.onViewportChanged = function () {
     if (!this.enabled || !this.edit) {
         return;
     }
+
+    if (this.map.getZoom() < MIN_ZOOM_SUPPORTED) {
+        this.overZoom = true;
+        if (this.overZoomCallback) {
+            this.overZoomCallback(true)
+        }
+        return;
+    }
+    this.overZoom = false;
+    if (this.overZoomCallback) {
+        this.overZoomCallback(false)
+    }
+
     let lastFixedPoint = this.multiPath.segmentCount() > 0 ? this.multiPath.pointEnd() : null;
     this.trackStorage.setBounds(this.map.getBounds(), lastFixedPoint, this.map.getZoom());
 };
@@ -105,8 +120,9 @@ WWMapMeasurementTool.prototype.getComputedMarkerPos = function (cursorPosFlipped
     let markerPos;
     let minDist = epsilon_m * 2;
     this.currentLine = null;
-    for (let id in this.trackStorage.rivers) {
-        let river = this.trackStorage.rivers[id];
+    let rivers = this.trackStorage.getRivers(cursorPosFlipped[1], cursorPosFlipped[0]);
+    for (let id in rivers) {
+        let river = rivers[id];
 
         // !!! Performance workaround!
         if(cursorPosFlipped[0] < river.bounds[0][0] || cursorPosFlipped[0]>river.bounds[1][0] ||
@@ -149,8 +165,7 @@ WWMapMeasurementTool.prototype.moveFirstPoint = function (cursorPosPx, coords, e
 };
 
 WWMapMeasurementTool.prototype.onMouseMoved = function (cursorPosPx, coords) {
-    if (!cursorPosPx ||  !this.enabled || !this.edit
-        || this.trackStorage.rivers.length == 0 && !(this.multiPath.segmentCount() > 0 && this.currentLine)) {
+    if (!cursorPosPx ||  !this.enabled || !this.edit || this.overZoom) {
         return
     }
 
@@ -197,7 +212,7 @@ WWMapMeasurementTool.prototype.onMouseMoved = function (cursorPosPx, coords) {
 
     // search for sutable neighbout tracks
     if (this.currentLine) {
-        let walker = new RiverTreeWalker(this.trackStorage, this.multiPath.riverSegmentIdPrev(), this.currentLine.id, 12);
+        let walker = new RiverTreeWalker(this.trackStorage, this.multiPath.riverSegmentIdPrev(), this.currentLine.id, 24);
         let found = walker.searchRiver();
         if (found) {
             this.currentLine = found.river;
@@ -247,7 +262,7 @@ WWMapMeasurementTool.prototype.makePath = function (start, end, found) {
 
     for (let i = 0; i < ids.length; i++) {
         let id = ids[i];
-        let track = this.trackStorage.rivers[id];
+        let track = this.trackStorage.getRiver(id);
         let toPoint;
         if (i == ids.length - 1) {
             toPoint = end;

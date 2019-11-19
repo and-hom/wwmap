@@ -194,7 +194,7 @@ WWMap.prototype.init = function () {
     this.objectManager = objectManager;
 
     objectManager.objects.events.add(['click'], function (e) {
-        if (!t.measurementTool || !t.measurementTool.enabled || !t.measurementTool.edit) {
+        if (!t.measurementTool || !t.measurementTool.enabled || !t.measurementTool.edit || t.measurementTool.overZoom) {
             objectManager.objects.balloon.open(e.get('objectId'));
         }
     });
