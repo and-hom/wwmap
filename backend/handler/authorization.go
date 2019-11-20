@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/backend/passport"
@@ -239,9 +240,9 @@ func (this *UserInfoHandler) GetVkToken(w http.ResponseWriter, r *http.Request) 
 	defer resp.Body.Close()
 
 	answer := VkTokenAnswer{}
-	body, err := decodeJsonBody(r, &answer)
+	err = json.NewDecoder(resp.Body).Decode(&answer)
 	if err != nil {
-		OnError500(w, err, "Can not parse VK response: "+body)
+		OnError500(w, err, "Can not parse VK response")
 		return
 	}
 
