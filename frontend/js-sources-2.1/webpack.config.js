@@ -16,9 +16,9 @@ module.exports = env => {
         mode: appEnv == DEVELOPMENT ? 'development' : 'production',
         context: __dirname,
         devtool: "source-map",
-        entry: ["./js-sources-2.1/main.js",],
+        entry: ["./main.js",],
         output: {
-            path: __dirname + "/js",
+            path: __dirname + "/../js",
             filename: "map.v2.1.js",
             publicPath: './js/',
             libraryTarget: 'var',
@@ -39,16 +39,16 @@ module.exports = env => {
         module: {
             rules: [
                 {
-                    test: /js-sources-2\.1\/.*?\.js$/,
+                    test: /.*?\.js$/,
                     exclude: /node_modules/,
                     loader: "babel-loader"
                 },
                 {
-                    test: /js-sources-2\.1\/config\.js$/,
+                    test: /config\.js$/,
                     loader: 'file-replace-loader',
                     options: {
                         condition: appEnv !== DEVELOPMENT,
-                        replacement: resolve('./js-sources-2.1/config.production.js'),
+                        replacement: resolve('./config.production.js'),
                         async: true,
                     }
                 },

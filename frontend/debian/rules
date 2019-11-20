@@ -5,9 +5,11 @@
 DEB_VERSION = $(shell dpkg-parsechangelog --show-field Version)
 
 build:
+	pushd js-sources-2.1
 	npm i
-	./node_modules/webpack/bin/webpack.js --env.APP_ENV=production
-	rm js/*.js.map
+	../node_modules/webpack/bin/webpack.js --env.APP_ENV=production
+	rm ../js/*.js.map
+	popd
 
 override_dh_auto_install:
 	install -d $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/img/report_sources
