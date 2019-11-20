@@ -1,3 +1,9 @@
+wwmap-backend (0.0.51) unstable; urgency=medium
+
+  * #259 Fix VK auth 
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Wed, 20 Nov 2019 21:35:13 +0300
+
 wwmap-backend (0.0.50) unstable; urgency=medium
 
   * #253 Download spot coords as table
