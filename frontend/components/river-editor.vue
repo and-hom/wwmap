@@ -844,34 +844,39 @@
                     }
                     let t = this;
                     ymaps.ready(function () {
-                        addMapLayers();
+                        ymaps.modules.require(['overlay.BiPlacemark'], function (BiPlacemarkOverlay) {
+                            if (ymaps.overlay.storage.get("BiPlacemrakOverlay") == null) {
+                                ymaps.overlay.storage.add("BiPlacemrakOverlay", BiPlacemarkOverlay);
+                            }
+                            addMapLayers();
 
-                        let mapType = t.getDefaultMap();
-                        let map = new ymaps.Map("map", {
-                            bounds: t.bounds,
-                            type: mapType,
-                            controls: ["zoomControl"]
+                            let mapType = t.getDefaultMap();
+                            let map = new ymaps.Map("map", {
+                                bounds: t.bounds,
+                                type: mapType,
+                                controls: ["zoomControl"]
+                            });
+                            map.controls.add(
+                                new ymaps.control.TypeSelector([
+                                        'osm#standard',
+                                        'ggc#standard',
+                                        'yandex#satellite',
+                                        'google#satellite',
+                                        'bing#satellite',
+                                    ]
+                                )
+                            );
+                            registerMapSwitchLayersHotkeys(map);
+                            var objectManager = new ymaps.RemoteObjectManager(backendApiBase + '/ymaps-tile-ww?bbox=%b&zoom=%z&river=' + t.river.id, {
+                                clusterHasBalloon: false,
+                                geoObjectOpenBalloonOnClick: false,
+                                geoObjectStrokeWidth: 3,
+                                splitRequests: true
+                            });
+                            map.geoObjects.add(objectManager);
+                            t.map = map;
+                            t.objectManager = objectManager;
                         });
-                        map.controls.add(
-                            new ymaps.control.TypeSelector([
-                                    'osm#standard',
-                                    'ggc#standard',
-                                    'yandex#satellite',
-                                    'google#satellite',
-                                    'bing#satellite',
-                                ]
-                            )
-                        );
-                        registerMapSwitchLayersHotkeys(map);
-                        var objectManager = new ymaps.RemoteObjectManager(backendApiBase + '/ymaps-tile-ww?bbox=%b&zoom=%z&river=' + t.river.id, {
-                            clusterHasBalloon: false,
-                            geoObjectOpenBalloonOnClick: false,
-                            geoObjectStrokeWidth: 3,
-                            splitRequests: true
-                        });
-                        map.geoObjects.add(objectManager);
-                        t.map = map;
-                        t.objectManager = objectManager;
                     });
                 },
                 reloadMap: function() {
