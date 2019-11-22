@@ -49,12 +49,13 @@
             throw ''
         }
 
-        var authObj = acquireTokenVk(code);
-        if (authObj) {
-            startWwmapSession('vk', authObj.access_token)
-        }
+        acquireTokenVk(code, function(authObj) {
+            if (authObj) {
+                startWwmapSession('vk', authObj.access_token)
+            }
 
-        window.location.href = decodeURIComponent(state)
+            window.location.href = decodeURIComponent(state)
+        });
     </script>
 </body>
 </html>

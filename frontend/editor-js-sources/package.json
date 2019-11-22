@@ -9,13 +9,22 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "blueimp-gallery": "^2.36.0",
+    "bootstrap": "^4.3.1",
     "core-js": "^2.6.10",
     "css-loader": "^3.1.0",
+    "inputmask": "^4.0.9",
     "jqtpl-dsx": "^1.0.4",
     "jquery": "^3.1.1",
     "jquery.cookie": "^1.4.1",
+    "polyfill": "^0.1.0",
+    "popper": "^1.0.1",
+    "sortablejs": "^1.10.1",
     "style-loader": "^0.23.1",
-    "tether": "^1.4.6"
+    "tether": "^1.4.6",
+    "vue": "^2.6.10",
+    "vue-select": "^3.2.0",
+    "vue-upload-component": "^2.8.20"
   },
   "devDependencies": {
     "@babel/core": "^7.6.4",

@@ -70,6 +70,10 @@
                 }).length > 0
             }
         },
+        created: function() {
+          getDbVersion().then(version => this.dbVersion = version);
+          getBackendVersion().then(version => this.backVersion = version);
+        },
         data: function () {
             return {
                 pages: [
@@ -176,8 +180,8 @@
                     }
                     return "dropdown-item"
                 },
-                backVersion: getBackendVersion(),
-                dbVersion: getDbVersion(),
+                backVersion: '–',
+                dbVersion: '–',
                 frontVersion: frontendVersion
             }
         },
