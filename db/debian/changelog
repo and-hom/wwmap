@@ -1,3 +1,9 @@
+wwmap-db (0.0.27) unstable; urgency=medium
+
+  * #209 River tracks simplify tool (works slow, not for server usage) 
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sun, 24 Nov 2019 17:38:40 +0300
+
 wwmap-db (0.0.26) unstable; urgency=medium
 
   * #243 Not json "null" constraint for spot and river aliases 
