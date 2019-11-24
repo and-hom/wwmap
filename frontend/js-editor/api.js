@@ -1,7 +1,7 @@
 backendApiBase = "http://localhost:7007";
 frontendVersion = "development";
 
-function sendRequest(url, _type, auth) {
+export function sendRequest(url, _type, auth) {
     var xhr = new XMLHttpRequest();
     xhr.open(_type, url, false);
     addAuth(xhr, auth);
@@ -14,7 +14,7 @@ function sendRequest(url, _type, auth) {
     }
 }
 
-function doGetJsonSync(url, auth) {
+export function doGetJsonSync(url, auth) {
     var xhr = sendRequest(url, "GET", auth);
     if (xhr && xhr.status === 200) {
         return JSON.parse(xhr.response)
@@ -22,7 +22,7 @@ function doGetJsonSync(url, auth) {
     return null
 }
 
-function doDeleteSync(url, auth, failResponseBodyCallback) {
+export function doDeleteSync(url, auth, failResponseBodyCallback) {
     var xhr = sendRequest(url, "DELETE", auth);
     let resp = (xhr && xhr.status === 200);
     if (xhr && failResponseBodyCallback) {
@@ -31,7 +31,7 @@ function doDeleteSync(url, auth, failResponseBodyCallback) {
     return resp;
 }
 
-function doDeleteWithJsonRespSync(url, auth, failResponseBodyCallback) {
+export function doDeleteWithJsonRespSync(url, auth, failResponseBodyCallback) {
     var xhr = sendRequest(url, "DELETE", auth);
     if (xhr && xhr.status === 200) {
         return JSON.parse(xhr.response)
@@ -42,7 +42,7 @@ function doDeleteWithJsonRespSync(url, auth, failResponseBodyCallback) {
     return null
 }
 
-function doPostJsonSync(url, value, auth, failResponseBodyCallback) {
+export function doPostJsonSync(url, value, auth, failResponseBodyCallback) {
     var xhr = new XMLHttpRequest();
     xhr.open('POST', url, false);
     xhr.setRequestHeader("Content-Type", "application/json");
@@ -58,7 +58,7 @@ function doPostJsonSync(url, value, auth, failResponseBodyCallback) {
     return null
 }
 
-function addAuth(xhr, auth) {
+export function addAuth(xhr, auth) {
     if (!auth) {
         return
     }
@@ -68,7 +68,7 @@ function addAuth(xhr, auth) {
     }
 }
 
-function getBackendVersion() {
+export function getBackendVersion() {
     try {
         return doGetJsonSync(backendApiBase + "/version")
     } catch (e) {
@@ -76,7 +76,7 @@ function getBackendVersion() {
     }
 }
 
-function getDbVersion() {
+export function getDbVersion() {
     try {
         return doGetJsonSync(backendApiBase + "/db-version")
     } catch (e) {
@@ -85,7 +85,7 @@ function getDbVersion() {
 }
 
 
-function parseParams(paramsStr) {
+export function parseParams(paramsStr) {
     if (!paramsStr) {
         return {}
     }

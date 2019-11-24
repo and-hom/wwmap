@@ -1,7 +1,7 @@
-import backendApiBase from './config'
+import {backendApiBase} from './config'
 
 export function sendRequest(url, _type, auth) {
-    new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
         var xhr = new XMLHttpRequest();
         xhr.open(_type, url, true);
         addAuth(xhr, auth);
@@ -60,7 +60,7 @@ export function getBackendVersion() {
 }
 
 export function getDbVersion() {
-    return doGetJsonS(backendApiBase + "/db-version")
+    return doGetJson(backendApiBase + "/db-version")
 }
 
 

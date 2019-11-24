@@ -1,6 +1,7 @@
 const webpack = require('webpack');
 const {resolve} = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const VueLoaderPlugin = require('vue-loader/lib/plugin');
 
 const DEVELOPMENT = 'development';
 
@@ -22,7 +23,7 @@ module.exports = env => {
             filename: "editor.v2.js",
             publicPath: './js-editor/',
             libraryTarget: 'var',
-            library: 'wwmap'
+            library: 'wwmap_editor'
         },
         plugins: [
             new webpack.ProvidePlugin({
@@ -35,9 +36,27 @@ module.exports = env => {
                 chunkFilename: '[id].css',
                 ignoreOrder: false,
             }),
+            new VueLoaderPlugin(),
         ],
         module: {
             rules: [
+                {
+                    test: /\.(gif|png|jpe?g|svg)$/i,
+                    use: [
+                        'file-loader',
+                        {
+                            loader: 'image-webpack-loader',
+                            options: {
+                                bypassOnDebug: true, // webpack@1.x
+                                disable: true, // webpack@2.x and newer
+                            },
+                        },
+                    ],
+                },
+                {
+                    test: /\.vue$/,
+                    loader: 'vue-loader'
+                },
                 {
                     test: /.*?\.js$/,
                     exclude: /node_modules/,
@@ -62,7 +81,7 @@ module.exports = env => {
                     options: {
                         name: '[path][name].[ext]'
                     }
-                }
+                },
             ]
         },
     }

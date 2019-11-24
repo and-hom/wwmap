@@ -721,7 +721,7 @@ export const sensors = [
     {id: 84804, title: "Каргалинский  гидроузел [канал Дельтовый]"}
 ];
 
-sensorsById = {};
+export var sensorsById = {};
 for (var i=0;i<sensors.length;i++) {
     var s = sensors[i];
     sensorsById[s.id] = s.title;
