@@ -1,3 +1,11 @@
+wwmap-frontend (0.0.53) unstable; urgency=medium
+
+  * #209 Prevent measurement tool start on mobile device
+  * #259 Vk token type explicitly defined
+  * Fix long (multipoint) spots on map preview in river editor
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sun, 24 Nov 2019 16:43:00 +0300
+
 wwmap-frontend (0.0.52) unstable; urgency=medium
 
   * #209 overzoom message
