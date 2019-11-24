@@ -25,6 +25,7 @@ import (
 )
 
 var GMT_LOC, _ = time.LoadLocation("UTC")
+var version string = "development"
 
 type Pos struct {
 	x int
@@ -102,10 +103,12 @@ type DataHandler struct {
 	client      *http.Client
 	mutexByUrl  sync.Map
 	defaultData []byte
+	version     string
 }
 
 func (this *DataHandler) Init() {
 	this.Register("/{type}/{z}/{x}/{y}.png", HandlerFunctions{Get: this.tile, Head: this.tile})
+	this.Register("/version", HandlerFunctions{Get: this.Version})
 }
 
 func (this *DataHandler) initDefaultImageIfNecessary() {
@@ -326,6 +329,7 @@ func main() {
 		client: &http.Client{
 			Timeout: 4 * time.Second,
 		},
+		version: version,
 	}
 
 	handler.Init()
@@ -341,4 +345,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("Can not start server: %v", err)
 	}
+}
+
+func (this *DataHandler) Version(w http.ResponseWriter, req *http.Request) {
+	this.JsonAnswer(w, this.version)
 }

@@ -2,8 +2,10 @@
 %:
 	dh $@
 
+DEB_VERSION = $(shell dpkg-parsechangelog --show-field Version)
+
 build:
-	go build
+	go build -ldflags "-X main.version=$(DEB_VERSION)"
 
 override_dh_auto_install:
 	install -D -m 0755 t-cache $$(pwd)/debian/wwmap-t-cache/usr/bin/wwmap-t-cache
