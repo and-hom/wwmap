@@ -7,36 +7,43 @@ import (
 	"github.com/and-hom/wwmap/lib/dao/queries"
 	"github.com/and-hom/wwmap/lib/geo"
 	"github.com/lib/pq"
+	"github.com/pkg/errors"
 )
 
 func NewWaterWayPostgresDao(postgresStorage PostgresStorage) WaterWayDao {
 	return waterWayStorage{
-		PostgresStorage:           postgresStorage,
-		insertQuery:               queries.SqlQuery("water-way", "insert"),
-		updateQuery:               queries.SqlQuery("water-way", "update"),
-		listQuery:                 queries.SqlQuery("water-way", "list"),
-		unlinkRiverQuery:          queries.SqlQuery("water-way", "unlink-river"),
-		detectForRiverQuery:       queries.SqlQuery("water-way", "detect-for-river"),
-		bindToRiverQuery:          queries.SqlQuery("water-way", "bind-to-river"),
-		listByRiverIdsQuery:       queries.SqlQuery("water-way", "list-by-river-ids"),
-		listByRiverId4RouterQuery: queries.SqlQuery("water-way", "list-by-river-id-4-router"),
-		listByBbox4RouterQuery:    queries.SqlQuery("water-way", "list-by-bbox-4-router"),
-		listByBboxQuery:           queries.SqlQuery("water-way", "list-by-bbox"),
+		PostgresStorage:            postgresStorage,
+		insertQuery:                queries.SqlQuery("water-way", "insert"),
+		updateQuery:                queries.SqlQuery("water-way", "update"),
+		listQuery:                  queries.SqlQuery("water-way", "list"),
+		unlinkRiverQuery:           queries.SqlQuery("water-way", "unlink-river"),
+		detectForRiverQuery:        queries.SqlQuery("water-way", "detect-for-river"),
+		bindToRiverQuery:           queries.SqlQuery("water-way", "bind-to-river"),
+		listByRiverIdsQuery:        queries.SqlQuery("water-way", "list-by-river-ids"),
+		listByRiverId4RouterQuery:  queries.SqlQuery("water-way", "list-by-river-id-4-router"),
+		listByBbox4RouterQuery:     queries.SqlQuery("water-way", "list-by-bbox-4-router"),
+		listByBboxQuery:            queries.SqlQuery("water-way", "list-by-bbox"),
+		listByBbox4CorrectionQuery: queries.SqlQuery("water-way", "list-4-correction"),
+		updatePathSimplifiedQuery:  queries.SqlQuery("water-way", "update-path-simplified"),
+		listRefPoints:              queries.SqlQuery("water-way", "get-ref-points"),
 	}
 }
 
 type waterWayStorage struct {
 	PostgresStorage
-	insertQuery               string
-	updateQuery               string
-	listQuery                 string
-	unlinkRiverQuery          string
-	detectForRiverQuery       string
-	bindToRiverQuery          string
-	listByRiverIdsQuery       string
-	listByRiverId4RouterQuery string
-	listByBbox4RouterQuery    string
-	listByBboxQuery           string
+	insertQuery                string
+	updateQuery                string
+	listQuery                  string
+	unlinkRiverQuery           string
+	detectForRiverQuery        string
+	bindToRiverQuery           string
+	listByRiverIdsQuery        string
+	listByRiverId4RouterQuery  string
+	listByBbox4RouterQuery     string
+	listByBbox4CorrectionQuery string
+	listRefPoints              string
+	listByBboxQuery            string
+	updatePathSimplifiedQuery  string
 }
 
 func (this waterWayStorage) AddWaterWays(waterways ...WaterWay) error {
@@ -251,4 +258,114 @@ func (this waterWayStorage) ListByBbox(bbox geo.Bbox) ([]WaterWay, error) {
 type PgWaterWayRef struct {
 	RefId      int64        `json:"id"`
 	CrossPoint geo.GeoPoint `json:"cross_point"`
+}
+
+func (this waterWayStorage) List(limit int, offset int) ([]WaterWay4PathCorrection, error) {
+	lst, err := this.doFindList(this.listByBbox4CorrectionQuery, func(rows *sql.Rows) (WaterWay4PathCorrection, error) {
+		waterway := WaterWay4PathCorrection{}
+		pathString := ""
+		pathSimplifiedString := ""
+		err := rows.Scan(&waterway.Id, &pathString, &pathSimplifiedString)
+		if err != nil {
+			return waterway, err
+		}
+
+		if err := this.parsePath(waterway.Id, pathString, &waterway.Path); err != nil {
+			return waterway, err
+		}
+		if err := this.parsePath(waterway.Id, pathSimplifiedString, &waterway.PathSimplified); err != nil {
+			return waterway, err
+		}
+
+		return waterway, nil
+	}, limit, offset)
+	if err != nil {
+		return []WaterWay4PathCorrection{}, err
+	}
+
+	waterways := lst.([]WaterWay4PathCorrection)
+	ids := make([]int64, len(waterways))
+	for i := 0; i < len(waterways); i++ {
+		ids[i] = waterways[i].Id
+	}
+
+	pointsByRiverId := make(map[int64][]geo.Point)
+	_, err = this.doFindList(this.listRefPoints, func(rows *sql.Rows) (int64, error) {
+		id := int64(0)
+		pointStr := ""
+		var p geo.PgPointOrLineString
+
+		rows.Scan(&id, &pointStr)
+		err := json.Unmarshal([]byte(pointStr), &p)
+		if err != nil {
+			log.Errorf("Can not parse ref point for waterway %d: %v", id, err)
+			return 0, err
+		}
+		if p.Coordinates.Point == nil {
+			log.Errorf("Ref point for waterway %d is not Point", id)
+			return 0, errors.New("Is not a Point")
+		}
+		pointsByRiverId[id] = append(pointsByRiverId[id], *(p.Coordinates.Point))
+
+		return id, nil
+	}, pq.Array(ids))
+	if err != nil {
+		return []WaterWay4PathCorrection{}, err
+	}
+
+	for i := 0; i < len(waterways); i++ {
+		points, found := pointsByRiverId[waterways[i].Id]
+		if found {
+			waterways[i].CrossPoints = points
+		} else {
+			waterways[i].CrossPoints = []geo.Point{}
+		}
+	}
+	return waterways, nil
+}
+
+func (this waterWayStorage) parsePath(id int64, pathString string, target *[]geo.Point) error {
+	var path geo.PgPointOrLineString
+	err := json.Unmarshal([]byte(pathString), &path)
+	if err != nil {
+		log.Errorf("Can not parse path for waterway %d: %v", id, err)
+		return err
+	}
+	if path.Coordinates.Line == nil {
+		log.Errorf("Path for waterway %d is not LineString", id)
+		return errors.New("Is not a LineString")
+	}
+	*target = *path.Coordinates.Line
+	return nil
+}
+
+func (this waterWayStorage) PathSimplifiedPersister() (PathSimplifiedPersister, error) {
+	stmt, err := this.db.Prepare(this.updatePathSimplifiedQuery)
+	if err != nil {
+		return PathSimplifiedPersisterImpl{}, err
+	}
+	return PathSimplifiedPersisterImpl{
+		stmt: stmt,
+	}, nil
+}
+
+type PathSimplifiedPersisterImpl struct {
+	stmt *sql.Stmt
+}
+
+func (this PathSimplifiedPersisterImpl) Add(id int64, pathSimplified []geo.Point) error {
+	pgPath := geo.LineString{
+		Coordinates: pathSimplified,
+		Type:        geo.LINE_STRING,
+	}
+	jsonBytes, err := json.Marshal(pgPath)
+	if err != nil {
+		return err
+	}
+	_, err = this.stmt.Exec(id, string(jsonBytes))
+	return err
+}
+
+func (this PathSimplifiedPersisterImpl) Close() error {
+	return this.stmt.Close()
 }

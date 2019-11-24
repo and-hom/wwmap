@@ -3,6 +3,7 @@ package dao
 import (
 	. "github.com/and-hom/wwmap/lib/geo"
 	_ "github.com/lib/pq"
+	"io"
 	"time"
 )
 
@@ -71,6 +72,13 @@ type WaterWayDao interface {
 	ListByBbox(bbox Bbox) ([]WaterWay, error)
 	ListByBboxNonFilpped(bbox Bbox) ([]WaterWay4Router, error)
 	ListByRiverIdNonFlipped(riverId int64) ([]WaterWay4Router, error)
+	List(limit int, offset int) ([]WaterWay4PathCorrection, error)
+	PathSimplifiedPersister() (PathSimplifiedPersister, error)
+}
+
+type PathSimplifiedPersister interface {
+	io.Closer
+	Add(id int64, pathSimplified []Point) error
 }
 
 type WaterWayOsmRefDao interface {
