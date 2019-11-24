@@ -133,6 +133,12 @@ type WaterWayOsmRef struct {
 	CrossPoint Point
 }
 
+type WaterWay4PathCorrection struct {
+	WaterWaySimple
+	PathSimplified []Point `json:"path_simplified"`
+	CrossPoints    []Point `json:"cross_points"`
+}
+
 const EXPORT_PROP_PREFIX = "export_"
 const PAGE_LINK_PROP_PREFIX = "page_link_"
 

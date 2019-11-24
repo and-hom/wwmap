@@ -1,0 +1,2 @@
+DROP TRIGGER waterway_path_simplified_change_trigger ON waterway;
+DROP TRIGGER waterway_path_simplified_trigger ON waterway;
