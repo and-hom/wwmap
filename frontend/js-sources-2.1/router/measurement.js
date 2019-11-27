@@ -11,6 +11,8 @@ export function WWMapMeasurementTool(map, objectManager, apiBase) {
     this.overZoom = false;
     this.edit = true;
 
+    this.onChangeSegmentCount = null;
+
     this.trackStorage = new TrackStorage(apiBase);
 
     this.map = map;
@@ -87,6 +89,7 @@ WWMapMeasurementTool.prototype.reset = function () {
         this.multiPath.hide();
     }
     this.multiPath = new MultiPath(this.pos, this.map, this);
+    this.multiPath.onChangeSegmentCount = this.onChangeSegmentCount;
     if(this.enabled) {
         this.multiPath.show();
     }
@@ -287,4 +290,10 @@ WWMapMeasurementTool.prototype.makePath = function (start, end, found) {
         fromPoint = toPoint;
     }
     return result;
+};
+
+
+WWMapMeasurementTool.prototype.setOnChangeSegmentCount = function (callback) {
+  this.onChangeSegmentCount = callback;
+  this.multiPath.onChangeSegmentCount = callback;
 };

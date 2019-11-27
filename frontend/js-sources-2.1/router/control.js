@@ -134,6 +134,7 @@ export function createMeasurementToolControl(measurementTool) {
 
             measureDeleteBtn.bind('click', function (e) {
                 measurementTool.reset();
+                refreshMeasurementButtons();
             });
 
             let tutorialPopup = new WWMapPopup('info_popup_measurement_template', true, 'info_popup_measurement');
@@ -141,7 +142,7 @@ export function createMeasurementToolControl(measurementTool) {
                 tutorialPopup.show();
             });
 
-            measurementTool.multiPath.onChangeSegmentCount = refreshMeasurementButtons;
+            measurementTool.setOnChangeSegmentCount(refreshMeasurementButtons);
             measurementTool.overZoomCallback = refreshOverZoom;
         },
 
