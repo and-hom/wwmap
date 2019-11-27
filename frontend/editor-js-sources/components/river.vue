@@ -1,7 +1,7 @@
 <template>
     <li class="menu-item river-menu-item"><a href="javascript:void(0);" v-on:click='changeExpandState();'
                                              :class="riverClass()"><img v-if="!river.visible" style="margin-right: 6px;" src="img/invisible.png"/>{{ river.title }}</a>
-        <ul>
+        <ul class="menu-items">
             <li class="menu-item spot-menu-item" v-on:click.stop="selectSpot(spot)"
                 v-for="spot in river.spots"><a href="javascript:void(0);"
                 :class="spotClass(spot)">{{spot.title}}</a>
@@ -11,13 +11,16 @@
 </template>
 
 <script>
+    import {RIVER_ACTIVE_ENTITY_LEVEL, SPOT_ACTIVE_ENTITY_LEVEL, nvlReturningId, isActiveEntity, setActiveEntity, getActiveEntityLevel, getActiveId, getSpots} from "../editor";
+    import {store, getSpotsFromTree} from '../main'
+
     module.exports = {
         props: ['river', 'region', 'country'],
         created: function() {
             var riverSelected = isActiveEntity(this.country.id, nvlReturningId(this.region), this.river.id)
 
             if (riverSelected) {
-                showRiverTree(this.country.id, nvlReturningId(this.region), this.river.id)
+                store.commit('showRiverTree', this.country.id, nvlReturningId(this.region), this.river.id)
                 if (getActiveEntityLevel()==RIVER_ACTIVE_ENTITY_LEVEL) {
                     this.selectRiver()
                 } else if (getActiveEntityLevel()==SPOT_ACTIVE_ENTITY_LEVEL) {
@@ -38,25 +41,22 @@
                 },
                 changeExpandState: function () {
                     let t = this;
-                    app.onTreeSwitch(function () {
+                    store.commit('onTreeSwitch', function () {
                         if (t.river.spots) {
-                            Vue.delete(t.river, "spots")
+                            delete t.river["spots"];
                         } else {
-                            Vue.set(t.river, "spots", getSpots(t.river.id))
+                            getSpots(t.river.id).then(spots => t.river.spots = spots);
                         }
                         t.selectRiver();
                     });
                 },
                 selectSpot:function(spot) {
                     let t = this;
-                    app.onTreeSwitch(function () {
+                    store.commit('onTreeSwitch', function () {
                         setActiveEntity(t.country.id, nvlReturningId(t.region), t.river.id, spot.id);
-                        setActiveEntityState(t.country.id, nvlReturningId(t.region), t.river.id, spot.id);
+                        store.commit('setActiveEntityState', t.country.id, nvlReturningId(t.region), t.river.id, spot.id);
 
-                        app.spoteditorstate.visible = false;
-                        app.rivereditorstate.visible=false;
-                        app.regioneditorstate.visible = false;
-                        app.countryeditorstate.visible = false;
+                        store.commit('hideAll');
 
                         app.spoteditorstate.editMode = false;
                         app.spoteditorstate.spot=getSpot(spot.id);
@@ -69,26 +69,21 @@
                 },
                 selectRiver:function() {
                     setActiveEntity(this.country.id, nvlReturningId(this.region), this.river.id);
-                    setActiveEntityState(this.country.id, nvlReturningId(this.region), this.river.id);
-
-                    app.spoteditorstate.visible = false;
-                    app.rivereditorstate.visible=false;
-                    app.regioneditorstate.visible = false;
-                    app.countryeditorstate.visible = false;
-
-                    selectRiver(this.country, this.region, this.river.id);
+                    store.commit('setActiveEntityState', this.country.id, nvlReturningId(this.region), this.river.id);
+                    store.commit('hideAll');
+                    // store.commit('selectRiver', this.country, this.region, this.river.id);
 
                     return false
                 },
                 riverClass: function() {
-                    if (this.river.id == app.selectedRiver) {
+                    if (this.river.id == store.state.selectedRiver) {
                         return "title-link btn btn-outline-danger"
                     } else {
                         return "title-link btn btn-outline-info"
                     }
                 },
                 spotClass: function(spot) {
-                    if (spot.id == app.selectedSpot) {
+                    if (spot.id == store.state.selectedSpot) {
                         return "title-link btn btn-outline-danger"
                     } else {
                         return "title-link btn btn-outline-primary"

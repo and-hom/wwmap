@@ -133,12 +133,14 @@
     }
 
     function showCountrySubentities(id) {
-        let country = {
-            rivers: getRiversByCountry(id),
-            regions: getRegions(id)
-        };
-        Vue.set(app.treePath, id, country);
-        return country;
+        Promise.all([getRiversByCountry(id), getRegions(id)]).then(result => {
+            let country = {
+                rivers: result[0],
+                regions: result[1],
+            };
+            Vue.set(app.treePath, id, country);
+            return country;
+        })
     }
 
     function showRegionTree(countryId, id) {

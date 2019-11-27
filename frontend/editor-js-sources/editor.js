@@ -262,12 +262,11 @@ export function getFromEntityHash(params, pos) {
 }
 
 export function setActiveEntity(countryId, regionId, riverId, spotId) {
-    var hash = createActiveEntityHash(countryId, regionId, riverId, spotId)
-    window.location.hash = hash
+    window.location.hash = createActiveEntityHash(countryId, regionId, riverId, spotId)
 }
 
 export function createActiveEntityHash(countryId, regionId, riverId, spotId) {
-    hash = countryId
+    var hash = countryId;
 
     if (regionId) {
         hash += "," + regionId

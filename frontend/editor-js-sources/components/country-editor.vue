@@ -11,12 +11,17 @@
 </template>
 
 <script>
+    import {getAuthorizedUserInfoOrNull} from '../auth'
+
     module.exports = {
         props: ['country'],
+        created: function() {
+            getAuthorizedUserInfoOrNull().then(userInfo => this.userInfo = userInfo);
+        },
         data:function() {
             return {
                 // for editor
-                userInfo: getAuthorizedUserInfoOrNull(),
+                userInfo: null,
                 canEdit: function(){
                  return this.userInfo!=null && (this.userInfo.roles.includes("EDITOR") || this.userInfo.roles.includes("ADMIN"))
                 },

@@ -11,7 +11,7 @@
             <div class="container-fluid" style="margin-top: 20px;">
                 <div class="row">
                     <div class="col-3" id="left-menu">
-                        <ul>
+                        <ul class="menu-items">
                             <country v-bind:key="country.id" v-bind:country="country" v-for="country in countries"/>
                         </ul>
                     </div>
@@ -50,81 +50,37 @@
 
 <script>
     import {
+        COUNTRY_ACTIVE_ENTITY_LEVEL,
         getActiveId,
         getAllRegions,
         getCountries,
-        COUNTRY_ACTIVE_ENTITY_LEVEL,
         REGION_ACTIVE_ENTITY_LEVEL,
         RIVER_ACTIVE_ENTITY_LEVEL,
         SPOT_ACTIVE_ENTITY_LEVEL
     } from './editor'
     import {getAuthorizedUserInfoOrNull} from './auth'
     import {sensors} from './sensors'
+    import {store} from './main'
 
 
     export default {
         data() {
             return {
-                countries: getCountries(),
-                regions: getAllRegions(),
-                "spoteditorstate": {
-                    "visible": false,
-                    "editMode": false,
-                    "images": [],
-                    "schemas": []
-                },
-                "rivereditorstate": {
-                    "visible": false,
-                    "pageMode": 'view'
-                },
-                "regioneditorstate": {
-                    "visible": false,
-                    "editMode": false
-                },
-                "countryeditorstate": {
-                    "visible": false,
-                    "editMode": false
-                },
-                userInfo: getAuthorizedUserInfoOrNull(),
-                treePath: {},
-                selectedCountry: getActiveId(COUNTRY_ACTIVE_ENTITY_LEVEL),
-                selectedRegion: getActiveId(REGION_ACTIVE_ENTITY_LEVEL),
-                selectedRiver: getActiveId(RIVER_ACTIVE_ENTITY_LEVEL),
-                selectedSpot: getActiveId(SPOT_ACTIVE_ENTITY_LEVEL),
-                sensors: sensors,
-                errMsg: "",
-                closeCallback: function () {
-                },
-                onTreeSwitch: function (callback) {
-                    this.errMsg = null;
-                    this.closeCallback = callback;
-                    let t = this;
-
-                    if (!this.spoteditorstate.editMode && this.rivereditorstate.pageMode != 'edit' && this.rivereditorstate.pageMode != 'batch-edit') {
-                        callback();
-                        return;
-                    }
-
-                    if (this.spoteditorstate.editMode) {
-                        let spotEditorCloseDialog = $('#close-spot-editor');
-                        spotEditorCloseDialog.on('hidden.bs.modal', function (e) {
-                            t.closeCallback = function () {
-
-                            };
-                        });
-                        spotEditorCloseDialog.modal();
-                    }
-                    if (this.rivereditorstate.pageMode == 'edit' || this.rivereditorstate.pageMode == 'batch-edit') {
-                        let riverEditorCloseDialog = $('#close-river-editor');
-                        riverEditorCloseDialog.on('hidden.bs.modal', function (e) {
-                            t.closeCallback = function () {
-
-                            };
-                        });
-                        riverEditorCloseDialog.modal();
-                    }
-                },
+                countries: [],
+                regions: [],
             }
+        },
+        created() {
+            getCountries().then(c => this.countries = c);
+            getAllRegions().then(r => this.regions = r);
+        },
+        computed: {
+            closeCallback() {return store.state.closeCallback},
+            errMsg() {return store.state.errMsg},
+            countryeditorstate() {return store.state.countryeditorstate},
+            regioneditorstate() {return store.state.regioneditorstate},
+            rivereditorstate() {return store.state.rivereditorstate},
+            spoteditorstate() {return store.state.spoteditorstate},
         }
     }
 </script>
