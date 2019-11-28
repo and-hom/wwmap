@@ -9,6 +9,7 @@ export const MIN_ZOOM_SUPPORTED = 9;
 export function WWMapMeasurementTool(map, objectManager, apiBase) {
     this.enabled = false;
     this.overZoom = false;
+    this.loading = false;
     this.edit = true;
 
     this.onChangeSegmentCount = null;
@@ -24,17 +25,22 @@ export function WWMapMeasurementTool(map, objectManager, apiBase) {
     this.reset();
 
     this.addEvents();
+
 }
+
+WWMapMeasurementTool.prototype.canEditPath = function () {
+    return this.enabled && this.edit && !this.overZoom && !this.loading;
+};
 
 WWMapMeasurementTool.prototype.addEvents = function () {
     let t = this;
     this.objectManager.objects.events.add(['click'], e => {
-        if (this.enabled && this.edit && !this.overZoom) {
+        if (this.canEditPath()) {
             this.multiPath.pushEmptySegment();
         }
     });
     this.objectManager.objects.events.add('mousemove', e => {
-        if (this.enabled && this.edit && !this.overZoom) {
+        if (this.canEditPath()) {
             let coords = e.get('coords');
             if (coords) {
                 this.onMouseMoved(t.coordsToMouse(coords), coords);
@@ -42,7 +48,7 @@ WWMapMeasurementTool.prototype.addEvents = function () {
         }
     });
     this.map.events.add('click', e => {
-        if (this.enabled && this.edit && !this.overZoom) {
+        if (this.canEditPath()) {
             this.multiPath.pushEmptySegment();
         }
     });
@@ -52,7 +58,7 @@ WWMapMeasurementTool.prototype.addEvents = function () {
         }
     });
     this.map.events.add('mousemove', e => {
-        if (this.enabled && this.edit && !this.overZoom) {
+        if (this.canEditPath()) {
             this.onMouseMoved(e.get('position'), e.get('coords'));
         }
     });
@@ -175,7 +181,7 @@ WWMapMeasurementTool.prototype.moveFirstPoint = function (cursorPosPx, coords, e
 };
 
 WWMapMeasurementTool.prototype.onMouseMoved = function (cursorPosPx, coords) {
-    if (!cursorPosPx ||  !this.enabled || !this.edit || this.overZoom) {
+    if (!cursorPosPx ||  !this.canEditPath()) {
         return
     }
 
