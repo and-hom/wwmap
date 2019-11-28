@@ -50,9 +50,9 @@ TrackStorage.prototype.loadRivers = function (rect, zoom) {
         for (let i in keys) {
             let key = keys[i];
             let parts = key.split("_");
-            let x = parseInt(parts[0]);
-            let y = parseInt(parts[1]);
-            if (x < x0 - 1 || x > x1 + 1 || x < y0 - 1 || y > y1 + 1) {
+            let tileX = parseInt(parts[0]);
+            let tileY = parseInt(parts[1]);
+            if (tileX < x0 - 1 || tileX > x1 + 1 || tileX < y0 - 1 || tileY > y1 + 1) {
                 delete t.rivers[key]
             }
         }
