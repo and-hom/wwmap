@@ -122,33 +122,6 @@ WWMap.prototype.init = function () {
         }
     });
 
-    let searchControl = new ymaps.control.SearchControl({
-        options: {
-            provider: new WWMapSearchProvider(),
-            placeholderContent: 'Река или порог'
-        }
-    });
-    searchControl.events.add('resultselect', function (e) {
-        let index = e.get('index');
-
-        searchControl.getResult(index).then(function (value) {
-            if(!value) {
-                return
-            }
-
-            let id = value.properties.get("id");
-            let type = value.properties.get("type");
-            let bounds = value.properties.get("boundedBy");
-
-            if (id && bounds && type && type == 'river') {
-                highlight_river(id)
-            }
-        }, function (err) {
-            console.log('Ошибка: ' + err);
-        });
-    }, this);
-    this.yMap.controls.add(searchControl);
-
     if (this.tutorialPopup) {
         this.yMap.controls.add(this.createHelpBtn(), {
             float: 'left'
@@ -196,7 +169,7 @@ WWMap.prototype.init = function () {
     this.objectManager = objectManager;
 
     objectManager.objects.events.add(['click'], function (e) {
-        if (!t.measurementTool || !t.measurementTool.enabled || !t.measurementTool.edit || t.measurementTool.overZoom) {
+        if (!t.measurementTool || !t.measurementTool.canEditPath()) {
             objectManager.objects.balloon.open(e.get('objectId'));
         }
     });
@@ -215,6 +188,42 @@ WWMap.prototype.init = function () {
     if (info && info.experimental_features && !this.isMobile) {
         this.yMap.controls.add(createMeasurementToolControl(this.measurementTool), {});
     }
+
+
+    let searchControl = new ymaps.control.SearchControl({
+        options: {
+            provider: new WWMapSearchProvider(e => {
+                if (t.measurementTool && t.measurementTool.canEditPath()) {
+                    t.measurementTool.onMouseMoved(e.get('position'), e.get('coords'));
+                }
+            }, e => {
+                if (t.measurementTool && t.measurementTool.canEditPath()) {
+                    t.measurementTool.multiPath.pushEmptySegment();
+                }
+            }),
+            placeholderContent: 'Река или порог'
+        }
+    });
+    searchControl.events.add('resultselect', function (e) {
+        let index = e.get('index');
+
+        searchControl.getResult(index).then(function (value) {
+            if(!value) {
+                return
+            }
+
+            let id = value.properties.get("id");
+            let type = value.properties.get("type");
+            let bounds = value.properties.get("boundedBy");
+
+            if (id && bounds && type && type == 'river') {
+                highlight_river(id)
+            }
+        }, function (err) {
+            console.log('Ошибка: ' + err);
+        });
+    }, this);
+    this.yMap.controls.add(searchControl);
 };
 
 WWMap.prototype.setBounds = function (bounds, opts) {

@@ -26,7 +26,9 @@ type Notifications struct {
 }
 
 type Api struct {
-	BindTo string `yaml:"bind_to"`
+	BindTo       string        `yaml:"bind_to"`
+	ReadTimeout  time.Duration `yaml:"read_timeout"`
+	WriteTimeout time.Duration `yaml:"write_timeout"`
 }
 
 type Content struct {
@@ -34,9 +36,11 @@ type Content struct {
 }
 
 type TileCache struct {
-	BindTo  string              `yaml:"bind_to"`
-	BaseDir string              `yaml:"base_dir"`
-	Types   map[string][]string `yaml:"types"`
+	BindTo       string              `yaml:"bind_to"`
+	ReadTimeout  time.Duration       `yaml:"read_timeout"`
+	WriteTimeout time.Duration       `yaml:"write_timeout"`
+	BaseDir      string              `yaml:"base_dir"`
+	Types        map[string][]string `yaml:"types"`
 }
 
 type WordpressSync struct {

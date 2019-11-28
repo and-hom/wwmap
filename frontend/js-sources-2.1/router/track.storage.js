@@ -3,6 +3,8 @@ export function TrackStorage(apiBase) {
     this.bounds = [[0, 0], [0, 0]];
     this.rivers = {};
     this.zoom = 14;
+    this.loadingCounter = 0;
+    this.onLoadingChanged = null;
 }
 
 TrackStorage.prototype.setBounds = function (rect, extPoint, zoom) {
@@ -29,9 +31,16 @@ TrackStorage.prototype.loadRivers = function (rect, zoom) {
         for (let y = yInt * 2; y < y1; y += 2) {
             if (!t.rivers[`${x}_${y}`]) {
                 let url = `${this.apiBase}/router-data?bbox=${x},${y},${x + 2},${y + 2}&zoom=${zoom}`;
-                $.ajax(url).done(function (data) {
-                    t.rivers[`${x}_${y}`] = data.tracks;
-                });
+
+                this.loadingCounter++;
+                this.loadingChangedHander();
+                fetch(url)
+                    .then(resp => resp.json())
+                    .then(data => t.rivers[`${x}_${y}`] = data.tracks)
+                    .finally(() => {
+                        this.loadingCounter--;
+                        this.loadingChangedHander();
+                    });
             }
         }
     }
@@ -41,12 +50,19 @@ TrackStorage.prototype.loadRivers = function (rect, zoom) {
         for (let i in keys) {
             let key = keys[i];
             let parts = key.split("_");
-            let x = parseInt(parts[0]);
-            let y = parseInt(parts[1]);
-            if (x < x0 || x > x1 || x < y0 || y > y1) {
+            let tileX = parseInt(parts[0]);
+            let tileY = parseInt(parts[1]);
+            if (tileX < x0 - 1 || tileX > x1 + 1 || tileX < y0 - 1 || tileY > y1 + 1) {
                 delete t.rivers[key]
             }
         }
+    }
+};
+
+
+TrackStorage.prototype.loadingChangedHander = function() {
+    if (this.onLoadingChanged) {
+        this.onLoadingChanged(this.loadingCounter > 0)
     }
 };
 

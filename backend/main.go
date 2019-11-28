@@ -129,7 +129,14 @@ func main() {
 	http.Handle("/", r)
 
 	h := http.DefaultServeMux
-	err := http.ListenAndServe(configuration.Api.BindTo, WrapWithLogging(h, configuration))
+	server := &http.Server{Addr: configuration.Api.BindTo, Handler: WrapWithLogging(h, configuration)}
+	if configuration.Api.ReadTimeout > 0 {
+		server.ReadTimeout = configuration.Api.ReadTimeout
+	}
+	if configuration.Api.WriteTimeout > 0 {
+		server.WriteTimeout = configuration.Api.WriteTimeout
+	}
+	err := server.ListenAndServe()
 	if err != nil {
 		log.Fatalf("Can not start server: %v", err)
 	}

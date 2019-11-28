@@ -1,7 +1,8 @@
 import {apiBase} from "./config";
 
-export function WWMapSearchProvider() {
-
+export function WWMapSearchProvider(mousemoved, click) {
+    this.mousemoved = mousemoved;
+    this.click = click;
 }
 
 WWMapSearchProvider.prototype.geocode = function (request, options) {
@@ -12,6 +13,7 @@ WWMapSearchProvider.prototype.geocode = function (request, options) {
         // Количество возвращаемых результатов.
         limit = options.results || 20;
 
+    let t = this;
     var xhr = new XMLHttpRequest();
     xhr.open("POST", apiBase + "/search", true);
     xhr.setRequestHeader("Content-Type", "application/json");
@@ -42,9 +44,9 @@ WWMapSearchProvider.prototype.geocode = function (request, options) {
                 for (i = 0, l = respData.rivers.length; i < l; i++) {
                     var river = respData.rivers[i];
 
-                    geoObjects.add(new ymaps.Rectangle(river.bounds, {
+                    let rect = new ymaps.Rectangle(river.bounds, {
                         name: river.title,
-                        description: river.region.title,
+                        description: river.region.fake ? "" : river.region.title,
                         boundedBy: river.bounds,
                         id: river.id,
                         type: "river"
@@ -58,7 +60,18 @@ WWMapSearchProvider.prototype.geocode = function (request, options) {
                         strokeWidth: 0,
 
                         id: river.id
-                    }));
+                    });
+                    rect.events.add('mousemove', e => {
+                        if (t.mousemoved) {
+                            t.mousemoved(e);
+                        }
+                    });
+                    rect.events.add('click', e => {
+                        if (t.click) {
+                            t.click(e);
+                        }
+                    });
+                    geoObjects.add(rect);
                 }
 
                 deferred.resolve({

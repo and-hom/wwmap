@@ -38,6 +38,7 @@ export function createMeasurementToolControl(measurementTool) {
             // Создаем HTML-элемент с текстом.
             var content = '<div class="wwmap-route-control">' +
                 '<div class="wwmap-overzoom-msg" style="display: none; background: #ff000099; font-size: x-small; color: #331100">Измерения пути при масштабе менее '+MIN_ZOOM_SUPPORTED+' не поддерживаются.</div> ' +
+                '<div class="wwmap-loading-msg" style="display: none; background: #ffff2299; font-size: x-small; color: #331100">Загрузка данных...</div> ' +
                 '<button class="ymaps-2-1-73-float-button-text, wwmap-measure-btn" title="Расстояние по реке"><img style="height:24px" src="http://wwmap.ru/img/ruler.png"/><img style="height:24px"/></button>' +
 
                 '<button class="ymaps-2-1-73-float-button-text, wwmap-measure-ok-btn" style="display: none;" title="Закончить редактирование"><img style="height:24px" src="http://wwmap.ru/img/ok.png"/><img style="height:24px"/></button>' +
@@ -62,6 +63,7 @@ export function createMeasurementToolControl(measurementTool) {
             var measureHelpBtn = $('.wwmap-measure-help-btn');
 
             var overZoomMessage = $('.wwmap-overzoom-msg');
+            var loadingMessage = $('.wwmap-loading-msg');
 
             let refreshMeasurementButtons = function () {
                 let exportModeStyle = measurementTool.edit || !measurementTool.hasDrawnPath() ? 'none' : 'inline-block';
@@ -144,6 +146,10 @@ export function createMeasurementToolControl(measurementTool) {
 
             measurementTool.setOnChangeSegmentCount(refreshMeasurementButtons);
             measurementTool.overZoomCallback = refreshOverZoom;
+            measurementTool.trackStorage.onLoadingChanged = function (loading) {
+                measurementTool.loading = loading;
+                loadingMessage.css('display', loading ? 'inline-block': 'none')
+            }
         },
 
         onDragStart: function (e) {

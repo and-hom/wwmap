@@ -341,6 +341,12 @@ func main() {
 		Addr:        configuration.BindTo,
 		Handler:     WrapWithLogging(r, fullConfiguration),
 	}
+	if configuration.ReadTimeout > 0 {
+		srv.ReadTimeout = configuration.ReadTimeout
+	}
+	if configuration.WriteTimeout > 0 {
+		srv.WriteTimeout = configuration.WriteTimeout
+	}
 	err := srv.ListenAndServe()
 	if err != nil {
 		log.Fatalf("Can not start server: %v", err)
