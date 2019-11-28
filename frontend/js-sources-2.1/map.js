@@ -169,7 +169,7 @@ WWMap.prototype.init = function () {
     this.objectManager = objectManager;
 
     objectManager.objects.events.add(['click'], function (e) {
-        if (!t.measurementTool.canEditPath()) {
+        if (!t.measurementTool || !t.measurementTool.canEditPath()) {
             objectManager.objects.balloon.open(e.get('objectId'));
         }
     });
@@ -193,11 +193,11 @@ WWMap.prototype.init = function () {
     let searchControl = new ymaps.control.SearchControl({
         options: {
             provider: new WWMapSearchProvider(e => {
-                if (t.measurementTool.canEditPath()) {
+                if (t.measurementTool && t.measurementTool.canEditPath()) {
                     t.measurementTool.onMouseMoved(e.get('position'), e.get('coords'));
                 }
             }, e => {
-                if (t.measurementTool.canEditPath()) {
+                if (t.measurementTool && t.measurementTool.canEditPath()) {
                     t.measurementTool.multiPath.pushEmptySegment();
                 }
             }),
