@@ -17,6 +17,24 @@ TrackStorage.prototype.setBounds = function (rect, extPoint, zoom) {
     this.zoom = zoom;
 };
 
+
+function doFetch(url) {
+    return new Promise((resolve, reject) => {
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", url, true);
+
+        xhr.onload = () => resolve(xhr.responseText);
+        xhr.onerror = () => reject(xhr.statusText);
+
+        try {
+            xhr.send();
+        } catch (err) {
+            console.log(err);
+            reject(err);
+        }
+    });
+}
+
 TrackStorage.prototype.loadRivers = function (rect, zoom) {
     let t = this;
 
@@ -34,8 +52,8 @@ TrackStorage.prototype.loadRivers = function (rect, zoom) {
 
                 this.loadingCounter++;
                 this.loadingChangedHander();
-                fetch(url)
-                    .then(resp => resp.json())
+                doFetch(url)
+                    .then(resp => JSON.parse(resp))
                     .then(data => t.rivers[`${x}_${y}`] = data.tracks)
                     .finally(() => {
                         this.loadingCounter--;
