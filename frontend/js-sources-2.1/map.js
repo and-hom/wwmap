@@ -185,7 +185,7 @@ WWMap.prototype.init = function () {
 
     this.measurementTool = new WWMapMeasurementTool(yMap, objectManager, apiBase);
     var info = getWwmapUserInfoForMapControls();
-    if (info && info.experimental_features && !this.isMobile) {
+    if (!this.isMobile) {
         this.yMap.controls.add(createMeasurementToolControl(this.measurementTool), {});
     }
 
