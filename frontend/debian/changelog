@@ -1,3 +1,9 @@
+wwmap-frontend (0.0.55) unstable; urgency=medium
+
+  * #209 Enable measurement tool for all users
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sun, 01 Dec 2019 19:49:05 +0300
+
 wwmap-frontend (0.0.54) unstable; urgency=medium
 
   * #209 Clear track button behaveour fixed
