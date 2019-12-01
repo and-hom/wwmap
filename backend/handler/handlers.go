@@ -30,6 +30,9 @@ type App struct {
 	ImgUrlBase         string
 	ImgUrlPreviewBase  string
 	NotificationHelper notification.NotificationHelper
+	CampDao            CampDao
+	CampPhotoDao       PhotoDao
+	CampRateDao        RateDao
 }
 
 func (this *App) processForWeb(img *Img) {

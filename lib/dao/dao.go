@@ -205,6 +205,22 @@ type LevelDao interface {
 	RemoveNullsBefore(fromDate JSONDate) error
 }
 
+type CampDao interface {
+	List() ([]Camp, error)
+	Insert(camp Camp) (int64, error)
+	Update(camp Camp) error
+	Find(id int64) (Camp, bool, error)
+	Remove(id int64, tx interface{}) error
+}
+
+type RateDao interface {
+	RemoveByRefId(refId int64, tx interface{}) error
+}
+
+type PhotoDao interface {
+	RemoveByRefId(refId int64, tx interface{}) error
+}
+
 type DbVersionDao interface {
 	GetDbVersion() (int, error)
 }

@@ -41,6 +41,9 @@ func main() {
 	waterWayRefDao := NewWaterWayRefPostgresDao(storage)
 	levelDao := NewLevelPostgresDao(storage)
 	levelSensorDao := NewLevelSensorPostgresDao(storage)
+	campDao := NewCampPostgresDao(storage)
+	campRateDao := NewCampRatePostgresDao(storage)
+	campPhotoDao := NewCampPhotoPostgresDao(storage)
 	dbVersionDao := NewDbVersionPostgresDao(storage)
 	transferDao := NewTransferPostgresDao(storage)
 
@@ -90,6 +93,9 @@ func main() {
 			UserDao:                userDao,
 			FallbackEmailRecipient: configuration.Notifications.FallbackEmailRecipient,
 		},
+		CampDao:      campDao,
+		CampPhotoDao: campPhotoDao,
+		CampRateDao:  campRateDao,
 	}
 
 	_handlers := []ApiHandler{

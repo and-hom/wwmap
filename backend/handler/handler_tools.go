@@ -111,6 +111,7 @@ func (this *App) collectReferer(r *http.Request) {
 	}
 }
 
+const CAMP_LOG_ENTRY_TYPE = "CAMP"
 const SPOT_LOG_ENTRY_TYPE = "SPOT"
 const RIVER_LOG_ENTRY_TYPE = "RIVER"
 const REGION_LOG_ENTRY_TYPE = "REGION"

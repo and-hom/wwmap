@@ -457,6 +457,13 @@ type Meteo struct {
 	Rain int `json:"rain"`
 }
 
+type Camp struct {
+	IdTitle
+	Description   string `json:"description"`
+	Point         Point  `json:"point"`
+	NumTentPlaces uint16 `json:"num_tent_places"`
+}
+
 const NAN_LEVEL = math.MinInt32
 const LEVEL_GRADUATION int = 4
 

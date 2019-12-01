@@ -83,6 +83,17 @@ func (this *GeoHierarchyHandler) Init() {
 		HandlerFunctions{Post: this.ForRoles(this.SpotParentIds, dao.ADMIN)})
 	this.Register("/image_base_ids",
 		HandlerFunctions{Post: this.ForRoles(this.ImageParentIds, dao.ADMIN)})
+
+	this.Register("/camp", HandlerFunctions{
+		Get:  this.ListCamps,
+		Post: this.ForRoles(this.SaveCamp, dao.ADMIN, dao.EDITOR),
+	})
+	this.Register("/camp/{campId}", HandlerFunctions{
+		Get:    this.GetCamp,
+		Post:   this.ForRoles(this.SaveCamp, dao.ADMIN, dao.EDITOR),
+		Put:    this.ForRoles(this.SaveCamp, dao.ADMIN, dao.EDITOR),
+		Delete: this.ForRoles(this.RemoveCamp, dao.ADMIN, dao.EDITOR),
+	})
 }
 
 type RiverDto struct {
@@ -917,4 +928,109 @@ func (this *GeoHierarchyHandler) SaveSpotBatch(w http.ResponseWriter, r *http.Re
 type SpotBatch struct {
 	Delete []int64                   `json:"delete"`
 	Update []dao.WhiteWaterPointFull `json:"update"`
+}
+
+func (this *GeoHierarchyHandler) ListCamps(w http.ResponseWriter, r *http.Request) {
+	countries, err := this.CampDao.List()
+	if err != nil {
+		OnError500(w, err, "Can not list camps")
+		return
+	}
+	this.JsonAnswer(w, countries)
+}
+
+func (this *GeoHierarchyHandler) GetCamp(w http.ResponseWriter, r *http.Request) {
+	pathParams := mux.Vars(r)
+	campId, err := strconv.ParseInt(pathParams["campId"], 10, 64)
+	if err != nil {
+		OnError(w, err, "Can not parse id", http.StatusBadRequest)
+		return
+	}
+
+	this.writeCamp(campId, w)
+}
+
+func (this *GeoHierarchyHandler) SaveCamp(w http.ResponseWriter, r *http.Request) {
+	camp := dao.Camp{}
+	body, err := decodeJsonBody(r, &camp)
+	if err != nil {
+		OnError500(w, err, "Can not parse json from request body: "+body)
+		return
+	}
+
+	if len(strings.TrimSpace(camp.Title)) == 0 {
+		OnError(w, errors.New(""), "Can not save camp with empty name", http.StatusBadRequest)
+		return
+	}
+
+	var id int64
+	var logType dao.ChangesLogEntryType
+	if camp.Id > 0 {
+		err = this.CampDao.Update(camp)
+		id = camp.Id
+		logType = dao.ENTRY_TYPE_MODIFY
+	} else {
+		id, err = this.CampDao.Insert(camp)
+		logType = dao.ENTRY_TYPE_CREATE
+	}
+	if err != nil {
+		OnError500(w, err, "Can not save camp: "+body)
+		return
+	}
+
+	this.writeCamp(id, w)
+
+	this.LogUserEvent(r, CAMP_LOG_ENTRY_TYPE, id, logType, camp.Title)
+}
+
+func (this *GeoHierarchyHandler) writeCamp(campId int64, w http.ResponseWriter) {
+	camp, found, err := this.CampDao.Find(campId)
+	if err != nil {
+		OnError500(w, err, fmt.Sprintf("Can not get camp %d", campId))
+		return
+	}
+	if !found {
+		OnError(w, nil, fmt.Sprintf("Camp with id %d not found", campId), http.StatusNotFound)
+		return
+	}
+	this.JsonAnswer(w, camp)
+}
+
+func (this *GeoHierarchyHandler) RemoveCamp(w http.ResponseWriter, r *http.Request) {
+	pathParams := mux.Vars(r)
+	campIdStr := pathParams["campId"]
+	campId, err := strconv.ParseInt(campIdStr, 10, 64)
+	if err != nil {
+		OnError(w, err, "Can not parse id", http.StatusBadRequest)
+		return
+	}
+
+	camp, found, err := this.CampDao.Find(campId)
+	if err != nil {
+		OnError500(w, err, fmt.Sprintf("Can not select camp by id: %d", campId))
+		return
+	}
+	if !found {
+		OnError(w, err, fmt.Sprintf("Camp with id %d not found", campId), http.StatusNotFound)
+		return
+	}
+
+	err = this.Storage.WithinTx(func(tx interface{}) error {
+		err := this.CampPhotoDao.RemoveByRefId(campId, tx)
+		if err != nil {
+			return err
+		}
+		err = this.CampRateDao.RemoveByRefId(campId, tx)
+		if err != nil {
+			return err
+		}
+		return this.CampDao.Remove(campId, tx)
+	})
+
+	if err != nil {
+		OnError500(w, err, fmt.Sprintf("Can not remove camp by id: %d", campId))
+		return
+	}
+
+	this.LogUserEvent(r, CAMP_LOG_ENTRY_TYPE, campId, dao.ENTRY_TYPE_DELETE, camp.Title)
 }
