@@ -207,10 +207,11 @@ type LevelDao interface {
 
 type CampDao interface {
 	List() ([]Camp, error)
-	Insert(camp Camp) (int64, error)
+	Insert(camp ...Camp) ([]int64, error)
 	Update(camp Camp) error
 	Find(id int64) (Camp, bool, error)
 	Remove(id int64, tx interface{}) error
+	FindWithinBounds(bbox Bbox) ([]Camp, error)
 }
 
 type RateDao interface {

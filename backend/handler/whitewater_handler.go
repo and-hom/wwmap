@@ -147,6 +147,13 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 			OnError500(w, err, fmt.Sprintf("Can not cluster: %s", bbox.String()))
 			return
 		}
+
+		camps, err := this.CampDao.FindWithinBounds(bbox)
+		if err != nil {
+			logrus.Error(err)
+		} else {
+			features = append(features, ymaps.CampsToYmaps(camps, this.ResourceBase)...)
+		}
 	}
 
 	featureCollection := MkFeatureCollection(features)

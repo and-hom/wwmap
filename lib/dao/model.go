@@ -459,6 +459,7 @@ type Meteo struct {
 
 type Camp struct {
 	IdTitle
+	OsmId         int64  `json:"osm_id"`
 	Description   string `json:"description"`
 	Point         Point  `json:"point"`
 	NumTentPlaces uint16 `json:"num_tent_places"`

@@ -970,7 +970,12 @@ func (this *GeoHierarchyHandler) SaveCamp(w http.ResponseWriter, r *http.Request
 		id = camp.Id
 		logType = dao.ENTRY_TYPE_MODIFY
 	} else {
-		id, err = this.CampDao.Insert(camp)
+		var ids []int64
+		ids, err = this.CampDao.Insert(camp)
+		if len(ids) == 0 && err == nil {
+			err = errors.New("0 ids selected")
+		}
+		id = ids[0]
 		logType = dao.ENTRY_TYPE_CREATE
 	}
 	if err != nil {

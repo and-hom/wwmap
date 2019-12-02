@@ -6,27 +6,28 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/lib/dao/queries"
 	"github.com/and-hom/wwmap/lib/geo"
-	"github.com/pkg/errors"
 )
 
 func NewCampPostgresDao(postgresStorage PostgresStorage) CampDao {
 	return &campStorage{
-		PostgresStorage: postgresStorage,
-		listQuery:       queries.SqlQuery("camp", "list"),
-		findQuery:       queries.SqlQuery("camp", "find"),
-		insertQuery:     queries.SqlQuery("camp", "insert"),
-		updateQuery:     queries.SqlQuery("camp", "update"),
-		removeQuery:     queries.SqlQuery("camp", "remove"),
+		PostgresStorage:       postgresStorage,
+		listQuery:             queries.SqlQuery("camp", "list"),
+		findWithinBoundsQuery: queries.SqlQuery("camp", "find-witin-bounds"),
+		findQuery:             queries.SqlQuery("camp", "find"),
+		insertQuery:           queries.SqlQuery("camp", "insert"),
+		updateQuery:           queries.SqlQuery("camp", "update"),
+		removeQuery:           queries.SqlQuery("camp", "remove"),
 	}
 }
 
 type campStorage struct {
 	PostgresStorage
-	listQuery   string
-	findQuery   string
-	insertQuery string
-	updateQuery string
-	removeQuery string
+	listQuery             string
+	findWithinBoundsQuery string
+	findQuery             string
+	insertQuery           string
+	updateQuery           string
+	removeQuery           string
 }
 
 func (this campStorage) List() ([]Camp, error) {
@@ -37,15 +38,24 @@ func (this campStorage) List() ([]Camp, error) {
 	return found.([]Camp), nil
 }
 
-func (this campStorage) Insert(camp Camp) (int64, error) {
-	result, err := this.updateReturningId(this.insertQuery, this.campToArgs(false), true, camp)
+func (this campStorage) FindWithinBounds(bbox geo.Bbox) ([]Camp, error) {
+	found, err := this.doFindList(this.findWithinBoundsQuery, this.scan, bbox.Y1, bbox.X1, bbox.Y2, bbox.X2)
 	if err != nil {
-		return 0, err
+		return []Camp{}, err
 	}
-	if len(result) == 0 {
-		return 0, errors.New("No id returned")
+	return found.([]Camp), nil
+}
+
+func (this campStorage) Insert(camp ...Camp) ([]int64, error) {
+	data := make([]interface{}, len(camp))
+	for i := 0; i < len(camp); i++ {
+		data[i] = camp[i]
 	}
-	return result[0], nil
+	result, err := this.updateReturningId(this.insertQuery, this.campToArgs(false), true, data...)
+	if err != nil {
+		return []int64{}, err
+	}
+	return result, nil
 }
 
 func (this campStorage) Update(camp Camp) error {
@@ -68,8 +78,9 @@ func (this campStorage) scan(rows *sql.Rows) (Camp, error) {
 	camp := Camp{}
 	pointStr := ""
 	numTentPlaces := sql.NullInt64{}
+	osmId := sql.NullInt64{}
 
-	err := rows.Scan(&camp.Id, &camp.Title, &camp.Description, &pointStr, &numTentPlaces)
+	err := rows.Scan(&camp.Id, &osmId, &camp.Title, &camp.Description, &pointStr, &numTentPlaces)
 	if err != nil {
 		return camp, err
 	}
@@ -87,6 +98,12 @@ func (this campStorage) scan(rows *sql.Rows) (Camp, error) {
 	} else {
 		camp.NumTentPlaces = 0
 	}
+
+	if osmId.Valid {
+		camp.OsmId = osmId.Int64
+	} else {
+		camp.OsmId = 0
+	}
 	return camp, nil
 }
 
@@ -97,6 +114,7 @@ func (this campStorage) campToArgs(withId bool) func(entity interface{}) ([]inte
 		if err != nil {
 			return nil, err
 		}
+
 		var numTentPlaces sql.NullInt64
 		if camp.NumTentPlaces > 0 {
 			numTentPlaces.Valid = true
@@ -105,7 +123,15 @@ func (this campStorage) campToArgs(withId bool) func(entity interface{}) ([]inte
 			numTentPlaces.Valid = false
 		}
 
-		params := []interface{}{camp.Title, camp.Description, string(pathBytes), numTentPlaces}
+		var osmId sql.NullInt64
+		if camp.OsmId > 0 {
+			osmId.Valid = true
+			osmId.Int64 = int64(camp.OsmId)
+		} else {
+			osmId.Valid = false
+		}
+
+		params := []interface{}{osmId, camp.Title, camp.Description, string(pathBytes), numTentPlaces}
 		if withId {
 			params = append([]interface{}{nullIf0(camp.Id)}, params...)
 		}

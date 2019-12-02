@@ -26,9 +26,10 @@ ALTER TABLE level ADD CONSTRAINT level_sensor_id_fk FOREIGN KEY (sensor_id) REFE
 CREATE TABLE camp
 (
     id              BIGINT PRIMARY KEY DEFAULT nextval('id_gen'),
+    osm_id          BIGINT UNIQUE,
     title           VARCHAR(512) NOT NULL,
     description     TEXT         NOT NULL,
-    point           GEOMETRY     NOT NULL,
+    point           GEOMETRY     NOT NULL UNIQUE,
     num_tent_places SMALLINT,
 
     CONSTRAINT point_is_point CHECK (GeometryType(point) = 'POINT'),
