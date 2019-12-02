@@ -97,7 +97,9 @@ WWMap.prototype.init = function () {
         )
     );
     $(document).keyup(function (e) {
-        if (!e || !e.target || !e.target.tagName || e.target.tagName.toUpperCase() == 'INPUT') {
+        if (!e || !e.target || !e.target.tagName ||
+            e.target.tagName.toUpperCase() == 'INPUT' ||
+            e.target.tagName.toUpperCase() == 'TEXTAREA') {
             return
         }
         switch (e.which) {
