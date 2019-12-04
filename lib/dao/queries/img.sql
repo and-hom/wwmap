@@ -1,5 +1,6 @@
 --@fields
-id, report_id, white_water_rapid_id,source,remote_id,url,preview_url,date_published, enabled, "type", main_image
+id, report_id, white_water_rapid_id,source,remote_id,url,preview_url,date_published, enabled, "type", main_image,
+date_level_updated, level
 
 --@by-id
 SELECT ___fields___

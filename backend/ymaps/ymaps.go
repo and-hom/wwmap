@@ -30,6 +30,7 @@ func mkFeature(point Spot, river RiverWithSpots, withDescription bool, resources
 			Url:        img.Url,
 			Source:     img.Source,
 			RemoteId:   img.RemoteId,
+			Level:      img.Level,
 		}
 	}
 	properties := FeatureProperties{

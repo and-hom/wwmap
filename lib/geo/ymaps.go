@@ -167,10 +167,11 @@ type FeatureProperties struct {
 }
 
 type Preview struct {
-	Source     string `json:"source,omitempty"`
-	RemoteId   string `json:"remote_id,omitempty"`
-	Url        string `json:"url,omitempty"`
-	PreviewUrl string `json:"preview_url,omitempty"`
+	Source     string          `json:"source,omitempty"`
+	RemoteId   string          `json:"remote_id,omitempty"`
+	Url        string          `json:"url,omitempty"`
+	PreviewUrl string          `json:"preview_url,omitempty"`
+	Level      map[int64]uint8 `json:"levels"`
 }
 
 type IconLayout string

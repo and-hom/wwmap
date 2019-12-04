@@ -2,6 +2,7 @@ package dao
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/lib/dao/queries"
@@ -71,10 +72,17 @@ func (this imgStorage) Upsert(imgs ...Img) ([]Img, error) {
 
 func imgMapper(rows *sql.Rows) (Img, error) {
 	img := Img{}
+	var levelString sql.NullString
 	err := rows.Scan(&img.Id, &img.ReportId, &img.WwId, &img.Source, &img.RemoteId, &img.Url, &img.PreviewUrl,
-		&img.DatePublished, &img.Enabled, &img.Type, &img.MainImage)
+		&img.DatePublished, &img.Enabled, &img.Type, &img.MainImage, &img.DateLevelUpdated, &levelString)
 	if err != nil {
 		return img, err
+	}
+	if levelString.Valid {
+		err = json.Unmarshal([]byte(levelString.String), &img.Level)
+		if err != nil {
+			return img, err
+		}
 	}
 	return img, nil
 }

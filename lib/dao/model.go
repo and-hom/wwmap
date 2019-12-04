@@ -259,19 +259,21 @@ const (
 const IMG_SOURCE_WWMAP string = "wwmap"
 
 type Img struct {
-	Id              int64     `json:"id"`
-	WwId            int64     `json:"ww_id"`
-	ReportId        int64     `json:"report_id"`
-	Source          string    `json:"source"`
-	RemoteId        string    `json:"remote_id"`
-	RawUrl          string    `json:"-"`
-	Url             string    `json:"url"`
-	PreviewUrl      string    `json:"preview_url"`
-	DatePublished   time.Time `json:"date_published"`
-	LabelsForSearch []string  `json:"-"`
-	Enabled         bool      `json:"enabled"`
-	Type            ImageType `json:"type"`
-	MainImage       bool      `json:"main_image"`
+	Id               int64           `json:"id"`
+	WwId             int64           `json:"ww_id"`
+	ReportId         int64           `json:"report_id"`
+	Source           string          `json:"source"`
+	RemoteId         string          `json:"remote_id"`
+	RawUrl           string          `json:"-"`
+	Url              string          `json:"url"`
+	PreviewUrl       string          `json:"preview_url"`
+	DatePublished    time.Time       `json:"date_published"`
+	LabelsForSearch  []string        `json:"-"`
+	Enabled          bool            `json:"enabled"`
+	Type             ImageType       `json:"type"`
+	MainImage        bool            `json:"main_image"`
+	DateLevelUpdated time.Time       `json:"-"`
+	Level            map[int64]uint8 `json:"level"`
 }
 
 func GetImgType(_type string) ImageType {
