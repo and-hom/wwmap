@@ -21,7 +21,8 @@ export function WWMap(divId, bubbleTemplate, riverList, tutorialPopup, catalogLi
     addLayer('google#satellite', 'Спутник Google (G)', 'Изображения © DigitalGlobe,CNES / Airbus, 2018,Картографические данные © Google, 2018', GOOGLE_SAT_TILES);
     addLayer('bing#satellite', 'Спутник Bing (B)', 'Изображения © Майкрософт (Microsoft), 2019', bingSatTiles);
     addCachedLayer('ggc#standard', 'Топографическая карта (T)', '', 'ggc', 0, 15);
-    //      addLayer('marshruty.ru#genshtab', 'Маршруты.ру', 'marshruty.ru', MARSHRUTY_RU_TILES, 8)
+    addCachedLayer('topomapper#genshtab', 'TopoMapper', 'TopoMapper.com', 'topo-mapper', 0, 13);
+    addCachedLayer('marshruty.ru#genshtab', 'Маршруты.ру', 'marshruty.ru', 'marshruty-ru', 8, 13);
 
     // workaround to change Yandex Satellite map title
     try {
@@ -90,6 +91,8 @@ WWMap.prototype.init = function () {
         new ymaps.control.TypeSelector([
                 'osm#standard',
                 'ggc#standard',
+                'topomapper#genshtab',
+                'marshruty.ru#genshtab',
                 'yandex#satellite',
                 'google#satellite',
                 'bing#satellite',
