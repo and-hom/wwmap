@@ -1,3 +1,10 @@
+wwmap-frontend (0.0.56) unstable; urgency=medium
+
+  * #251 Marshruty.ru and TopoMapper.com maps added
+  * #214 Hotkeys fix: don't switch map on type in the textarea element
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Thu, 05 Dec 2019 22:05:27 +0300
+
 wwmap-frontend (0.0.55) unstable; urgency=medium
 
   * #209 Enable measurement tool for all users
