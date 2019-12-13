@@ -6,6 +6,7 @@ import (
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/lib/dao/queries"
+	"github.com/and-hom/wwmap/lib/util"
 	"github.com/lib/pq"
 	"github.com/pkg/errors"
 	"time"
@@ -73,8 +74,9 @@ func (this imgStorage) Upsert(imgs ...Img) ([]Img, error) {
 func imgMapper(rows *sql.Rows) (Img, error) {
 	img := Img{}
 	var levelString sql.NullString
+	var dateLevelUpdated pq.NullTime
 	err := rows.Scan(&img.Id, &img.ReportId, &img.WwId, &img.Source, &img.RemoteId, &img.Url, &img.PreviewUrl,
-		&img.DatePublished, &img.Enabled, &img.Type, &img.MainImage, &img.DateLevelUpdated, &levelString)
+		&img.DatePublished, &img.Enabled, &img.Type, &img.MainImage, &dateLevelUpdated, &levelString)
 	if err != nil {
 		return img, err
 	}
@@ -83,6 +85,11 @@ func imgMapper(rows *sql.Rows) (Img, error) {
 		if err != nil {
 			return img, err
 		}
+	}
+	if dateLevelUpdated.Valid {
+		img.DateLevelUpdated = dateLevelUpdated.Time
+	} else {
+		img.DateLevelUpdated = util.ZeroDateUTC()
 	}
 	return img, nil
 }

@@ -310,7 +310,7 @@ func (this *ImgHandler) SetPreview(w http.ResponseWriter, req *http.Request) {
 
 	err = this.ImgDao.SetMain(spotId, img.Id)
 	if err != nil {
-		OnError500(w, err, fmt.Sprintf("Can not set preview for spot %d", spotId))
+		OnError500(w, err, fmt.Sprintf("Can not set main image for spot %d", spotId))
 		return
 	}
 
@@ -328,7 +328,7 @@ func (this *ImgHandler) DropPreview(w http.ResponseWriter, req *http.Request) {
 
 	err = this.ImgDao.DropMainForSpot(spotId)
 	if err != nil {
-		OnError500(w, err, fmt.Sprintf("Can not set preview for spot %d", spotId))
+		OnError500(w, err, fmt.Sprintf("Drop main image for spot %d", spotId))
 		return
 	}
 	this.LogUserEvent(req, SPOT_LOG_ENTRY_TYPE, spotId, dao.ENTRY_TYPE_MODIFY, "drop main img")
@@ -344,7 +344,7 @@ func (this *ImgHandler) GetPreview(w http.ResponseWriter, req *http.Request) {
 
 	img, found, err := this.ImgDao.GetMainForSpot(spotId)
 	if err != nil {
-		OnError500(w, err, fmt.Sprintf("Can not set preview for spot %d", spotId))
+		OnError500(w, err, fmt.Sprintf("Can not get main image for spot %d", spotId))
 		return
 	}
 	if !found {
