@@ -1,6 +1,7 @@
 package ymaps
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/backend/clustering"
@@ -25,12 +26,21 @@ func mkFeature(point Spot, river RiverWithSpots, withDescription bool, resources
 	for i := 0; i < len(point.Images); i++ {
 		img := &point.Images[i]
 		processImgForWeb(img)
+		levelStr := ""
+		lvlMap := img.Level
+		levelB, err := json.Marshal(lvlMap)
+		if err != nil {
+			levelStr = "{}"
+		} else {
+			levelStr = string(levelB)
+		}
 		imgs[i] = Preview{
+			Id:         img.Id,
 			PreviewUrl: img.PreviewUrl,
 			Url:        img.Url,
 			Source:     img.Source,
 			RemoteId:   img.RemoteId,
-			Level:      img.Level,
+			Level:      levelStr,
 		}
 	}
 	properties := FeatureProperties{

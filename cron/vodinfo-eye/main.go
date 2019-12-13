@@ -46,12 +46,14 @@ func main() {
 
 	sensorIds := make(map[string]bool)
 	for _, river := range rivers {
-		sensorIdF, exists := river.Props["vodinfo_sensor"]
+		sensorIdArr, exists := river.Props["vodinfo_sensors"]
 		if !exists {
 			continue
 		}
-		sensorId := strconv.Itoa(int(sensorIdF.(float64)))
-		sensorIds[sensorId] = true
+		for _, id := range sensorIdArr.([]interface{}) {
+			sensorId := strconv.Itoa(int(id.(float64)))
+			sensorIds[sensorId] = true
+		}
 	}
 
 	yesterdayLevels, err := levelDao.List(dao.JSONDate(time.Now().Add(-24 * time.Hour)))

@@ -88,6 +88,11 @@
                                             <strong>Гидропост <a href="http://gis.vodinfo.ru/informer/">gis.vodinfo.ru/informer</a></strong>
                                         </div>
                                         <div class="col-9">
+                                            <ul id="sensors">
+                                                <li v-for="sensor in selectedSensors">
+                                                    {{ sensor }} - {{ sensorsById[sensor] }} <button v-on:click.stop="removeSensor(sensor)">[x]</button>
+                                                </li>
+                                            </ul>
                                             <v-select v-model="activeSensor" label="title" :options="sensors"
                                                       @input="onSelectSensor" >
                                                 <template slot="no-options">
@@ -344,7 +349,9 @@
         <div v-else class="spot-display">
             <h1>{{ river.title }}</h1>
             <div style="float:right;">
-                <img border='0' :src="informerUrl()">
+                <div style="width: 700px;">
+                    <img border='0' :src="informerUrl"  v-for="informerUrl in informerUrls()">
+                </div>
                 <div id="map" style="width:650px; height: 450px;padding-left: 30px;"></div>
             </div>
             <dl>
@@ -600,8 +607,7 @@
                         this.prevRegionFake = this.river.region.fake;
                         this.prevCountryId = this.river.region.country_id;
 
-                        var r = this.river;
-                        this.activeSensor = this.sensors.filter(function(s){return s.id==r.props.vodinfo_sensor})[0]
+                        this.selectedSensors = this.river.props.vodinfo_sensors;
                     }
                 },
 
@@ -620,6 +626,7 @@
                     if (updated) {
                         this.river = updated;
                         this.meteoPoint = this.getMeteoPointById(this.river.props.meteo_point);
+                        this.selectedSensors = this.river.props.vodinfo_sensors;
                         this.pageMode='view';
                         this.hideError();
                         var new_region_id = nvlReturningId(updated.region);
@@ -720,6 +727,7 @@
                 reload: function () {
                     this.river = getRiver(this.river.id);
                     this.meteoPoint = this.getMeteoPointById(this.river.props.meteo_point);
+                    this.selectedSensors = this.river.props.vodinfo_sensors;
                     this.spotsForDeleteIds = [];
                     this.hideError();
                     this.reloadMap();
@@ -727,6 +735,7 @@
                 setVisible: function(visible) {
                     this.river = setRiverVisible(this.river.id, visible);
                     this.meteoPoint = this.getMeteoPointById(this.river.props.meteo_point);
+                    this.selectedSensors = this.river.props.vodinfo_sensors;
                     // set "visible" property to global storage to set icon in the left-side tree using reactivity of vue.js
                     var regionId = this.river.region.id;
                     if (this.river.region.fake) {
@@ -735,7 +744,7 @@
                     getRiverFromTree(this.river.region.country_id, regionId, this.river.id).visible = this.river.visible;
                 },
                 remove: function() {
-                    this.hideError()
+                    this.hideError();
                     if (!removeRiver(this.river.id)) {
                         this.showError("Can not delete")
                     } else {
@@ -783,7 +792,7 @@
                 },
 
                 regions: function() {
-                    var regions = getAllRegions()
+                    var regions = getAllRegions();
                     realRegions = regions.map(function(x){
                         if (x.fake) {
                             return {
@@ -795,7 +804,7 @@
                             id:x.id,
                             title: x.country.title + " - " + x.title
                         }
-                    })
+                    });
                     return realRegions
                 },
                 parseAliases:function(strVal) {
@@ -805,8 +814,17 @@
                 prevRegionFake: null,
                 prevCountryId: 0,
                 sensors: app.sensors,
+                selectedSensors: [],
+                sensorsById: app.sensorsById,
                 activeSensor: {id:null, title:null},
-                informerUrl: function() {return this.river.props.vodinfo_sensor ? "http://gis.vodinfo.ru/informer/draw/v2_" + this.river.props.vodinfo_sensor + "_400_300_30_ffffff_110_8_7_H_none.png" : null},
+                informerUrls: function() {
+                    if (!this.river.props.vodinfo_sensors) {
+                        return [];
+                    }
+                    return this.river.props.vodinfo_sensors.map(function (s) {
+                        return "http://gis.vodinfo.ru/informer/draw/v2_" + s + "_300_200_30_ffffff_110_8_7_H_none.png";
+                    });
+                },
                 meteoPoint: null,
                 meteoPointSelectMode: true,
                 getMeteoPointById: function(id) {
@@ -944,8 +962,32 @@
             }
         },
         methods: {
-            onSelectSensor: function(x) { this.river.props.vodinfo_sensor = x.id },
-            onSelectMeteoPoint: function(x) { this.river.props.meteo_point = x.id }
+            onSelectSensor: function (x) {
+                if (!x || !x.id) {
+                    return
+                }
+                if (!this.river.props.vodinfo_sensors) {
+                    this.river.props.vodinfo_sensors = []
+                }
+                if (!this.river.props.vodinfo_sensors.includes(x.id)) {
+                    this.river.props.vodinfo_sensors.push(x.id);
+                }
+                if (this.activeSensor.id != null) {
+                    this.activeSensor = {id: null, title: null};
+                }
+                this.selectedSensors = this.river.props.vodinfo_sensors;
+            },
+            removeSensor: function(id) {
+                if(this.river.props.vodinfo_sensors) {
+                    this.river.props.vodinfo_sensors = this.river.props.vodinfo_sensors.filter(function (s) {
+                        return s!=id;
+                    }).slice();
+                    this.selectedSensors = this.river.props.vodinfo_sensors;
+                }
+            },
+            onSelectMeteoPoint: function (x) {
+                this.river.props.meteo_point = x.id
+            }
         }
     }
 

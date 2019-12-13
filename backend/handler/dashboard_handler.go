@@ -40,12 +40,14 @@ func (this *DashboardHandler) Levels(w http.ResponseWriter, req *http.Request) {
 
 	riversBySensor := make(map[string][]dao.RiverTitle)
 	for _, river := range rivers {
-		sensorIdF, exists := river.Props["vodinfo_sensor"]
+		sensorIds, exists := river.Props["vodinfo_sensors"]
 		if !exists {
 			continue
 		}
-		sensorId := fmt.Sprintf("%d", int(sensorIdF.(float64)))
-		riversBySensor[sensorId] = append(riversBySensor[sensorId], river)
+		for _, sensorIdF := range sensorIds.([]interface{}) {
+			sensorId := fmt.Sprintf("%d", int(sensorIdF.(float64)))
+			riversBySensor[sensorId] = append(riversBySensor[sensorId], river)
+		}
 	}
 
 	today := time.Now()
