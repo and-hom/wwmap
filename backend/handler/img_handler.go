@@ -359,13 +359,13 @@ func (this *ImgHandler) GetPreview(w http.ResponseWriter, req *http.Request) {
 }
 
 func (this *ImgHandler) listImagesForSpot(w http.ResponseWriter, spotId int64, _type dao.ImageType) {
-	imgs, err := this.ImgDao.List(spotId, 16384, _type, false)
+	imgs, err := this.ImgDao.ListExt(spotId, 16384, _type, false)
 	if err != nil {
 		OnError500(w, err, "Can not list images")
 		return
 	}
 	for i := 0; i < len(imgs); i++ {
-		this.processForWeb(&imgs[i])
+		this.processForWeb(&imgs[i].Img)
 	}
 
 	this.JsonAnswer(w, imgs)

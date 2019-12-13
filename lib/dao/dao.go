@@ -104,6 +104,7 @@ type ImgDao interface {
 	Upsert(img ...Img) ([]Img, error)
 	Find(id int64) (Img, bool, error)
 	List(wwId int64, limit int, _type ImageType, enabledOnly bool) ([]Img, error)
+	ListExt(wwId int64, limit int, _type ImageType, enabledOnly bool) ([]ImgExt, error)
 	ListAllBySpot(wwId int64) ([]Img, error)
 	ListMainByRiver(wwId int64) ([]Img, error)
 	ListAllByRiver(wwId int64) ([]Img, error)

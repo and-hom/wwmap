@@ -9,6 +9,7 @@ import (
 	"github.com/and-hom/wwmap/lib/util"
 	"github.com/lib/pq"
 	"github.com/pkg/errors"
+	"html"
 	"time"
 )
 
@@ -17,6 +18,7 @@ type imgStorage struct {
 	upsertQuery          string
 	findQuery            string
 	listQuery            string
+	listExtQuery         string
 	listAllBySpotQuery   string
 	listAllByRiverQuery  string
 	listMainByRiverQuery string
@@ -37,6 +39,7 @@ func NewImgPostgresDao(postgresStorage PostgresStorage) ImgDao {
 		upsertQuery:          queries.SqlQuery("img", "upsert"),
 		findQuery:            queries.SqlQuery("img", "by-id"),
 		listQuery:            queries.SqlQuery("img", "list"),
+		listExtQuery:         queries.SqlQuery("img", "list-ext"),
 		listAllBySpotQuery:   queries.SqlQuery("img", "list-all-by-spot"),
 		listAllByRiverQuery:  queries.SqlQuery("img", "list-all-by-river"),
 		listMainByRiverQuery: queries.SqlQuery("img", "list-main-by-river"),
@@ -94,12 +97,46 @@ func imgMapper(rows *sql.Rows) (Img, error) {
 	return img, nil
 }
 
+func imgExtMapper(rows *sql.Rows) (ImgExt, error) {
+	img := ImgExt{}
+	var levelString sql.NullString
+	var dateLevelUpdated pq.NullTime
+	err := rows.Scan(&img.Id, &img.ReportId, &img.WwId, &img.Source, &img.RemoteId, &img.Url, &img.PreviewUrl,
+		&img.DatePublished, &img.Enabled, &img.Type, &img.MainImage, &dateLevelUpdated, &levelString, &img.ReportUrl,
+		&img.ReportTitle)
+	if err != nil {
+		return img, err
+	}
+	if levelString.Valid {
+		err = json.Unmarshal([]byte(levelString.String), &img.Level)
+		if err != nil {
+			return img, err
+		}
+	}
+	if dateLevelUpdated.Valid {
+		img.DateLevelUpdated = dateLevelUpdated.Time
+	} else {
+		img.DateLevelUpdated = util.ZeroDateUTC()
+	}
+	// workaround: unescape report title on store to database
+	img.ReportTitle = html.UnescapeString(img.ReportTitle)
+	return img, nil
+}
+
 func (this imgStorage) List(wwId int64, limit int, _type ImageType, enabledOnly bool) ([]Img, error) {
 	result, err := this.doFindList(this.listQuery, imgMapper, wwId, _type, enabledOnly, limit)
 	if err != nil {
 		return []Img{}, err
 	}
 	return result.([]Img), nil
+}
+
+func (this imgStorage) ListExt(wwId int64, limit int, _type ImageType, enabledOnly bool) ([]ImgExt, error) {
+	result, err := this.doFindList(this.listExtQuery, imgExtMapper, wwId, _type, enabledOnly, limit)
+	if err != nil {
+		return []ImgExt{}, err
+	}
+	return result.([]ImgExt), nil
 }
 
 func (this imgStorage) ListAllBySpot(wwId int64) ([]Img, error) {

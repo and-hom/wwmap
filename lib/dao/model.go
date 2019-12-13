@@ -300,6 +300,12 @@ func (this Img) IdStr() string {
 	return fmt.Sprintf("%d", this.Id)
 }
 
+type ImgExt struct {
+	Img
+	ReportUrl   string `json:"report_url"`
+	ReportTitle string `json:"report_title"`
+}
+
 type WWPassport struct {
 	Source        string
 	RemoteId      string
