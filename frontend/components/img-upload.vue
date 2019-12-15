@@ -51,6 +51,7 @@
                 <td>
                     <div v-if="image.source=='wwmap'">Загружено пользователем</div>
                     <div v-else>Из отчёта <a target="_blank" :href="image.report_url">{{image.report_title}}</a></div>
+                    Опубликовано {{image.date_published|formatDateTimeStr}}
                     <div><b>Фактическая</b> дата снимка:
                         <img-date :spot-id="spot.id" :img-id="image.id" v-model="image.date"/>
                     </div>

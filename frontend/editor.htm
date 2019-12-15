@@ -36,6 +36,7 @@
     <!--end of gallery-->
 
     <script type="text/javascript" src="js-editor/vuejs-datepicker.min.js"></script>
+    <script type="text/javascript" src="js-editor/moment.min.js"></script>
 
     <script src="js-editor/vue-upload-component.js"></script>
     <script src="js-editor/http-vue-loader.js"></script>
@@ -126,6 +127,13 @@
     Vue.component('spot-editor', httpVueLoader('components/spot-editor.vue'));
 
     Vue.component('page', httpVueLoader('components/page.vue'));
+
+    Vue.filter('formatDateTimeStr', function(value) {
+        if (value) {
+            let d = new Date(value);
+            return moment(String(value)).format('YYYY-MM-DD HH:mm:ss')
+        }
+    });
 
 
     function getById(arr,id) {
