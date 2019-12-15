@@ -35,6 +35,8 @@
     <script type="text/javascript" src="js-editor/vue-gallery.min.js"></script>
     <!--end of gallery-->
 
+    <script type="text/javascript" src="js-editor/vuejs-datepicker.min.js"></script>
+
     <script src="js-editor/vue-upload-component.js"></script>
     <script src="js-editor/http-vue-loader.js"></script>
 
@@ -98,6 +100,7 @@
     Vue.component('v-select', VueSelect.VueSelect);
     Vue.component('gallery', VueGallery);
     Vue.component('file-upload', VueUploadComponent);
+    Vue.component('datepicker', vuejsDatepicker);
 
     Vue.component('window-title', httpVueLoader('components/window-title.vue'));
     Vue.component('ask', httpVueLoader('components/ask.vue'));
@@ -111,6 +114,7 @@
     Vue.component('props', httpVueLoader('components/props.vue'));
     Vue.component('log', httpVueLoader('components/log.vue'));
     Vue.component('log-dropdown', httpVueLoader('components/log-dropdown.vue'));
+    Vue.component('img-date', httpVueLoader('components/img-date.vue'));
 
     Vue.component('river', httpVueLoader('components/river.vue'));
     Vue.component('region', httpVueLoader('components/region.vue'));

@@ -51,6 +51,9 @@
                 <td>
                     <div v-if="image.source=='wwmap'">Загружено пользователем</div>
                     <div v-else>Из отчёта <a target="_blank" :href="image.report_url">{{image.report_title}}</a></div>
+                    <div><b>Фактическая</b> дата снимка:
+                        <img-date :spot-id="spot.id" :img-id="image.id" v-model="image.date"/>
+                    </div>
                 </td>
                 <td>
                     <button v-if="image.enabled==false" v-on:click="setImgEnabled(true, image.id)" class="btn btn-success">Показывать</button>

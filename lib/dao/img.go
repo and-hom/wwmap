@@ -13,6 +13,8 @@ import (
 	"time"
 )
 
+var zeroDate = util.ZeroDateUTC()
+
 type imgStorage struct {
 	PostgresStorage
 	upsertQuery          string
@@ -28,6 +30,7 @@ type imgStorage struct {
 	getMainForSpotQuery  string
 	setMainQuery         string
 	dropMainForSpotQuery string
+	setDateQuery         string
 	deleteForSpot        string
 	deleteForRiver       string
 	parentIds            string
@@ -49,6 +52,7 @@ func NewImgPostgresDao(postgresStorage PostgresStorage) ImgDao {
 		getMainForSpotQuery:  queries.SqlQuery("img", "get-main"),
 		setMainQuery:         queries.SqlQuery("img", "set-main"),
 		dropMainForSpotQuery: queries.SqlQuery("img", "drop-main-for-spot"),
+		setDateQuery:         queries.SqlQuery("img", "set-date"),
 		deleteForSpot:        queries.SqlQuery("img", "delete-by-spot"),
 		deleteForRiver:       queries.SqlQuery("img", "delete-by-river"),
 		parentIds:            queries.SqlQuery("img", "parent-ids"),
@@ -78,8 +82,9 @@ func imgMapper(rows *sql.Rows) (Img, error) {
 	img := Img{}
 	var levelString sql.NullString
 	var dateLevelUpdated pq.NullTime
+	var date pq.NullTime
 	err := rows.Scan(&img.Id, &img.ReportId, &img.WwId, &img.Source, &img.RemoteId, &img.Url, &img.PreviewUrl,
-		&img.DatePublished, &img.Enabled, &img.Type, &img.MainImage, &dateLevelUpdated, &levelString)
+		&img.DatePublished, &img.Enabled, &img.Type, &img.MainImage, &date, &dateLevelUpdated, &levelString)
 	if err != nil {
 		return img, err
 	}
@@ -89,11 +94,8 @@ func imgMapper(rows *sql.Rows) (Img, error) {
 			return img, err
 		}
 	}
-	if dateLevelUpdated.Valid {
-		img.DateLevelUpdated = dateLevelUpdated.Time
-	} else {
-		img.DateLevelUpdated = util.ZeroDateUTC()
-	}
+	img.DateLevelUpdated = nullDateToZero(dateLevelUpdated)
+	img.Date = nullDateToPtr(date)
 	return img, nil
 }
 
@@ -101,9 +103,10 @@ func imgExtMapper(rows *sql.Rows) (ImgExt, error) {
 	img := ImgExt{}
 	var levelString sql.NullString
 	var dateLevelUpdated pq.NullTime
+	var date pq.NullTime
 	err := rows.Scan(&img.Id, &img.ReportId, &img.WwId, &img.Source, &img.RemoteId, &img.Url, &img.PreviewUrl,
-		&img.DatePublished, &img.Enabled, &img.Type, &img.MainImage, &dateLevelUpdated, &levelString, &img.ReportUrl,
-		&img.ReportTitle)
+		&img.DatePublished, &img.Enabled, &img.Type, &img.MainImage, &date, &dateLevelUpdated, &levelString,
+		&img.ReportUrl, &img.ReportTitle)
 	if err != nil {
 		return img, err
 	}
@@ -113,11 +116,8 @@ func imgExtMapper(rows *sql.Rows) (ImgExt, error) {
 			return img, err
 		}
 	}
-	if dateLevelUpdated.Valid {
-		img.DateLevelUpdated = dateLevelUpdated.Time
-	} else {
-		img.DateLevelUpdated = util.ZeroDateUTC()
-	}
+	img.DateLevelUpdated = nullDateToZero(dateLevelUpdated)
+	img.Date = nullDateToPtr(date)
 	// workaround: unescape report title on store to database
 	img.ReportTitle = html.UnescapeString(img.ReportTitle)
 	return img, nil
@@ -229,6 +229,16 @@ func (this imgStorage) SetMain(spotId int64, id int64) error {
 
 func (this imgStorage) DropMainForSpot(spotId int64) error {
 	return this.performUpdates(this.dropMainForSpotQuery, IdMapper, spotId)
+}
+
+func (this imgStorage) SetDate(id int64, date time.Time) error {
+	var nullableDate pq.NullTime
+	if date == zeroDate {
+		nullableDate = pq.NullTime{Valid: false}
+	} else {
+		nullableDate = pq.NullTime{Time: date, Valid: true}
+	}
+	return this.performUpdates(this.setDateQuery, ArrayMapper, []interface{}{id, nullableDate})
 }
 
 func (this imgStorage) RemoveBySpot(spotId int64, tx interface{}) error {

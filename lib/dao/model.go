@@ -272,6 +272,7 @@ type Img struct {
 	Enabled          bool            `json:"enabled"`
 	Type             ImageType       `json:"type"`
 	MainImage        bool            `json:"main_image"`
+	Date             *time.Time      `json:"date"`
 	DateLevelUpdated time.Time       `json:"-"`
 	Level            map[int64]uint8 `json:"level"`
 }

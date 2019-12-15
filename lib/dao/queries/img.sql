@@ -1,7 +1,7 @@
 --@fields
 image.id, image.report_id, image.white_water_rapid_id,image.source,image.remote_id,image.url,
 image.preview_url,image.date_published, image.enabled, image."type", image.main_image,
-image.date_level_updated, image.level
+image.date, image.date_level_updated, image.level
 
 --@by-id
 SELECT ___fields___
@@ -62,6 +62,9 @@ UPDATE image SET
 
 --@drop-main-for-spot
 UPDATE image SET main_image=FALSE WHERE white_water_rapid_id=$1
+
+--@set-date
+UPDATE image SET date=$2 WHERE id=$1
 
 --@parent-ids
 SELECT id AS image_id, white_water_rapid_id AS spot_id FROM image WHERE image.id = ANY($1)

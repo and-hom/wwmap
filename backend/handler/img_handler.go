@@ -48,6 +48,8 @@ func (this *ImgHandler) Init() {
 	this.Register("/spot/{spotId}/img/{imgId}/preview", HandlerFunctions{Get: this.GetImagePreview})
 	this.Register("/spot/{spotId}/img/{imgId}/enabled", HandlerFunctions{
 		Post: this.ForRoles(this.SetEnabled, dao.ADMIN, dao.EDITOR)})
+	this.Register("/spot/{spotId}/img/{imgId}/date", HandlerFunctions{
+		Post: this.ForRoles(this.SetDate, dao.ADMIN, dao.EDITOR)})
 	this.Register("/spot/{spotId}/preview", HandlerFunctions{Get: this.GetPreview,
 		Post:   this.ForRoles(this.SetPreview, dao.ADMIN, dao.EDITOR),
 		Delete: this.ForRoles(this.DropPreview, dao.ADMIN, dao.EDITOR)})
@@ -282,6 +284,38 @@ func (this *ImgHandler) SetEnabled(w http.ResponseWriter, req *http.Request) {
 	this.listImagesForSpot(w, spotId, getImgType(req))
 
 	this.LogUserEvent(req, IMAGE_LOG_ENTRY_TYPE, imgId, dao.ENTRY_TYPE_MODIFY, fmt.Sprintf("enabled=%t", enabled))
+}
+
+func (this *ImgHandler) SetDate(w http.ResponseWriter, req *http.Request) {
+	pathParams := mux.Vars(req)
+	spotId, err := strconv.ParseInt(pathParams["spotId"], 10, 64)
+	if err != nil {
+		OnError(w, err, "Can not parse id", http.StatusBadRequest)
+		return
+	}
+	imgIdStr := pathParams["imgId"]
+	imgId, err := strconv.ParseInt(imgIdStr, 10, 64)
+	if err != nil {
+		OnError(w, err, "Can not parse img id", http.StatusBadRequest)
+		return
+	}
+
+	date := util.ZeroDateUTC()
+	body, err := decodeJsonBody(req, &date)
+	if err != nil {
+		OnError(w, err, "Can not unmarshal request body: "+body, http.StatusBadRequest)
+		return
+	}
+
+	err = this.ImgDao.SetDate(imgId, date)
+	if err != nil {
+		OnError500(w, err, "Can not set image date")
+		return
+	}
+
+	this.listImagesForSpot(w, spotId, getImgType(req))
+
+	this.LogUserEvent(req, IMAGE_LOG_ENTRY_TYPE, imgId, dao.ENTRY_TYPE_MODIFY, fmt.Sprintf("date=%v", date))
 }
 
 func (this *ImgHandler) SetPreview(w http.ResponseWriter, req *http.Request) {

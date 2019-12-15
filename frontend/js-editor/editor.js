@@ -103,25 +103,38 @@ function setRiverVisible(riverId, visible) {
     return doPostJsonSync(backendApiBase + "/river/" + riverId + "/visible", visible, true)
 }
 
-function getImages(id, _type) {
-    var imgs = doGetJsonSync(backendApiBase + "/spot/" + id + "/img?type=" + _type)
+function prepareImgs(imgs) {
     if (imgs) {
+        for (let i in imgs) {
+            let d = imgs[i].date;
+            if (d) {
+                imgs[i].date = new Date(d)
+            }
+        }
         return imgs
     } else {
         return []
     }
 }
 
+function getImages(id, _type) {
+    return prepareImgs(doGetJsonSync(backendApiBase + "/spot/" + id + "/img?type=" + _type));
+}
+
 function removeImage(spotId, id, _type) {
-    return doDeleteWithJsonRespSync(backendApiBase + "/spot/" + spotId + "/img/" + id + "?type=" + _type, true)
+    return prepareImgs(doDeleteWithJsonRespSync(backendApiBase + "/spot/" + spotId + "/img/" + id + "?type=" + _type, true))
 }
 
 function setImageEnabled(spotId, id, enabled, _type) {
-    return doPostJsonSync(backendApiBase + "/spot/" + spotId + "/img/" + id + "/enabled?type=" + _type, enabled, true)
+    return prepareImgs(doPostJsonSync(backendApiBase + "/spot/" + spotId + "/img/" + id + "/enabled?type=" + _type, enabled, true))
+}
+
+function setImageDate(spotId, id, date) {
+    return prepareImgs(doPostJsonSync(backendApiBase + "/spot/" + spotId + "/img/" + id + "/date", date, true))
 }
 
 function getSpotMainImageUrl(spotId) {
-    img =  doGetJsonSync(backendApiBase + "/spot/" + spotId + "/preview")
+    img =  doGetJsonSync(backendApiBase + "/spot/" + spotId + "/preview");
     if (img) {
         return img.preview_url
     }

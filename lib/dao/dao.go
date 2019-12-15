@@ -109,6 +109,7 @@ type ImgDao interface {
 	ListMainByRiver(wwId int64) ([]Img, error)
 	ListAllByRiver(wwId int64) ([]Img, error)
 	SetEnabled(id int64, enabled bool) error
+	SetDate(id int64, date time.Time) error
 	SetMain(spotId int64, id int64) error
 	DropMainForSpot(spotId int64) error
 	GetMainForSpot(spotId int64) (Img, bool, error)
