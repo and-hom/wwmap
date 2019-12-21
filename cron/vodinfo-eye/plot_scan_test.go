@@ -27,8 +27,22 @@ func TestNull(t *testing.T) {
 	assert.Nil(t, err)
 	img, _, err := image.Decode(f)
 	assert.Nil(t, err)
-	l := GetLevelValue(img, patternMatcher)
+	l := getLevelValue(img, t)
 	assert.Equal(t, dao.NAN_LEVEL, l)
+}
+
+func getLevelValue(img image.Image, t *testing.T) int {
+	icd, err := Calibrate(img, &patternMatcher)
+	assert.Nil(t, err)
+
+	calibrated := CalibratedImage{
+		Img:             img,
+		CalibrationData: icd,
+		Ok:              true,
+	}
+
+	l := calibrated.GetLevelValue(DetectLine)
+	return l
 }
 
 func Test149(t *testing.T) {
@@ -48,6 +62,6 @@ func testLevelInternal(t *testing.T, value int) {
 	assert.Nil(t, err)
 	img, _, err := image.Decode(f)
 	assert.Nil(t, err)
-	l := GetLevelValue(img, patternMatcher)
+	l := getLevelValue(img, t)
 	assert.Equal(t, value, l)
 }
