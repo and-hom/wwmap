@@ -6,6 +6,7 @@ import (
 	. "github.com/and-hom/wwmap/lib/geo"
 	"github.com/and-hom/wwmap/lib/model"
 	"math"
+	"strconv"
 	"time"
 )
 
@@ -27,6 +28,18 @@ type RiverTitle struct {
 	Aliases []string               `json:"aliases"`
 	Props   map[string]interface{} `json:"props"`
 	Visible bool                   `json:"visible"`
+}
+
+func (this RiverTitle) GetSensorIds() []string {
+	sensorIdArr, exists := this.Props["vodinfo_sensors"]
+	if !exists {
+		return []string{}
+	}
+	sensorIds := make([]string, 0, len(sensorIdArr.([]interface{})))
+	for _, id := range sensorIdArr.([]interface{}) {
+		sensorIds = append(sensorIds, strconv.Itoa(int(id.(float64))))
+	}
+	return sensorIds
 }
 
 type RiverWithRegion struct {
@@ -257,6 +270,7 @@ const (
 )
 
 const IMG_SOURCE_WWMAP string = "wwmap"
+const IMG_WATER_LEVEL_MANUAL string = "0"
 
 type Img struct {
 	Id               int64           `json:"id"`
@@ -274,7 +288,7 @@ type Img struct {
 	MainImage        bool            `json:"main_image"`
 	Date             *time.Time      `json:"date"`
 	DateLevelUpdated time.Time       `json:"-"`
-	Level            map[int64]uint8 `json:"level"`
+	Level            map[string]int8 `json:"level"`
 }
 
 func GetImgType(_type string) ImageType {
@@ -438,6 +452,12 @@ type Meteo struct {
 }
 
 const NAN_LEVEL = math.MinInt32
+const LEVEL_GRADUATION int = 4
+
+type LevelSensor struct {
+	Id string                `json:"id"`
+	L  [LEVEL_GRADUATION]int `json:"l"`
+}
 
 type Level struct {
 	Id        int64    `json:"id,omitempty"`

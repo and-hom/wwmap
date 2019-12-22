@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	log "github.com/Sirupsen/logrus"
+	"github.com/and-hom/wwmap/cron/vodinfo-eye/graduation"
 	"github.com/and-hom/wwmap/lib/config"
 	"github.com/and-hom/wwmap/lib/dao"
 	"github.com/pkg/errors"
@@ -29,6 +30,11 @@ func main() {
 
 	riverDao := dao.NewRiverPostgresDao(storage)
 	levelDao := dao.NewLevelPostgresDao(storage)
+	levelSensorDao := dao.NewLevelSensorPostgresDao(storage)
+	graduator, err := graduation.NewPercentileGladiator(0.1, 0.1)
+	if err != nil {
+		log.Fatal("Can't initialize graduator: ", err)
+	}
 
 	client := http.Client{
 		Timeout: 4 * time.Second,
@@ -63,12 +69,19 @@ func main() {
 	}
 
 	for sensorId, _ := range sensorIds {
+		log.Infof("Fetch level data for sensor %s", sensorId)
+
 		todayLevel := dao.NAN_LEVEL
 		calibrated, err := LoadImage(sensorId, &client, &patternMatcher)
 		if err != nil {
 			log.Error(err)
 		} else {
 			todayLevel = calibrated.GetLevelValue(DetectLine)
+		}
+
+		err = levelSensorDao.CreateIfMissing(sensorId)
+		if err != nil {
+			log.Warn("Can't check level sensor and create if missing ", err)
 		}
 
 		now := time.Now()
@@ -79,7 +92,7 @@ func main() {
 			Level:     todayLevel,
 		})
 		if err != nil {
-			log.Errorf("Can't insert level value for %d: %v", sensorId, err)
+			log.Errorf("Can't insert level value for %s: %v", sensorId, err)
 			continue
 		}
 
@@ -94,9 +107,11 @@ func main() {
 					Level:     int(yestL),
 				})
 				if err != nil {
-					log.Errorf("Can't insert level value for %d: %v", sensorId, err)
+					log.Errorf("Can't insert level value for %s: %v", sensorId, err)
 					continue
 				}
+
+				graduation.ReCalculateSensorMinMax(graduator, levelSensorDao, levelDao, sensorId)
 			}
 		}
 	}

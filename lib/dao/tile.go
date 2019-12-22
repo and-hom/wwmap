@@ -192,7 +192,7 @@ func (this *tileStorage) listRivers(rows *sql.Rows) ([]RiverWithSpots, error) {
 				}
 				if img.DatePublished != img.DateLevelUpdated {
 					for sensorId := range img.Level {
-						if sensorId > 0 {
+						if sensorId != "0" {
 							delete(img.Level, sensorId)
 						}
 					}

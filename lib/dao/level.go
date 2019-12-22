@@ -8,18 +8,22 @@ import (
 
 func NewLevelPostgresDao(postgresStorage PostgresStorage) LevelDao {
 	return &levelStorage{
-		PostgresStorage:  postgresStorage,
-		insertQuery:      queries.SqlQuery("level", "insert"),
-		listQuery:        queries.SqlQuery("level", "list-one"),
-		removeNullsQuery: queries.SqlQuery("level", "remove-nulls"),
+		PostgresStorage:           postgresStorage,
+		insertQuery:               queries.SqlQuery("level", "insert"),
+		latestNotNullForDateQuery: queries.SqlQuery("level", "latest-not-null-for-date"),
+		listQuery:                 queries.SqlQuery("level", "list-one"),
+		listBySensorQuery:         queries.SqlQuery("level", "list-by-sensor"),
+		removeNullsQuery:          queries.SqlQuery("level", "remove-nulls"),
 	}
 }
 
 type levelStorage struct {
 	PostgresStorage
-	insertQuery      string
-	listQuery        string
-	removeNullsQuery string
+	insertQuery               string
+	latestNotNullForDateQuery string
+	listQuery                 string
+	listBySensorQuery         string
+	removeNullsQuery          string
 }
 
 func (this levelStorage) Insert(entry Level) error {
@@ -48,6 +52,22 @@ func (this levelStorage) List(fromDate JSONDate) (map[string][]Level, error) {
 
 func (this levelStorage) RemoveNullsBefore(beforeDate JSONDate) error {
 	return this.performUpdates(this.removeNullsQuery, dateToUpdateParams, time.Time(beforeDate))
+}
+
+func (this levelStorage) GetDailyLevelBetweenDates(sensorId string, from time.Time, to time.Time) ([]Level, error) {
+	result, err := this.doFindList(this.latestNotNullForDateQuery, scanLevel, sensorId, from, to)
+	if err != nil {
+		return []Level{}, err
+	}
+	return result.([]Level), err
+}
+
+func (this levelStorage) ListForSensor(sensorId string) ([]Level, error) {
+	lst, err := this.doFindList(this.listBySensorQuery, scanLevel, sensorId)
+	if err != nil {
+		return []Level{}, err
+	}
+	return lst.([]Level), nil
 }
 
 func dateToUpdateParams(date interface{}) ([]interface{}, error) {

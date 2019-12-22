@@ -17,6 +17,7 @@ func NewRiverPostgresDao(postgresStorage PostgresStorage) RiverDao {
 		findByTagsQuery:         queries.SqlQuery("river", "find-by-tags"),
 		insideBoundsQuery:       queries.SqlQuery("river", "inside-bounds"),
 		byIdQuery:               queries.SqlQuery("river", "by-id"),
+		forImgQuery:             queries.SqlQuery("river", "for-image"),
 		listAllQuery:            queries.SqlQuery("river", "all"),
 		listByCountryQuery:      queries.SqlQuery("river", "by-country"),
 		listByCountryFullQuery:  queries.SqlQuery("river", "by-country-full"),
@@ -39,6 +40,7 @@ type riverStorage struct {
 	findByTagsQuery         string
 	insideBoundsQuery       string
 	byIdQuery               string
+	forImgQuery             string
 	listAllQuery            string
 	listByCountryQuery      string
 	listByCountryFullQuery  string
@@ -73,6 +75,17 @@ func (this riverStorage) Find(id int64) (River, error) {
 	}
 	if !found {
 		return River{}, fmt.Errorf("River with id %d not found", id)
+	}
+	return r.(River), nil
+}
+
+func (this riverStorage) FindForImage(imgId int64) (River, error) {
+	r, found, err := this.doFindAndReturn(this.forImgQuery, riverMapperFull, imgId)
+	if err != nil {
+		return River{}, err
+	}
+	if !found {
+		return River{}, fmt.Errorf("River for image with id %d not found", imgId)
 	}
 	return r.(River), nil
 }

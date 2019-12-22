@@ -10,3 +10,13 @@ UPDATE river
 SET props = props - 'vodinfo_sensor' ||
             jsonb_build_object('vodinfo_sensors', jsonb_build_array(props -> 'vodinfo_sensor'))
 WHERE props ? 'vodinfo_sensor';
+
+CREATE TABLE level_sensor (
+    id CHARACTER VARYING(16) PRIMARY KEY,
+    l0 INT NOT NULL,
+    l1 INT NOT NULL CHECK ( l1>=l0 ),
+    l2 INT NOT NULL CHECK ( l2>=l1 ),
+    l3 INT NOT NULL CHECK ( l3>=l2 )
+);
+INSERT INTO level_sensor(id,l0,l1,l2,l3) (SELECT DISTINCT sensor_id, 0, 0, 0, 0 FROM level);
+ALTER TABLE level ADD CONSTRAINT level_sensor_id_fk FOREIGN KEY (sensor_id) REFERENCES level_sensor(id);

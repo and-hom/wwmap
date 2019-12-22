@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Sirupsen/logrus"
+	"github.com/and-hom/wwmap/cron/vodinfo-eye/graduation"
 	"github.com/and-hom/wwmap/lib/blob"
 	"github.com/and-hom/wwmap/lib/dao"
 	. "github.com/and-hom/wwmap/lib/handler"
@@ -32,6 +33,8 @@ const (
 
 type ImgHandler struct {
 	App
+	LevelDao          dao.LevelDao
+	LevelSensorDao    dao.LevelSensorDao
 	ImgStorage        blob.BlobStorage
 	PreviewImgStorage blob.BlobStorage
 }
@@ -50,6 +53,10 @@ func (this *ImgHandler) Init() {
 		Post: this.ForRoles(this.SetEnabled, dao.ADMIN, dao.EDITOR)})
 	this.Register("/spot/{spotId}/img/{imgId}/date", HandlerFunctions{
 		Post: this.ForRoles(this.SetDate, dao.ADMIN, dao.EDITOR)})
+	this.Register("/spot/{spotId}/img/{imgId}/manual-level", HandlerFunctions{
+		Post:   this.ForRoles(this.SetManualLevel, dao.ADMIN, dao.EDITOR),
+		Delete: this.ForRoles(this.ResetManualLevel, dao.ADMIN, dao.EDITOR),
+	})
 	this.Register("/spot/{spotId}/preview", HandlerFunctions{Get: this.GetPreview,
 		Post:   this.ForRoles(this.SetPreview, dao.ADMIN, dao.EDITOR),
 		Delete: this.ForRoles(this.DropPreview, dao.ADMIN, dao.EDITOR)})
@@ -288,11 +295,6 @@ func (this *ImgHandler) SetEnabled(w http.ResponseWriter, req *http.Request) {
 
 func (this *ImgHandler) SetDate(w http.ResponseWriter, req *http.Request) {
 	pathParams := mux.Vars(req)
-	spotId, err := strconv.ParseInt(pathParams["spotId"], 10, 64)
-	if err != nil {
-		OnError(w, err, "Can not parse id", http.StatusBadRequest)
-		return
-	}
 	imgIdStr := pathParams["imgId"]
 	imgId, err := strconv.ParseInt(imgIdStr, 10, 64)
 	if err != nil {
@@ -307,15 +309,86 @@ func (this *ImgHandler) SetDate(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err = this.ImgDao.SetDate(imgId, date)
+	river, err := this.RiverDao.FindForImage(imgId)
+	if err != nil {
+		OnError500(w, err, fmt.Sprintf("Can not select river for image: id=%d", imgId))
+		return
+	}
+
+	img, found, err := this.ImgDao.Find(imgId)
+	if err != nil {
+		OnError500(w, err, fmt.Sprintf("Can not select image: id=%d", imgId))
+		return
+	}
+	if !found {
+		OnError(w, err, fmt.Sprintf("Can not find image: id=%d", imgId), http.StatusNotFound)
+		return
+	}
+
+	manualLevel, found := img.Level[dao.IMG_WATER_LEVEL_MANUAL]
+	if !found {
+		manualLevel = graduation.NO_LEVEL_FOR_DATE
+	}
+
+	sensorIds := river.GetSensorIds()
+	level := graduation.GetLevelBySensors(this.LevelSensorDao, this.LevelDao, sensorIds, date, 1, manualLevel)
+
+	err = this.ImgDao.SetDateAndLevel(imgId, date, level)
 	if err != nil {
 		OnError500(w, err, "Can not set image date")
 		return
 	}
 
-	this.listImagesForSpot(w, spotId, getImgType(req))
+	this.JsonAnswer(w, level)
 
 	this.LogUserEvent(req, IMAGE_LOG_ENTRY_TYPE, imgId, dao.ENTRY_TYPE_MODIFY, fmt.Sprintf("date=%v", date))
+}
+
+func (this *ImgHandler) SetManualLevel(w http.ResponseWriter, req *http.Request) {
+	pathParams := mux.Vars(req)
+	imgIdStr := pathParams["imgId"]
+	imgId, err := strconv.ParseInt(imgIdStr, 10, 64)
+	if err != nil {
+		OnError(w, err, "Can not parse img id", http.StatusBadRequest)
+		return
+	}
+
+	level := int8(0)
+	body, err := decodeJsonBody(req, &level)
+	if err != nil {
+		OnError(w, err, "Can not unmarshal request body: "+body, http.StatusBadRequest)
+		return
+	}
+
+	levels, err := this.ImgDao.SetManualLevel(imgId, level)
+	if err != nil {
+		OnError500(w, err, "Can not set image manual level")
+		return
+	}
+
+	this.JsonAnswer(w, levels)
+
+	this.LogUserEvent(req, IMAGE_LOG_ENTRY_TYPE, imgId, dao.ENTRY_TYPE_MODIFY, fmt.Sprintf("manual level=%v", level))
+}
+
+func (this *ImgHandler) ResetManualLevel(w http.ResponseWriter, req *http.Request) {
+	pathParams := mux.Vars(req)
+	imgIdStr := pathParams["imgId"]
+	imgId, err := strconv.ParseInt(imgIdStr, 10, 64)
+	if err != nil {
+		OnError(w, err, "Can not parse img id", http.StatusBadRequest)
+		return
+	}
+
+	levels, err := this.ImgDao.ResetManualLevel(imgId)
+	if err != nil {
+		OnError500(w, err, "Can not set image manual level")
+		return
+	}
+
+	this.JsonAnswer(w, levels)
+
+	this.LogUserEvent(req, IMAGE_LOG_ENTRY_TYPE, imgId, dao.ENTRY_TYPE_MODIFY, "reset manual level")
 }
 
 func (this *ImgHandler) SetPreview(w http.ResponseWriter, req *http.Request) {

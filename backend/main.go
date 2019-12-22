@@ -40,6 +40,7 @@ func main() {
 	waterWayDao := NewWaterWayPostgresDao(storage)
 	waterWayRefDao := NewWaterWayRefPostgresDao(storage)
 	levelDao := NewLevelPostgresDao(storage)
+	levelSensorDao := NewLevelSensorPostgresDao(storage)
 	dbVersionDao := NewDbVersionPostgresDao(storage)
 
 	clusterMaker := clustering.NewClusterMaker(configuration.ClusterizationParams)
@@ -110,6 +111,8 @@ func main() {
 		},
 		&handler.ImgHandler{
 			App:               app,
+			LevelDao:          levelDao,
+			LevelSensorDao:    levelSensorDao,
 			ImgStorage:        imgStorage,
 			PreviewImgStorage: imgPreviewStorage,
 		},

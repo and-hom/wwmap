@@ -17,45 +17,49 @@ var zeroDate = util.ZeroDateUTC()
 
 type imgStorage struct {
 	PostgresStorage
-	upsertQuery          string
-	findQuery            string
-	listQuery            string
-	listExtQuery         string
-	listAllBySpotQuery   string
-	listAllByRiverQuery  string
-	listMainByRiverQuery string
-	insertLocalQuery     string
-	deleteQuery          string
-	setEnabledQuery      string
-	getMainForSpotQuery  string
-	setMainQuery         string
-	dropMainForSpotQuery string
-	setDateQuery         string
-	deleteForSpot        string
-	deleteForRiver       string
-	parentIds            string
+	upsertQuery           string
+	findQuery             string
+	listQuery             string
+	listExtQuery          string
+	listAllBySpotQuery    string
+	listAllByRiverQuery   string
+	listMainByRiverQuery  string
+	insertLocalQuery      string
+	deleteQuery           string
+	setEnabledQuery       string
+	getMainForSpotQuery   string
+	setMainQuery          string
+	dropMainForSpotQuery  string
+	setDateQuery          string
+	setManualLevelQuery   string
+	resetManualLevelQuery string
+	deleteForSpot         string
+	deleteForRiver        string
+	parentIds             string
 }
 
 func NewImgPostgresDao(postgresStorage PostgresStorage) ImgDao {
 	return imgStorage{
-		PostgresStorage:      postgresStorage,
-		upsertQuery:          queries.SqlQuery("img", "upsert"),
-		findQuery:            queries.SqlQuery("img", "by-id"),
-		listQuery:            queries.SqlQuery("img", "list"),
-		listExtQuery:         queries.SqlQuery("img", "list-ext"),
-		listAllBySpotQuery:   queries.SqlQuery("img", "list-all-by-spot"),
-		listAllByRiverQuery:  queries.SqlQuery("img", "list-all-by-river"),
-		listMainByRiverQuery: queries.SqlQuery("img", "list-main-by-river"),
-		insertLocalQuery:     queries.SqlQuery("img", "insert-local"),
-		deleteQuery:          queries.SqlQuery("img", "delete"),
-		setEnabledQuery:      queries.SqlQuery("img", "set-enabled"),
-		getMainForSpotQuery:  queries.SqlQuery("img", "get-main"),
-		setMainQuery:         queries.SqlQuery("img", "set-main"),
-		dropMainForSpotQuery: queries.SqlQuery("img", "drop-main-for-spot"),
-		setDateQuery:         queries.SqlQuery("img", "set-date"),
-		deleteForSpot:        queries.SqlQuery("img", "delete-by-spot"),
-		deleteForRiver:       queries.SqlQuery("img", "delete-by-river"),
-		parentIds:            queries.SqlQuery("img", "parent-ids"),
+		PostgresStorage:       postgresStorage,
+		upsertQuery:           queries.SqlQuery("img", "upsert"),
+		findQuery:             queries.SqlQuery("img", "by-id"),
+		listQuery:             queries.SqlQuery("img", "list"),
+		listExtQuery:          queries.SqlQuery("img", "list-ext"),
+		listAllBySpotQuery:    queries.SqlQuery("img", "list-all-by-spot"),
+		listAllByRiverQuery:   queries.SqlQuery("img", "list-all-by-river"),
+		listMainByRiverQuery:  queries.SqlQuery("img", "list-main-by-river"),
+		insertLocalQuery:      queries.SqlQuery("img", "insert-local"),
+		deleteQuery:           queries.SqlQuery("img", "delete"),
+		setEnabledQuery:       queries.SqlQuery("img", "set-enabled"),
+		getMainForSpotQuery:   queries.SqlQuery("img", "get-main"),
+		setMainQuery:          queries.SqlQuery("img", "set-main"),
+		dropMainForSpotQuery:  queries.SqlQuery("img", "drop-main-for-spot"),
+		setDateQuery:          queries.SqlQuery("img", "set-date"),
+		setManualLevelQuery:   queries.SqlQuery("img", "set-manual-level"),
+		resetManualLevelQuery: queries.SqlQuery("img", "reset-manual-level"),
+		deleteForSpot:         queries.SqlQuery("img", "delete-by-spot"),
+		deleteForRiver:        queries.SqlQuery("img", "delete-by-river"),
+		parentIds:             queries.SqlQuery("img", "parent-ids"),
 	}
 }
 
@@ -231,14 +235,48 @@ func (this imgStorage) DropMainForSpot(spotId int64) error {
 	return this.performUpdates(this.dropMainForSpotQuery, IdMapper, spotId)
 }
 
-func (this imgStorage) SetDate(id int64, date time.Time) error {
+func (this imgStorage) SetDateAndLevel(id int64, date time.Time, level map[string]int8) error {
 	var nullableDate pq.NullTime
 	if date == zeroDate {
 		nullableDate = pq.NullTime{Valid: false}
 	} else {
 		nullableDate = pq.NullTime{Time: date, Valid: true}
 	}
-	return this.performUpdates(this.setDateQuery, ArrayMapper, []interface{}{id, nullableDate})
+
+	levelB, err := json.Marshal(level)
+	if err != nil {
+		return err
+	}
+
+	return this.performUpdates(this.setDateQuery, ArrayMapper, []interface{}{id, nullableDate, string(levelB)})
+}
+
+func (this imgStorage) SetManualLevel(id int64, level int8) (map[string]int8, error) {
+	vals, err := this.updateReturningColumns(this.setManualLevelQuery, ArrayMapper, true, []interface{}{id, int(level)})
+	if err != nil {
+		return nil, err
+	}
+	var levels map[string]int8
+	levelB := []byte(*(vals[0][0].(*string)))
+	err = json.Unmarshal(levelB, &levels)
+	if err != nil {
+		return nil, err
+	}
+	return levels, nil
+}
+
+func (this imgStorage) ResetManualLevel(id int64) (map[string]int8, error) {
+	vals, err := this.updateReturningColumns(this.resetManualLevelQuery, IdMapper, true, id)
+	if err != nil {
+		return nil, err
+	}
+	var levels map[string]int8
+	levelB := []byte(*(vals[0][0].(*string)))
+	err = json.Unmarshal(levelB, &levels)
+	if err != nil {
+		return nil, err
+	}
+	return levels, nil
 }
 
 func (this imgStorage) RemoveBySpot(spotId int64, tx interface{}) error {

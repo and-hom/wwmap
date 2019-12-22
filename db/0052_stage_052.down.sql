@@ -1,3 +1,6 @@
+ALTER TABLE level DROP CONSTRAINT level_sensor_id_fk;
+DROP TABLE level_sensor;
+
 ALTER TABLE image DROP COLUMN date_level_updated;
 ALTER TABLE image DROP COLUMN date;
 ALTER TABLE image DROP COLUMN level;

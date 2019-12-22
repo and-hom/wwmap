@@ -64,7 +64,19 @@ UPDATE image SET
 UPDATE image SET main_image=FALSE WHERE white_water_rapid_id=$1
 
 --@set-date
-UPDATE image SET date=$2 WHERE id=$1
+UPDATE image SET date=$2, level=$3 WHERE id=$1
+
+--@set-manual-level
+UPDATE image
+SET level=level || jsonb_build_object('0', $2::INT)
+WHERE id = $1
+RETURNING level::varchar
+
+    --@reset-manual-level
+UPDATE image
+SET level=level-'0'
+WHERE id = $1
+RETURNING level::varchar
 
 --@parent-ids
 SELECT id AS image_id, white_water_rapid_id AS spot_id FROM image WHERE image.id = ANY($1)

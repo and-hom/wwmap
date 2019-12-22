@@ -129,6 +129,14 @@ function setImageEnabled(spotId, id, enabled, _type) {
     return prepareImgs(doPostJsonSync(backendApiBase + "/spot/" + spotId + "/img/" + id + "/enabled?type=" + _type, enabled, true))
 }
 
+function setManualLevel(spotId, id, l) {
+    return doPostJsonSync(backendApiBase + "/spot/" + spotId + "/img/" + id + "/manual-level", l, true)
+}
+
+function resetManualLevel(spotId, id, l) {
+    return doDeleteWithJsonRespSync(backendApiBase + "/spot/" + spotId + "/img/" + id + "/manual-level",true)
+}
+
 function setImageDate(spotId, id, date) {
     return prepareImgs(doPostJsonSync(backendApiBase + "/spot/" + spotId + "/img/" + id + "/date", date, true))
 }
