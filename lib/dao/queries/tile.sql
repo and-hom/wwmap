@@ -13,7 +13,7 @@ SELECT (river).id, (river).title, CASE (region).fake WHEN TRUE THEN 0 ELSE (regi
         ST_AsGeoJSON((white_water_rapid).point), (white_water_rapid).category, (white_water_rapid).link, (white_water_rapid).props,
         COALESCE((image).id, -1), COALESCE((image).source, ''), COALESCE((image).remote_id, ''), COALESCE((image).url, ''), COALESCE((image).preview_url, ''),
         COALESCE((image).date_published, to_timestamp(0)), COALESCE((image)."type", ''),
-       COALESCE((image).date_level_updated, to_timestamp(0)), (image).level
+       (image).date, COALESCE((image).date_level_updated, to_timestamp(0)), (image).level
 FROM (
     SELECT
             region, river, white_water_rapid, image,

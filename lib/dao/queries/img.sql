@@ -63,8 +63,8 @@ UPDATE image SET
 --@drop-main-for-spot
 UPDATE image SET main_image=FALSE WHERE white_water_rapid_id=$1
 
---@set-date
-UPDATE image SET date=$2, level=$3 WHERE id=$1
+--@set-level-and-date
+UPDATE image SET date=$2, level=$3, date_level_updated=$2 WHERE id=$1
 
 --@set-manual-level
 UPDATE image
