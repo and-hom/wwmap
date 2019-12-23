@@ -207,4 +207,6 @@ html.lb-disable-scrolling {
 .lb-indicators {
     display: none;
     margin-right: 11px;
+    display: flex;
+    align-items: flex-start;
 }

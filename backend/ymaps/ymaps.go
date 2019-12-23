@@ -34,13 +34,28 @@ func mkFeature(point Spot, river RiverWithSpots, withDescription bool, resources
 		} else {
 			levelStr = string(levelB)
 		}
+		avgLevel := 0
+		cnt := 0
+		for s, v := range img.Level {
+			if s != "0" && v > 0 {
+				avgLevel += int(v)
+				cnt += 1
+			}
+		}
+
+		if cnt != 0 {
+			avgLevel /= cnt
+		}
+
 		imgs[i] = Preview{
 			Id:         img.Id,
 			PreviewUrl: img.PreviewUrl,
 			Url:        img.Url,
 			Source:     img.Source,
 			RemoteId:   img.RemoteId,
-			Level:      levelStr,
+			LevelStr:   levelStr,
+			Level:      lvlMap,
+			AvgLevel:   avgLevel,
 		}
 	}
 	properties := FeatureProperties{

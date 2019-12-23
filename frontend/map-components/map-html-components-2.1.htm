@@ -99,7 +99,16 @@
                 <a target="_blank" href="https://www.youtube.com/watch?v={{img.remote_id}}" class="wwmap-play-btn"></a>
             </div>
             {%else%}
-            <a data-id="{{img.id}}" data-level="{{img.level}}" data-lightbox="img-set-{{properties.id}}" target="_blank" href="{{img.url}}"><img class="wwmap-gallery-img" src="{{img.preview_url}}"/></a>
+            <a data-id="{{img.id}}" data-level="{{img.level_str}}" data-lightbox="img-set-{{properties.id}}" target="_blank" href="{{img.url}}">
+            <div class="wwmap-gallery-img">
+                <img style="width:100%;height:100%" src="{{img.preview_url}}"/>
+                {%if img.level["0"] %}
+                    <img class="wwmap-gallery-indicator" src="img/lvl{{img.level["0"]}}.png" title="Уровень воды {{img.level["0"]}}/5"/>
+                {%else%}{%if img.avg_level!=0 %}
+                    <img class="wwmap-gallery-indicator" src="img/lvl{{img.avg_level}}.png" title="Уровень воды {{img.avg_level}}/5"/>
+                {%endif%}{%endif%}
+            </div>
+            </a>
             {%endif%}
             {% endfor %}
         </div>
