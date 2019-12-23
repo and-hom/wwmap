@@ -132,7 +132,6 @@
 
     Vue.filter('formatDateTimeStr', function(value) {
         if (value) {
-            let d = new Date(value);
             return moment(String(value)).format('YYYY-MM-DD HH:mm:ss')
         }
     });

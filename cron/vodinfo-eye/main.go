@@ -62,7 +62,7 @@ func main() {
 		}
 	}
 
-	yesterdayLevels, err := levelDao.List(dao.JSONDate(time.Now().Add(-24 * time.Hour)))
+	yesterdayLevels, err := levelDao.List(time.Now().Add(-24*time.Hour), time.Now())
 	if err != nil {
 		log.Warn("Can't find yesterday levels", err)
 		yesterdayLevels = make(map[string][]dao.Level)

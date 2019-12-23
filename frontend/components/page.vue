@@ -101,8 +101,12 @@
                                 title: "Пользователи",
                             },
                             {
-                                href: "dashboard.htm",
-                                title: "Панель показателей",
+                                href: "level.htm",
+                                title: "Уровни воды",
+                            },
+                            {
+                                href: "sites.htm",
+                                title: "Сайты, на которых размещена карта",
                             },
                             {
                                 href: "log.htm",

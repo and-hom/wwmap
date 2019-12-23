@@ -117,8 +117,9 @@ func main() {
 			PreviewImgStorage: imgPreviewStorage,
 		},
 		&handler.DashboardHandler{
-			App:      app,
-			LevelDao: levelDao,
+			App:            app,
+			LevelDao:       levelDao,
+			LevelSensorDao: levelSensorDao,
 		},
 		handler.CreateSystemHandler(&app, dbVersionDao, version),
 		&handler.MeteoHandler{app},

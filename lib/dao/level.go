@@ -38,8 +38,8 @@ func (this levelStorage) Insert(entry Level) error {
 	return err
 }
 
-func (this levelStorage) List(fromDate JSONDate) (map[string][]Level, error) {
-	lst, err := this.doFindList(this.listQuery, scanLevel, time.Time(fromDate))
+func (this levelStorage) List(fromDate time.Time, toDate time.Time) (map[string][]Level, error) {
+	lst, err := this.doFindList(this.listQuery, scanLevel, fromDate, toDate)
 	if err != nil {
 		return nil, err
 	}

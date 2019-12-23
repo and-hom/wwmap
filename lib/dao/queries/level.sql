@@ -4,7 +4,7 @@ INSERT INTO level(sensor_id, "date", hour_of_day, level) VALUES ($1,$2,$3,$4) RE
 SELECT id, sensor_id, "date", hour_of_day, level FROM
   (SELECT id, sensor_id, "date", hour_of_day, level,
           ROW_NUMBER() OVER (PARTITION BY sensor_id, date ORDER BY hour_of_day DESC) AS rn
-  FROM level WHERE level IS NOT NULL AND date>=$1)sq
+  FROM level WHERE level IS NOT NULL AND date>=$1 AND date<=$2)sq
  WHERE rn=1 ORDER BY sensor_id, date DESC
 --@remove-nulls
 DELETE FROM level WHERE "level" IS NULL AND "date"<$1
