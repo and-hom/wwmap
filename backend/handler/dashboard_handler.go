@@ -39,6 +39,7 @@ func (this *DashboardHandler) Levels(w http.ResponseWriter, req *http.Request) {
 	rivers, err := this.RiverDao.ListAll()
 	if err != nil {
 		OnError500(w, err, "Can not get all rivers")
+		return
 	}
 
 	riversBySensor := make(map[string][]dao.RiverTitle)
@@ -56,15 +57,18 @@ func (this *DashboardHandler) Levels(w http.ResponseWriter, req *http.Request) {
 	fromDate, err := parseDate("from", req, -DEFAULT_PLOT_DAYS)
 	if err != nil {
 		OnError(w, err, "Can't parse 'from' date", http.StatusBadRequest)
+		return
 	}
 
 	toDate, err := parseDate("to", req, 0)
 	if err != nil {
 		OnError(w, err, "Can't parse 'to' date", http.StatusBadRequest)
+		return
 	}
 
 	if fromDate.After(toDate) {
 		OnError(w, err, fmt.Sprintf("fromDate %s is after toDate %s", fromDate, toDate), http.StatusBadRequest)
+		return
 	}
 
 	days := int64(toDate.Sub(fromDate).Hours()/24 + 1)
