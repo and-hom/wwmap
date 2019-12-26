@@ -5,6 +5,7 @@ import (
 	"github.com/and-hom/wwmap/lib/dao"
 	. "github.com/and-hom/wwmap/lib/handler"
 	. "github.com/and-hom/wwmap/lib/http"
+	"github.com/and-hom/wwmap/lib/util"
 	"net/http"
 	"time"
 )
@@ -68,7 +69,7 @@ func (this *DashboardHandler) Levels(w http.ResponseWriter, req *http.Request) {
 
 	days := int64(toDate.Sub(fromDate).Hours()/24 + 1)
 
-	levelData, err := this.LevelDao.List(fromDate, toDate)
+	levelData, err := this.LevelDao.ListBySensorAndDate(fromDate, toDate)
 	if err != nil {
 		OnError500(w, err, "Can't list sensor data")
 	}
@@ -97,15 +98,16 @@ func (this *DashboardHandler) Levels(w http.ResponseWriter, req *http.Request) {
 		}
 		for i := int64(0); i < days; i++ {
 			hoursOffset := time.Duration(int64(time.Hour) * 24 * (1 + i - days))
-			date := dao.JSONDate(toDate.Add(hoursOffset))
-			labels[i] = date.String()
-			var levelValue *int
-			for j := 0; j < len(data); j++ {
-				if data[j].Date.String() == date.String() {
-					levelValue = &data[j].Level
-					break
-				}
+			date := util.ToDateInDefaultZone(toDate.Add(hoursOffset))
+			dateStr := util.FormatDate(date)
+
+			var levelValue *int = nil
+			l, found := data[dateStr]
+			if found {
+				levelValue = &l.Level
 			}
+
+			labels[i] = dateStr
 			line.Data = append(line.Data, levelValue)
 		}
 

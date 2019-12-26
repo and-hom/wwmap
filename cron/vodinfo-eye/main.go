@@ -6,6 +6,7 @@ import (
 	"github.com/and-hom/wwmap/cron/vodinfo-eye/graduation"
 	"github.com/and-hom/wwmap/lib/config"
 	"github.com/and-hom/wwmap/lib/dao"
+	"github.com/and-hom/wwmap/lib/util"
 	"github.com/pkg/errors"
 	"image"
 	_ "image/jpeg"
@@ -25,24 +26,12 @@ const (
 func main() {
 	log.Infof("Starting wwmap vodinfo import")
 	configuration := config.Load("")
+	configuration.LogLevel = "info"
 	configuration.ChangeLogLevel()
 	storage := dao.NewPostgresStorage(configuration.Db)
-
-	riverDao := dao.NewRiverPostgresDao(storage)
-	levelDao := dao.NewLevelPostgresDao(storage)
-	levelSensorDao := dao.NewLevelSensorPostgresDao(storage)
 	graduator, err := graduation.NewPercentileGladiator(0.1, 0.1)
 	if err != nil {
 		log.Fatal("Can't initialize graduator: ", err)
-	}
-
-	client := http.Client{
-		Timeout: 4 * time.Second,
-	}
-
-	rivers, err := riverDao.ListAll()
-	if err != nil {
-		log.Fatal("Failed to list rivers: ", err)
 	}
 
 	patternMatcher, err := NewPatternMatcher()
@@ -50,44 +39,106 @@ func main() {
 		log.Fatal("Failed to load level value number patterns: ", err)
 	}
 
-	sensorIds := make(map[string]bool)
+	VodinfoLevelRetriever{
+		configuration:  configuration,
+		riverDao:       dao.NewRiverPostgresDao(storage),
+		levelDao:       dao.NewLevelPostgresDao(storage),
+		levelSensorDao: dao.NewLevelSensorPostgresDao(storage),
+		graduator:      graduator,
+		client: http.Client{
+			Timeout: 4 * time.Second,
+		},
+		patternMatcher: patternMatcher,
+		backScanDays:   9,
+	}.doRetrieveLevel()
+}
+
+type VodinfoLevelRetriever struct {
+	configuration  config.Configuration
+	riverDao       dao.RiverDao
+	levelDao       dao.LevelDao
+	levelSensorDao dao.LevelSensorDao
+	graduator      graduation.LevelGraduator
+	client         http.Client
+	patternMatcher PatternMatcher
+	backScanDays   int
+}
+
+func (this VodinfoLevelRetriever) listSensors() []string {
+	log.Info("List used level sensors")
+	rivers, err := this.riverDao.ListAll()
+	if err != nil {
+		log.Fatal("Failed to list rivers: ", err)
+	}
+
+	sensorIdMap := make(map[string]bool)
 	for _, river := range rivers {
 		sensorIdArr, exists := river.Props["vodinfo_sensors"]
 		if !exists {
 			continue
 		}
+		fmt.Println(sensorIdArr)
 		for _, id := range sensorIdArr.([]interface{}) {
 			sensorId := strconv.Itoa(int(id.(float64)))
-			sensorIds[sensorId] = true
+			sensorIdMap[sensorId] = true
 		}
 	}
 
-	yesterdayLevels, err := levelDao.List(time.Now().Add(-24*time.Hour), time.Now())
+	storedSensors, err := this.levelSensorDao.List()
+	if err != nil {
+		log.Fatal("Can't list sensors in db: ", err)
+	}
+	for _, s := range storedSensors {
+		sensorIdMap[s.Id] = true
+	}
+
+	sensorIds := make([]string, 0, len(sensorIdMap))
+	for k, _ := range sensorIdMap {
+		sensorIds = append(sensorIds, k)
+	}
+	fmt.Println(storedSensors)
+	log.Info("SensorIds: ", sensorIds)
+
+	return sensorIds
+}
+
+func (this VodinfoLevelRetriever) doRetrieveLevel() {
+	sensorIds := this.listSensors()
+
+	t1 := util.ToDateInDefaultZone(time.Now().Add(-24 * time.Duration(this.backScanDays) * time.Hour))
+	t2 := util.ToDateInDefaultZone(time.Now())
+	previousDaysLevelsBySensor, err := this.levelDao.ListBySensorAndDate(t1, t2)
 	if err != nil {
 		log.Warn("Can't find yesterday levels", err)
-		yesterdayLevels = make(map[string][]dao.Level)
+		previousDaysLevelsBySensor = make(map[string]map[string]dao.Level)
 	}
 
-	for sensorId, _ := range sensorIds {
-		log.Infof("Fetch level data for sensor %s", sensorId)
-
-		todayLevel := dao.NAN_LEVEL
-		calibrated, err := LoadImage(sensorId, &client, &patternMatcher)
-		if err != nil {
-			log.Error(err)
-		} else {
-			todayLevel = calibrated.GetLevelValue(DetectLine)
-		}
-
-		err = levelSensorDao.CreateIfMissing(sensorId)
+	for _, sensorId := range sensorIds {
+		log.Infof("Try to sensor %s row if missing", sensorId)
+		err = this.levelSensorDao.CreateIfMissing(sensorId)
 		if err != nil {
 			log.Warn("Can't check level sensor and create if missing ", err)
 		}
 
-		now := time.Now()
-		err = levelDao.Insert(dao.Level{
+		log.Infof("Fetch and calibrate level data for sensor %s", sensorId)
+		todayLevel := dao.NAN_LEVEL
+		calibrated, err := LoadImage(sensorId, &this.client, &this.patternMatcher)
+		if err != nil {
+			log.Error(err)
+			continue
+		}
+
+		if !calibrated.Ok {
+			log.Errorf("Image calibration for sensor %s failed", sensorId)
+			continue
+		}
+
+		log.Infof("Detect and save today level value for sensor %s", sensorId)
+		todayLevel = calibrated.GetLevelValue(DetectLine)
+		now := time.Now().In(util.GetDefaultLocation())
+		err = this.levelDao.Insert(dao.Level{
 			SensorId:  sensorId,
-			Date:      dao.JSONDate(now),
+			Date:      dao.JSONDate(now.Truncate(24 * time.Hour)),
 			HourOfDay: int16(now.Hour()),
 			Level:     todayLevel,
 		})
@@ -96,24 +147,41 @@ func main() {
 			continue
 		}
 
-		yestLevel, found := yesterdayLevels[sensorId]
-		if calibrated.Ok && (!found || len(yestLevel) == 0) {
-			// there are no yesterday level data - try to detect
-			if yestL := calibrated.GetLevelValue(DetectYesterdayLine); yestL != dao.NAN_LEVEL {
-				err = levelDao.Insert(dao.Level{
+		log.Infof("Detect missing previous days data for sensor %s", sensorId)
+		dailyLevels, found := previousDaysLevelsBySensor[sensorId]
+		if !found {
+			dailyLevels = make(map[string]dao.Level)
+		}
+		log.Warn("No prev days level data for sensor ", sensorId)
+		for dayOffset := 1; dayOffset <= this.backScanDays; dayOffset++ {
+
+			day := util.ToDateInDefaultZone(time.Now().Add(-24 * time.Duration(dayOffset) * time.Hour))
+			dayStr := util.FormatDate(day)
+			_, found := dailyLevels[dayStr]
+			if found {
+				log.Infof("Level for %s %s already exists", sensorId, dayStr)
+				continue
+			}
+
+			log.Infof("Detect missing level for sensor %s for today-%ddays (%s)", sensorId, dayOffset, day.String())
+			if levelValue := calibrated.GetLevelValue(func(img image.Image) int {
+				return DetectPrevDaysLine(img, dayOffset)
+			}); levelValue != dao.NAN_LEVEL {
+				err = this.levelDao.Insert(dao.Level{
 					SensorId:  sensorId,
-					Date:      dao.JSONDate(now.Add(-24 * time.Hour)),
+					Date:      dao.JSONDate(day),
 					HourOfDay: 25,
-					Level:     int(yestL),
+					Level:     levelValue,
 				})
 				if err != nil {
 					log.Errorf("Can't insert level value for %s: %v", sensorId, err)
 					continue
 				}
-
-				graduation.ReCalculateSensorMinMax(graduator, levelSensorDao, levelDao, sensorId)
 			}
 		}
+
+		log.Infof("Re-graduate sensor %s", sensorId)
+		graduation.ReCalculateSensorMinMax(this.graduator, this.levelSensorDao, this.levelDao, sensorId)
 	}
 }
 

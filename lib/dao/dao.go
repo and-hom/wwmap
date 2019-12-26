@@ -191,7 +191,7 @@ type LevelSensorDao interface {
 
 type LevelDao interface {
 	Insert(level Level) error
-	List(fromDate time.Time, toDate time.Time) (map[string][]Level, error)
+	ListBySensorAndDate(fromDate time.Time, toDate time.Time) (map[string]map[string]Level, error)
 	ListForSensor(sensorId string) ([]Level, error)
 	GetDailyLevelBetweenDates(sensorId string, from time.Time, to time.Time) ([]Level, error)
 	RemoveNullsBefore(fromDate JSONDate) error

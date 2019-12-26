@@ -3,6 +3,7 @@ package dao
 import (
 	"database/sql"
 	"github.com/and-hom/wwmap/lib/dao/queries"
+	"github.com/and-hom/wwmap/lib/util"
 	"time"
 )
 
@@ -38,14 +39,20 @@ func (this levelStorage) Insert(entry Level) error {
 	return err
 }
 
-func (this levelStorage) List(fromDate time.Time, toDate time.Time) (map[string][]Level, error) {
+func (this levelStorage) ListBySensorAndDate(fromDate time.Time, toDate time.Time) (map[string]map[string]Level, error) {
 	lst, err := this.doFindList(this.listQuery, scanLevel, fromDate, toDate)
 	if err != nil {
 		return nil, err
 	}
-	result := make(map[string][]Level)
+	result := make(map[string]map[string]Level)
 	for _, level := range lst.([]Level) {
-		result[level.SensorId] = append(result[level.SensorId], level)
+		lvls, found := result[level.SensorId]
+		if !found {
+			lvls = make(map[string]Level)
+		}
+		t := util.ToDateInDefaultZone(time.Time(level.Date))
+		lvls[util.FormatDate(t)] = level
+		result[level.SensorId] = lvls
 	}
 	return result, nil
 }

@@ -3,6 +3,7 @@ package graduation
 import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/lib/dao"
+	"github.com/and-hom/wwmap/lib/util"
 	"time"
 )
 
@@ -104,7 +105,7 @@ func getLevelValue(levels []dao.Level, date time.Time) int {
 	avg := 0
 	for _, l := range levels {
 		avg += l.Level
-		if time.Time(l.Date).Truncate(day).Equal(date.Truncate(day)) {
+		if util.DateEquals(time.Time(l.Date), date) {
 			return l.Level
 		}
 	}
