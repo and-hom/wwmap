@@ -158,6 +158,8 @@
                 let existing = this.charts[id];
                 if (existing) {
                     existing.data = chartData;
+                    existing.options.scales.yAxes[0].ticks.min = min;
+                    existing.options.scales.yAxes[0].ticks.max = max;
                     existing.update();
                 } else
                     this.charts[id] = new Chart(ctx, {
