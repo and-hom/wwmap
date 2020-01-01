@@ -5,7 +5,21 @@
                     $emit('input', d);
                     $emit('level', levelData)
                 }" :clear-button="true"></datepicker>
-        <div style="margin-top: 7px;" v-for="(value, sensorId) in levelData">
+
+        <div style="margin-top: 10px;">
+            Задать уровень воды на фото вручную:
+            <div>
+                <image-rating src="img/lvl5.png" @rating-selected="manualLevel = $event" style="display: inline-block"
+                              :rating="manualLevel"></image-rating>
+                <div class="vdp-datepicker__clear-button"
+                     style="margin-left: 3px; height: 100%; display: inline-block"
+                     @click.prevent="manualLevel = null">×</div>
+                <div class="wwmap-system-hint" style="width: 300px;">Уровень воды по шкале от 1 до 5. 1 - крайне низкая вода, 5 - сильный паводок. Крестик правее элемента сбрасывает заданное значение.</div>
+            </div>
+        </div>
+
+
+        <div style="margin-top: 12px;" v-for="(value, sensorId) in levelData">
             <svg style="vertical-align: middle" width="40px" height="40px" viewBox="0 0 2 2" class="donut">
                 <title>{{getLevelTitle(value)}}</title>
                 <circle class="donut-ring" cx="1" cy="1" r="0.795774715" :fill="getBaseFillColor(value)"
@@ -29,17 +43,6 @@
         </div>
         <div class="wwmap-system-hint" style="width: 300px;" v-if="Object.keys(levelData).length == 0">
             Нет показаний за выбранную дату. Автоматическая настройка уровня не сработает, но вы можете задать уровень воды вручную.
-        </div>
-        <div style="margin-top: 12px;">
-            Задать уровень воды на фото вручную:
-            <div>
-                <image-rating src="img/lvl5.png" @rating-selected="manualLevel = $event" style="display: inline-block"
-                              :rating="manualLevel"></image-rating>
-                <div class="vdp-datepicker__clear-button"
-                     style="margin-left: 3px; height: 100%; display: inline-block"
-                     @click.prevent="manualLevel = null">×</div>
-                <div class="wwmap-system-hint" style="width: 300px;">Уровень воды по шкале от 1 до 5. 1 - крайне низкая вода, 5 - сильный паводок. Крестик правее элемента сбрасывает заданное значение.</div>
-            </div>
         </div>
     </div>
 </template>
