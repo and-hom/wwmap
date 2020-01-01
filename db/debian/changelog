@@ -1,3 +1,12 @@
+wwmap-db (0.0.28) unstable; urgency=medium
+
+  * #265 Water level for spot
+  * #265 Fix published date type
+  * #265 Set and remove image date
+  * #265 Multiple level sensors per river
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Wed, 01 Jan 2020 19:28:27 +0300
+
 wwmap-db (0.0.27) unstable; urgency=medium
 
   * #209 River tracks simplify tool (works slow, not for server usage) 

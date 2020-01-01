@@ -1,3 +1,10 @@
+wwmap-frontend (0.0.57) unstable; urgency=medium
+
+  * #265 Level page refactoring
+  * #265 Spot photo level  
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Wed, 01 Jan 2020 19:17:32 +0300
+
 wwmap-frontend (0.0.56) unstable; urgency=medium
 
   * #251 Marshruty.ru and TopoMapper.com maps added
