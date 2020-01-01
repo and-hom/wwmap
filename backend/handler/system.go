@@ -43,6 +43,7 @@ func (this *SystemHandler) Log(w http.ResponseWriter, req *http.Request) {
 		lastRows, err := this.ChangesLogDao.ListAll(300)
 		if err != nil {
 			OnError500(w, err, "Can not fetch log entries")
+			return
 		}
 		this.JsonAnswer(w, lastRows)
 		return
@@ -55,6 +56,7 @@ func (this *SystemHandler) Log(w http.ResponseWriter, req *http.Request) {
 	entries, err := this.ChangesLogDao.List(objectType, objectId, 100)
 	if err != nil {
 		OnError500(w, err, "Can not fetch log entries")
+		return
 	}
 	this.JsonAnswer(w, entries)
 }

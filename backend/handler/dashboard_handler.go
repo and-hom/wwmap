@@ -11,7 +11,6 @@ import (
 )
 
 const DEFAULT_PLOT_DAYS = 10
-const DATE_FORMAT string = "2006-01-02"
 
 type DashboardHandler struct {
 	App
@@ -76,11 +75,13 @@ func (this *DashboardHandler) Levels(w http.ResponseWriter, req *http.Request) {
 	levelData, err := this.LevelDao.ListBySensorAndDate(fromDate, toDate)
 	if err != nil {
 		OnError500(w, err, "Can't list sensor data")
+		return
 	}
 
 	levelSensors, err := this.LevelSensorDao.List()
 	if err != nil {
 		OnError500(w, err, "Can't list level sensors")
+		return
 	}
 
 	result := make(map[string]SensorData)
@@ -145,7 +146,7 @@ func (this *DashboardHandler) Levels(w http.ResponseWriter, req *http.Request) {
 func parseDate(paramName string, req *http.Request, defaultOffsetDays int) (time.Time, error) {
 	toDateParam := req.FormValue(paramName)
 	if toDateParam != "" {
-		return time.Parse(DATE_FORMAT, toDateParam)
+		return time.Parse(util.DATE_FORMAT, toDateParam)
 	} else {
 		return time.Now().Add(time.Duration(defaultOffsetDays) * 24 * time.Hour), nil
 	}
