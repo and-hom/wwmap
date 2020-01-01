@@ -99,7 +99,16 @@
                 <a target="_blank" href="https://www.youtube.com/watch?v={{img.remote_id}}" class="wwmap-play-btn"></a>
             </div>
             {%else%}
-            <a data-lightbox="img-set-{{properties.id}}" target="_blank" href="{{img.url}}"><img class="wwmap-gallery-img" src="{{img.preview_url}}"/></a>
+            <a data-id="{{img.id}}" data-level="{{img.level_str}}" data-lightbox="img-set-{{properties.id}}" target="_blank" href="{{img.url}}">
+            <div class="wwmap-gallery-img">
+                <img style="width:100%;height:100%" src="{{img.preview_url}}"/>
+                {%if img.level["0"] %}
+                    <img class="wwmap-gallery-indicator" src="img/lvl{{img.level["0"]}}.png" title="Уровень воды {{img.level["0"]}}/5"/>
+                {%else%}{%if img.avg_level!=0 %}
+                    <img class="wwmap-gallery-indicator" src="img/lvl{{img.avg_level}}.png" title="Уровень воды {{img.avg_level}}/5"/>
+                {%endif%}{%endif%}
+            </div>
+            </a>
             {%endif%}
             {% endfor %}
         </div>
@@ -127,9 +136,11 @@
 <script type="text/x-jquery-tmpl" id="river_desc_template">
     <div class="wwmap-popuptext" style="width:1200px; height:700px;position: relative; overflow-x:hidden;">
         <div style="float:right; width: 45%; height:100%; padding-left: 25px;">
-            {%if props.vodinfo_sensor%}
+            {%if props.vodinfo_sensors%}
             <h3>Уровень воды сейчас</h3>
-            <img src="http://gis.vodinfo.ru/informer/draw/v2_${props.vodinfo_sensor}_400_300_30_ffffff_110_8_7_H_none.png" style="margin-bottom:20px; margin-right:20px;"/>
+                {%each props.vodinfo_sensors%}
+                    <img src="http://gis.vodinfo.ru/informer/draw/v2_${$value}_400_250_30_ffffff_110_8_7_H_none.png" style="margin-bottom:20px; margin-right:20px;"/>
+                {%/each%}
             {%/if%}
             <h3>Отчёты</h3>
             <div class="wwmap-report-list">
@@ -152,7 +163,7 @@
         </div>
         <div style="margin-bottom: 20px;">
             {%each imgs%}
-            <a data-lightbox="river-img-set-{{id}}" data-title="${spot_title}" data-alt="${spot_title}" target="_blank" href="${url}"><img class="wwmap-gallery-img" src="${preview_url}" title="${spot_title}" alt="${spot_title}"/></a>
+            <a data-id="${id}" data-level="${level}" data-lightbox="river-img-set" data-title="${spot_title}" data-alt="${spot_title}" target="_blank" href="${url}"><img class="wwmap-gallery-img" src="${preview_url}" title="${spot_title}" alt="${spot_title}"/></a>
             {%/each%}
         </div>
         <div style="margin-bottom: 20px;">

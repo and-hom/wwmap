@@ -18,10 +18,6 @@
                 href="https://wwmap.ru/api/downloads/river/{{.River.Id}}/gpx?tr=true">GPX<sub>en</sub></a></td>
         <td rowspan="{{ inc (len .Links) }}">
             <div id="map" style="width:500px; height: 450px;"></div>
-            {{ if index .River.Props "vodinfo_sensor" }}
-                <div style="width:400px; height:300px;
-                        background-image: url(http://gis.vodinfo.ru/informer/draw/v2_{{index .River.Props "vodinfo_sensor"}}_400_300_30_ffffff_110_8_7_H_none.png);"></div>
-            {{ end }}
         </td>
     </tr>
     {{range .Links}}

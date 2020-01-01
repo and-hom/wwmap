@@ -14,8 +14,26 @@ func TestDetectYesterdayLine(t *testing.T) {
 	assert.Nil(t, err)
 	img, _, err := image.Decode(f)
 	assert.Nil(t, err)
-	yLine := DetectYesterdayLine(img)
+	yLine := DetectPrevDaysLine(img, 1)
 	assert.Equal(t, 160, yLine)
+}
+
+func TestDetectTodayMinus2Line(t *testing.T) {
+	f, err := os.Open("test/yesterday-data.png")
+	assert.Nil(t, err)
+	img, _, err := image.Decode(f)
+	assert.Nil(t, err)
+	yLine := DetectPrevDaysLine(img, 2)
+	assert.Equal(t, 159, yLine)
+}
+
+func TestDetectTodayMinus3Line(t *testing.T) {
+	f, err := os.Open("test/yesterday-data.png")
+	assert.Nil(t, err)
+	img, _, err := image.Decode(f)
+	assert.Nil(t, err)
+	yLine := DetectPrevDaysLine(img, 3)
+	assert.Equal(t, 156, yLine)
 }
 
 func TestDetectYesterdayLine2(t *testing.T) {
@@ -23,7 +41,7 @@ func TestDetectYesterdayLine2(t *testing.T) {
 	assert.Nil(t, err)
 	img, _, err := image.Decode(f)
 	assert.Nil(t, err)
-	yLine := DetectYesterdayLine(img)
+	yLine := DetectPrevDaysLine(img, 1)
 	assert.Equal(t, 148, yLine)
 }
 
@@ -32,6 +50,6 @@ func TestDetectYesterdayLineNull(t *testing.T) {
 	assert.Nil(t, err)
 	img, _, err := image.Decode(f)
 	assert.Nil(t, err)
-	yLine := DetectYesterdayLine(img)
+	yLine := DetectPrevDaysLine(img, 1)
 	assert.Equal(t, -1, yLine)
 }

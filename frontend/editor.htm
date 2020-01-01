@@ -35,6 +35,10 @@
     <script type="text/javascript" src="js-editor/vue-gallery.min.js"></script>
     <!--end of gallery-->
 
+    <script type="text/javascript" src="js-editor/vuejs-datepicker.min.js"></script>
+    <script type="text/javascript" src="js-editor/vue-rate-it.min.js"></script>
+    <script type="text/javascript" src="js-editor/moment.min.js"></script>
+
     <script src="js-editor/vue-upload-component.js"></script>
     <script src="js-editor/http-vue-loader.js"></script>
 
@@ -98,6 +102,8 @@
     Vue.component('v-select', VueSelect.VueSelect);
     Vue.component('gallery', VueGallery);
     Vue.component('file-upload', VueUploadComponent);
+    Vue.component('datepicker', vuejsDatepicker);
+    Vue.component('image-rating', VueRateIt.ImageRating);
 
     Vue.component('window-title', httpVueLoader('components/window-title.vue'));
     Vue.component('ask', httpVueLoader('components/ask.vue'));
@@ -111,6 +117,7 @@
     Vue.component('props', httpVueLoader('components/props.vue'));
     Vue.component('log', httpVueLoader('components/log.vue'));
     Vue.component('log-dropdown', httpVueLoader('components/log-dropdown.vue'));
+    Vue.component('img-date-and-level', httpVueLoader('components/img-date-and-level.vue'));
 
     Vue.component('river', httpVueLoader('components/river.vue'));
     Vue.component('region', httpVueLoader('components/region.vue'));
@@ -122,6 +129,12 @@
     Vue.component('spot-editor', httpVueLoader('components/spot-editor.vue'));
 
     Vue.component('page', httpVueLoader('components/page.vue'));
+
+    Vue.filter('formatDateTimeStr', function(value) {
+        if (value) {
+            return moment(String(value)).format('YYYY-MM-DD HH:mm:ss')
+        }
+    });
 
 
     function getById(arr,id) {
@@ -265,6 +278,7 @@
           selectedRiver: getActiveId(RIVER_ACTIVE_ENTITY_LEVEL),
           selectedSpot: getActiveId(SPOT_ACTIVE_ENTITY_LEVEL),
           sensors: sensors,
+          sensorsById: sensorsById,
           errMsg: "",
           closeCallback:function(){},
           onTreeSwitch: function (callback) {
