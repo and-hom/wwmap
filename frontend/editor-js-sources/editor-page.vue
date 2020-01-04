@@ -30,7 +30,8 @@
                                            v-bind:country="regioneditorstate.country"/>
                         </div>
                         <div>
-                            <river-editor v-if="rivereditorstate.visible" v-bind:initial-river="rivereditorstate.river"
+                            <river-editor v-if="rivereditorstate.visible"
+                                          v-bind:initial-river="rivereditorstate.river"
                                           v-bind:reports="rivereditorstate.reports"
                                           v-bind:country="rivereditorstate.country"
                                           v-bind:region="rivereditorstate.region"

@@ -15,8 +15,8 @@
 </style>
 
 <template>
-    <table v-if="admin()" class="wwmap-changes-log">
-        <tr style="vertical-align: top;" v-for="entry in logEntries()">
+    <table v-if="admin" class="wwmap-changes-log">
+        <tr style="vertical-align: top;" v-for="entry in logEntries">
             <td style="white-space: nowrap">{{entry.time}}</td>
             <td>{{entry.login}}<div class="wwmap-system-hint">{{entry.auth_provider}}/{{entry.ext_id}}</div></td>
             <td>{{entry.type}}</td>
@@ -26,20 +26,24 @@
 </template>
 
 <script>
+    import {hasRole, ROLE_ADMIN} from "../auth";
+    import {getLogEntries} from "../editor";
+
     module.exports = {
         props: {
             objectType: String,
             objectId: Number
         },
+        created: function() {
+            hasRole(ROLE_ADMIN).then(admin => {
+                this.admin = admin;
+                getLogEntries(this.objectType, this.objectId).then(entries => this.logEntries = entries);
+            });
+        },
         data: function () {
             return {
-                logEntries: function () {
-                    return getLogEntries(this.objectType, this.objectId);
-                },
-                admin: function () {
-                    var userInfo = getAuthorizedUserInfoOrNull();
-                    return userInfo && userInfo.roles && userInfo.roles.indexOf("ADMIN") > -1;
-                }
+                logEntries: [],
+                admin: false,
             }
         }
     }

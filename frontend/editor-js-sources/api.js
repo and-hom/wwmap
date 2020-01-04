@@ -1,4 +1,5 @@
 import {backendApiBase} from './config'
+import {getWwmapSessionId} from './auth'
 
 export function sendRequest(url, _type, auth) {
     return new Promise((resolve, reject) => {
@@ -19,7 +20,7 @@ export function sendRequest(url, _type, auth) {
 }
 
 export function doGetJson(url, auth) {
-    return sendRequest(url, "GET", auth).then(body => JSON.parse(body));
+    return sendRequest(url, "GET", auth).then(JSON.parse);
 }
 
 export function doDelete(url, auth) {
@@ -27,13 +28,13 @@ export function doDelete(url, auth) {
 }
 
 export function doDeleteWithJsonResp(url, auth) {
-    return sendRequest(url, "DELETE", auth).then(body => JSON.parse(body));
+    return sendRequest(url, "DELETE", auth).then(JSON.parse);
 }
 
 export function doPostJson(url, value, auth) {
     return new Promise((resolve, reject) => {
         var xhr = new XMLHttpRequest();
-        xhr.open('POST', url, false);
+        xhr.open('POST', url, true);
         xhr.setRequestHeader("Content-Type", "application/json");
         addAuth(xhr, auth);
         var data = JSON.stringify(value);
@@ -42,7 +43,7 @@ export function doPostJson(url, value, auth) {
         xhr.onerror = () => reject(xhr.statusText);
 
         xhr.send(data);
-    })
+    }).then(JSON.parse)
 }
 
 function addAuth(xhr, auth) {

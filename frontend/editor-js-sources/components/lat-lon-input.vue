@@ -30,6 +30,11 @@
 
 
 <script>
+    const uuidv4 = require('uuid/v4');
+    import Inputmask from "inputmask";
+
+    import {DegMinCoordMarshaller, DegMinSecCoordMarshaller, NumberCoordMarshaller, norm} from '../coord-marshaller'
+
     let DEG_MIN_SEC = 'deg-min-sec';
     let DEG_MIN = 'deg-min';
     let RAW = 'raw';
@@ -71,7 +76,7 @@
         },
         data: function () {
             return {
-                uniqueId: $.uuid(),
+                uniqueId: uuidv4(),
                 showMap: this.showMapByDefault,
 
                 onModeChanged: function (newVal) {
@@ -89,16 +94,16 @@
                         t.point[1] = norm(t.lonMarshaller.unmarshal(lonInput.val()), -180, 180);
                     });
 
-                    latInput.inputmask('remove');
-                    lonInput.inputmask('remove');
+                    Inputmask.remove(latInput);
+                    Inputmask.remove(lonInput);
 
                     t.setInputmask(latInput, newVal, 2, "[NSns]");
                     t.setInputmask(lonInput, newVal, 3, "[EWew]");
                 },
                 setInputmask: function (input, newVal, maxDeg, regex) {
                     if (newVal == DEG_MIN_SEC) {
-                        input.inputmask({
-                            mask: "A9{" + maxDeg+ "}° 99' 99.9{3}''",
+                        Inputmask({
+                            mask: "A9{" + maxDeg + "}° 99' 99.9{3}''",
                             autoUnmask: true,
                             greedy: false,
                             definitions: {
@@ -107,9 +112,9 @@
                                     casing: "upper"
                                 }
                             }
-                        });
+                        }).mask(input);
                     } else if (newVal == DEG_MIN) {
-                        input.inputmask({
+                        Inputmask({
                             mask: "A9{" + maxDeg + "}° 99.9{5}'",
                             autoUnmask: true,
                             greedy: false,
@@ -119,9 +124,9 @@
                                     casing: "upper"
                                 }
                             }
-                        })
+                        }).mask(input);
                     } else if (newVal == RAW) {
-                        input.inputmask({
+                        Inputmask({
                             mask: "[A]9{" + maxDeg + "}.9{12}°",
                             autoUnmask: true,
                             greedy: false,
@@ -131,7 +136,7 @@
                                     casing: "upper"
                                 }
                             }
-                        })
+                        }).mask(input);
                     }
                 },
 

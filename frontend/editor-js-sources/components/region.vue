@@ -8,11 +8,17 @@
 </template>
 
 <script>
+    import {getActiveEntityLevel, isActiveEntity, REGION_ACTIVE_ENTITY_LEVEL, setActiveEntityUrlHash,} from "../editor";
+    import {store} from "../main";
+
     module.exports = {
         props: ['region', 'country'],
         created: function() {
             if (isActiveEntity(this.country.id, this.region.id)) {
-                showRegionTree(this.country.id, this.region.id)
+                store.commit('showRegionSubentities', {
+                    countryId: this.country.id,
+                    regionId: this.region.id
+                });
                 if (getActiveEntityLevel()==REGION_ACTIVE_ENTITY_LEVEL) {
                     this.selectRegion()
                 }
@@ -22,28 +28,28 @@
             return {
                 changeExpandState: function () {
                     let t = this;
-                    app.onTreeSwitch(function () {
-                        if (t.region.rivers) {
-                            Vue.delete(t.region, "rivers")
-                        } else {
-                            Vue.set(t.region, "rivers", getRiversByRegion(t.country.id, t.region.id))
-                        }
+                    store.commit('onTreeSwitch', function () {
+                        let idsPath = {countryId: t.country.id, regionId: t.region.id};
+                        store.commit(t.region.rivers ? 'hideRegionSubentities' : 'showRegionSubentities', idsPath);
                         t.selectRegion();
                     });
+                    return false
                 },
                 selectRegion:function() {
-                    setActiveEntity(this.country.id, this.region.id)
-                    setActiveEntityState(this.country.id, this.region.id)
+                    setActiveEntityUrlHash(this.country.id, this.region.id);
 
-                    app.spoteditorstate.visible = false
-                    app.rivereditorstate.visible=false;
-                    app.regioneditorstate.visible = false;
-                    app.countryeditorstate.visible = false;
-
-                    selectRegion(this.country, this.region.id);
+                    store.commit('setActiveEntityState', {
+                        countryId: this.country.id,
+                        regionId: this.region.id
+                    });
+                    store.commit('hideAll');
+                    store.commit('selectRegion', {
+                        country: this.country,
+                        regionId: this.region.id
+                    });
                 },
                 regionClass: function() {
-                    if (this.region.id == app.selectedRegion) {
+                    if (this.region.id == store.state.selectedRegion) {
                         return "title-link btn btn-outline-danger"
                     } else {
                         return "title-link btn btn-outline-secondary"

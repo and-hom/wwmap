@@ -21,7 +21,7 @@ AuthSource.prototype.redirectIfMatch = function (code) {
     }
 };
 
-function getWwmapSessionId() {
+export function getWwmapSessionId() {
     return window.localStorage[WWMAP_SESSION_ID]
 }
 
@@ -59,19 +59,11 @@ function startWwmapSession(source, token) {
 }
 
 function getUserInfo(sessionId) {
-    return getUserInfoByUrl(backendApiBase + '/user-info?session_id=' + sessionId)
+    return getUserInfoByUrl(backendApiBase + '/user-info?session_id=' + sessionId);
 }
 
 function getUserInfoByUrl(url) {
-    return new Promise((resolve, reject) => {
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', url, false);
-
-        xhr.onload = () => resolve(xhr.responseText);
-        xhr.onerror = () => reject(xhr.statusText);
-
-        xhr.send();
-    });
+    return doGetJson(url, false);
 }
 
 export function getTokenFromRequestAndStartWwmapSession(authSource) {
@@ -84,9 +76,12 @@ export function getTokenFromRequestAndStartWwmapSession(authSource) {
 var cachedUserInfo = null;
 var userInfoWasCached = false;
 
+export const ROLE_ADMIN = "ADMIN";
+export const ROLE_EDITOR = "EDITOR";
+
 export function getAuthorizedUserInfoOrNull() {
     if (userInfoWasCached) {
-        return new Promise((resolve, reject) => cachedUserInfo)
+        return new Promise((resolve, reject) => resolve(cachedUserInfo))
     }
 
     var wwmapSessionId = getWwmapSessionId();
@@ -99,4 +94,27 @@ export function getAuthorizedUserInfoOrNull() {
             userInfoWasCached = true;
             return userInfo;
         });
+}
+
+export function hasRole(...roles) {
+    let userInfoPromise = getAuthorizedUserInfoOrNull();
+    if (userInfoPromise) {
+        return userInfoPromise.then(userInfo => roles
+            .map(r => userInfo && userInfo.roles && userInfo.roles.includes(r))
+            .filter(i => i)
+            .length>0)
+    } else {
+        return new Promise((resolve, reject) => resolve(false));
+    }
+}
+
+export function getRoles() {
+    let userInfoPromise = getAuthorizedUserInfoOrNull();
+    if (userInfoPromise) {
+        return userInfoPromise.then(userInfo => {
+            return userInfo && userInfo.roles ? userInfo.roles : [];
+        }, err => console.log(err))
+    } else {
+        return new Promise((resolve, reject) => resolve([]));
+    }
 }

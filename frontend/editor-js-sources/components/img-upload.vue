@@ -77,6 +77,10 @@
 
 <script>
     import FileUpload from 'vue-upload-component';
+    import {backendApiBase} from '../config'
+    import {getWwmapSessionId} from '../auth'
+    import {store} from "../main";
+    import {getImages, setSpotPreview, setImageEnabled, removeImage} from "../editor";
 
     module.exports = {
         props: ['spot', 'images', 'type', 'auth'],
@@ -108,38 +112,34 @@
                 filesSum: "",
                 uploadPath: function() { return backendApiBase + "/spot/" + this.spot.id +"/img?type=" + this.type },
                 removeImage: function(imgId) {
-                    this.images = removeImage(this.spot.id, imgId, this.type);
+                    removeImage(this.spot.id, imgId, this.type).then(images => this.images = images);
                 },
                 setImgEnabled: function(enabled, imgId) {
-                    this.images = setImageEnabled(this.spot.id, imgId, enabled, this.type);
+                    setImageEnabled(this.spot.id, imgId, enabled, this.type).then(images => this.images = images);
                 },
                 setSpotPreview: function(imgId) {
-                    imgs = setSpotPreview(this.spot.id, imgId, this.type)
-                    if (this.type=="image") {
-                        Vue.set(app.spoteditorstate, "schemas", getImages(this.spot.id, "schema"))
-                        Vue.set(app.spoteditorstate, "images", imgs)
-                    } else {
-                        Vue.set(app.spoteditorstate, "schemas", imgs)
-                        Vue.set(app.spoteditorstate, "images", getImages(this.spot.id, "image"))
-                    }
+                    setSpotPreview(this.spot.id, imgId, this.type).then(imgs => {
+                        if (this.type=="image") {
+                            store.commit('setSpotImages', imgs);
+                        } else {
+                            store.commit('setSpotSchemas', imgs);
+                        }
+                    });
                 },
                 refresh:function() {
-                    var images = getImages(this.spot.id, this.type);
-
-                    // Workaround #140 do not refresh the same images list. It produces update event and then refresh and then update and then.....
-                    var filesSum = images.map(function (x) {
-                        return x.id
-                    }).join("#");
-                    if (this.filesSum !== filesSum) {
-                        this.filesSum = filesSum;
-                        this.images = images;
-                    }
+                   getImages(this.spot.id, this.type).then(images => {
+                       // Workaround #140 do not refresh the same images list. It produces update event and then refresh and then update and then.....
+                       var filesSum = images.map(function (x) {
+                           return x.id
+                       }).join("#");
+                       if (this.filesSum !== filesSum) {
+                           this.filesSum = filesSum;
+                           this.images = images;
+                       }
+                   });
                 },
                 imageClass:function(image) {
-                    if(image.enabled==false) {
-                        return "wwmap-img-disabled"
-                    }
-                    return ""
+                    return image.enabled ? "" : "wwmap-img-disabled";
                 },
             }
         },

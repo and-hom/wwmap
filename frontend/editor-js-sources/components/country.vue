@@ -13,7 +13,7 @@
 
 <script type="text/javascript">
     import {store} from '../main'
-    import {COUNTRY_ACTIVE_ENTITY_LEVEL, getActiveEntityLevel, isActiveEntity, setActiveEntity} from '../editor'
+    import {COUNTRY_ACTIVE_ENTITY_LEVEL, getActiveEntityLevel, isActiveEntity, setActiveEntityUrlHash} from '../editor'
 
     module.exports = {
         props: ['country'],
@@ -54,11 +54,11 @@
                     return false
                 },
                 selectCountry: function () {
-                    setActiveEntity(this.country.id);
+                    setActiveEntityUrlHash(this.country.id);
 
                     store.commit('setActiveEntityState', this.country.id);
                     store.commit('hideAll');
-                    store.commit('selectCountry', this.country);
+                    store.commit('selectCountry', {country: this.country});
                 },
                 countryClass: function () {
                     if (this.country.id == store.state.selectedCountry) {

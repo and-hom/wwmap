@@ -7,7 +7,7 @@
              msg='Иногда река в месте порога изгибается. Чтобы контур вокруг порога повторял этот изгиб, нужно добавить несколько опорных точек в середине. Они не несут смысловой нагрузки и нужны только для отрисовки'
              :ok-fn="function() {}"></ask>
 
-        <div v-if="canEdit()" class="btn-toolbar justify-content-between">
+        <div v-if="canEdit" class="btn-toolbar justify-content-between">
             <div class="btn-group mr-2" role="group" aria-label="First group">
                 <button type="button" class="btn btn-info" v-if="!editMode" v-on:click="editMode=true; hideError();">
                     Редактирование
@@ -183,13 +183,13 @@
                 <img v-if="spotMainUrl" :src="spotMainUrl" style="width:100%; cursor: pointer;"
                      @click="imgIndex = mainImageIndex; schIndex = mainSchemaIndex" class="wwmap-desc-section-div"/>
                 <img v-else src="img/no-photo.png" style="width:100%" class="wwmap-desc-section-div"/>
-                <div v-if="spot.aliases && spot.aliases.length > 0 && canEdit()" class="wwmap-desc-section-div">
+                <div v-if="spot.aliases && spot.aliases.length > 0 && canEdit" class="wwmap-desc-section-div">
                     <strong>Другие варианты названия для поиска картинок роботом:</strong>
                     <ul style="padding-left: 0;">
                         <li v-for="alias in spot.aliases">{{alias}}</li>
                     </ul>
                 </div>
-                <div v-if="canEdit()" class="wwmap-desc-section-div">
+                <div v-if="canEdit" class="wwmap-desc-section-div">
                     <div class="wwmap-system-hint">Эти параметры предназначены для определения порядка следования порогов. Автоматическое упорядочивание проходит раз в сутки ночью.</div>
                     <div><strong>Порядок следования:</strong> {{ spot.order_index }}</div>
                     <div><strong>Автоматическое упорядочивание:</strong>&nbsp;<span v-if="spot.automatic_ordering">Да</span><span v-else>Нет</span></div>
@@ -290,6 +290,20 @@
 </style>
 
 <script>
+    import {
+        all_categories,
+        setActiveEntityUrlHash,
+        getImages,
+        getRiver,
+        getSpotMainImageUrl,
+        nvlReturningId,
+        removeSpot,
+        saveSpot
+    } from '../editor'
+    import {store} from "../main";
+    import {hasRole, ROLE_ADMIN, ROLE_EDITOR} from "../auth";
+    import {backendApiBase} from '../config'
+
     module.exports = {
         props: ['initialSpot', 'country', 'region'],
 
@@ -313,8 +327,8 @@
             this.resetToInitialIfRequired()
         },
         updated: function() {
-            var shouldRefreshChildren = this.shouldReInit()
-            this.resetToInitialIfRequired()
+            var shouldRefreshChildren = this.shouldReInit();
+            this.resetToInitialIfRequired();
 
             if (shouldRefreshChildren) {
                 // It's an ugly hack. I really do not know, why child's update lifecycle handler method is not called on spot changed
@@ -335,43 +349,31 @@
             }
         },
         computed: {
-                spotMainUrl: {
-                    get:function() {
-                        if (!this.spotMainUrlCached) {
-                            this.spotMainUrlCached = getSpotMainImageUrl(this.initialSpot.id)
-                        }
-                        return this.spotMainUrlCached
-                    },
-
-                    set:function(newVal) {
-                        this.spotMainUrlCached = newVal
-                    },
-                },
                 images: {
                     get:function() {
-                        return app.spoteditorstate.images
+                        return store.state.spoteditorstate.images
                     },
 
                     set:function(newVal) {
-                        app.spoteditorstate.images = newVal
+                        store.commit('setSpotImages', newVal);
                     }
                 },
                 schemas: {
                     get:function() {
-                        return app.spoteditorstate.schemas
+                        return store.state.spoteditorstate.schemas
                     },
 
                     set:function(newVal) {
-                        app.spoteditorstate.schemas = newVal
+                        store.commit('setSpotSchemas', newVal);
                     }
                 },
                 videos: {
                     get:function() {
-                        return app.spoteditorstate.videos
+                        return store.state.spoteditorstate.videos
                     },
 
                     set:function(newVal) {
-                        app.spoteditorstate.videos = newVal
+                        store.commit('setSpotVideos', newVal);
                     }
                 },
                 mainImageIndex: function() {
@@ -390,23 +392,20 @@
                 },
                 editMode: {
                     get:function() {
-                        return app.spoteditorstate.editMode
+                        return store.state.spoteditorstate.editMode
                     },
 
                     set:function(newVal) {
-                        app.spoteditorstate.editMode = newVal
+                        store.commit("setSpotEditorEditMode", newVal);
                     }
                 },
         },
         data:function() {
             return {
                 // for editor
-                userInfo: getAuthorizedUserInfoOrNull(),
                 map: null,
                 label: null,
-                canEdit: function(){
-                 return this.userInfo!=null && (this.userInfo.roles.includes("EDITOR") || this.userInfo.roles.includes("ADMIN"))
-                },
+                canEdit: false,
                 askForRemove: false,
                 save:function() {
                     if (!this.spot.title || !this.spot.title.replace(/\s/g, '').length) {
@@ -418,12 +417,10 @@
                     let riverChanged = this.river.id != oldRiver.id;
                     this.spot.river = this.river;
 
-                    updated = saveSpot(this.spot);
-
-                    if (updated) {
+                    saveSpot(this.spot).then(updated => {
                         if (riverChanged) {
                             console.log("Move spot between rivers:" + oldRiver.id + "->" + updated.river.id);
-                            hideRiverTree(oldRiver.region.country_id, nvlReturningId(oldRiver.region), oldRiver.id)
+                            hideRiverSubentities(oldRiver.region.country_id, nvlReturningId(oldRiver.region), oldRiver.id)
                         }
                         this.spot = updated;
                         this.river =  updated.river;
@@ -436,14 +433,19 @@
                         let regionId = nvlReturningId(this.spot.river.region);
                         let riverId = this.spot.river.id;
 
-                        setActiveEntity(countryId, regionId, riverId, updated.id);
-                        setActiveEntityState(countryId, regionId, riverId, updated.id);
-                        showRiverTree(countryId, regionId, riverId);
-                        return true;
-                    } else {
-                        this.showError("Не удалось сохранить препятствие. Возможно, недостаточно прав");
-                        return false;
-                    }
+                        setActiveEntityUrlHash(countryId, regionId, riverId, updated.id);
+                        store.commit('setActiveEntityState', {
+                            contryId: countryId,
+                            regionId: regionId,
+                            riverId: riverId,
+                            spotId: updated.id,
+                        });
+                        store.commit('showRiverSubentities', {
+                            countryId: countryId,
+                            regionId: regionId,
+                            riverId: riverId
+                        });
+                    }, err => this.showError("Не удалось сохранить препятствие. Возможно, недостаточно прав"));
                 },
                 cancelEditing:function() {
                   if(this.spot && this.spot.id>0) {
@@ -453,56 +455,75 @@
                   }
                 },
                 reload:function() {
-                    this.spot = getSpot(this.spot.id)
-                    this.river = this.spot.river;
-                    this.reloadMainImg()
-                    this.reloadImgs()
-                    this.hideError()
+                    getSpot(this.spot.id).then(spot => {
+                        this.spot = spot;
+                        this.river = this.spot.river;
+                        this.reloadMainImg();
+                        this.reloadImgs();
+                        this.hideError();
+                    });
                 },
                 reloadMainImg: function() {
-                    this.spotMainUrl = getSpotMainImageUrl(this.spot.id)
+                    this.spotMainUrl = null;
+                    getSpotMainImageUrl(this.spot.id).then(url => this.spotMainUrl = url);
                 },
                 reloadImgs: function() {
-                    this.images = getImages(this.initialSpot.id, "image");
+                    this.images = [];
+                    this.schemas = [];
+                    this.videos = [];
+
                     this.imgIndex = null;
-                    this.schemas = getImages(this.initialSpot.id, "schema");
                     this.schIndex = null;
-                    this.videos = getImages(this.initialSpot.id, "video");
                     this.vidIndex = null;
+
+                    getImages(this.initialSpot.id, "image").then(images => this.images = images);
+                    getImages(this.initialSpot.id, "schema").then(schemas => this.schemas = schemas);
+                    getImages(this.initialSpot.id, "video").then(videos => this.videos = videos);
                 },
                 remove: function() {
                     this.hideError();
-                    if (!removeSpot(this.spot.id)) {
-                        this.showError("Can not delete")
-                    } else {
-                        this.closeEditorAndShowRiver()
-                    }
+                    removeSpot(this.spot.id).then(
+                        ok => this.closeEditorAndShowRiver(),
+                        err => this.showError("Не могу удалить: "+err));
                 },
                 closeEditorAndShowRiver: function() {
                     let countryId = this.river.region.country_id;
                     let regionId = nvlReturningId(this.river.region);
                     let riverId = this.river.id;
-                    setActiveEntity(countryId, regionId, riverId);
-                    setActiveEntityState(countryId, regionId, riverId);
-                    showRiverTree(countryId, regionId, riverId);
-                    app.spoteditorstate.visible = false;
-                    selectRiver({id:this.river.region.country_id}, this.river.region, this.river.id);
+                    setActiveEntityUrlHash(countryId, regionId, riverId);
+                    store.commit('setActiveEntityState', {
+                        contryId: countryId,
+                        regionId: regionId,
+                        riverId: riverId,
+                    });
+                    store.commit('showRiverSubentities', {
+                        countryId: countryId,
+                        regionId: regionId,
+                        riverId: riverId
+                    });
+                    store.commit('hideAll');
+                    store.commit('selectRiver', {
+                        country: {id: this.river.region.country_id},
+                        region: this.river.region,
+                        riverId: this.river.id
+                    });
                 },
                 showError: function(errMsg) {
-                    app.errMsg = errMsg
+                    store.commit("setErrMsg", errMsg);
                 },
                 hideError: function() {
-                    app.errMsg = null
+                    store.commit("setErrMsg", null);
                 },
                 // end of editor
                 all_categories:all_categories,
 
-                options: [getRiver(this.initialSpot.river.id)],
+                options: [],
 
                 // imgs
                 imgIndex: null,
                 schIndex: null,
                 vidIndex: null,
+                spotMainUrl: null,
 
                 spot: null,
                 river: null,
@@ -546,13 +567,15 @@
                 },
                 resetToInitialIfRequired:function() {
                     if (this.shouldReInit()) {
+                        hasRole(ROLE_ADMIN, ROLE_EDITOR).then(canEdit => this.canEdit = canEdit);
+                        getRiver(this.initialSpot.river.id).then(river => this.options = [river]);
+
                         this.previousSpotId = this.initialSpot.id;
                         this.spot = this.initialSpot;
                         this.river = this.initialSpot.river;
-                        this.spotMainUrl = getSpotMainImageUrl(this.initialSpot.id);
-                        this.images = getImages(this.initialSpot.id, "image");
-                        this.schemas = getImages(this.initialSpot.id, "schema");
-                        this.videos = getImages(this.initialSpot.id, "video");
+
+                        this.reloadMainImg();
+                        this.reloadImgs();
                     }
                 },
 

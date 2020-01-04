@@ -3,6 +3,11 @@
 </template>
 
 <script>
+    const uuidv4 = require('uuid/v4');
+    import {addMapLayers} from '../map-common'
+    import {backendApiBase} from '../config'
+    import {getWwmapSessionId} from '../auth'
+
     module.exports = {
         props: {
             spot: Object,
@@ -163,8 +168,8 @@
                     if (this.spot && this.spot.id) {
                         skip = this.spot.id
                     }
-                    url = backendApiBase + '/ymaps-tile-ww?bbox=%b&zoom=%z&skip=' + skip;
-                    st = getWwmapSessionId();
+                    let url = backendApiBase + '/ymaps-tile-ww?bbox=%b&zoom=%z&skip=' + skip;
+                    let st = getWwmapSessionId();
                     if (st) {
                         url += '&session_id=' + st
                     }
@@ -401,7 +406,7 @@
                     $.cookie("default_editor_map", type, {path: '/'})
                 },
                 midPoints: null,
-                uniqueId: $.uuid()
+                uniqueId: uuidv4(),
             }
         }
     }

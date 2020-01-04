@@ -5,16 +5,16 @@
              msg="Совсем удалить? Все пороги будут также удалены! Да, совсем! Восстановить будет никак нельзя!"
              :ok-fn="function() { remove(); }"></ask>
 
-        <div v-if="canEdit()" class="btn-toolbar justify-content-between">
+        <div v-if="canEdit" class="btn-toolbar justify-content-between">
             <div class="btn-group mr-2" role="group">
                 <button v-if="river.id && pageMode == 'view'" type="button" class="btn btn-primary" v-on:click="add_spot()">Добавить препятствие</button>
                 <button type="button" class="btn btn-info" v-if="pageMode == 'view'" v-on:click="pageMode='edit'; hideError();">
                     Редактирование
                 </button>
-                <button type="button" class="btn btn-success" v-if="river.id && pageMode == 'view'" v-on:click="spots = getSpots(river.id); spotIndexes=[]; pageMode='batch-edit'; hideError();">
+                <button type="button" class="btn btn-success" v-if="river.id && pageMode == 'view'" v-on:click="beginBatchEdit()">
                     Пакетное редактирование и загрузка GPX
                 </button>
-                <button type="button" class="btn btn-success" v-if="pageMode == 'edit'" v-on:click="pageMode=save() ? 'view' : 'edit'">Сохранить</button>
+                <button type="button" class="btn btn-success" v-if="pageMode == 'edit'" v-on:click="save()">Сохранить</button>
                 <button type="button" class="btn btn-success" v-if="pageMode == 'batch-edit'" v-on:click="pageMode=saveSpotsBatch() ? 'view' : 'batch-edit'">Сохранить</button>
                 <button type="button" class="btn btn-secondary" v-if="pageMode != 'view'" v-on:click="pageMode='view'; cancelEditing()">Отменить</button>
                 <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#del-river">Удалить
@@ -34,10 +34,10 @@
                                 <dd>
                                     <span style="padding-left:40px;" v-if="river.visible">Да</span>
                                     <span style="padding-left:40px;" v-else>Нет</span>&nbsp;&nbsp;&nbsp;
-                                    <button type="button" class="btn btn-info" v-if="canEdit() && pageMode != 'edit' && !river.visible" v-on:click="setVisible(true); hideError();">
+                                    <button type="button" class="btn btn-info" v-if="canEdit && pageMode != 'edit' && !river.visible" v-on:click="setVisible(true); hideError();">
                                         Показывать на карте
                                     </button>
-                                    <button type="button" class="btn btn-info" v-if="canEdit() && pageMode != 'edit' && river.visible" v-on:click="setVisible(false); hideError();">
+                                    <button type="button" class="btn btn-info" v-if="canEdit && pageMode != 'edit' && river.visible" v-on:click="setVisible(false); hideError();">
                                         Скрыть на карте
                                     </button>
                                     <div style="padding-left:40px;" class="wwmap-system-hint">Нужно, когда мы не хотим выставлять наполовину размеченную и описанную реку.
@@ -46,7 +46,7 @@
                                 <dt v-if="river.region.id>0">Регион:</dt>
                                 <dd v-if="river.region.id>0">
                                     <select v-model="river.region.id">
-                                        <option v-for="region in regions()" v-bind:value="region.id">{{region.title}}</option>
+                                        <option v-for="region in regions" v-bind:value="region.id">{{region.title}}</option>
                                     </select>
                                 </dd>
                                 <dt>Описание:</dt>
@@ -147,7 +147,7 @@
         <div v-else-if="pageMode == 'batch-edit'" class="spot-editor-panel" style="padding-top:15px;">
             <div style="margin-bottom: 20px">Изменения вступят в силу после нажатия кнопки <b>Сохранить</b> выше</div>
 
-            <div v-if="canEdit() && river.id">
+            <div v-if="canEdit && river.id">
                 <template>
                     <div class="example-drag">
                         <div class="upload">
@@ -352,13 +352,13 @@
                 <dd>
                     <span style="padding-left:40px;" v-if="river.visible">Да</span>
                     <span style="padding-left:40px;" v-else>Нет</span>&nbsp;&nbsp;&nbsp;
-                    <button type="button" class="btn btn-info" v-if="canEdit() && pageMode != 'edit' && !river.visible" v-on:click="setVisible(true); hideError();">
+                    <button type="button" class="btn btn-info" v-if="canEdit && pageMode != 'edit' && !river.visible" v-on:click="setVisible(true); hideError();">
                         Показывать на карте
                     </button>
-                    <button type="button" class="btn btn-info" v-if="canEdit() && pageMode != 'edit' && river.visible" v-on:click="setVisible(false); hideError();">
+                    <button type="button" class="btn btn-info" v-if="canEdit && pageMode != 'edit' && river.visible" v-on:click="setVisible(false); hideError();">
                         Скрыть на карте
                     </button>
-                    <div  v-if="canEdit()" style="padding-left:40px;" class="wwmap-system-hint">Нужно, когда мы не хотим выставлять наполовину размеченную и описанную реку.
+                    <div  v-if="canEdit" style="padding-left:40px;" class="wwmap-system-hint">Нужно, когда мы не хотим выставлять наполовину размеченную и описанную реку.
                     Если добавляешь часть порогов, а остальные планируешь на потом, не делай реку видимой на карте.</div>
                     <div v-else></div>
                 </dd>
@@ -395,7 +395,7 @@
                 <dt>Отчёты:
                 </dt>
                 <dd>
-                    <div style="padding-left:40px;" class="wwmap-system-hint" v-if="canEdit()">Поиск отчётов происходит раз в сутки ночью. Наберитесь терпения.</div>
+                    <div style="padding-left:40px;" class="wwmap-system-hint" v-if="canEdit">Поиск отчётов происходит раз в сутки ночью. Наберитесь терпения.</div>
                     <ul>
                         <li v-for="report in reports"><a target="_blank" :href="report.url">{{report.title}}</a></li>
                     </ul>
@@ -488,6 +488,31 @@
 
 <script>
     import FileUpload from 'vue-upload-component';
+    import {getWwmapSessionId, hasRole, ROLE_ADMIN, ROLE_EDITOR} from '../auth'
+    import {sensors} from '../sensors'
+    import {getRiverFromTree, store} from '../main'
+    import {
+        all_categories,
+        emptyBounds,
+        getAllRegions,
+        getMeteoPoints,
+        getRiver,
+        getRiverBounds,
+        getSpotsFull,
+        nvlReturningId,
+        removeRiver,
+        saveRiver,
+        saveSpot,
+        setActiveEntityUrlHash,
+        setRiverVisible,
+        addMeteoPoint,
+    } from '../editor'
+    import {backendApiBase} from '../config'
+    import {addMapLayers, registerMapSwitchLayersHotkeys} from "../map-common";
+    import Sortable from 'sortablejs';
+
+    var $ = require( "jquery" );
+    require( "jquery.cookie" );
 
     module.exports = {
         props: ['initialRiver', 'reports', 'country', 'region'],
@@ -499,7 +524,11 @@
 
             let t = this;
             if(this.$refs.uploadGpx && this.$refs.uploadGpx.value.length && this.$refs.uploadGpx.uploaded && this.gpxJustUploaded) {
-                showRiverTree(this.river.region.country_id, nvlReturningId(this.river.region), this.river.id);
+                store.commit('showRiverSubentities', {
+                    countryId: this.river.region.country_id,
+                    regionId: nvlReturningId(this.river.region),
+                    riverId: this.river.id,
+                });
                 this.gpxJustUploaded = false;
                 for(let i=0; i< this.$refs.uploadGpx.value.length; i++) {
                     this.$refs.uploadGpx.value[i].response.forEach(function (x) {
@@ -557,46 +586,61 @@
             },
             pageMode: {
                 get:function() {
-                    return app.rivereditorstate.pageMode
+                    return store.state.rivereditorstate.pageMode
                 },
 
                 set:function(newVal) {
-                    app.rivereditorstate.pageMode = newVal
-                }
-            },
-            meteoPoints: {
-                get:function () {
-                    return this.canEdit() ? getMeteoPoints() : [];
+                    store.commit("setRiverEditorPageMode", newVal);
                 }
             },
         },
         data:function() {
             return {
-
                 river: null,
+                map: null,
                 previousRiverId: this.initialRiver.id,
                 shouldReInit:function(){
                     return this.river==null || this.previousRiverId !== this.initialRiver.id && this.initialRiver.id > 0
                 },
                 resetToInitialIfRequired:function() {
+
                     if (this.shouldReInit()) {
                         this.previousRiverId = this.initialRiver.id;
                         this.river = this.initialRiver;
-                        this.bounds = getRiverBounds(this.river.id);
-                        this.center = [(this.bounds[0][0] + this.bounds[1][0]) / 2, (this.bounds[0][1] + this.bounds[1][1]) / 2];
+                        getRiverBounds(this.river.id).then(bounds => {
+                            this.bounds = bounds;
+                            this.center = [(bounds[0][0] + bounds[1][0]) / 2, (bounds[0][1] + bounds[1][1]) / 2];
 
-                        let hideMap = emptyBounds(this.bounds);
-                        if (this.map && hideMap) {
-                            this.map.destroy();
-                            this.map = null;
-                        } else if (this.map) {
-                            this.objectManager.setUrlTemplate(backendApiBase + '/ymaps-tile-ww?bbox=%b&zoom=%z&river=' + this.river.id);
-                            this.map.setBounds(this.bounds);
-                        } else if (!this.map && !hideMap) {
-                            this.showMap();
-                        }
+                            let hideMap = emptyBounds(this.bounds);
+                            if (this.map && hideMap) {
+                                this.map.destroy();
+                                this.map = null;
+                            } else if (this.map) {
+                                this.objectManager.setUrlTemplate(backendApiBase + '/ymaps-tile-ww?bbox=%b&zoom=%z&river=' + this.river.id);
+                                this.map.setBounds(this.bounds);
+                            } else if (!this.map && !hideMap) {
+                                this.showMap();
+                            }
 
-                        this.meteoPoint = this.getMeteoPointById(this.river.props.meteo_point);
+                            getMeteoPoints().then(points => this.meteoPoints = points);
+                            this.meteoPoint = this.getMeteoPointById(this.river.props.meteo_point);
+                        });
+
+                        hasRole(ROLE_ADMIN, ROLE_EDITOR).then(canEdit => this.canEdit = canEdit);
+                        getAllRegions().then(regions => {
+                            this.regions = regions.map(function (x) {
+                                if (x.fake) {
+                                    return {
+                                        id: x.id,
+                                        title: x.country.title
+                                    }
+                                }
+                                return {
+                                    id: x.id,
+                                    title: x.country.title + " - " + x.title
+                                }
+                            });
+                        });
 
                         this.prevRegionId = nvlReturningId(this.river.region);
                         this.prevRegionFake = this.river.region.fake;
@@ -608,34 +652,41 @@
                 },
 
                 // for editor
-                userInfo: getAuthorizedUserInfoOrNull(),
-                canEdit: function(){
-                 return this.userInfo!=null && (this.userInfo.roles.includes("EDITOR") || this.userInfo.roles.includes("ADMIN"))
-                },
+                userInfo: store.state.userInfo,
+                canEdit: false,
                 askForRemove: true,
                 save:function() {
                     if (!this.river.title || !this.river.title.replace(/\s/g, '').length) {
                         this.showError("Нельзя сохранять реку без названия");
-                        return false
                     }
-                    updated = saveRiver(this.river);
-                    if (updated) {
+                    saveRiver(this.river).then(updated => {
                         this.river = updated;
                         this.meteoPoint = this.getMeteoPointById(this.river.props.meteo_point);
                         this.pageMode='view';
                         this.hideError();
                         var new_region_id = nvlReturningId(updated.region);
-                        setActiveEntity(updated.region.country_id, new_region_id, updated.id);
-                        setActiveEntityState(updated.region.country_id, new_region_id, updated.id);
-                        showCountrySubentities(updated.region.country_id);
+                        setActiveEntityUrlHash(updated.region.country_id, new_region_id, updated.id);
+                        store.commit('setActiveEntityState', {
+                            countryId: updated.region.country_id,
+                            regionId: new_region_id,
+                            riverId: updated.id,
+                            spotId: null
+                        });
+                        store.commit('showCountrySubentities', updated.region.country_id);
 
                         if (new_region_id>0 && !updated.region.fake) {
-                            showRegionTree(updated.region.country_id, new_region_id)
+                            store.commit('showRegionSubentities', {
+                                countryId: updated.region.country_id,
+                                regionId: new_region_id
+                            });
                         }
                         if (this.prevCountryId>0 && this.prevRegionId>0 && !this.prevRegionFake && this.prevRegionId!=new_region_id) {
-                            showRegionTree(this.prevCountryId, this.prevRegionId)
+                            store.commit('showRegionSubentities', {
+                                countryId: this.prevCountryId,
+                                regionId: this.prevRegionId
+                            });
                         } else if(this.prevCountryId>0 && this.prevCountryId!=updated.region.country_id) {
-                            showCountrySubentities(this.prevCountryId)
+                            store.commit('showCountrySubentities', this.prevCountryId);
                         }
 
                         this.prevRegionId = nvlReturningId(updated.region)
@@ -644,11 +695,12 @@
                             this.prevCountryId = updated.region.country_id
                         }
                         this.reloadMap();
-                        return true;
-                    } else {
+
+                        this.pageMode='view';
+
+                    }, error => {
                         this.showError("Не удалось сохранить реку. Возможно, недостаточно прав");
-                        return false;
-                    }
+                    });
                 },
                 saveSpotsBatch: function () {
                     try {
@@ -674,14 +726,9 @@
                         let saved = this.spots.filter(function (spot) {
                             return !forDelete.includes(spot.id);
                         }).map(function(spot) {
-                            let failMsg = "";
-                            let success = saveSpot(spot, function (msg) {
-                                failMsg = msg;
-                            });
-                            if (!success) {
-                                saveErrors += failMsg;
-                            }
-                            return success;
+                            saveSpot(spot).then(_ => {
+                            }, failMsg => saveErrors += failMsg);
+                            return true;
                         });
 
                         let failCount = removed.concat(saved).filter(function (x) {
@@ -706,8 +753,11 @@
                     let countryId = this.river.region.country_id;
                     let regionId = nvlReturningId(this.river.region);
                     let riverId = this.river.id;
-
-                    showRiverTree(countryId, regionId, riverId);
+                    store.commit('showRiverSubentities', {
+                        countryId: countryId,
+                        regionId: regionId,
+                        riverId: riverId,
+                    });
 
                     this.reload();
                     return true;
@@ -720,95 +770,96 @@
                     }
                 },
                 reload: function () {
-                    this.river = getRiver(this.river.id);
-                    this.meteoPoint = this.getMeteoPointById(this.river.props.meteo_point);
-                    this.spotsForDeleteIds = [];
-                    this.hideError();
-                    this.reloadMap();
+                    getRiver(this.river.id).then(river => {
+                        this.river = river;
+                        this.meteoPoint = this.getMeteoPointById(this.river.props.meteo_point);
+                        this.spotsForDeleteIds = [];
+                        this.hideError();
+                        this.reloadMap();
+                    });
                 },
                 setVisible: function(visible) {
-                    this.river = setRiverVisible(this.river.id, visible);
-                    this.meteoPoint = this.getMeteoPointById(this.river.props.meteo_point);
-                    // set "visible" property to global storage to set icon in the left-side tree using reactivity of vue.js
-                    var regionId = this.river.region.id;
-                    if (this.river.region.fake) {
-                        regionId = -1
-                    }
-                    getRiverFromTree(this.river.region.country_id, regionId, this.river.id).visible = this.river.visible;
+                    setRiverVisible(this.river.id, visible).then(river => {
+                        this.river = river;
+                        this.meteoPoint = this.getMeteoPointById(this.river.props.meteo_point);
+                        // set "visible" property to global storage to set icon in the left-side tree using reactivity of vue.js
+                        var regionId = this.river.region.id;
+                        if (this.river.region.fake) {
+                            regionId = -1
+                        }
+                        getRiverFromTree(this.river.region.country_id, regionId, this.river.id).visible = this.river.visible;
+                    });
                 },
-                remove: function() {
-                    this.hideError()
-                    if (!removeRiver(this.river.id)) {
-                        this.showError("Can not delete")
-                    } else {
-                        this.closeEditorAndShowRiver();
-                    }
+                remove: function () {
+                    this.hideError();
+                    removeRiver(this.river.id).then(
+                        _ => this.closeEditorAndShowRiver(),
+                        err => this.showError("не могу удалить: " + err))
                 },
                 closeEditorAndShowRiver: function() {
-                    setActiveEntity(this.country.id, nvlReturningId(this.region));
-                    setActiveEntityState(this.country.id, nvlReturningId(this.region));
-                    app.rivereditorstate.visible = false;
+                    setActiveEntityUrlHash(this.country.id, nvlReturningId(this.region));
+                    store.commit('setActiveEntityState', {
+                        countryId: this.country.id,
+                        regionId: nvlReturningId(this.region),
+                        riverId: null,
+                        spotId: null
+                    });
+                    store.commit("setRiverEditorVisible", false);
                     if (this.river.region.fake || this.river.region.id == 0) {
-                        showCountrySubentities(this.country.id);
-                        selectCountry(this.country);
+                        store.commit('showCountrySubentities', this.country.id);
+                        store.commit('selectCountry', {country: this.country});
                     } else {
-                        showRegionTree(this.country.id, nvlReturningId(this.river.region));
-                        selectRegion(this.country, nvlReturningId(this.river.region));
+                        store.commit('showRegionSubentities', {
+                            countryId: this.country.id,
+                            regionId: nvlReturningId(this.river.region)
+                        });
+                        store.commit('selectRegion', {
+                            country: this.country,
+                            countryId: nvlReturningId(this.river.region)
+                        });
                     }
                 },
                 showError: function(errMsg) {
-                    app.errMsg = errMsg
+                    store.commit("setErrMsg", errMsg);
                 },
-                hideError: function(errMsg) {
-                    app.errMsg = null
+                hideError: function() {
+                    store.commit("setErrMsg", null);
                 },
                 // end of editor
 
                 files: [],
                 add_spot: function() {
-                    app.spoteditorstate.visible = false;
-                    app.rivereditorstate.visible = false;
+                    store.commit("setRiverEditorVisible", false);
+                    store.commit("setSpotEditorVisible", false);
 
-                    app.spoteditorstate.visible = true;
-                    app.spoteditorstate.editMode = true;
-                    app.spoteditorstate.spot={
-                        id: 0,
-                        river: this.river,
-                        order_index: "0",
-                        automatic_ordering: true,
-                        point: this.center,
-                        aliases:[],
-                        props:{},
-                    };
-                    app.spoteditorstate.country = this.country;
-                    app.spoteditorstate.region = this.region;
+                    store.commit("setSpotEditorState", {
+                        visible: true,
+                        editMode: true,
+                        spot: {
+                            id: 0,
+                            river: this.river,
+                            order_index: "0",
+                            automatic_ordering: true,
+                            point: this.center,
+                            aliases: [],
+                            props: {},
+                        },
+                        country: this.country,
+                        region: this.region,
+                    });
                 },
 
-                regions: function() {
-                    var regions = getAllRegions()
-                    realRegions = regions.map(function(x){
-                        if (x.fake) {
-                            return {
-                                id:x.id,
-                                title: x.country.title
-                            }
-                        }
-                        return {
-                            id:x.id,
-                            title: x.country.title + " - " + x.title
-                        }
-                    })
-                    return realRegions
-                },
+                regions: [],
                 parseAliases:function(strVal) {
                     return strVal.split('\n').map(function(x) {return x.trim()}).filter(function(x){return x.length>0})
                 },
                 prevRegionId: 0,
                 prevRegionFake: null,
                 prevCountryId: 0,
-                sensors: app.sensors,
+                sensors: sensors,
                 activeSensor: {id:null, title:null},
                 informerUrl: function() {return this.river.props.vodinfo_sensor ? "http://gis.vodinfo.ru/informer/draw/v2_" + this.river.props.vodinfo_sensor + "_400_300_30_ffffff_110_8_7_H_none.png" : null},
+                meteoPoints: [],
                 meteoPoint: null,
                 meteoPointSelectMode: true,
                 getMeteoPointById: function(id) {
@@ -829,9 +880,11 @@
                 },
                 onAddMeteoPoint: function () {
                     this.onCancelAddMeteoPoint();
-                    this.meteoPoint = addMeteoPoint(this.meteoPoint);
-                    this.meteoPoints = getMeteoPoints();
-
+                    addMeteoPoint(this.meteoPoint).then(p => {
+                        this.meteoPoint = p;
+                        this.river.props.meteo_point = p.id;
+                        getMeteoPoints().then(meteoPoints => this.meteoPoints = meteoPoints)
+                    });
                 },
                 getDefaultMap: function () {
                     let defaultMap = $.cookie("default_editor_map");
@@ -902,6 +955,14 @@
                     } else {
                         return spot.point
                     }
+                },
+                beginBatchEdit: function () {
+                    this.getSpots(this.river.id).then(spots => {
+                        this.spots = spots;
+                        this.spotIndexes = [];
+                        this.pageMode = 'batch-edit';
+                        this.hideError();
+                    });
                 },
                 addEmptySpotToBatch: function () {
                     let orderIndex;

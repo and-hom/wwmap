@@ -8,7 +8,7 @@
 </style>
 
 <template>
-    <div v-if="admin()" class="dropdown" style="display: inline-block;">
+    <div v-if="admin" class="dropdown" style="display: inline-block;">
         <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             Лог изменений
         </button>
@@ -19,17 +19,19 @@
 </template>
 
 <script>
+    import {hasRole, ROLE_ADMIN} from "../auth";
+
     module.exports = {
         props: {
             objectType: String,
             objectId: Number
         },
+        created: function() {
+            hasRole(ROLE_ADMIN).then(admin => this.admin = admin);
+        },
         data: function () {
             return {
-                admin: function () {
-                    var userInfo = getAuthorizedUserInfoOrNull();
-                    return userInfo && userInfo.roles && userInfo.roles.indexOf("ADMIN") > -1;
-                }
+                admin: false,
             }
         }
     }

@@ -258,7 +258,7 @@ function getFromEntityHash(params, pos) {
     return 0
 }
 
-function setActiveEntity(countryId, regionId, riverId, spotId) {
+function setActiveEntityUrlHash(countryId, regionId, riverId, spotId) {
     var hash = createActiveEntityHash(countryId, regionId, riverId, spotId)
     window.location.hash = hash
 }

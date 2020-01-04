@@ -1,4 +1,4 @@
-function NumberCoordMarshaller(degreeDigits, fractionalPartLength) {
+export function NumberCoordMarshaller(degreeDigits, fractionalPartLength) {
     this.degreeDigits = degreeDigits;
     this.fractionalPartLength = fractionalPartLength;
     this.fractMult = Math.pow(10, fractionalPartLength);
@@ -22,7 +22,7 @@ NumberCoordMarshaller.prototype.unmarshal = function (txt) {
 
 
 
-function DegMinCoordMarshaller(degreeDigits, signPlus, signMinus) {
+export function DegMinCoordMarshaller(degreeDigits, signPlus, signMinus) {
     this.degreeDigits = degreeDigits;
     this.signPlus = signPlus;
     this.signMinus = signMinus;
@@ -58,7 +58,7 @@ DegMinCoordMarshaller.prototype.unmarshal = function (txt) {
 
 
 
-function DegMinSecCoordMarshaller(degreeDigits, signPlus, signMinus) {
+export function DegMinSecCoordMarshaller(degreeDigits, signPlus, signMinus) {
     this.degreeDigits = degreeDigits;
     this.signPlus = signPlus;
     this.signMinus = signMinus;
@@ -108,7 +108,7 @@ function withLeadingZero(val, len) {
     return val
 }
 
-function norm(val, min, max) {
+export function norm(val, min, max) {
     if (val < min) {
         return min;
     }

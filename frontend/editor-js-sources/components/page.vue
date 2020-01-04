@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div v-if="rolesLoaded">
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
             <ul class="navbar-nav mr-auto">
                 <li :class="itemClass(page)" v-if="showMenuItem(page)" v-for="page in pages">
@@ -62,26 +62,26 @@
 <script>
     import {frontendVersion} from '../config'
     import {getBackendVersion, getDbVersion} from '../api'
-    import {getAuthorizedUserInfoOrNull} from '../auth'
+    import {getRoles, ROLE_ADMIN, ROLE_EDITOR} from '../auth'
 
 
     module.exports = {
         props: ['link'],
-        computed: {
-            showTechInfo: function () {
-                return getAuthorizedUserInfoOrNull().then(userInfo => {
-                    return userInfo && ['EDITOR', 'ADMIN'].filter(function (r) {
-                        return userInfo.roles!=null && userInfo.roles.includes(r)
-                    }).length > 0
-                })
-            }
-        },
         created: function () {
             getDbVersion().then(version => this.dbVersion = version);
             getBackendVersion().then(version => this.backVersion = version);
+            let x = getRoles();
+            x.then(roles => {
+                this.roles = roles;
+                this.showTechInfo = roles.includes(ROLE_ADMIN) || roles.includes(ROLE_EDITOR);
+                this.rolesLoaded = true;
+            });
         },
         data: function () {
             return {
+                rolesLoaded: false,
+                showTechInfo: false,
+                roles: [],
                 pages: [
                     {
                         href: "editor.htm",
@@ -148,16 +148,9 @@
                         return true
                     }
 
-                    var userInfo = getAuthorizedUserInfoOrNull()
-                    if (userInfo == null || userInfo.roles == null) {
-                        return page.allow.filter(function (r) {
-                            return r == 'ANONYMOUS'
-                        }).length > 0
-                    }
-
-                    return page.allow.filter(function (r) {
-                        return userInfo.roles.includes(r)
-                    }).length > 0
+                    return page.allow
+                        .filter(r => this.roles.includes(r))
+                        .length > 0
                 },
                 pageTitle: function (page) {
                     if (typeof page === 'string' || page instanceof String) {

@@ -1,7 +1,7 @@
-import {doGetJson} from './api';
+import {doGetJson, doPostJson, doDelete, doDeleteWithJsonResp} from './api';
 import {backendApiBase} from './config'
 
-var all_categories = [
+export const all_categories = [
     {id:"-1", title:"Непроход."},
     {id:"0", title:"Неизестно"},
     {id:"1", title:"1"},
@@ -58,11 +58,11 @@ export function getSpot(spotId) {
 }
 
 export function saveSpot(spot, failResponseBodyCallback) {
-    return doPostJsonSync(backendApiBase + "/spot/" + spot.id, spot, true, failResponseBodyCallback)
+    return doPostJson(backendApiBase + "/spot/" + spot.id, spot, true, failResponseBodyCallback)
 }
 
 export function removeSpot(id, failResponseBodyCallback) {
-    return doDeleteSync(backendApiBase + "/spot/" + id, true, failResponseBodyCallback)
+    return doDelete(backendApiBase + "/spot/" + id, true, failResponseBodyCallback)
 }
 
 export function getAllRegions() {
@@ -95,48 +95,39 @@ export function emptyBounds(bounds) {
 }
 
 export function saveRiver(river) {
-    return doPostJsonSync(backendApiBase + "/river/" + river.id, river, true)
+    return doPostJson(backendApiBase + "/river/" + river.id, river, true)
 }
 
 export function removeRiver(id) {
-    return doDeleteSync(backendApiBase + "/river/" + id, true)
+    return doDelete(backendApiBase + "/river/" + id, true)
 }
 
 export function setRiverVisible(riverId, visible) {
-    return doPostJsonSync(backendApiBase + "/river/" + riverId + "/visible", visible, true)
+    return doPostJson(backendApiBase + "/river/" + riverId + "/visible", visible, true);
 }
 
 export function getImages(id, _type) {
-    var imgs = doGetJson(backendApiBase + "/spot/" + id + "/img?type=" + _type)
-    if (imgs) {
-        return imgs
-    } else {
-        return []
-    }
+    return doGetJson(backendApiBase + "/spot/" + id + "/img?type=" + _type);
 }
 
 export function removeImage(spotId, id, _type) {
-    return doDeleteWithJsonRespSync(backendApiBase + "/spot/" + spotId + "/img/" + id + "?type=" + _type, true)
+    return doDeleteWithJsonResp(backendApiBase + "/spot/" + spotId + "/img/" + id + "?type=" + _type, true)
 }
 
 export function setImageEnabled(spotId, id, enabled, _type) {
-    return doPostJsonSync(backendApiBase + "/spot/" + spotId + "/img/" + id + "/enabled?type=" + _type, enabled, true)
+    return doPostJson(backendApiBase + "/spot/" + spotId + "/img/" + id + "/enabled?type=" + _type, enabled, true)
 }
 
 export function getSpotMainImageUrl(spotId) {
-    img =  doGetJson(backendApiBase + "/spot/" + spotId + "/preview")
-    if (img) {
-        return img.preview_url
-    }
-    return null
+    return doGetJson(backendApiBase + "/spot/" + spotId + "/preview").then(img => img.preview_url).catch(err => null);
 }
 
 export function setSpotPreview(spotId, imgId, _type) {
-    return doPostJsonSync(backendApiBase + "/spot/" + spotId + "/preview?type=" + _type, imgId, true)
+    return doPostJson(backendApiBase + "/spot/" + spotId + "/preview?type=" + _type, imgId, true)
 }
 
 export function dropSpotPreview(spotId) {
-    return doDeleteSync(backendApiBase + "/spot/" + spotId + "/preview", true)
+    return doDelete(backendApiBase + "/spot/" + spotId + "/preview", true)
 }
 
 export function getLogEntries(objectType, objectId) {
@@ -149,7 +140,7 @@ export function getMeteoPoints() {
 
 
 export function addMeteoPoint(p) {
-    return doPostJsonSync(backendApiBase + "/meteo-point", p, true)
+    return doPostJson(backendApiBase + "/meteo-point", p, true)
 }
 
 export function isActive(countryId, regionId, riverId, spotId) {
@@ -261,7 +252,7 @@ export function getFromEntityHash(params, pos) {
     return 0
 }
 
-export function setActiveEntity(countryId, regionId, riverId, spotId) {
+export function setActiveEntityUrlHash(countryId, regionId, riverId, spotId) {
     window.location.hash = createActiveEntityHash(countryId, regionId, riverId, spotId)
 }
 

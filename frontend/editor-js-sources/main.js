@@ -2,18 +2,25 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import EditorPage from './editor-page.vue'
 
-import VueSelect from 'vue-select'
+import vSelect from 'vue-select'
 import VueGallery from 'vue-gallery';
 import FileUpload from 'vue-upload-component';
 
 import upperFirst from 'lodash/upperFirst'
 import camelCase from 'lodash/camelCase'
 
+import {TabsPlugin} from 'bootstrap-vue'
+
 import {
     COUNTRY_ACTIVE_ENTITY_LEVEL,
     getActiveId,
+    getRegion,
     getRegions,
+    getReports,
+    getRiver,
     getRiversByCountry,
+    getRiversByRegion,
+    getSpot,
     getSpots,
     REGION_ACTIVE_ENTITY_LEVEL,
     RIVER_ACTIVE_ENTITY_LEVEL,
@@ -21,10 +28,14 @@ import {
 } from './editor'
 import {getAuthorizedUserInfoOrNull} from './auth'
 import {sensors} from './sensors'
-
-
 import 'bootstrap/dist/css/bootstrap.min.css';
-import '../css/editor.css'
+import 'vue-select/dist/vue-select.css';
+
+import './style/main.css'
+import './style/editor.css'
+
+require("bootstrap");
+
 
 export var app;
 
@@ -39,7 +50,7 @@ function getById(arr, id) {
     return null
 }
 
-export function getRiverFromTree(countryId, regionId, id) {
+export function getRiverFromTree(countryId, regionId, riverId) {
     let river;
     let country = store.state.treePath[countryId];
     if (!country) {
@@ -50,14 +61,24 @@ export function getRiverFromTree(countryId, regionId, id) {
         var region = getById(country.regions, regionId);
         let rivers = region.rivers;
         if (!rivers) {
-            rivers = getRiversByRegion(countryId, region.id);
+            rivers = [];//getRiversByRegion(countryId, region.id);
             Vue.set(region, "rivers", rivers);
         }
-        river = getById(rivers, id)
+        river = getById(rivers, riverId)
     } else {
-        river = getById(country.rivers, id)
+        river = getById(country.rivers, riverId)
     }
     return river;
+}
+
+export function getRegionFromTree(countryId, regionId) {
+    let country = store.state.treePath[countryId];
+    if (!country) {
+        //country = showCountrySubentities(countryId)
+        return null;
+    }
+
+    return regionId && regionId > 0 ? getById(country.regions, regionId) : null;
 }
 
 
@@ -69,7 +90,7 @@ export function getSpotsFromTree(countryId, regionId, riverId) {
     } else {
         river = getById(store.state.treePath[countryId].rivers, riverId)
     }
-    return river.spots
+    return river.spots ? river.spots : []
 }
 
 
@@ -80,7 +101,8 @@ export const store = new Vuex.Store({
             visible: false,
             editMode: false,
             images: [],
-            schemas: []
+            schemas: [],
+            videos: [],
         },
         rivereditorstate: {
             visible: false,
@@ -118,34 +140,48 @@ export const store = new Vuex.Store({
             state.countryeditorstate.visible = false;
         },
 
-        selectCountry(state, country) {
-            state.countryeditorstate.country = country;
+        selectCountry(state, payload) {
+            state.countryeditorstate.country = payload.country;
             state.countryeditorstate.editMode = false;
             state.countryeditorstate.visible = true
         },
-        selectRegion(state, country, id) {
-            state.regioneditorstate.region = getRegion(id);
-            state.regioneditorstate.country = country;
+        selectRegion(state, payload) {
+            state.regioneditorstate.region = getRegion(payload.regionId);
+            state.regioneditorstate.country = payload.country;
             state.regioneditorstate.editMode = false;
             state.regioneditorstate.visible = true
         },
-        selectRiver(state, country, region, id) {
-            state.rivereditorstate.river = getRiver(id);
-            state.rivereditorstate.pageMode = 'view';
-            state.rivereditorstate.reports = getReports(id);
-            state.rivereditorstate.country = country;
-            state.rivereditorstate.region = region;
-            state.rivereditorstate.visible = true;
+        selectRiver(state, payload) {
+            getRiver(payload.riverId).then(river => {
+                state.rivereditorstate.river = river;
+                state.rivereditorstate.pageMode = 'view';
+                state.rivereditorstate.country = payload.country;
+                state.rivereditorstate.region = payload.region;
+                state.rivereditorstate.visible = true;
+                getReports(payload.riverId).then(reports => {
+                    state.rivereditorstate.reports = reports;
+                });
+            });
+        },
+        selectSpot(state, payload) {
+            getSpot(payload.spotId).then(spot => {
+                state.spoteditorstate.country = payload.country;
+                state.spoteditorstate.region = payload.region;
+                state.spoteditorstate.river = payload.river;
+                state.spoteditorstate.spot = spot;
+                state.spoteditorstate.editMode = false;
+                state.spoteditorstate.visible = true;
+            });
         },
 
-        setActiveEntityState(state, countryId, regionId, riverId, spotId) {
-            state.selectedSpot = spotId;
-            state.selectedRiver = riverId;
-            state.selectedRegion = regionId;
-            state.selectedCountry = countryId;
+        setActiveEntityState(state, payload) {
+            state.selectedSpot = payload.spotId;
+            state.selectedRiver = payload.riverId;
+            state.selectedRegion = payload.regionId;
+            state.selectedCountry = payload.countryId;
         },
 
-        newRiver(state, country, region) {
+        newRiver(state, payload) {
             state.spoteditorstate.visible = false;
             state.rivereditorstate.visible = false;
             state.regioneditorstate.visible = false;
@@ -155,12 +191,12 @@ export const store = new Vuex.Store({
             state.rivereditorstate.pageMode = 'edit';
             state.rivereditorstate.river = {
                 id: 0,
-                region: region,
+                region: payload.region,
                 aliases: [],
                 props: {}
             };
-            state.rivereditorstate.country = country;
-            state.rivereditorstate.region = region;
+            state.rivereditorstate.country = payload.country;
+            state.rivereditorstate.region = payload.region;
         },
 
         showCountrySubentities(state, id) {
@@ -177,27 +213,62 @@ export const store = new Vuex.Store({
             Vue.delete(store.state.treePath, id)
         },
 
-        showRiverSubentities(state, id) {
-            if (store.state.treePath[t.country.id]) {
-                getSpots(id).then(spots => Vue.set(t.river, "spots", spots));
+        showRegionSubentities(state, payload) {
+            getRiversByRegion(payload.countryId, payload.regionId)
+                .then(rivers => {
+                    let region = getRegionFromTree(payload.countryId, payload.regionId);
+                    if (region) {
+                        Vue.set(region, "rivers", rivers)
+                    }
+                });
+        },
+
+        hideRegionSubentities(state, payload) {
+            var region = getRegionFromTree(payload.countryId, payload.regionId);
+            if (region) {
+                Vue.delete(region, "rivers");
             }
         },
-        hideRiverSubentities(state, id) {
-            Vue.delete(store.state.treePath, id)
-        },
 
-        showRegionTree(state, countryId, id) {
-            var region = getById(state.treePath[countryId].regions, id);
-            Vue.set(region, "rivers", getRiversByRegion(countryId, id));
+        showRiverSubentities(state, payload) {
+            getSpots(payload.riverId).then(spots => {
+                let river = getRiverFromTree(payload.countryId, payload.regionId, payload.riverId);
+                if (river) {
+                    Vue.set(river, "spots", spots)
+                }
+            });
         },
-
-        showRiverTree(state, countryId, regionId, id) {
-            var river = getRiverFromTree(countryId, regionId, id);
-            getSpots(id).then(spots => Vue.set(river, "spots", spots))
-        },
-        hideRiverTree(state, countryId, regionId, id) {
-            var river = getRiverFromTree(countryId, regionId, id);
+        hideRiverSubentities(state, payload) {
+            var river = getRiverFromTree(payload.countryId, payload.regionId, payload.riverId);
             Vue.delete(river, "spots")
+        },
+
+        setRiverEditorPageMode(state, mode) {
+            state.rivereditorstate.pageMode = mode;
+        },
+        setRiverEditorVisible(state, visible) {
+            state.rivereditorstate.visible = visible;
+        },
+        setSpotEditorState(state, payload) {
+            state.spoteditorstate = payload;
+        },
+        setSpotEditorEditMode(state, payload) {
+            state.spoteditorstate.editMode = payload;
+        },
+        setSpotEditorVisible(state, visible) {
+            state.spoteditorstate.visible = visible;
+        },
+        setSpotImages(state, images) {
+            state.spoteditorstate.images = images;
+        },
+        setSpotSchemas(state, schemas) {
+            state.spoteditorstate.schemas = schemas;
+        },
+        setSpotVideos(state, videos) {
+            state.spoteditorstate.videos = videos;
+        },
+        setErrMsg(state, msg) {
+            state.errMsg = msg;
         },
 
         onTreeSwitch(state, callback) {
@@ -232,9 +303,10 @@ export const store = new Vuex.Store({
 });
 
 export function init() {
-    Vue.component('v-select', VueSelect.VueSelect);
+    Vue.component('v-select', vSelect);
     Vue.component('gallery', VueGallery);
     Vue.component('file-upload', FileUpload);
+    Vue.use(TabsPlugin);
 
     const requireComponent = require.context('./components', true, /.+?\.(vue|js)$/);
 
