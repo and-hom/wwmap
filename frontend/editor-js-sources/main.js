@@ -1,6 +1,14 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import EditorPage from './editor-page.vue'
+import DocsIntegrationPage from './docs-integration-page.vue'
+import MapPage from './map-page.vue'
+import LogPage from './log-page.vue'
+import UsersPage from './users-page.vue'
+import TechPage from './tech-page.vue'
+import AboutPage from './about-page.vue'
+import DocsPage from './docs-page.vue'
+import DashboardPage from './dashboard-page.vue'
 
 import vSelect from 'vue-select'
 import VueGallery from 'vue-gallery';
@@ -302,7 +310,43 @@ export const store = new Vuex.Store({
     }
 });
 
-export function init() {
+export function initEditor() {
+    return init(EditorPage)
+}
+
+export function initDocsIntegration() {
+    return init(DocsIntegrationPage)
+}
+
+export function initMap() {
+    return init(MapPage)
+}
+
+export function initLog() {
+    return init(LogPage)
+}
+
+export function initUsers() {
+    return init(UsersPage)
+}
+
+export function initTech() {
+    return init(TechPage)
+}
+
+export function initAbout() {
+    return init(AboutPage)
+}
+
+export function initDocs() {
+    return init(DocsPage)
+}
+
+export function initDashboard() {
+    return init(DashboardPage)
+}
+
+function init(page) {
     Vue.component('v-select', vSelect);
     Vue.component('gallery', VueGallery);
     Vue.component('file-upload', FileUpload);
@@ -325,7 +369,7 @@ export function init() {
 
     app = new Vue({
         el: '#vue-app',
-        render: h => h(EditorPage),
+        render: h => h(page),
     });
 }
 

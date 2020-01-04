@@ -7,7 +7,13 @@ export function sendRequest(url, _type, auth) {
         xhr.open(_type, url, true);
         addAuth(xhr, auth);
 
-        xhr.onload = () => resolve(xhr.responseText);
+        xhr.onload = () => {
+            if (xhr.status / 100 != 2) {
+                reject(xhr.statusText);
+                return;
+            }
+            resolve(xhr.responseText);
+        };
         xhr.onerror = () => reject(xhr.statusText);
 
         try {

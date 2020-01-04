@@ -51,16 +51,9 @@
 
 <script>
     import {
-        COUNTRY_ACTIVE_ENTITY_LEVEL,
-        getActiveId,
         getAllRegions,
         getCountries,
-        REGION_ACTIVE_ENTITY_LEVEL,
-        RIVER_ACTIVE_ENTITY_LEVEL,
-        SPOT_ACTIVE_ENTITY_LEVEL
     } from './editor'
-    import {getAuthorizedUserInfoOrNull} from './auth'
-    import {sensors} from './sensors'
     import {store} from './main'
 
 

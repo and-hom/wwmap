@@ -25,11 +25,11 @@
     module.exports = {
         props: ['id', 'roles', 'okFn'],
         created: function() {
-            component = this
+            let component = this;
             $(document).ready(function(){
                 $(document).on('show.bs.modal','#'+component.id, function (event) {
-                    component.userId =  $(event.relatedTarget).data('user-id')
-                    component.msg =  $(event.relatedTarget).data('label')
+                    component.userId =  $(event.relatedTarget).data('user-id');
+                    component.msg =  $(event.relatedTarget).data('label');
                     component.currentRole = $(event.relatedTarget).data('current-role')
                 })
             })

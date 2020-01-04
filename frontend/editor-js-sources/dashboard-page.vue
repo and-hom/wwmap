@@ -1,0 +1,129 @@
+<template>
+    <page link="refs.htm">
+        <b-tabs>
+            <b-tab title="Уровни воды" active>
+                <div style="margin-left:10px; margin-top: 10px;">
+                    <h2>Уровни воды</h2>
+                    <div v-for="(data,id) in levels">
+                        <div style="width: 450px; height: 350px; display: inline-block; vertical-align: top;">
+                            <img :src="'http://gis.vodinfo.ru/informer/draw/v2_' + id + '_400_300_10_ffffff_110_8_7_H_none.png'"/>
+                        </div>
+                        <div style="width: 450px; height: 350px; display: inline-block; vertical-align: top;">
+                            <canvas :id="canvasId(id)" width="400" height="300"></canvas>
+                            <script type="application/javascript">
+                            </script>
+                        </div>
+                        <div style="width: 450px; height: 350px; display: inline-block; vertical-align: top;">
+                            <ul>
+                                <li v-for="river in levels[id].rivers">
+                                    <a :href="'https://wwmap.ru/editor.htm#' + river.region.country_id +',' + river.region.id + ',' + river.id">{{river.title}}</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </b-tab>
+            <b-tab title="Сайты">
+                <div style="margin-left:10px; margin-top: 10px;">
+                    <h2>Сайты, на которых размещена карта</h2>
+                    <ul>
+                        <li v-for="ref in refs"><a target="_blank" :href="ref.page">{{ ref.page }}</a></li>
+                    </ul>
+                </div>
+            </b-tab>
+        </b-tabs>
+    </page>
+</template>
+
+<script>
+    import {backendApiBase} from './config'
+    import {doGetJson} from './api'
+    import Chart from 'chart.js';
+    import {sensorsById} from './sensors'
+
+    export default {
+        mounted() {
+            doGetJson(backendApiBase + "/dashboard/levels").then(levels => this.levels = levels);
+            doGetJson(backendApiBase + "/dashboard/ref-sites").then(refs => this.refs = refs);
+        },
+        data() {
+            return {
+                refs: [],
+                levels: [],
+                canvasId: function (id) {
+                    return 'line' + id
+                },
+                onLoadPlot: function (id) {
+                    var ctx = document.getElementById(this.canvasId(id)).getContext('2d');
+                    var chartData = this.levels[id].chart_data;
+                    var min = null;
+                    var max = null;
+                    for (var i in chartData.datasets[0].data) {
+                        var l = chartData.datasets[0].data[i];
+                        if (l == null) {
+                            continue
+                        }
+                        if (l < min || min == null) {
+                            min = l
+                        }
+                        if (l > max || max == null) {
+                            max = l
+                        }
+                    }
+                    if (max - min < 120) {
+                        var border = (120 - max + min) / 2;
+                        max += border;
+                        min -= border;
+                    }
+                    max = Math.round(max / 10) * 10;
+                    min = Math.round(min / 10) * 10;
+
+                    var myChart = new Chart(ctx, {
+                        type: 'line',
+                        data: chartData,
+                        options: {
+                            title: {
+                                display: true,
+                                text: sensorsById[parseInt(id)]
+                            },
+                            tooltips: {
+                                mode: 'index',
+                                intersect: false,
+                            },
+                            hover: {
+                                mode: 'nearest',
+                                intersect: true
+                            },
+                            legend: {
+                                display: false,
+                            },
+
+                            scales: {
+                                xAxes: [{
+                                    display: true,
+                                    ticks: {
+                                        callback: function (dataLabel, index) {
+                                            return dataLabel
+                                        }
+                                    }
+                                }],
+                                yAxes: [{
+                                    ticks: {
+                                        stepSize: 10,
+                                        min: min,
+                                        max: max,
+                                    }
+                                }]
+                            }
+                        }
+                    });
+                }
+            }
+        },
+        updated: function () {
+            for (var id in this.levels) {
+                this.onLoadPlot(id);
+            }
+        }
+    }
+</script>
