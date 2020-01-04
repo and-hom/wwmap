@@ -1,8 +1,7 @@
 <html>
 <head>
     <meta charset="utf-8"/>
-    <script type="text/javascript" src="js-editor/api.js"></script>
-    <script type="text/javascript" src="js-editor/auth.js"></script>
+    <script type="text/javascript" src="js/editor.v2.js"></script>
 </head>
 <body>
 <div id="nojs">
@@ -20,7 +19,7 @@
                         return null;
                     }
                     else {
-                        return decodeURI(results[1]) || 0;
+                        return wwmap_editor.decodeURI(results[1]) || 0;
                     }
                 };
             }
@@ -49,12 +48,12 @@
             throw ''
         }
 
-        acquireTokenVk(code, function(authObj) {
+        wwmap_editor.acquireTokenVk(code, function(authObj) {
             if (authObj) {
                 startWwmapSession('vk', authObj.access_token)
             }
 
-            window.location.href = decodeURIComponent(state)
+            window.location.href = wwmap_editor.decodeURIComponent(state)
         });
     </script>
 </body>

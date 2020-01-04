@@ -19,9 +19,9 @@ module.exports = env => {
         devtool: "source-map",
         entry: ["./main.js",],
         output: {
-            path: __dirname + "/../js-editor",
+            path: __dirname + "/../js",
             filename: "editor.v2.js",
-            publicPath: './js-editor/',
+            publicPath: './js/',
             libraryTarget: 'var',
             library: 'wwmap_editor'
         },
