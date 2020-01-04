@@ -88,6 +88,11 @@
                                             <strong>Гидропост <a href="http://gis.vodinfo.ru/informer/">gis.vodinfo.ru/informer</a></strong>
                                         </div>
                                         <div class="col-9">
+                                            <ul id="sensors">
+                                                <li v-for="sensor in selectedSensors">
+                                                    {{ sensor }} - {{ sensorsById[sensor] }} <button v-on:click.stop="removeSensor(sensor)">[x]</button>
+                                                </li>
+                                            </ul>
                                             <v-select v-model="activeSensor" label="title" :options="sensors"
                                                       @input="onSelectSensor" >
                                                 <template slot="no-options">
@@ -344,7 +349,9 @@
         <div v-else class="spot-display">
             <h1>{{ river.title }}</h1>
             <div style="float:right;">
-                <img border='0' :src="informerUrl()">
+                <div style="width: 700px;">
+                    <img border='0' :src="informerUrl"  v-for="informerUrl in informerUrls()">
+                </div>
                 <div id="map" style="width:650px; height: 450px;padding-left: 30px;"></div>
             </div>
             <dl>
@@ -489,7 +496,7 @@
 <script>
     import FileUpload from 'vue-upload-component';
     import {getWwmapSessionId, hasRole, ROLE_ADMIN, ROLE_EDITOR} from '../auth'
-    import {sensors} from '../sensors'
+    import {sensors, sensorsById} from '../sensors'
     import {getRiverFromTree, store} from '../main'
     import {
         all_categories,
@@ -646,8 +653,7 @@
                         this.prevRegionFake = this.river.region.fake;
                         this.prevCountryId = this.river.region.country_id;
 
-                        var r = this.river;
-                        this.activeSensor = this.sensors.filter(function(s){return s.id==r.props.vodinfo_sensor})[0]
+                        this.selectedSensors = this.river.props.vodinfo_sensors;
                     }
                 },
 
@@ -662,6 +668,7 @@
                     saveRiver(this.river).then(updated => {
                         this.river = updated;
                         this.meteoPoint = this.getMeteoPointById(this.river.props.meteo_point);
+                        this.selectedSensors = this.river.props.vodinfo_sensors;
                         this.pageMode='view';
                         this.hideError();
                         var new_region_id = nvlReturningId(updated.region);
@@ -772,6 +779,7 @@
                 reload: function () {
                     getRiver(this.river.id).then(river => {
                         this.river = river;
+                        this.selectedSensors = this.river.props.vodinfo_sensors;
                         this.meteoPoint = this.getMeteoPointById(this.river.props.meteo_point);
                         this.spotsForDeleteIds = [];
                         this.hideError();
@@ -782,6 +790,7 @@
                     setRiverVisible(this.river.id, visible).then(river => {
                         this.river = river;
                         this.meteoPoint = this.getMeteoPointById(this.river.props.meteo_point);
+                        this.selectedSensors = this.river.props.vodinfo_sensors;
                         // set "visible" property to global storage to set icon in the left-side tree using reactivity of vue.js
                         var regionId = this.river.region.id;
                         if (this.river.region.fake) {
@@ -857,8 +866,17 @@
                 prevRegionFake: null,
                 prevCountryId: 0,
                 sensors: sensors,
+                selectedSensors: [],
+                sensorsById: sensorsById,
                 activeSensor: {id:null, title:null},
-                informerUrl: function() {return this.river.props.vodinfo_sensor ? "http://gis.vodinfo.ru/informer/draw/v2_" + this.river.props.vodinfo_sensor + "_400_300_30_ffffff_110_8_7_H_none.png" : null},
+                informerUrls: function() {
+                    if (!this.river.props.vodinfo_sensors) {
+                        return [];
+                    }
+                    return this.river.props.vodinfo_sensors.map(function (s) {
+                        return "http://gis.vodinfo.ru/informer/draw/v2_" + s + "_300_200_30_ffffff_110_8_7_H_none.png";
+                    });
+                },
                 meteoPoints: [],
                 meteoPoint: null,
                 meteoPointSelectMode: true,
@@ -899,34 +917,41 @@
                     }
                     let t = this;
                     ymaps.ready(function () {
-                        addMapLayers();
+                        ymaps.modules.require(['overlay.BiPlacemark'], function (BiPlacemarkOverlay) {
+                            if (ymaps.overlay.storage.get("BiPlacemrakOverlay") == null) {
+                                ymaps.overlay.storage.add("BiPlacemrakOverlay", BiPlacemarkOverlay);
+                            }
+                            addMapLayers();
 
-                        let mapType = t.getDefaultMap();
-                        let map = new ymaps.Map("map", {
-                            bounds: t.bounds,
-                            type: mapType,
-                            controls: ["zoomControl"]
+                            let mapType = t.getDefaultMap();
+                            let map = new ymaps.Map("map", {
+                                bounds: t.bounds,
+                                type: mapType,
+                                controls: ["zoomControl"]
+                            });
+                            map.controls.add(
+                                new ymaps.control.TypeSelector([
+                                        'osm#standard',
+                                        'ggc#standard',
+                                        'topomapper#genshtab',
+                                        'marshruty.ru#genshtab',
+                                        'yandex#satellite',
+                                        'google#satellite',
+                                        'bing#satellite',
+                                    ]
+                                )
+                            );
+                            registerMapSwitchLayersHotkeys(map);
+                            var objectManager = new ymaps.RemoteObjectManager(backendApiBase + '/ymaps-tile-ww?bbox=%b&zoom=%z&river=' + t.river.id, {
+                                clusterHasBalloon: false,
+                                geoObjectOpenBalloonOnClick: false,
+                                geoObjectStrokeWidth: 3,
+                                splitRequests: true
+                            });
+                            map.geoObjects.add(objectManager);
+                            t.map = map;
+                            t.objectManager = objectManager;
                         });
-                        map.controls.add(
-                            new ymaps.control.TypeSelector([
-                                    'osm#standard',
-                                    'ggc#standard',
-                                    'yandex#satellite',
-                                    'google#satellite',
-                                    'bing#satellite',
-                                ]
-                            )
-                        );
-                        registerMapSwitchLayersHotkeys(map);
-                        var objectManager = new ymaps.RemoteObjectManager(backendApiBase + '/ymaps-tile-ww?bbox=%b&zoom=%z&river=' + t.river.id, {
-                            clusterHasBalloon: false,
-                            geoObjectOpenBalloonOnClick: false,
-                            geoObjectStrokeWidth: 3,
-                            splitRequests: true
-                        });
-                        map.geoObjects.add(objectManager);
-                        t.map = map;
-                        t.objectManager = objectManager;
                     });
                 },
                 reloadMap: function() {
@@ -1000,8 +1025,32 @@
             }
         },
         methods: {
-            onSelectSensor: function(x) { this.river.props.vodinfo_sensor = x.id },
-            onSelectMeteoPoint: function(x) { this.river.props.meteo_point = x.id }
+            onSelectSensor: function (x) {
+                if (!x || !x.id) {
+                    return
+                }
+                if (!this.river.props.vodinfo_sensors) {
+                    this.river.props.vodinfo_sensors = []
+                }
+                if (!this.river.props.vodinfo_sensors.includes(x.id)) {
+                    this.river.props.vodinfo_sensors.push(x.id);
+                }
+                if (this.activeSensor.id != null) {
+                    this.activeSensor = {id: null, title: null};
+                }
+                this.selectedSensors = this.river.props.vodinfo_sensors;
+            },
+            removeSensor: function(id) {
+                if(this.river.props.vodinfo_sensors) {
+                    this.river.props.vodinfo_sensors = this.river.props.vodinfo_sensors.filter(function (s) {
+                        return s!=id;
+                    }).slice();
+                    this.selectedSensors = this.river.props.vodinfo_sensors;
+                }
+            },
+            onSelectMeteoPoint: function (x) {
+                this.river.props.meteo_point = x.id
+            }
         }
     }
 

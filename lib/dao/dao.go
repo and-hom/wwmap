@@ -3,6 +3,7 @@ package dao
 import (
 	. "github.com/and-hom/wwmap/lib/geo"
 	_ "github.com/lib/pq"
+	"io"
 	"time"
 )
 
@@ -14,6 +15,7 @@ type RiverDao interface {
 	HasProperties
 	IdEntity
 	Find(id int64) (River, error)
+	FindForImage(imgId int64) (River, error)
 	ListRiversWithBounds(bbox Bbox, limit int, showUnpublished bool) ([]RiverTitle, error)
 	FindTitles(titles []string) ([]RiverTitle, error)
 	ListAll() ([]RiverTitle, error)
@@ -71,6 +73,13 @@ type WaterWayDao interface {
 	ListByBbox(bbox Bbox) ([]WaterWay, error)
 	ListByBboxNonFilpped(bbox Bbox) ([]WaterWay4Router, error)
 	ListByRiverIdNonFlipped(riverId int64) ([]WaterWay4Router, error)
+	List(limit int, offset int) ([]WaterWay4PathCorrection, error)
+	PathSimplifiedPersister() (PathSimplifiedPersister, error)
+}
+
+type PathSimplifiedPersister interface {
+	io.Closer
+	Add(id int64, pathSimplified []Point) error
 }
 
 type WaterWayOsmRefDao interface {
@@ -96,10 +105,14 @@ type ImgDao interface {
 	Upsert(img ...Img) ([]Img, error)
 	Find(id int64) (Img, bool, error)
 	List(wwId int64, limit int, _type ImageType, enabledOnly bool) ([]Img, error)
+	ListExt(wwId int64, limit int, _type ImageType, enabledOnly bool) ([]ImgExt, error)
 	ListAllBySpot(wwId int64) ([]Img, error)
 	ListMainByRiver(wwId int64) ([]Img, error)
 	ListAllByRiver(wwId int64) ([]Img, error)
 	SetEnabled(id int64, enabled bool) error
+	SetDateAndLevel(id int64, date time.Time, level map[string]int8) error
+	SetManualLevel(id int64, level int8) (map[string]int8, error)
+	ResetManualLevel(id int64) (map[string]int8, error)
 	SetMain(spotId int64, id int64) error
 	DropMainForSpot(spotId int64) error
 	GetMainForSpot(spotId int64) (Img, bool, error)
@@ -169,9 +182,18 @@ type MeteoPointDao interface {
 	List() ([]MeteoPoint, error)
 }
 
+type LevelSensorDao interface {
+	Find(id string) (LevelSensor, error)
+	List() ([]LevelSensor, error)
+	SetGraduation(id string, graduation [LEVEL_GRADUATION]int) error
+	CreateIfMissing(id string) error
+}
+
 type LevelDao interface {
 	Insert(level Level) error
-	List(fromDate JSONDate) (map[string][]Level, error)
+	ListBySensorAndDate(fromDate time.Time, toDate time.Time) (map[string]map[string]Level, error)
+	ListForSensor(sensorId string) ([]Level, error)
+	GetDailyLevelBetweenDates(sensorId string, from time.Time, to time.Time) ([]Level, error)
 	RemoveNullsBefore(fromDate JSONDate) error
 }
 

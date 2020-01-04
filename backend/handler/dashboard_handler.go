@@ -5,15 +5,17 @@ import (
 	"github.com/and-hom/wwmap/lib/dao"
 	. "github.com/and-hom/wwmap/lib/handler"
 	. "github.com/and-hom/wwmap/lib/http"
+	"github.com/and-hom/wwmap/lib/util"
 	"net/http"
 	"time"
 )
 
-const PLOT_DAYS = 10
+const DEFAULT_PLOT_DAYS = 10
 
 type DashboardHandler struct {
 	App
-	LevelDao dao.LevelDao
+	LevelDao       dao.LevelDao
+	LevelSensorDao dao.LevelSensorDao
 }
 
 func (this *DashboardHandler) Init() {
@@ -36,23 +38,50 @@ func (this *DashboardHandler) Levels(w http.ResponseWriter, req *http.Request) {
 	rivers, err := this.RiverDao.ListAll()
 	if err != nil {
 		OnError500(w, err, "Can not get all rivers")
+		return
 	}
 
 	riversBySensor := make(map[string][]dao.RiverTitle)
 	for _, river := range rivers {
-		sensorIdF, exists := river.Props["vodinfo_sensor"]
+		sensorIds, exists := river.Props["vodinfo_sensors"]
 		if !exists {
 			continue
 		}
-		sensorId := fmt.Sprintf("%d", int(sensorIdF.(float64)))
-		riversBySensor[sensorId] = append(riversBySensor[sensorId], river)
+		for _, sensorIdF := range sensorIds.([]interface{}) {
+			sensorId := fmt.Sprintf("%d", int(sensorIdF.(float64)))
+			riversBySensor[sensorId] = append(riversBySensor[sensorId], river)
+		}
 	}
 
-	today := time.Now()
-	_10daysLevels := today.Add(time.Hour * 24 * (-PLOT_DAYS))
-	levelData, err := this.LevelDao.List(dao.JSONDate(_10daysLevels))
+	fromDate, err := parseDate("from", req, -DEFAULT_PLOT_DAYS)
+	if err != nil {
+		OnError(w, err, "Can't parse 'from' date", http.StatusBadRequest)
+		return
+	}
+
+	toDate, err := parseDate("to", req, 0)
+	if err != nil {
+		OnError(w, err, "Can't parse 'to' date", http.StatusBadRequest)
+		return
+	}
+
+	if fromDate.After(toDate) {
+		OnError(w, err, fmt.Sprintf("fromDate %s is after toDate %s", fromDate, toDate), http.StatusBadRequest)
+		return
+	}
+
+	days := int64(toDate.Sub(fromDate).Hours()/24 + 1)
+
+	levelData, err := this.LevelDao.ListBySensorAndDate(fromDate, toDate)
 	if err != nil {
 		OnError500(w, err, "Can't list sensor data")
+		return
+	}
+
+	levelSensors, err := this.LevelSensorDao.List()
+	if err != nil {
+		OnError500(w, err, "Can't list level sensors")
+		return
 	}
 
 	result := make(map[string]SensorData)
@@ -66,23 +95,24 @@ func (this *DashboardHandler) Levels(w http.ResponseWriter, req *http.Request) {
 			}
 		}
 
-		labels := make([]string, PLOT_DAYS)
+		labels := make([]string, days)
 		line := JChartDataSet{
 			BackgroundColor: []string{"blue"},
 			BorderColor:     []string{"blue"},
 			Fill:            false,
 		}
-		for i := int64(0); i < PLOT_DAYS; i++ {
-			hoursOffset := time.Duration(int64(time.Hour) * 24 * (1 + i - PLOT_DAYS))
-			date := dao.JSONDate(today.Add(hoursOffset))
-			labels[i] = date.String()
-			var levelValue *int
-			for j := 0; j < len(data); j++ {
-				if data[j].Date.String() == date.String() {
-					levelValue = &data[j].Level
-					break
-				}
+		for i := int64(0); i < days; i++ {
+			hoursOffset := time.Duration(int64(time.Hour) * 24 * (1 + i - days))
+			date := util.ToDateInDefaultZone(toDate.Add(hoursOffset))
+			dateStr := util.FormatDate(date)
+
+			var levelValue *int = nil
+			l, found := data[dateStr]
+			if found {
+				levelValue = &l.Level
 			}
+
+			labels[i] = dateStr
 			line.Data = append(line.Data, levelValue)
 		}
 
@@ -91,20 +121,49 @@ func (this *DashboardHandler) Levels(w http.ResponseWriter, req *http.Request) {
 			DataSets: []JChartDataSet{line},
 		}
 
+		sensorMetrics := SensorMetrics{}
+		for i := 0; i < len(levelSensors); i++ {
+			if levelSensors[i].Id == sensorId {
+				sensorMetrics.L0 = levelSensors[i].L[0]
+				sensorMetrics.L1 = levelSensors[i].L[1]
+				sensorMetrics.L2 = levelSensors[i].L[2]
+				sensorMetrics.L3 = levelSensors[i].L[3]
+				break
+			}
+		}
+
 		result[sensorId] = SensorData{
-			SensorId:  sensorId,
-			Rivers:    rivers,
-			ChartData: sensorData,
+			SensorId:      sensorId,
+			Rivers:        rivers,
+			ChartData:     sensorData,
+			SensorMetrics: sensorMetrics,
 		}
 	}
 
 	this.JsonAnswer(w, result)
 }
 
+func parseDate(paramName string, req *http.Request, defaultOffsetDays int) (time.Time, error) {
+	toDateParam := req.FormValue(paramName)
+	if toDateParam != "" {
+		return time.Parse(util.DATE_FORMAT, toDateParam)
+	} else {
+		return time.Now().Add(time.Duration(defaultOffsetDays) * 24 * time.Hour), nil
+	}
+}
+
 type SensorData struct {
-	SensorId  string               `json:"sensor_id"`
-	Rivers    []RiverWithRegionDto `json:"rivers"`
-	ChartData JChartData           `json:"chart_data"`
+	SensorId      string               `json:"sensor_id"`
+	Rivers        []RiverWithRegionDto `json:"rivers"`
+	ChartData     JChartData           `json:"chart_data"`
+	SensorMetrics SensorMetrics        `json:"sensor_metrics"`
+}
+
+type SensorMetrics struct {
+	L0 int `json:"l0"`
+	L1 int `json:"l1"`
+	L2 int `json:"l2"`
+	L3 int `json:"l3"`
 }
 
 type JChartData struct {

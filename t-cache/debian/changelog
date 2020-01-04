@@ -1,3 +1,10 @@
+wwmap-t-cache (0.0.5) unstable; urgency=medium
+
+  * #114 Enable wwmap services by default
+  * #261 GET /version http method
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sun, 24 Nov 2019 12:15:28 +0300
+
 wwmap-t-cache (0.0.4) unstable; urgency=medium
 
   * Log all requests in debug log level only

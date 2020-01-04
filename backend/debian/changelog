@@ -1,3 +1,13 @@
+wwmap-backend (0.0.52) unstable; urgency=medium
+
+  * #265 Spot photo level
+  * #265 Fetch levels 9 days before now
+  * #265 Level page refactoring
+  * #265 Set and remove image date
+  * Parametrize server read/write timeout
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Wed, 01 Jan 2020 19:31:09 +0300
+
 wwmap-backend (0.0.51) unstable; urgency=medium
 
   * #259 Fix VK auth 

@@ -1,3 +1,41 @@
+wwmap-frontend (0.0.57) unstable; urgency=medium
+
+  * #265 Level page refactoring
+  * #265 Spot photo level  
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Wed, 01 Jan 2020 19:17:32 +0300
+
+wwmap-frontend (0.0.56) unstable; urgency=medium
+
+  * #251 Marshruty.ru and TopoMapper.com maps added
+  * #214 Hotkeys fix: don't switch map on type in the textarea element
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Thu, 05 Dec 2019 22:05:27 +0300
+
+wwmap-frontend (0.0.55) unstable; urgency=medium
+
+  * #209 Enable measurement tool for all users
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sun, 01 Dec 2019 19:49:05 +0300
+
+wwmap-frontend (0.0.54) unstable; urgency=medium
+
+  * #209 Clear track button behaveour fixed
+  * #209 Track data loading indicator. Stop measurement on tracks loading
+  * #209 Build path over location found by search control fixed
+  * #209 Misc data loading fixes
+  * #209 Line length calculation fix
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Thu, 28 Nov 2019 22:50:01 +0300
+
+wwmap-frontend (0.0.53) unstable; urgency=medium
+
+  * #209 Prevent measurement tool start on mobile device
+  * #259 Vk token type explicitly defined
+  * Fix long (multipoint) spots on map preview in river editor
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sun, 24 Nov 2019 16:43:00 +0300
+
 wwmap-frontend (0.0.52) unstable; urgency=medium
 
   * #209 overzoom message

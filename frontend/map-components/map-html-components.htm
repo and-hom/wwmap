@@ -103,9 +103,11 @@
 <script type="text/x-jquery-tmpl" id="river_desc_template">
     <div class="wwmap-popuptext" style="width:1200px; height:700px;position: relative; overflow-x:hidden;">
         <div style="float:right; width: 45%; height:100%; padding-left: 25px;">
-            {%if props.vodinfo_sensor%}
+            {%if props.vodinfo_sensors%}
             <h3>Уровень воды сейчас</h3>
-            <img src="http://gis.vodinfo.ru/informer/draw/v2_${props.vodinfo_sensor}_400_300_30_ffffff_110_8_7_H_none.png" style="margin-bottom:20px; margin-right:20px;"/>
+                {%each props.vodinfo_sensors%}
+                    <img src="http://gis.vodinfo.ru/informer/draw/v2_${value}_400_300_30_ffffff_110_8_7_H_none.png" style="margin-bottom:20px; margin-right:20px;"/>
+                {%/each%}
             {%/if%}
             <h3>Отчёты</h3>
             <div class="wwmap-report-list">

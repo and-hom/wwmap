@@ -1,3 +1,12 @@
+wwmap-cron (0.0.28) unstable; urgency=medium
+
+  * #265 Multiple level sensors per river
+  * #265 Download 10 days back if missing
+  * #265 Level graduation for every sensor
+  * #265 Sensor table added to backup
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Wed, 01 Jan 2020 19:11:48 +0300
+
 wwmap-cron (0.0.27) unstable; urgency=medium
 
   * #248 Bind tracks to rivers fix

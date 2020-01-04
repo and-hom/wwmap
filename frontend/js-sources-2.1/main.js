@@ -5,7 +5,8 @@ import {canEdit, getWwmapUserInfoForMapControls, loadFragment} from "./util";
 import {apiBase, MAP_FRAGMENTS_URL} from './config';
 
 import './style/map.css'
-import './style/lightbox.min.css'
+import './contrib/lightbox.min.css'
+import './contrib/lightbox.min'
 
 require('./tube');
 

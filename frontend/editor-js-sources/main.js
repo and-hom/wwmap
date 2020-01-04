@@ -13,11 +13,15 @@ import DashboardPage from './dashboard-page.vue'
 import vSelect from 'vue-select'
 import VueGallery from 'vue-gallery';
 import FileUpload from 'vue-upload-component';
+import Datepicker from 'vuejs-datepicker';
+import {ImageRating} from 'vue-rate-it';
 
 import upperFirst from 'lodash/upperFirst'
 import camelCase from 'lodash/camelCase'
 
 import {TabsPlugin} from 'bootstrap-vue'
+
+const moment = require('moment');
 
 import {
     COUNTRY_ACTIVE_ENTITY_LEVEL,
@@ -350,7 +354,15 @@ function init(page) {
     Vue.component('v-select', vSelect);
     Vue.component('gallery', VueGallery);
     Vue.component('file-upload', FileUpload);
+    Vue.component('datepicker', Datepicker);
+    Vue.component('image-rating', ImageRating);
     Vue.use(TabsPlugin);
+
+    Vue.filter('formatDateTimeStr', function(value) {
+        if (value) {
+            return moment(String(value)).format('YYYY-MM-DD HH:mm:ss')
+        }
+    });
 
     const requireComponent = require.context('./components', true, /.+?\.(vue|js)$/);
 

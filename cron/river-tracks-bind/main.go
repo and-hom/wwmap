@@ -14,8 +14,6 @@ func main() {
 
 	waterWayDao := dao.NewWaterWayPostgresDao(storage)
 
-	//log.Info("Simplify waterways preserving ref points")
-
 	log.Info("Bind tracks to rivers")
 	err := waterWayDao.BindWaterwaysToRivers()
 	if err != nil {

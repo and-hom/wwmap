@@ -106,16 +106,43 @@ export function setRiverVisible(riverId, visible) {
     return doPostJson(backendApiBase + "/river/" + riverId + "/visible", visible, true);
 }
 
+
 export function getImages(id, _type) {
-    return doGetJson(backendApiBase + "/spot/" + id + "/img?type=" + _type);
+    return doGetJson(backendApiBase + "/spot/" + id + "/img?type=" + _type).then(prepareImgs);
 }
 
 export function removeImage(spotId, id, _type) {
-    return doDeleteWithJsonResp(backendApiBase + "/spot/" + spotId + "/img/" + id + "?type=" + _type, true)
+    return doDeleteWithJsonResp(backendApiBase + "/spot/" + spotId + "/img/" + id + "?type=" + _type, true).then(prepareImgs)
 }
 
 export function setImageEnabled(spotId, id, enabled, _type) {
-    return doPostJson(backendApiBase + "/spot/" + spotId + "/img/" + id + "/enabled?type=" + _type, enabled, true)
+    return doPostJson(backendApiBase + "/spot/" + spotId + "/img/" + id + "/enabled?type=" + _type, enabled, true).then(prepareImgs)
+}
+
+export function setManualLevel(spotId, id, l) {
+    return doPostJson(backendApiBase + "/spot/" + spotId + "/img/" + id + "/manual-level", l, true)
+}
+
+export function resetManualLevel(spotId, id, l) {
+    return doDeleteWithJsonRespSync(backendApiBase + "/spot/" + spotId + "/img/" + id + "/manual-level",true)
+}
+
+export function setImageDate(spotId, id, date) {
+    return doPostJson(backendApiBase + "/spot/" + spotId + "/img/" + id + "/date", date, true).then(prepareImgs)
+}
+
+function prepareImgs(imgs) {
+    if (imgs) {
+        for (let i in imgs) {
+            let d = imgs[i].date;
+            if (d) {
+                imgs[i].date = new Date(d)
+            }
+        }
+        return imgs
+    } else {
+        return []
+    }
 }
 
 export function getSpotMainImageUrl(spotId) {

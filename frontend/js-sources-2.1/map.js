@@ -1,7 +1,7 @@
 import {WWMapSearchProvider} from "./searchProvider";
 import {createLegend} from "./legend";
 import {show_map_at_and_highlight_river, highlight_river} from "./main";
-import {CACHED_TILES_TEMPLATE, GOOGLE_SAT_TILES, bingSatTiles, getLastPositionAndZoom, setLastPositionZoomType, getWwmapUserInfoForMapControls} from './util';
+import {CACHED_TILES_TEMPLATE, GOOGLE_SAT_TILES, bingSatTiles, getLastPositionAndZoom, setLastPositionZoomType, getWwmapUserInfoForMapControls, isMobileBrowser} from './util';
 import {apiBase} from "./config";
 import {createMeasurementToolControl} from "./router/control";
 import {WWMapMeasurementTool} from "./router/measurement";
@@ -21,7 +21,8 @@ export function WWMap(divId, bubbleTemplate, riverList, tutorialPopup, catalogLi
     addLayer('google#satellite', 'Спутник Google (G)', 'Изображения © DigitalGlobe,CNES / Airbus, 2018,Картографические данные © Google, 2018', GOOGLE_SAT_TILES);
     addLayer('bing#satellite', 'Спутник Bing (B)', 'Изображения © Майкрософт (Microsoft), 2019', bingSatTiles);
     addCachedLayer('ggc#standard', 'Топографическая карта (T)', '', 'ggc', 0, 15);
-    //      addLayer('marshruty.ru#genshtab', 'Маршруты.ру', 'marshruty.ru', MARSHRUTY_RU_TILES, 8)
+    addCachedLayer('topomapper#genshtab', 'TopoMapper', 'TopoMapper.com', 'topo-mapper', 0, 13);
+    addCachedLayer('marshruty.ru#genshtab', 'Маршруты.ру', 'marshruty.ru', 'marshruty-ru', 8, 13);
 
     // workaround to change Yandex Satellite map title
     try {
@@ -31,6 +32,8 @@ export function WWMap(divId, bubbleTemplate, riverList, tutorialPopup, catalogLi
     }
 
     this.selectedRiverTracks = null;
+
+    this.isMobile = isMobileBrowser();
 }
 
 WWMap.prototype.loadRivers = function (bounds) {
@@ -88,6 +91,8 @@ WWMap.prototype.init = function () {
         new ymaps.control.TypeSelector([
                 'osm#standard',
                 'ggc#standard',
+                'topomapper#genshtab',
+                'marshruty.ru#genshtab',
                 'yandex#satellite',
                 'google#satellite',
                 'bing#satellite',
@@ -95,7 +100,9 @@ WWMap.prototype.init = function () {
         )
     );
     $(document).keyup(function (e) {
-        if (!e || !e.target || !e.target.tagName || e.target.tagName.toUpperCase() == 'INPUT') {
+        if (!e || !e.target || !e.target.tagName ||
+            e.target.tagName.toUpperCase() == 'INPUT' ||
+            e.target.tagName.toUpperCase() == 'TEXTAREA') {
             return
         }
         switch (e.which) {
@@ -119,33 +126,6 @@ WWMap.prototype.init = function () {
                 break;
         }
     });
-
-    let searchControl = new ymaps.control.SearchControl({
-        options: {
-            provider: new WWMapSearchProvider(),
-            placeholderContent: 'Река или порог'
-        }
-    });
-    searchControl.events.add('resultselect', function (e) {
-        let index = e.get('index');
-
-        searchControl.getResult(index).then(function (value) {
-            if(!value) {
-                return
-            }
-
-            let id = value.properties.get("id");
-            let type = value.properties.get("type");
-            let bounds = value.properties.get("boundedBy");
-
-            if (id && bounds && type && type == 'river') {
-                highlight_river(id)
-            }
-        }, function (err) {
-            console.log('Ошибка: ' + err);
-        });
-    }, this);
-    this.yMap.controls.add(searchControl);
 
     if (this.tutorialPopup) {
         this.yMap.controls.add(this.createHelpBtn(), {
@@ -194,7 +174,7 @@ WWMap.prototype.init = function () {
     this.objectManager = objectManager;
 
     objectManager.objects.events.add(['click'], function (e) {
-        if (!t.measurementTool || !t.measurementTool.enabled || !t.measurementTool.edit || t.measurementTool.overZoom) {
+        if (!t.measurementTool || !t.measurementTool.canEditPath()) {
             objectManager.objects.balloon.open(e.get('objectId'));
         }
     });
@@ -210,9 +190,45 @@ WWMap.prototype.init = function () {
 
     this.measurementTool = new WWMapMeasurementTool(yMap, objectManager, apiBase);
     var info = getWwmapUserInfoForMapControls();
-    if (info && info.experimental_features) {
+    if (!this.isMobile) {
         this.yMap.controls.add(createMeasurementToolControl(this.measurementTool), {});
     }
+
+
+    let searchControl = new ymaps.control.SearchControl({
+        options: {
+            provider: new WWMapSearchProvider(e => {
+                if (t.measurementTool && t.measurementTool.canEditPath()) {
+                    t.measurementTool.onMouseMoved(e.get('position'), e.get('coords'));
+                }
+            }, e => {
+                if (t.measurementTool && t.measurementTool.canEditPath()) {
+                    t.measurementTool.multiPath.pushEmptySegment();
+                }
+            }),
+            placeholderContent: 'Река или порог'
+        }
+    });
+    searchControl.events.add('resultselect', function (e) {
+        let index = e.get('index');
+
+        searchControl.getResult(index).then(function (value) {
+            if(!value) {
+                return
+            }
+
+            let id = value.properties.get("id");
+            let type = value.properties.get("type");
+            let bounds = value.properties.get("boundedBy");
+
+            if (id && bounds && type && type == 'river') {
+                highlight_river(id)
+            }
+        }, function (err) {
+            console.log('Ошибка: ' + err);
+        });
+    }, this);
+    this.yMap.controls.add(searchControl);
 };
 
 WWMap.prototype.setBounds = function (bounds, opts) {

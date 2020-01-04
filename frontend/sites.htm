@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Сайты, на которых размещена карта</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon"/>
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon"/>
+
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link type="text/css" rel="stylesheet" href="css/bootstrap-vue.css"/>
+
+    <script type="text/javascript" src="js-editor/polyfill.min.js"></script>
+    <script type="text/javascript" src="js-editor/tether.min.js"></script>
+    <script type="text/javascript" src="js-editor/jquery-3.2.1.slim.min.js"></script>
+    <script type="text/javascript" src="js-editor/bootstrap.min.js"></script>
+    <script type="text/javascript" src="js-editor/api.js"></script>
+    <script type="text/javascript" src="js-editor/auth.js"></script>
+    <script type="text/javascript" src="js-editor/vue.js"></script>
+    <script type="text/javascript" src="js-editor/http-vue-loader.js"></script>
+
+    <script type="text/javascript" src="js-editor/bootstrap-vue.js"></script>
+</head>
+<body>
+
+<div id="vue-app">
+    <page link="sites.htm">
+
+        <div style="margin-left:10px; margin-top: 10px;">
+            <h2>Сайты, на которых размещена карта</h2>
+            <ul>
+                <li v-for="ref in refs"><a target="_blank" :href="ref.page">{{ ref.page }}</a></li>
+            </ul>
+        </div>
+    </page>
+</div>
+
+<script type="text/javascript">
+    function getRefs() {
+        return doGetJsonSync(backendApiBase + "/dashboard/ref-sites")
+    }
+
+    Vue.component('auth', httpVueLoader('components/auth.vue'));
+    Vue.component('page', httpVueLoader('components/page.vue'));
+
+    var app = new Vue({
+        el: '#vue-app',
+        data: {
+            refs: getRefs(),
+            canvasId: function (id) {
+                return 'line' + id
+            },
+        }
+    })
+
+</script>
+
+</body>
+</html>

@@ -21,6 +21,7 @@
     "jqtpl-dsx": "^1.0.4",
     "jquery": "^3.1.1",
     "jquery.cookie": "^1.4.1",
+    "moment": "^2.24.0",
     "polyfill": "^0.1.0",
     "popper": "^1.0.1",
     "shutdown": "^0.3.0",
@@ -30,8 +31,10 @@
     "uuid": "^3.3.3",
     "vue": "^2.6.10",
     "vue-gallery": "^2.0.1",
+    "vue-rate-it": "^2.1.0",
     "vue-select": "^3.2.0",
     "vue-upload-component": "^2.8.20",
+    "vuejs-datepicker": "^1.6.2",
     "vuex": "^3.1.2"
   },
   "devDependencies": {

@@ -9,7 +9,10 @@ export const MIN_ZOOM_SUPPORTED = 9;
 export function WWMapMeasurementTool(map, objectManager, apiBase) {
     this.enabled = false;
     this.overZoom = false;
+    this.loading = false;
     this.edit = true;
+
+    this.onChangeSegmentCount = null;
 
     this.trackStorage = new TrackStorage(apiBase);
 
@@ -22,17 +25,22 @@ export function WWMapMeasurementTool(map, objectManager, apiBase) {
     this.reset();
 
     this.addEvents();
+
 }
+
+WWMapMeasurementTool.prototype.canEditPath = function () {
+    return this.enabled && this.edit && !this.overZoom && !this.loading;
+};
 
 WWMapMeasurementTool.prototype.addEvents = function () {
     let t = this;
     this.objectManager.objects.events.add(['click'], e => {
-        if (this.enabled && this.edit && !this.overZoom) {
+        if (this.canEditPath()) {
             this.multiPath.pushEmptySegment();
         }
     });
     this.objectManager.objects.events.add('mousemove', e => {
-        if (this.enabled && this.edit && !this.overZoom) {
+        if (this.canEditPath()) {
             let coords = e.get('coords');
             if (coords) {
                 this.onMouseMoved(t.coordsToMouse(coords), coords);
@@ -40,17 +48,17 @@ WWMapMeasurementTool.prototype.addEvents = function () {
         }
     });
     this.map.events.add('click', e => {
-        if (this.enabled && this.edit && !this.overZoom) {
+        if (this.canEditPath()) {
             this.multiPath.pushEmptySegment();
         }
     });
     this.map.events.add('boundschange', e => {
         if (this.enabled && this.edit) {
-            this.onViewportChanged();
+            this.onViewportChanged(e.get("newBounds"), e.get("newZoom"));
         }
     });
     this.map.events.add('mousemove', e => {
-        if (this.enabled && this.edit && !this.overZoom) {
+        if (this.canEditPath()) {
             this.onMouseMoved(e.get('position'), e.get('coords'));
         }
     });
@@ -87,18 +95,26 @@ WWMapMeasurementTool.prototype.reset = function () {
         this.multiPath.hide();
     }
     this.multiPath = new MultiPath(this.pos, this.map, this);
+    this.multiPath.onChangeSegmentCount = this.onChangeSegmentCount;
     if(this.enabled) {
         this.multiPath.show();
     }
     this.onViewportChanged();
 };
 
-WWMapMeasurementTool.prototype.onViewportChanged = function () {
+WWMapMeasurementTool.prototype.onViewportChanged = function (bounds, zoom) {
     if (!this.enabled || !this.edit) {
         return;
     }
 
-    if (this.map.getZoom() < MIN_ZOOM_SUPPORTED) {
+    if(!bounds) {
+        bounds = this.map.getBounds()
+    }
+    if(!zoom) {
+        zoom = this.map.getZoom()
+    }
+
+    if (zoom < MIN_ZOOM_SUPPORTED) {
         this.overZoom = true;
         if (this.overZoomCallback) {
             this.overZoomCallback(true)
@@ -111,7 +127,7 @@ WWMapMeasurementTool.prototype.onViewportChanged = function () {
     }
 
     let lastFixedPoint = this.multiPath.segmentCount() > 0 ? this.multiPath.pointEnd() : null;
-    this.trackStorage.setBounds(this.map.getBounds(), lastFixedPoint, this.map.getZoom());
+    this.trackStorage.setBounds(bounds, lastFixedPoint, zoom);
 };
 
 const sensitivity_px = 2;
@@ -165,7 +181,7 @@ WWMapMeasurementTool.prototype.moveFirstPoint = function (cursorPosPx, coords, e
 };
 
 WWMapMeasurementTool.prototype.onMouseMoved = function (cursorPosPx, coords) {
-    if (!cursorPosPx ||  !this.enabled || !this.edit || this.overZoom) {
+    if (!cursorPosPx ||  !this.canEditPath()) {
         return
     }
 
@@ -224,8 +240,8 @@ WWMapMeasurementTool.prototype.onMouseMoved = function (cursorPosPx, coords) {
     }
 
     // geometry direct
-    this.multiPath.setLine(markerPos, nearestRiver ? nearestRiver.id : -1, minDst==Number.MAX_SAFE_INTEGER ?
-        turf.distance(markerPos, this.multiPath.pointEnd(), {units: 'meters'}) : minDst);
+    this.multiPath.setLine(markerPos, nearestRiver ? nearestRiver.id : -1,
+        turf.distance(markerPos, this.multiPath.pointEnd(), {units: 'meters'}));
 };
 
 WWMapMeasurementTool.prototype.mouseToCoords = function (pixelPos) {
@@ -287,4 +303,10 @@ WWMapMeasurementTool.prototype.makePath = function (start, end, found) {
         fromPoint = toPoint;
     }
     return result;
+};
+
+
+WWMapMeasurementTool.prototype.setOnChangeSegmentCount = function (callback) {
+  this.onChangeSegmentCount = callback;
+  this.multiPath.onChangeSegmentCount = callback;
 };

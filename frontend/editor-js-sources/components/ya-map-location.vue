@@ -86,6 +86,8 @@
                         new ymaps.control.TypeSelector([
                             'osm#standard',
                             'ggc#standard',
+                            'topomapper#genshtab',
+                            'marshruty.ru#genshtab',
                             'yandex#satellite',
                             'google#satellite',
                             'bing#satellite',

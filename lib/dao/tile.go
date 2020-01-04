@@ -141,10 +141,13 @@ func (this *tileStorage) listRivers(rows *sql.Rows) ([]RiverWithSpots, error) {
 		pointStr := ""
 		categoryStr := ""
 		propsStr := ""
+		var levelStr sql.NullString
+		var date pq.NullTime
 
 		err := rows.Scan(&river.Id, &river.Title, &river.RegionId, &river.CountryId,
 			&spot.Id, &spot.Title, &spot.Description, &pointStr, &categoryStr, &spot.Link, &propsStr,
-			&img.Id, &img.Source, &img.RemoteId, &img.Url, &img.PreviewUrl, &img.DatePublished, &img.Type)
+			&img.Id, &img.Source, &img.RemoteId, &img.Url, &img.PreviewUrl, &img.DatePublished, &img.Type,
+			&date, &img.DateLevelUpdated, &levelStr)
 
 		if err != nil {
 			return []RiverWithSpots{}, err
@@ -183,6 +186,25 @@ func (this *tileStorage) listRivers(rows *sql.Rows) ([]RiverWithSpots, error) {
 		}
 
 		if img.Id > 0 {
+			if date.Valid {
+				img.Date = &date.Time
+			} else {
+				img.Date = nil
+			}
+
+			if levelStr.Valid {
+				err = json.Unmarshal([]byte(levelStr.String), &img.Level)
+				if err != nil {
+					return []RiverWithSpots{}, err
+				}
+				removeAutoComputedValues := img.Date == nil || (*img.Date).Equal(img.DateLevelUpdated)
+				for sensorId, value := range img.Level {
+					if value < 1 || int(value) > LEVEL_GRADUATION+1 || removeAutoComputedValues && sensorId != "0" {
+						delete(img.Level, sensorId)
+					}
+				}
+
+			}
 			rivers[lRiv-1].Spots[lSp-1].Images = append(rivers[lRiv-1].Spots[lSp-1].Images, img)
 		}
 	}

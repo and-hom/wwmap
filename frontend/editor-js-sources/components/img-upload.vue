@@ -46,18 +46,15 @@
             </div>
         </template>
         <table class="table">
-            <thead>
-                <tr>
-                    <th></th>
-                    <th>Ссылка на источник</th>
-                    <th></th>
-                </tr>
-            </thead>
             <tr v-for="image in images">
                 <td><img :class="imageClass(image)" :src="image.preview_url"/></td>
                 <td>
                     <div v-if="image.source=='wwmap'">Загружено пользователем</div>
-                    <a v-else target="_blank" :href="image.report_url">{{image.report_title}}</a>
+                    <div v-else>Из отчёта <a target="_blank" :href="image.report_url">{{image.report_title}}</a></div>
+                    Опубликовано {{image.date_published|formatDateTimeStr}}
+                    <div v-if="image.type=='image'"><b>Фактическая</b> дата снимка:
+                        <img-date-and-level :spot-id="spot.id" :img-id="image.id" v-model="image.date" :level="image.level" v-on:level="image.level = $event"/>
+                    </div>
                 </td>
                 <td>
                     <button v-if="image.enabled==false" v-on:click="setImgEnabled(true, image.id)" class="btn btn-success">Показывать</button>
