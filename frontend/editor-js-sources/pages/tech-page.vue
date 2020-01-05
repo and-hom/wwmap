@@ -28,9 +28,9 @@
 </template>
 
 <script>
-    import {doGetJson, doPostJson} from "./api";
-    import {hasRole} from "./auth";
-    import {backendApiBase} from "./config"
+    import {doGetJson, doPostJson} from "../api";
+    import {hasRole} from "../auth";
+    import {backendApiBase} from "../config"
 
     export default {
         created() {

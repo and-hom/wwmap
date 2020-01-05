@@ -67,8 +67,8 @@
 </template>
 
 <script>
-    import {doGetJson, doPostJson} from './api'
-    import {backendApiBase} from './config'
+    import {doGetJson, doPostJson} from '../api'
+    import {backendApiBase} from '../config'
 
     export default {
         created: function () {

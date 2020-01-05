@@ -13,7 +13,7 @@
 
 <script>
     var showdown = require('showdown');
-    import {sendRequest} from './api'
+    import {sendRequest} from '../api'
 
     export default {
         created: function () {

@@ -53,8 +53,8 @@
     import {
         getAllRegions,
         getCountries,
-    } from './editor'
-    import {store} from './main'
+    } from '../editor'
+    import {store} from '../main'
 
 
     export default {

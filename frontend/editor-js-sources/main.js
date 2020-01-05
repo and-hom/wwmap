@@ -1,14 +1,15 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import EditorPage from './editor-page.vue'
-import DocsIntegrationPage from './docs-integration-page.vue'
-import MapPage from './map-page.vue'
-import LogPage from './log-page.vue'
-import UsersPage from './users-page.vue'
-import TechPage from './tech-page.vue'
-import AboutPage from './about-page.vue'
-import DocsPage from './docs-page.vue'
-import DashboardPage from './dashboard-page.vue'
+import EditorPage from './pages/editor-page.vue'
+import DocsIntegrationPage from './pages/docs-integration-page.vue'
+import MapPage from './pages/map-page.vue'
+import LogPage from './pages/log-page.vue'
+import UsersPage from './pages/users-page.vue'
+import TechPage from './pages/tech-page.vue'
+import AboutPage from './pages/about-page.vue'
+import DocsPage from './pages/docs-page.vue'
+import LevelPage from './pages/level-page.vue'
+import SitesPage from './pages/sites-page.vue'
 
 import vSelect from 'vue-select'
 import VueGallery from 'vue-gallery';
@@ -346,8 +347,12 @@ export function initDocs() {
     return init(DocsPage)
 }
 
-export function initDashboard() {
-    return init(DashboardPage)
+export function initLevel() {
+    return init(LevelPage)
+}
+
+export function initSites() {
+    return init(SitesPage)
 }
 
 function init(page) {
