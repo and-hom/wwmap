@@ -21,31 +21,19 @@
                             <dl style="padding-left:40px;">
                                 <dt>По классификатору</dt>
                                 <dd>
-                                    <select v-model="spot.category">
-                                        <option v-for="cat in all_categories" v-bind:value="cat.id">{{cat.title}}
-                                        </option>
-                                    </select>
+                                    <category-select v-model="spot.category"></category-select>
                                 </dd>
                                 <dt>Низкий уровень воды</dt>
                                 <dd>
-                                    <select v-model="spot.lw_category">
-                                        <option v-for="cat in all_categories" v-bind:value="cat.id">{{cat.title}}
-                                        </option>
-                                    </select>
+                                    <category-select v-model="spot.lw_category"></category-select>
                                 </dd>
                                 <dt>Средний уровень воды</dt>
                                 <dd>
-                                    <select v-model="spot.mw_category">
-                                        <option v-for="cat in all_categories" v-bind:value="cat.id">{{cat.title}}
-                                        </option>
-                                    </select>
+                                    <category-select v-model="spot.mw_category"></category-select>
                                 </dd>
                                 <dt>Высокий уровень воды</dt>
                                 <dd>
-                                    <select v-model="spot.hw_category">
-                                        <option v-for="cat in all_categories" v-bind:value="cat.id">{{cat.title}}
-                                        </option>
-                                    </select>
+                                    <category-select v-model="spot.hw_category"></category-select>
                                 </dd>
                             </dl>
                         </div>
@@ -167,9 +155,8 @@
 
 <script>
     import {
-        all_categories, getImages,
+        getImages,
         getRiver,
-        getSpotMainImageUrl,
         nvlReturningId,
         removeSpot,
         saveSpot,
@@ -225,7 +212,6 @@
             return {
                 map: null,
                 canEdit: false,
-                all_categories: all_categories,
                 river: null,
             }
         },

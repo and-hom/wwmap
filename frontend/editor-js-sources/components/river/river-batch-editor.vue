@@ -85,35 +85,19 @@
                                         <dl style="padding-left:40px;">
                                             <dt>По классификатору</dt>
                                             <dd>
-                                                <select v-model="spot.category">
-                                                    <option v-for="cat in all_categories" v-bind:value="cat.id">
-                                                        {{cat.title}}
-                                                    </option>
-                                                </select>
+                                                <category-select v-model="spot.category"></category-select>
                                             </dd>
                                             <dt>Низкий уровень воды</dt>
                                             <dd>
-                                                <select v-model="spot.lw_category">
-                                                    <option v-for="cat in all_categories" v-bind:value="cat.id">
-                                                        {{cat.title}}
-                                                    </option>
-                                                </select>
+                                                <category-select v-model="spot.lw_category"></category-select>
                                             </dd>
                                             <dt>Средний уровень воды</dt>
                                             <dd>
-                                                <select v-model="spot.mw_category">
-                                                    <option v-for="cat in all_categories" v-bind:value="cat.id">
-                                                        {{cat.title}}
-                                                    </option>
-                                                </select>
+                                                <category-select v-model="spot.mw_category"></category-select>
                                             </dd>
                                             <dt>Высокий уровень воды</dt>
                                             <dd>
-                                                <select v-model="spot.hw_category">
-                                                    <option v-for="cat in all_categories" v-bind:value="cat.id">
-                                                        {{cat.title}}
-                                                    </option>
-                                                </select>
+                                                <category-select v-model="spot.hw_category"></category-select>
                                             </dd>
                                         </dl>
                                     </div>
@@ -288,7 +272,7 @@
     import FileUpload from 'vue-upload-component';
     import {getWwmapSessionId, hasRole, ROLE_ADMIN, ROLE_EDITOR} from '../../auth'
     import {store} from '../../main'
-    import {all_categories, getSpotsFull, nvlReturningId, saveSpot,} from '../../editor'
+    import {getSpotsFull, nvlReturningId, saveSpot,} from '../../editor'
     import {backendApiBase} from '../../config'
     import Sortable from 'sortablejs';
 
@@ -386,7 +370,6 @@
                 map: null,
                 canEdit: false,
                 files: [],
-                all_categories: all_categories,
 
                 gpxJustUploaded: false,
 
