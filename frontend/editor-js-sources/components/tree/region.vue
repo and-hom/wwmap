@@ -8,8 +8,8 @@
 </template>
 
 <script>
-    import {getActiveEntityLevel, isActiveEntity, REGION_ACTIVE_ENTITY_LEVEL, setActiveEntityUrlHash,} from "../editor";
-    import {store} from "../main";
+    import {getActiveEntityLevel, isActiveEntity, REGION_ACTIVE_ENTITY_LEVEL, setActiveEntityUrlHash,} from '../../editor';
+    import {store} from '../../main';
 
     module.exports = {
         props: ['region', 'country'],

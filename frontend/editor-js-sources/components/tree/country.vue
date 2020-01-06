@@ -12,8 +12,8 @@
 </template>
 
 <script type="text/javascript">
-    import {store} from '../main'
-    import {COUNTRY_ACTIVE_ENTITY_LEVEL, getActiveEntityLevel, isActiveEntity, setActiveEntityUrlHash} from '../editor'
+    import {store} from '../../main'
+    import {COUNTRY_ACTIVE_ENTITY_LEVEL, getActiveEntityLevel, isActiveEntity, setActiveEntityUrlHash} from '../../editor'
 
     module.exports = {
         props: ['country'],

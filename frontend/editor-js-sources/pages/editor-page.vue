@@ -22,15 +22,15 @@
                             </div>
                         </transition>
                         <div>
-                            <country-editor v-if="countryeditorstate.visible"
+                            <country-page v-if="countryeditorstate.visible"
                                             v-bind:country="countryeditorstate.country"/>
                         </div>
                         <div>
-                            <region-editor v-if="regioneditorstate.visible" v-bind:region="regioneditorstate.region"
+                            <region-page v-if="regioneditorstate.visible" v-bind:region="regioneditorstate.region"
                                            v-bind:country="regioneditorstate.country"/>
                         </div>
                         <div>
-                            <river-editor v-if="rivereditorstate.visible"
+                            <river-page v-if="rivereditorstate.visible"
                                           v-bind:initial-river="rivereditorstate.river"
                                           v-bind:reports="rivereditorstate.reports"
                                           v-bind:country="rivereditorstate.country"
@@ -38,7 +38,8 @@
                                           v:sensors="sensors"/>
                         </div>
                         <div>
-                            <spot-editor v-if="spoteditorstate.visible" v-bind:initial-spot="spoteditorstate.spot"
+                            <spot-page v-if="spoteditorstate.visible"
+                                         v-bind:initial-spot="spoteditorstate.spot"
                                          v-bind:country="spoteditorstate.country"
                                          v-bind:region="spoteditorstate.region"/>
                         </div>

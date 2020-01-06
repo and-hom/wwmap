@@ -53,16 +53,24 @@
                     <div v-else>Из отчёта <a target="_blank" :href="image.report_url">{{image.report_title}}</a></div>
                     Опубликовано {{image.date_published|formatDateTimeStr}}
                     <div v-if="image.type=='image'"><b>Фактическая</b> дата снимка:
-                        <img-date-and-level :spot-id="spot.id" :img-id="image.id" v-model="image.date" :level="image.level" v-on:level="image.level = $event"/>
+                        <img-date-and-level :spot-id="spot.id" :img-id="image.id" v-model="image.date"
+                                            :level="image.level" v-on:level="image.level = $event"/>
                     </div>
                 </td>
                 <td>
-                    <button v-if="image.enabled==false" v-on:click="setImgEnabled(true, image.id)" class="btn btn-success">Показывать</button>
-                    <button v-if="image.enabled==true" v-on:click="setImgEnabled(false, image.id)"class="btn btn-secondary">Не показывать</button>
+                    <button v-if="image.enabled==false" v-on:click="setImgEnabled(true, image.id)"
+                            class="btn btn-success">Показывать
+                    </button>
+                    <button v-if="image.enabled==true" v-on:click="setImgEnabled(false, image.id)"
+                            class="btn btn-secondary">Не показывать
+                    </button>
                     <ask :id="'del-img-' + image.id" title="Точно?" msg="Удалить изображение?"
                          :ok-fn="function() { removeImage(image.id); }"></ask>
-                    <button data-toggle="modal" :data-target="'#del-img-' + image.id" class="btn btn-danger">Удалить</button>
-                    <button v-if="!image.main_image" v-on:click="setSpotPreview(image.id)" class="btn btn-info">Сделать главным изображением</button>
+                    <button data-toggle="modal" :data-target="'#del-img-' + image.id" class="btn btn-danger">Удалить
+                    </button>
+                    <button v-if="!image.main_image" v-on:click="setSpotPreview(image.id)" class="btn btn-info">Сделать
+                        главным изображением
+                    </button>
                     <div style="margin-top: 20px;">
                         <log-dropdown object-type="IMAGE" :object-id="image.id"/>
                     </div>
@@ -76,25 +84,24 @@
     import FileUpload from 'vue-upload-component';
     import {backendApiBase} from '../config'
     import {getWwmapSessionId} from '../auth'
-    import {store} from "../main";
-    import {getImages, setSpotPreview, setImageEnabled, removeImage} from "../editor";
+    import {getImages, removeImage, setImageEnabled, setSpotPreview} from "../editor";
 
     module.exports = {
-        props: ['spot', 'images', 'type', 'auth'],
+        props: ['spot', 'value', 'type', 'auth'],
         components: {
-          FileUpload: FileUpload,
+            FileUpload: FileUpload,
         },
-        updated: function() {
-            if(this.$refs[this.type] && this.$refs[this.type].value.length && this.$refs[this.type].uploaded) {
+        updated: function () {
+            if (this.$refs[this.type] && this.$refs[this.type].value.length && this.$refs[this.type].uploaded) {
 
                 var t = this;
-                setTimeout(function() {
+                setTimeout(function () {
                     t.refresh()
                 }, 700);
             }
         },
         computed: {
-            headers:function(){
+            headers: function () {
                 if (this.auth) {
                     return {
                         Authorization: getWwmapSessionId(),
@@ -102,40 +109,46 @@
                 }
                 return {}
             },
+            images: {
+                get() {
+                    return this.value;
+                },
+                set(images) {
+                    this.$emit('input', images);
+                }
+            }
         },
-        data:function() {
+        data: function () {
             return {
                 files: [],
                 filesSum: "",
-                uploadPath: function() { return backendApiBase + "/spot/" + this.spot.id +"/img?type=" + this.type },
-                removeImage: function(imgId) {
+                uploadPath: function () {
+                    return backendApiBase + "/spot/" + this.spot.id + "/img?type=" + this.type
+                },
+                removeImage: function (imgId) {
                     removeImage(this.spot.id, imgId, this.type).then(images => this.images = images);
                 },
-                setImgEnabled: function(enabled, imgId) {
+                setImgEnabled: function (enabled, imgId) {
                     setImageEnabled(this.spot.id, imgId, enabled, this.type).then(images => this.images = images);
                 },
-                setSpotPreview: function(imgId) {
-                    setSpotPreview(this.spot.id, imgId, this.type).then(imgs => {
-                        if (this.type=="image") {
-                            store.commit('setSpotImages', imgs);
-                        } else {
-                            store.commit('setSpotSchemas', imgs);
+                setSpotPreview: function (imgId) {
+                    setSpotPreview(this.spot.id, imgId, this.type).then(images => {
+                        this.$emit("reloadAllImages");
+                    });
+                },
+                refresh: function () {
+                    getImages(this.spot.id, this.type).then(images => {
+                        // Workaround #140 do not refresh the same images list. It produces update event and then refresh and then update and then.....
+                        var filesSum = images.map(function (x) {
+                            return x.id
+                        }).join("#");
+                        if (this.filesSum !== filesSum) {
+                            this.filesSum = filesSum;
+                            this.images = images;
                         }
                     });
                 },
-                refresh:function() {
-                   getImages(this.spot.id, this.type).then(images => {
-                       // Workaround #140 do not refresh the same images list. It produces update event and then refresh and then update and then.....
-                       var filesSum = images.map(function (x) {
-                           return x.id
-                       }).join("#");
-                       if (this.filesSum !== filesSum) {
-                           this.filesSum = filesSum;
-                           this.images = images;
-                       }
-                   });
-                },
-                imageClass:function(image) {
+                imageClass: function (image) {
                     return image.enabled ? "" : "wwmap-img-disabled";
                 },
             }

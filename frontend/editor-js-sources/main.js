@@ -113,9 +113,6 @@ export const store = new Vuex.Store({
         spoteditorstate: {
             visible: false,
             editMode: false,
-            images: [],
-            schemas: [],
-            videos: [],
         },
         rivereditorstate: {
             visible: false,
@@ -270,15 +267,6 @@ export const store = new Vuex.Store({
         },
         setSpotEditorVisible(state, visible) {
             state.spoteditorstate.visible = visible;
-        },
-        setSpotImages(state, images) {
-            state.spoteditorstate.images = images;
-        },
-        setSpotSchemas(state, schemas) {
-            state.spoteditorstate.schemas = schemas;
-        },
-        setSpotVideos(state, videos) {
-            state.spoteditorstate.videos = videos;
         },
         setErrMsg(state, msg) {
             state.errMsg = msg;

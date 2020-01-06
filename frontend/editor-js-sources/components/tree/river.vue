@@ -20,8 +20,8 @@
         RIVER_ACTIVE_ENTITY_LEVEL,
         setActiveEntityUrlHash,
         SPOT_ACTIVE_ENTITY_LEVEL
-    } from "../editor";
-    import {store} from '../main'
+    } from '../../editor';
+    import {store} from '../../main'
 
     module.exports = {
         props: ['river', 'region', 'country'],

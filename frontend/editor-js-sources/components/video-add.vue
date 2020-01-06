@@ -1,7 +1,8 @@
 <template>
     <div>
         <div>
-            <label for="video_url" style="padding-right: 10px;">Ссылка на видео с youtube (как в браузере)</label><input id="video_url" type="text" style="width:400px;"/>
+            <label for="video_url" style="padding-right: 10px;">Ссылка на видео с youtube (как в браузере)</label><input
+                id="video_url" type="text" style="width:400px;"/>
             <input type="button" class="btn btn-success" value="Добавить" v-on:click.prevent="onAddVideo"/>
         </div>
 
@@ -36,8 +37,13 @@
 </template>
 
 <script>
+    import {store} from "../main";
+    import {getImages, removeImage, setImageEnabled} from "../editor"
+    import {parseParams} from "../api"
+    import {getWwmapSessionId} from "../auth"
+
     module.exports = {
-        props: ['spot', 'images', 'type', 'auth'],
+        props: ['spot', 'value', 'type', 'auth'],
         computed: {
             headers: function () {
                 if (this.auth) {
@@ -46,7 +52,15 @@
                     }
                 }
                 return {}
-            }
+            },
+            images: {
+                get() {
+                    return this.value;
+                },
+                set(images) {
+                    this.$emit('input', images);
+                }
+            },
         },
         data: function () {
             return {
@@ -102,11 +116,11 @@
                     }
                 },
                 showError: function (errMsg) {
-                    app.errMsg = errMsg
+                    store.commit("setErrMsg", errMsg);
                 },
                 hideError: function () {
-                    app.errMsg = null
-                }
+                    store.commit("setErrMsg", null);
+                },
             }
         }
     }
