@@ -1,0 +1,5 @@
+wwmap-api (2.1.0) unstable; urgency=medium
+
+  * #250: map js api moved to separate package
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Mon, 06 Jan 2020 16:40:01 +0300

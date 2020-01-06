@@ -1,6 +1,7 @@
 const webpack = require('webpack');
 const {resolve} = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const VueLoaderPlugin = require('vue-loader/lib/plugin');
 
 const DEVELOPMENT = 'development';
 
@@ -10,19 +11,24 @@ module.exports = env => {
         appEnv = env.APP_ENV;
     }
 
-    console.log(`Build ${appEnv} environment`);
+    let frontendVersion = '"Unknown"';
+    if (env && env.VERSION) {
+        frontendVersion = `"${env.VERSION}"`;
+    }
+
+    console.log(`Build ${appEnv} environment version ${frontendVersion}`);
 
     return {
         mode: appEnv == DEVELOPMENT ? 'development' : 'production',
         context: __dirname,
         devtool: "source-map",
-        entry: ["./main.js",],
+        entry: ["./js-sources/main.js",],
         output: {
-            path: __dirname + "/../js",
-            filename: "map.v2.1.js",
+            path: __dirname + "/js",
+            filename: "editor.v2.js",
             publicPath: './js/',
             libraryTarget: 'var',
-            library: 'wwmap'
+            library: 'wwmap_editor'
         },
         plugins: [
             new webpack.ProvidePlugin({
@@ -35,20 +41,41 @@ module.exports = env => {
                 chunkFilename: '[id].css',
                 ignoreOrder: false,
             }),
+            new VueLoaderPlugin(),
+            new webpack.DefinePlugin({
+                FRONTEND_VERSION: frontendVersion,
+            }),
         ],
         module: {
             rules: [
                 {
-                    test: /.*?\.js$/,
+                    test: /js-sources\/\.(gif|png|jpe?g|svg)$/i,
+                    use: [
+                        'file-loader',
+                        {
+                            loader: 'image-webpack-loader',
+                            options: {
+                                bypassOnDebug: true, // webpack@1.x
+                                disable: true, // webpack@2.x and newer
+                            },
+                        },
+                    ],
+                },
+                {
+                    test: /\.vue$/,
+                    loader: 'vue-loader'
+                },
+                {
+                    test: /js-sources\/.*?\.js$/,
                     exclude: /node_modules/,
                     loader: "babel-loader"
                 },
                 {
-                    test: /config\.js$/,
+                    test: /js-sources\/config\.js$/,
                     loader: 'file-replace-loader',
                     options: {
                         condition: appEnv !== DEVELOPMENT,
-                        replacement: resolve('./config.production.js'),
+                        replacement: resolve('./js-sources/config.production.js'),
                         async: true,
                     }
                 },
@@ -57,12 +84,12 @@ module.exports = env => {
                     use: ['style-loader', 'css-loader'],
                 },
                 {
-                    test: /\.(png|jpg|svg|ttf|eot|woff|woff2)$/,
+                    test: /\.(png|jpg|gif|svg|ttf|eot|woff|woff2)$/,
                     loader: 'file-loader',
                     options: {
                         name: '[path][name].[ext]'
                     }
-                }
+                },
             ]
         },
     }

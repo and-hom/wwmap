@@ -1,7 +1,6 @@
 const webpack = require('webpack');
 const {resolve} = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const VueLoaderPlugin = require('vue-loader/lib/plugin');
 
 const DEVELOPMENT = 'development';
 
@@ -17,13 +16,13 @@ module.exports = env => {
         mode: appEnv == DEVELOPMENT ? 'development' : 'production',
         context: __dirname,
         devtool: "source-map",
-        entry: ["./main.js",],
+        entry: ["./js-sources/main.js",],
         output: {
-            path: __dirname + "/../js",
-            filename: "editor.v2.js",
+            path: __dirname + "/js",
+            filename: "map.v2.1.js",
             publicPath: './js/',
             libraryTarget: 'var',
-            library: 'wwmap_editor'
+            library: 'wwmap'
         },
         plugins: [
             new webpack.ProvidePlugin({
@@ -36,38 +35,20 @@ module.exports = env => {
                 chunkFilename: '[id].css',
                 ignoreOrder: false,
             }),
-            new VueLoaderPlugin(),
         ],
         module: {
             rules: [
                 {
-                    test: /\.(gif|png|jpe?g|svg)$/i,
-                    use: [
-                        'file-loader',
-                        {
-                            loader: 'image-webpack-loader',
-                            options: {
-                                bypassOnDebug: true, // webpack@1.x
-                                disable: true, // webpack@2.x and newer
-                            },
-                        },
-                    ],
-                },
-                {
-                    test: /\.vue$/,
-                    loader: 'vue-loader'
-                },
-                {
-                    test: /.*?\.js$/,
+                    test: /js-sources\/.*?\.js$/,
                     exclude: /node_modules/,
                     loader: "babel-loader"
                 },
                 {
-                    test: /config\.js$/,
+                    test: /js-sources\/config\.js$/,
                     loader: 'file-replace-loader',
                     options: {
                         condition: appEnv !== DEVELOPMENT,
-                        replacement: resolve('./config.production.js'),
+                        replacement: resolve('./js-sources/config.production.js'),
                         async: true,
                     }
                 },
@@ -81,7 +62,7 @@ module.exports = env => {
                     options: {
                         name: '[path][name].[ext]'
                     }
-                },
+                }
             ]
         },
     }

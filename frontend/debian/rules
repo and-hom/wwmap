@@ -5,14 +5,8 @@
 DEB_VERSION = $(shell dpkg-parsechangelog --show-field Version)
 
 build:
-	pushd js-sources-2.1
 	npm i
-	npm build -- --env.APP_ENV=production
-	popd
-	pushd editor-js-sources
-	npm i
-	npm build -- --env.APP_ENV=production
-	popd
+	npm run build -- --env.APP_ENV=production --env.VERSION=$(DEB_VERSION)
 	rm js/*.js.map
 
 override_dh_auto_install:
@@ -29,15 +23,10 @@ override_dh_auto_install:
 	install -D -m 0644 img/report_sources/*.png $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/img/report_sources
 	install -D -m 0644 img/flags/*.png $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/img/flags/
 	install -D -m 0644 img/lightbox/* $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/img/lightbox/
-	install -D -m 0644 js/* $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/js/
+	install -D -m 0644 js/*.js $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/js/
 	install -D -m 0644 css/* $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/css/
-	install -D -m 0644 ../frontend/components/*.vue $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/components/
-	install -D -m 0644 ../frontend/map-components/*.htm $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/map-components/
 
 	install -D -m 0644 ../frontend/favicon.ico $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/
 	install -D -m 0644 ../INTEGRATION_ru.md $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/
-
-	sed -i 's#apiBase = ".*"#apiBase = "https://wwmap.ru/api"#g' \
-	    $$(pwd)/debian/wwmap-frontend/var/lib/wwmap/frontend/js/config.js
 
 	install -D -m 0644 nginx.conf $$(pwd)/debian/wwmap-frontend/etc/nginx/sites-available/wwmap-frontend
