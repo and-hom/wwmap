@@ -1,3 +1,5 @@
+import {getWwmapUserInfo} from './main'
+
 var $ = require( "jquery" );
 require( "jquery.cookie" );
 
@@ -164,17 +166,27 @@ export function initMailtoLinks() {
 }
 
 export function getWwmapUserInfoForMapControls() {
-    if (typeof getWwmapUserInfo == 'function') {
-        return getWwmapUserInfo();
-    }
-    return null;
+        return new Promise(function (resolve, reject) {
+            if (typeof getWwmapUserInfo == 'function') {
+                let userInfo = getWwmapUserInfo();
+                if (userInfo) {
+                    resolve(userInfo)
+                } else {
+                    reject("Unauthorized")
+                }
+            }else {
+                reject("Authorization is not enabled")
+            }
+        });
 }
 
 export function canEdit() {
-    var info = getWwmapUserInfoForMapControls();
-    return (info && info.roles && ['EDITOR', 'ADMIN'].filter(function (r) {
-        return info.roles.includes(r)
-    }).length > 0)
+    return getWwmapUserInfoForMapControls()
+        .then(info =>
+            (info && info.roles && ['EDITOR', 'ADMIN'].filter(function (r) {
+                return info.roles.includes(r)
+            }).length > 0))
+        .catch(_ => false)
 }
 
 export function isMobileBrowser() {

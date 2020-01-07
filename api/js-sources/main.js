@@ -12,6 +12,8 @@ import './contrib/lightbox.min'
 require('./tube');
 
 var wwMap;
+// hack to set user login provider to api - move to options
+export var getWwmapUserInfo = null;
 
 export function show_map_at_and_highlight_river(bounds, riverId) {
     show_map_at(bounds);
@@ -95,9 +97,10 @@ export function show_report_popup(id, title, riverTitle) {
         object_title: title,
         title: riverTitle
     };
-    var info = getWwmapUserInfoForMapControls();
-    if (info && info.login) {
-        dataObject.user = info.login;
-    }
-    reportPopup.show(dataObject)
+    getWwmapUserInfoForMapControls().then(info => {
+        if (info && info.login) {
+            dataObject.user = info.login;
+        }
+        reportPopup.show(dataObject)
+    }, err => reportPopup.show(dataObject));
 }

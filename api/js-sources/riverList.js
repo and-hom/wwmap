@@ -22,8 +22,10 @@ export function RiverList(divId, templateDivId, fromTemplates) {
 
 RiverList.prototype.update = function (rivers) {
     if (this.template) {
-        rivers.canEdit = canEdit();
-        var html = this.template(rivers);
-        $('#' + this.divId).html(html)
+        canEdit().then(canEdit => {
+            rivers.canEdit = canEdit;
+            var html = this.template(rivers);
+            $('#' + this.divId).html(html);
+        });
     }
 };

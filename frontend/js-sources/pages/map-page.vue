@@ -18,8 +18,10 @@
 </template>
 
 <script>
+    import {getAuthorizedUserInfoOrNull} from "../auth";
+
     function loadMapWhenDivIsReady() {
-        if($('#wwmap-container').outerWidth()) {
+        if ($('#wwmap-container').outerWidth()) {
             wwmap.initWWMap("wwmap-container", "wwmap-rivers", "wwmap")
         } else {
             console.log("#div-container is not ready yet: has no offsetWidth");
@@ -28,10 +30,12 @@
     }
 
     export default {
-        mounted: loadMapWhenDivIsReady,
+        mounted: function () {
+            wwmap.getWwmapUserInfo = getAuthorizedUserInfoOrNull;
+            loadMapWhenDivIsReady();
+        },
         data() {
-            return {
-            }
+            return {}
         },
     }
 </script>

@@ -189,11 +189,9 @@ WWMap.prototype.init = function () {
     this.loadRivers(this.yMap.getBounds());
 
     this.measurementTool = new WWMapMeasurementTool(yMap, objectManager, apiBase);
-    var info = getWwmapUserInfoForMapControls();
     if (!this.isMobile) {
         this.yMap.controls.add(createMeasurementToolControl(this.measurementTool), {});
     }
-
 
     let searchControl = new ymaps.control.SearchControl({
         options: {
