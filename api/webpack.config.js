@@ -39,6 +39,11 @@ module.exports = env => {
         module: {
             rules: [
                 {
+                    test: /\.tmpl\.htm$/i,
+                    exclude: /node_modules/,
+                    loader: 'raw-loader',
+                },
+                {
                     test: /js-sources\/.*?\.js$/,
                     exclude: /node_modules/,
                     loader: "babel-loader"

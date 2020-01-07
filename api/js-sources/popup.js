@@ -1,5 +1,5 @@
-import {loadFragment, initMailtoLinks} from "./util"
-import {MAP_FRAGMENTS_URL} from './config';
+import {initMailtoLinks} from "./util"
+import {loadFragment} from "./template-data";
 
 var $ = require("jquery");
 require("./contrib/jquery.tmpl");
@@ -7,10 +7,10 @@ require("./contrib/jquery.tmpl");
 export function WWMapPopup(templateDivId, fromTemplates, divId, options) {
     this.divId = divId;
     if (fromTemplates) {
-        loadFragment(MAP_FRAGMENTS_URL, templateDivId, function (templateText) {
-            $('body').prepend(templateText);
+        loadFragment(templateDivId).then(templateText => {
+            $('body').prepend(`<div id="${templateDivId}" style="display: none">${templateText}</div>`);
             t.templateDiv = $('#' + templateDivId);
-        })
+        });
     } else {
         t.templateDiv = $('#' + templateDivId);
     }

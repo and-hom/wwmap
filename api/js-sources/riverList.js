@@ -1,6 +1,6 @@
 import {WWMapPopup} from "./popup";
-import {canEdit, loadFragment} from "./util";
-import {MAP_FRAGMENTS_URL} from './config';
+import {canEdit} from "./util";
+import {loadFragment} from "./template-data";
 
 var $ = require("jquery");
 require("./contrib/jquery.tmpl");
@@ -9,14 +9,10 @@ export function RiverList(divId, templateDivId, fromTemplates) {
     this.divId = divId;
     var t = this;
 
-    if (fromTemplates) {
-        loadFragment(MAP_FRAGMENTS_URL, templateDivId, function (templateText) {
-            $('body').prepend(templateText);
-            t.templateDiv = $('#' + templateDivId)
-        })
-    } else {
-        t.templateDiv = $('#' + templateDivId)
-    }
+    loadFragment(templateDivId).then(templateText => {
+        $('body').prepend(`<div id="${templateDivId}" style="display: none">${templateText}</div>`);
+        t.templateDiv = $('#' + templateDivId);
+    });
 
     this.riverInfoPopup = new WWMapPopup('river_desc_template', true, "river_desc");
 }

@@ -1,0 +1,20 @@
+<div class="wwmap-popuptext">
+    <form>
+        <input type="hidden" id="object_id" name="object_id" value="${object_id}"/>
+        <label for="object_title">Порог</label>
+        <input type="text" id="object_title" name="object_title" readonly style="margin-bottom:10px;" value="${object_title}"/><br/>
+        <label for="title">Река</label>
+        <input type="text" id="title" name="title" readonly style="margin-bottom:10px;" value="${title}"/><br/>
+        <input type="hidden" id="user" name="user" value="${user}"/>
+
+        <label for="comment" style="width:100%; padding-right: 10px;">Исправления происходят в ручном режиме и после проверки. Пожалуйста,
+            расскажите коротко,
+            что не так. Будет полезным добавить источники информации (отчёты, например) и указать реальные координаты
+            точки.
+            <strong>Оставьте прямо в тексте e-mail, ссылку на профиль Вконтакте или что-нибудь ещё для обратной связи</strong> на случай, если у меня возникнет вопрос.</label><br/>
+        <textarea id="comment" name="comment" rows="20" maxlength="4000"
+                  style="margin-top:10px; margin-bottom:20px; " autofocus></textarea>
+        <input type="submit" value="Отправить" width="600px; align: center;"/>
+        <input type="button" name="cancel" value="Отмена" width="600px; align: center;"/>
+    </form>
+</div>

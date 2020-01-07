@@ -154,17 +154,6 @@ export function bingSatTiles(tile, zoom) {
     return url;
 }
 
-export function loadFragment(url, fromId, onLoad, data) {
-    var virtualElement = $('<div id="loaded-content"></div>');
-    virtualElement.load(url + ' #' + fromId, function () {
-        if (data) {
-            onLoad(virtualElement.tmpl(data).html())
-        } else {
-            onLoad(virtualElement.html())
-        }
-    });
-}
-
 export function initMailtoLinks() {
     // initialize all mailto links: robots do not perform js, so this links will not be detected by robots
     let user = 'info';
