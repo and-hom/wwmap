@@ -2,17 +2,16 @@ import {initMailtoLinks} from "./util"
 import {loadFragment} from "./template-data";
 
 var $ = require("jquery");
-require("./contrib/jquery.tmpl");
+import Template7 from "template7";
 
-export function WWMapPopup(templateDivId, fromTemplates, divId, options) {
-    this.divId = divId;
+export function WWMapPopup(templateId, fromTemplates, workingDivId, options) {
+    this.divId = workingDivId;
     if (fromTemplates) {
-        loadFragment(templateDivId).then(templateText => {
-            $('body').prepend(`<div id="${templateDivId}" style="display: none">${templateText}</div>`);
-            t.templateDiv = $('#' + templateDivId);
+        loadFragment(templateId).then(templateText => {
+            t.template = Template7.compile(templateText);
         });
     } else {
-        t.templateDiv = $('#' + templateDivId);
+        throw "Not implemented"
     }
 
     this.submitUrl = (options) ? options.submitUrl : null;
@@ -49,9 +48,9 @@ WWMapPopup.prototype.show = function (dataObject) {
 
     var html = "";
     if (dataObject) {
-        html = this.templateDiv.tmpl(dataObject)[0].outerHTML
+        html = this.template(dataObject)
     } else {
-        html = this.templateDiv.html()
+        html = this.template({})
     }
 
     this.div.html(html);
