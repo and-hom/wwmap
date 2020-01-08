@@ -139,7 +139,7 @@ export function createMeasurementToolControl(measurementTool) {
                 refreshMeasurementButtons();
             });
 
-            let tutorialPopup = new WWMapPopup('info_popup_measurement_template', true, 'info_popup_measurement');
+            let tutorialPopup = new WWMapPopup('info_popup_measurement', 'info_popup_measurement_template');
             measureHelpBtn.bind('click', function (e) {
                 tutorialPopup.show();
             });

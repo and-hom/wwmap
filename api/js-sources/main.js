@@ -12,8 +12,6 @@ import './contrib/lightbox.min'
 require('./tube');
 
 var wwMap;
-// hack to set user login provider to api - move to options
-export var getWwmapUserInfo = null;
 
 export function show_map_at_and_highlight_river(bounds, riverId) {
     show_map_at(bounds);
@@ -38,22 +36,21 @@ export function show_map_at(bounds) {
 var riverList;
 var reportPopup;
 var tutorialPopup;
+export var userInfoFunction = null;
 
-export function initWWMap(mapId, riversListId, catalogLinkType) {
-    initWWMapInternal(mapId, riversListId, catalogLinkType, true)
-}
+export function initWWMap(mapId, riversListId, options) {
+    let optDefined = typeof options == 'object';
 
-export function initWWMapCustomRiverList(mapId, riversListTemplateElement, catalogLinkType) {
-    initWWMapInternal(mapId, riversListTemplateElement, catalogLinkType, false)
-}
+    let catalogLinkType = optDefined ? options.catalogLinkType : null;
+    let riversTemplateData = optDefined ? options.riversTemplateData : null;
+    userInfoFunction = optDefined ? options.userInfoFunction : null;
 
-function initWWMapInternal(mapId, riversListId, catalogLinkType, riverListFromTemplates = true) {
     if (catalogLinkType && CATALOG_LINK_TYPES.indexOf(catalogLinkType) <= -1) {
         throw "Unknown catalog link type. Available are: " + CATALOG_LINK_TYPES
     }
 
     // initialize popup windows
-    reportPopup = new WWMapPopup('report_popup_template', true, 'report_popup', {
+    reportPopup = new WWMapPopup('report_popup', 'report_popup_template', {
         submitUrl: apiBase + "/report",
         okMsg: "Запрос отправлен. Я прочитаю его по мере наличия свободного времени",
         failMsg: "Что-то пошло не так...",
@@ -61,11 +58,11 @@ function initWWMapInternal(mapId, riversListId, catalogLinkType, riverListFromTe
         closeOnEscape: false,
         closeOnMouseClickOutside: false
     });
-    tutorialPopup = new WWMapPopup('info_popup_template', true, 'info_popup');
+    tutorialPopup = new WWMapPopup('info_popup', 'info_popup_template');
 
     // riverList
     if (riversListId) {
-        riverList = new RiverList(riversListId, 'rivers_template', riverListFromTemplates)
+        riverList = new RiverList(riversListId, 'rivers_template', riversTemplateData)
     }
 
     // init and show map

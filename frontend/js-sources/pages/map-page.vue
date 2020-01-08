@@ -22,7 +22,10 @@
 
     function loadMapWhenDivIsReady() {
         if ($('#wwmap-container').outerWidth()) {
-            wwmap.initWWMap("wwmap-container", "wwmap-rivers", "wwmap")
+            wwmap.initWWMap("wwmap-container", "wwmap-rivers", {
+                catalogLinkType: "wwmap",
+                userInfoFunction: getAuthorizedUserInfoOrNull,
+            })
         } else {
             console.log("#div-container is not ready yet: has no offsetWidth");
             setTimeout(loadMapWhenDivIsReady, 100);
@@ -30,10 +33,7 @@
     }
 
     export default {
-        mounted: function () {
-            wwmap.getWwmapUserInfo = getAuthorizedUserInfoOrNull;
-            loadMapWhenDivIsReady();
-        },
+        mounted: loadMapWhenDivIsReady,
         data() {
             return {}
         },

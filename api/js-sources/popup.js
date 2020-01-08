@@ -4,19 +4,20 @@ import {loadFragment} from "./template-data";
 var $ = require("jquery");
 import Template7 from "template7";
 
-export function WWMapPopup(templateId, fromTemplates, workingDivId, options) {
-    this.divId = workingDivId;
-    if (fromTemplates) {
+export function WWMapPopup(divId, templateId, options) {
+    this.divId = divId;
+    let optionsIsObject = typeof options == 'object';
+    if (optionsIsObject && options.templateData) {
+        t.template = Template7.compile(options.templateData);
+    } else {
         loadFragment(templateId).then(templateText => {
             t.template = Template7.compile(templateText);
         });
-    } else {
-        throw "Not implemented"
     }
 
-    this.submitUrl = (options) ? options.submitUrl : null;
-    this.okMsg = (options) ? options.okMsg : null;
-    this.failMsg = (options) ? options.failMsg : null;
+    this.submitUrl = optionsIsObject ? options.submitUrl : null;
+    this.okMsg = optionsIsObject ? options.okMsg : null;
+    this.failMsg = optionsIsObject ? options.failMsg : null;
 
     $('body').prepend('<div id="' + this.divId + '" class="wwmap-popup_area"></div>');
     this.div = $("#" + this.divId);
@@ -24,7 +25,7 @@ export function WWMapPopup(templateId, fromTemplates, workingDivId, options) {
     var t = this;
 
     // close on mouse click outside the window
-    if (!options || options.closeOnMouseClickOutside !== false) {
+    if (!optionsIsObject || options.closeOnMouseClickOutside !== false) {
         this.div.click(function (source) {
             var classAttr = $(source.target).attr('class');
             if (classAttr && classAttr.indexOf('wwmap-popup_are') > -1) {
@@ -34,7 +35,7 @@ export function WWMapPopup(templateId, fromTemplates, workingDivId, options) {
     }
 
     // close on escape pressed
-    if (!options || options.closeOnEscape !== false) {
+    if (!optionsIsObject || options.closeOnEscape !== false) {
         $(document).keyup(function (e) {
             if (e.which == 27) { // Escape
                 t.hide()

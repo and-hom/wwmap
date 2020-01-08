@@ -5,19 +5,19 @@ import {loadFragment} from "./template-data";
 var $ = require("jquery");
 import Template7 from "template7";
 
-export function RiverList(divId, templateDivId, fromTemplates) {
+export function RiverList(divId, templateDivId, riversTemplateData) {
     this.divId = divId;
     var t = this;
 
-    if (fromTemplates) {
+    if (riversTemplateData) {
+        t.template = Template7.compile(riversTemplateData);
+    } else {
         loadFragment(templateDivId).then(templateText => {
             t.template = Template7.compile(templateText);
         });
-    } else {
-        throw "Not implemented"
     }
 
-    this.riverInfoPopup = new WWMapPopup('river_desc_template', true, "river_desc");
+    this.riverInfoPopup = new WWMapPopup("river_desc", 'river_desc_template');
 }
 
 RiverList.prototype.update = function (rivers) {

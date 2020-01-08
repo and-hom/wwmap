@@ -1,4 +1,4 @@
-import {getWwmapUserInfo} from './main'
+import {userInfoFunction} from './main'
 
 var $ = require( "jquery" );
 require( "jquery.cookie" );
@@ -167,8 +167,8 @@ export function initMailtoLinks() {
 
 export function getWwmapUserInfoForMapControls() {
         return new Promise(function (resolve, reject) {
-            if (typeof getWwmapUserInfo == 'function') {
-                let userInfo = getWwmapUserInfo();
+            if (typeof userInfoFunction == 'function') {
+                let userInfo = userInfoFunction();
                 if (userInfo) {
                     resolve(userInfo)
                 } else {
