@@ -2,27 +2,9 @@
     <div class="spot-editor-panel" style="padding-top:15px;">
         <b-tabs>
             <b-tab title="Главное" active>
-                <input v-model.trim="river.title" style="display:block"/>
-                <dl>
-                    <dt>Показывать на карте:</dt>
-                    <dd>
-                        <span style="padding-left:40px;" v-if="river.visible">Да</span>
-                        <span style="padding-left:40px;" v-else>Нет</span>&nbsp;&nbsp;&nbsp;
-                        <button type="button" class="btn btn-info"
-                                v-if="canEdit && !river.visible"
-                                v-on:click="setVisible(true); hideError();">
-                            Показывать на карте
-                        </button>
-                        <button type="button" class="btn btn-info" v-if="canEdit && river.visible"
-                                v-on:click="setVisible(false); hideError();">
-                            Скрыть на карте
-                        </button>
-                        <div style="padding-left:40px;" class="wwmap-system-hint">Нужно, когда мы не хотим выставлять
-                            наполовину размеченную и описанную реку.
-                            Если добавляешь часть порогов, а остальные планируешь на потом, не делай реку видимой на
-                            карте.
-                        </div>
-                    </dd>
+                <label for="river_title" style="font-weight:bold; margin-top:5px">Название:</label>
+                <input v-model.trim="river.title" style="display:block;" id="river_title"/>
+                <dl style="margin-top:10px;">
                     <dt v-if="river.region.id>0">Регион:</dt>
                     <dd v-if="river.region.id>0">
                         <select v-model="river.region.id">
@@ -215,6 +197,7 @@
             this.selectedSensors = this.river.props.vodinfo_sensors;
         },
         mounted: function () {
+            let t = this;
             hasRole(ROLE_ADMIN, ROLE_EDITOR).then(canEdit => this.canEdit = canEdit);
 
             getRiverBounds(this.river.id).then(bounds => {
@@ -232,12 +215,16 @@
                     this.showMap();
                 }
 
-                getMeteoPoints().then(points => this.meteoPoints = points);
-                this.meteoPoint = this.getMeteoPointById(this.river.props.meteo_point);
+                getMeteoPoints().then(points => {
+                    t.meteoPoints = points;
+                    t.meteoPoint = t.getMeteoPointById(t.river.props.meteo_point);
+                });
             });
         },
         data: function () {
             return {
+                prevRegionId: nvlReturningId(this.river.region.id),
+                prevCountryId: this.river.region.country_id,
                 map: null,
 
                 canEdit: false,
@@ -282,19 +269,6 @@
 
                     }, _ => {
                         this.showError("Не удалось сохранить реку. Возможно, недостаточно прав");
-                    });
-                },
-                setVisible: function (visible) {
-                    setRiverVisible(this.river.id, visible).then(river => {
-                        this.river = river;
-                        this.meteoPoint = this.getMeteoPointById(this.river.props.meteo_point);
-                        this.selectedSensors = this.river.props.vodinfo_sensors;
-                        // set "visible" property to global storage to set icon in the left-side tree using reactivity of vue.js
-                        var regionId = this.river.region.id;
-                        if (this.river.region.fake) {
-                            regionId = -1
-                        }
-                        getRiverFromTree(this.river.region.country_id, regionId, this.river.id).visible = this.river.visible;
                     });
                 },
 

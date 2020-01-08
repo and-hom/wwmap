@@ -27,7 +27,7 @@
                 <button type="button" class="btn btn-secondary" v-if="pageMode != 'view'"
                         v-on:click="cancelEditing()">Отменить
                 </button>
-                <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#del-river">Удалить
+                <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#del-river" v-if="river.id>0">Удалить
                 </button>
             </div>
             <div class="btn-group mr-2">
@@ -126,20 +126,21 @@
                     },
                     country: this.country,
                     region: this.region,
+                    river: this.river,
                 });
             },
             remove: function () {
                 this.hideError();
                 removeRiver(this.river.id).then(
-                    _ => this.closeEditorAndShowRiver(),
+                    _ => this.closeEditorAndShowParent(),
                     err => this.showError("не могу удалить: " + err))
             },
             cancelEditing: function () {
-                pageMode='view';
+                this.pageMode='view';
                 if (this.river && this.river.id > 0) {
                     this.reload();
                 } else {
-                    this.closeEditorAndShowRiver();
+                    this.closeEditorAndShowParent();
                 }
             },
             reload: function () {
@@ -148,7 +149,7 @@
                     this.hideError();
                 });
             },
-            closeEditorAndShowRiver: function () {
+            closeEditorAndShowParent: function () {
                 setActiveEntityUrlHash(this.country.id, nvlReturningId(this.region));
                 store.commit('setActiveEntityState', {
                     countryId: this.country.id,

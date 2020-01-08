@@ -23,25 +23,27 @@
                         </transition>
                         <div>
                             <country-page v-if="countryeditorstate.visible"
-                                            v-bind:country="countryeditorstate.country"/>
+                                          v-bind:country="countryeditorstate.country"/>
                         </div>
                         <div>
-                            <region-page v-if="regioneditorstate.visible" v-bind:region="regioneditorstate.region"
-                                           v-bind:country="regioneditorstate.country"/>
+                            <region-page v-if="regioneditorstate.visible"
+                                         v-bind:region="regioneditorstate.region"
+                                         v-bind:country="regioneditorstate.country"/>
                         </div>
                         <div>
                             <river-page v-if="rivereditorstate.visible"
-                                          v-bind:initial-river="rivereditorstate.river"
-                                          v-bind:reports="rivereditorstate.reports"
-                                          v-bind:country="rivereditorstate.country"
-                                          v-bind:region="rivereditorstate.region"
-                                          v:sensors="sensors"/>
+                                        v-bind:initial-river="rivereditorstate.river"
+                                        v-bind:reports="rivereditorstate.reports"
+                                        v-bind:country="rivereditorstate.country"
+                                        v-bind:region="rivereditorstate.region"
+                                        v:sensors="sensors"/>
                         </div>
                         <div>
                             <spot-page v-if="spoteditorstate.visible"
-                                         v-bind:initial-spot="spoteditorstate.spot"
-                                         v-bind:country="spoteditorstate.country"
-                                         v-bind:region="spoteditorstate.region"/>
+                                       v-bind:initial-spot="spoteditorstate.spot"
+                                       v-bind:country="spoteditorstate.country"
+                                       v-bind:region="spoteditorstate.region"
+                                       v-bind:river="spoteditorstate.river"/>
                         </div>
                     </div>
                 </div>
@@ -51,10 +53,7 @@
 </template>
 
 <script>
-    import {
-        getAllRegions,
-        getCountries,
-    } from '../editor'
+    import {getAllRegions, getCountries,} from '../editor'
     import {store} from '../main'
 
 

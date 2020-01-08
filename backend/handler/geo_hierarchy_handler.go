@@ -282,7 +282,7 @@ func (this *GeoHierarchyHandler) UploadGpx(w http.ResponseWriter, req *http.Requ
 	}
 
 	spots := make([]dao.WhiteWaterPointFull, 0, len(gpx_data.Waypoints))
-	for _, wpt := range gpx_data.Waypoints {
+	for i, wpt := range gpx_data.Waypoints {
 		spot := dao.WhiteWaterPointFull{}
 		spot.Title = wpt.Name
 		spot.River = dao.RiverWithRegion{IdTitle: dao.IdTitle{Id: riverId}}
@@ -290,6 +290,10 @@ func (this *GeoHierarchyHandler) UploadGpx(w http.ResponseWriter, req *http.Requ
 		spot.ShortDesc = wpt.Desc
 		spot.Category = model.SportCategory{Category: model.UNDEFINED_CATEGORY}
 		spot.Aliases = []string{}
+
+		spot.OrderIndex = i + 1
+		spot.AutomaticOrdering = false
+
 		spotId, err := this.WhiteWaterDao.InsertWhiteWaterPointFull(spot)
 		if err != nil {
 			OnError500(w, err, "Can not insert spot")

@@ -271,7 +271,7 @@
 <script>
     import FileUpload from 'vue-upload-component';
     import {getWwmapSessionId, hasRole, ROLE_ADMIN, ROLE_EDITOR} from '../../auth'
-    import {store} from '../../main'
+    import {store, getSpotFromTree} from '../../main'
     import {getSpotsFull, nvlReturningId, saveSpot,} from '../../editor'
     import {backendApiBase} from '../../config'
     import Sortable from 'sortablejs';
@@ -285,6 +285,8 @@
             FileUpload: FileUpload
         },
         created: function () {
+            let t = this;
+
             hasRole(ROLE_ADMIN, ROLE_EDITOR).then(canEdit => this.canEdit = canEdit);
 
             getSpotsFull(this.river.id).then(spots => {
@@ -292,21 +294,6 @@
                 this.spotIndexes = [];
                 this.pageMode = 'batch-edit';
                 this.hideError();
-
-                let t = this;
-                if (this.$refs.uploadGpx && this.$refs.uploadGpx.value.length && this.$refs.uploadGpx.uploaded && this.gpxJustUploaded) {
-                    store.commit('showRiverSubentities', {
-                        countryId: this.river.region.country_id,
-                        regionId: nvlReturningId(this.river.region),
-                        riverId: this.river.id,
-                    });
-                    this.gpxJustUploaded = false;
-                    for (let i = 0; i < this.$refs.uploadGpx.value.length; i++) {
-                        this.$refs.uploadGpx.value[i].response.forEach(function (x) {
-                            t.spots.push(x);
-                        });
-                    }
-                }
 
                 let el = document.getElementById('spot-list');
                 if (!el) {
@@ -346,6 +333,20 @@
                 }
             });
         },
+        updated() {
+            let t = this;
+            if (this.$refs.uploadGpx && this.$refs.uploadGpx.value.length && this.$refs.uploadGpx.uploaded && this.gpxJustUploaded) {
+                store.commit('showRiverSubentities', {
+                    countryId: this.river.region.country_id,
+                    regionId: nvlReturningId(this.river.region),
+                    riverId: this.river.id,
+                });
+                this.gpxJustUploaded = false;
+                for (let i = 0; i < this.$refs.uploadGpx.value.length; i++) {
+                    this.$refs.uploadGpx.value[i].response.forEach(x => t.spots.push(x));
+                }
+            }
+        },
         computed: {
             uploadPath: function () {
                 return backendApiBase + "/river/" + this.river.id + "/gpx"
@@ -381,6 +382,7 @@
         methods: {
             saveSpotsBatch: function () {
                 try {
+                    let t = this;
                     this.hideError();
                     let forDelete = this.spotsForDeleteIds;
                     let deleteErrors = "";
@@ -400,13 +402,20 @@
                         }
                         return httpStatusCode == 404 || success;
                     });
-                    let saved = this.spots.filter(function (spot) {
-                        return !forDelete.includes(spot.id);
-                    }).map(function (spot) {
-                        saveSpot(spot).then(_ => {
-                        }, failMsg => saveErrors += failMsg);
-                        return true;
-                    });
+                    let saved = this.spots
+                        .filter(spot => !forDelete.includes(spot.id))
+                        .map(spot => {
+                            saveSpot(spot).then(
+                                savedSpot => {
+                                    let treeSpotItem = getSpotFromTree(t.country.id, nvlReturningId(t.region), t.river.id, savedSpot.id);
+                                    if (treeSpotItem) {
+                                        treeSpotItem.title = savedSpot.title
+                                    }
+                                },
+                                failMsg => saveErrors += failMsg
+                            );
+                            return true;
+                        });
 
                     let failCount = removed.concat(saved).filter(function (x) {
                         return !x;
@@ -436,7 +445,7 @@
                     riverId: riverId,
                 });
 
-                return true;
+                this.pageMode = 'view';
             },
             addEmptySpotToBatch: function () {
                 let orderIndex;

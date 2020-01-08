@@ -55,7 +55,7 @@
     import {getImages, getSpot, nvlReturningId, removeSpot, setActiveEntityUrlHash} from '../../editor';
 
     module.exports = {
-        props: ['initialSpot', 'country', 'region'],
+        props: ['initialSpot', 'country', 'region', 'river'],
         computed: {
             editMode: {
                 get: function () {
@@ -102,7 +102,7 @@
             remove: function () {
                 this.hideError();
                 removeSpot(this.spot.id).then(
-                    _ => this.closeEditorAndShowSpot(),
+                    _ => this.closeEditorAndShowParent(),
                     err => this.showError("не могу удалить: " + err))
             },
             cancelEditing: function () {
@@ -110,7 +110,7 @@
                 if (this.spot && this.spot.id > 0) {
                     this.reload();
                 } else {
-                    this.closeEditorAndShowSpot();
+                    this.closeEditorAndShowParent();
                 }
             },
             reload: function () {
@@ -119,28 +119,29 @@
                     this.hideError();
                 });
             },
-            closeEditorAndShowSpot: function () {
-                setActiveEntityUrlHash(this.country.id, nvlReturningId(this.region));
+            closeEditorAndShowParent: function () {
+                setActiveEntityUrlHash(this.country.id, nvlReturningId(this.region), this.river.id);
                 store.commit('setActiveEntityState', {
                     countryId: this.country.id,
                     regionId: nvlReturningId(this.region),
-                    spotId: null,
+                    riverId: this.river.id,
                     spotId: null
                 });
                 store.commit("setSpotEditorVisible", false);
-                if (this.spot.region.fake || this.spot.region.id == 0) {
-                    store.commit('showCountrySubentities', this.country.id);
-                    store.commit('selectCountry', {country: this.country});
-                } else {
-                    store.commit('showRegionSubentities', {
-                        countryId: this.country.id,
-                        regionId: nvlReturningId(this.spot.region)
-                    });
-                    store.commit('selectRegion', {
-                        country: this.country,
-                        countryId: nvlReturningId(this.spot.region)
-                    });
-                }
+                store.commit('showRegionSubentities', {
+                    countryId: this.country.id,
+                    regionId: nvlReturningId(this.spot.region)
+                });
+                store.commit('showRiverSubentities', {
+                    countryId: this.country.id,
+                    regionId: nvlReturningId(this.spot.region),
+                    riverId: this.river.id,
+                });
+                store.commit('selectRiver', {
+                    country: this.country,
+                    regionId: this.spot.region,
+                    riverId: this.river.id,
+                });
             },
             reloadImgs: function () {
                 this.images = [];

@@ -124,7 +124,7 @@ export function setManualLevel(spotId, id, l) {
 }
 
 export function resetManualLevel(spotId, id, l) {
-    return doDeleteWithJsonRespSync(backendApiBase + "/spot/" + spotId + "/img/" + id + "/manual-level",true)
+    return doDeleteWithJsonResp(backendApiBase + "/spot/" + spotId + "/img/" + id + "/manual-level",true)
 }
 
 export function setImageDate(spotId, id, date) {

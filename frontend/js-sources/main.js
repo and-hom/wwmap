@@ -95,6 +95,12 @@ export function getRegionFromTree(countryId, regionId) {
 }
 
 
+export function getSpotFromTree(countryId, regionId, riverId, spotId) {
+    let river = getRiverFromTree(countryId, regionId, riverId);
+    return river ? getById(river.spots, spotId) : null;
+}
+
+
 export function getSpotsFromTree(countryId, regionId, riverId) {
     var river;
     if (regionId && regionId > 0) {
@@ -156,10 +162,12 @@ export const store = new Vuex.Store({
             state.countryeditorstate.visible = true
         },
         selectRegion(state, payload) {
-            state.regioneditorstate.region = getRegion(payload.regionId);
-            state.regioneditorstate.country = payload.country;
-            state.regioneditorstate.editMode = false;
-            state.regioneditorstate.visible = true
+            getRegion(payload.regionId).then(region => {
+                state.regioneditorstate.region = region;
+                state.regioneditorstate.country = payload.country;
+                state.regioneditorstate.editMode = false;
+                state.regioneditorstate.visible = true;
+            });
         },
         selectRiver(state, payload) {
             getRiver(payload.riverId).then(river => {
@@ -224,8 +232,7 @@ export const store = new Vuex.Store({
         },
 
         showRegionSubentities(state, payload) {
-            getRiversByRegion(payload.countryId, payload.regionId)
-                .then(rivers => {
+            getRiversByRegion(payload.countryId, payload.regionId).then(rivers => {
                     let region = getRegionFromTree(payload.countryId, payload.regionId);
                     if (region) {
                         Vue.set(region, "rivers", rivers)

@@ -39,8 +39,9 @@
 <script>
     import {store} from "../main";
     import {getImages, removeImage, setImageEnabled} from "../editor"
-    import {parseParams} from "../api"
+    import {parseParams, doPostJson} from "../api"
     import {getWwmapSessionId} from "../auth"
+    import {backendApiBase} from '../config'
 
     module.exports = {
         props: ['spot', 'value', 'type', 'auth'],
@@ -65,10 +66,10 @@
         data: function () {
             return {
                 removeImage: function (imgId) {
-                    this.images = removeImage(this.spot.id, imgId, this.type);
+                    removeImage(this.spot.id, imgId, this.type).then(images => this.images = images);
                 },
                 setImgEnabled: function (enabled, imgId) {
-                    this.images = setImageEnabled(this.spot.id, imgId, enabled, this.type);
+                    setImageEnabled(this.spot.id, imgId, enabled, this.type).then(images => this.images = images);
                 },
                 imageClass: function (image) {
                     if (image.enabled === false) {
@@ -104,13 +105,14 @@
                             source: "youtube"
                         };
                         var t = this;
-                        resp = doPostJsonSync(this.uploadPath(), requestData, true);
-                        if (resp) {
-                            t.images = getImages(this.spot.id, "video");
-                            t.hideError();
-                        } else {
-                            t.showError("Не удалось добавить видео")
-                        }
+                        doPostJson(this.uploadPath(), requestData, true).then(resp => {
+                            if (resp) {
+                               getImages(this.spot.id, "video").then(images => t.images = images);
+                                t.hideError();
+                            } else {
+                                t.showError("Не удалось добавить видео")
+                            }
+                        });
                     } catch (e) {
                         this.showError("Не удалось добавить видео: " + e)
                     }
