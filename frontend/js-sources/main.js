@@ -21,12 +21,10 @@ import upperFirst from 'lodash/upperFirst'
 import camelCase from 'lodash/camelCase'
 
 import {TabsPlugin} from 'bootstrap-vue'
-
-const moment = require('moment');
-
 import {
     COUNTRY_ACTIVE_ENTITY_LEVEL,
     getActiveId,
+    getCountries,
     getRegion,
     getRegions,
     getReports,
@@ -47,13 +45,15 @@ import 'vue-select/dist/vue-select.css';
 import './style/main.css'
 import './style/editor.css'
 
+const moment = require('moment');
+
 require("bootstrap");
 
 
 export var app;
 
 
-function getById(arr, id) {
+export function getById(arr, id) {
     var filtered = arr.filter(function (x) {
         return x.id === id
     });
@@ -65,9 +65,9 @@ function getById(arr, id) {
 
 export function getRiverFromTree(countryId, regionId, riverId) {
     let river;
-    let country = store.state.treePath[countryId];
+    let country = getById(store.state.treePath, countryId);
     if (!country) {
-        country = showCountrySubentities(countryId)
+        return null
     }
 
     if (regionId && regionId > 0) {
@@ -85,7 +85,7 @@ export function getRiverFromTree(countryId, regionId, riverId) {
 }
 
 export function getRegionFromTree(countryId, regionId) {
-    let country = store.state.treePath[countryId];
+    let country = getById(store.state.treePath, countryId);
     if (!country) {
         //country = showCountrySubentities(countryId)
         return null;
@@ -104,10 +104,10 @@ export function getSpotFromTree(countryId, regionId, riverId, spotId) {
 export function getSpotsFromTree(countryId, regionId, riverId) {
     var river;
     if (regionId && regionId > 0) {
-        var region = getById(store.state.treePath[countryId].regions, regionId);
+        var region = getById(getById(store.state.treePath, countryId).regions, regionId);
         river = getById(region.rivers, riverId)
     } else {
-        river = getById(store.state.treePath[countryId].rivers, riverId)
+        river = getById(getById(store.state.treePath, countryId).rivers, riverId)
     }
     return river.spots ? river.spots : []
 }
@@ -140,7 +140,7 @@ export const store = new Vuex.Store({
 
 
         userInfo: getAuthorizedUserInfoOrNull(),
-        treePath: {},
+        treePath: [],
         selectedCountry: getActiveId(COUNTRY_ACTIVE_ENTITY_LEVEL),
         selectedRegion: getActiveId(REGION_ACTIVE_ENTITY_LEVEL),
         selectedRiver: getActiveId(RIVER_ACTIVE_ENTITY_LEVEL),
@@ -149,6 +149,9 @@ export const store = new Vuex.Store({
     },
     getters: {},
     mutations: {
+        setTreePath(state, treePath) {
+            state.treePath = treePath;
+        },
         hideAll(state) {
             state.spoteditorstate.visible = false;
             state.rivereditorstate.visible = false;
@@ -219,25 +222,24 @@ export const store = new Vuex.Store({
 
         showCountrySubentities(state, id) {
             Promise.all([getRiversByCountry(id), getRegions(id)]).then(result => {
-                let country = {
-                    rivers: result[0],
-                    regions: result[1],
-                };
-                Vue.set(store.state.treePath, id, country);
-                return country;
+                let country = getById(store.state.treePath, id);
+                Vue.set(country, "rivers", result[0]);
+                Vue.set(country, "regions", result[1]);
             })
         },
         hideCountrySubentities(state, id) {
-            Vue.delete(store.state.treePath, id)
+            let country = getById(store.state.treePath, id);
+            Vue.delete(country, "rivers");
+            Vue.delete(country, "regions");
         },
 
         showRegionSubentities(state, payload) {
             getRiversByRegion(payload.countryId, payload.regionId).then(rivers => {
-                    let region = getRegionFromTree(payload.countryId, payload.regionId);
-                    if (region) {
-                        Vue.set(region, "rivers", rivers)
-                    }
-                });
+                let region = getRegionFromTree(payload.countryId, payload.regionId);
+                if (region) {
+                    Vue.set(region, "rivers", rivers)
+                }
+            });
         },
 
         hideRegionSubentities(state, payload) {
@@ -358,7 +360,7 @@ function init(page) {
     Vue.component('image-rating', ImageRating);
     Vue.use(TabsPlugin);
 
-    Vue.filter('formatDateTimeStr', function(value) {
+    Vue.filter('formatDateTimeStr', function (value) {
         if (value) {
             return moment(String(value)).format('YYYY-MM-DD HH:mm:ss')
         }
@@ -377,6 +379,10 @@ function init(page) {
         );
 
         Vue.component(componentName, componentConfig.default || componentConfig)
+    });
+
+    getCountries().then(countries => {
+        store.commit('setTreePath', countries)
     });
 
     app = new Vue({

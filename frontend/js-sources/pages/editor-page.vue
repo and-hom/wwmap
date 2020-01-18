@@ -53,28 +53,35 @@
 </template>
 
 <script>
-    import {getAllRegions, getCountries,} from '../editor'
-    import {store} from '../main'
+    import {store, getById} from '../main'
 
 
     export default {
         data() {
-            return {
-                countries: [],
-                regions: [],
-            }
-        },
-        created() {
-            getCountries().then(c => this.countries = c);
-            getAllRegions().then(r => this.regions = r);
+            return {};
         },
         computed: {
-            closeCallback() {return store.state.closeCallback},
-            errMsg() {return store.state.errMsg},
-            countryeditorstate() {return store.state.countryeditorstate},
-            regioneditorstate() {return store.state.regioneditorstate},
-            rivereditorstate() {return store.state.rivereditorstate},
-            spoteditorstate() {return store.state.spoteditorstate},
+            countries() {
+                return store.state.treePath;
+            },
+            closeCallback() {
+                return store.state.closeCallback
+            },
+            errMsg() {
+                return store.state.errMsg
+            },
+            countryeditorstate() {
+                return store.state.countryeditorstate
+            },
+            regioneditorstate() {
+                return store.state.regioneditorstate
+            },
+            rivereditorstate() {
+                return store.state.rivereditorstate
+            },
+            spoteditorstate() {
+                return store.state.spoteditorstate
+            },
         }
     }
 </script>
