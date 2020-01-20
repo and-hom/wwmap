@@ -1,6 +1,6 @@
 <template>
     <div>
-        <datepicker format="yyyy-MM-dd" v-model="date" @selected="function (d) {
+        <datepicker format="yyyy-MM-dd" :typeable="true" placeholder="YYYY-MM-DD" v-model="date" @selected="function (d) {
                     levelData = setImageDate(spotId, imgId, d);
                     $emit('input', d);
                     $emit('level', levelData)
