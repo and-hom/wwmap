@@ -1,8 +1,12 @@
 <template>
     <div>
-        <datepicker format="yyyy-MM-dd" v-model="date" @selected="function (d) {
-                    dateSelected(spotId, imgId, d);
-                }" :clear-button="true"></datepicker>
+        <datepicker format="yyyy-MM-dd"
+                    :typeable="true"
+                    placeholder="YYYY-MM-DD"
+                    v-model="date"
+                    @selected="function (d) {
+                        dateSelected(spotId, imgId, d);
+                    }" :clear-button="true"></datepicker>
 
         <div style="margin-top: 10px;">
             Задать уровень воды на фото вручную:
