@@ -1,10 +1,10 @@
 package dao
 
 import (
-	log "github.com/Sirupsen/logrus"
 	"database/sql"
-	"reflect"
 	"fmt"
+	log "github.com/Sirupsen/logrus"
+	"reflect"
 )
 
 type Storage interface {
@@ -17,7 +17,7 @@ func (this *PostgresStorage) Begin() (PgTxHolder, error) {
 	if err != nil {
 		return PgTxHolder{}, err
 	}
-	return PgTxHolder{PostgresStorage:*this, tx:tx}, nil
+	return PgTxHolder{PostgresStorage: *this, tx: tx}, nil
 }
 
 func (this PostgresStorage) WithinTx(payload func(tx interface{}) error) error {
@@ -25,7 +25,7 @@ func (this PostgresStorage) WithinTx(payload func(tx interface{}) error) error {
 	if err != nil {
 		return err
 	}
-	defer tx.Close();
+	defer tx.Close()
 
 	err = payload(tx)
 
@@ -86,7 +86,7 @@ func (this *PostgresStorage) performUpdatesWithinTxOptionally(tx interface{}, qu
 		if !ok {
 			return fmt.Errorf("Unsupported tx type: %v", reflect.TypeOf(tx))
 		}
-		return txHolder.performUpdates(query, IdMapper, values...)
+		return txHolder.performUpdates(query, mapper, values...)
 	}
-	return this.performUpdates(query, IdMapper, values...)
+	return this.performUpdates(query, mapper, values...)
 }
