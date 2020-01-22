@@ -45,7 +45,8 @@
 
                      v-on:images="images = $event"
                      v-on:schemas="schemas = $event"
-                     v-on:videos="videos = $event"/>
+                     v-on:videos="videos = $event"
+                     v-on:spot="spot = $event"/>
     </div>
 </template>
 

@@ -114,7 +114,7 @@ func (this whiteWaterStorage) FindFull(id int64) (WhiteWaterPointFull, error) {
 }
 
 func (this whiteWaterStorage) InsertWhiteWaterPointFull(whiteWaterPoint WhiteWaterPointFull, tx interface{}) (int64, error) {
-	ids, err := this.updateReturningColumnsWithinTxOptionally(tx, this.insertFullQuery, WhiteWaterPointFullMapper, true, whiteWaterPoint)
+	ids, err := this.updateReturningColumnsWithinTxOptionally(tx, this.insertFullQuery, paramsFull, true, whiteWaterPoint)
 	if err != nil {
 		return 0, err
 	}
@@ -146,7 +146,9 @@ func WhiteWaterPointFullMapper(entity interface{}) ([]interface{}, error) {
 	return append([]interface{}{wwp.Id}, params...), nil
 }
 
-func paramsFull(wwp WhiteWaterPointFull) ([]interface{}, error) {
+func paramsFull(p interface{}) ([]interface{}, error) {
+	wwp := p.(WhiteWaterPointFull)
+
 	pointBytes, err := json.Marshal(wwp.Point.ToPg())
 	if err != nil {
 		return nil, err

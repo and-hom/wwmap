@@ -7,13 +7,7 @@ export function sendRequest(url, _type, auth) {
         xhr.open(_type, url, true);
         addAuth(xhr, auth);
 
-        xhr.onload = () => {
-            if (xhr.status / 100 != 2) {
-                reject(xhr.statusText);
-                return;
-            }
-            resolve(xhr.responseText);
-        };
+        xhr.onload = () => onLoad(xhr, resolve, reject);
         xhr.onerror = () => reject(xhr.statusText);
 
         try {
@@ -45,7 +39,7 @@ export function doPostJson(url, value, auth) {
         addAuth(xhr, auth);
         var data = JSON.stringify(value);
 
-        xhr.onload = () => resolve(xhr.responseText);
+        xhr.onload = () => onLoad(xhr, resolve, reject);
         xhr.onerror = () => reject(xhr.statusText);
 
         xhr.send(data);
@@ -60,6 +54,15 @@ function addAuth(xhr, auth) {
     if (sessionId) {
         xhr.setRequestHeader("Authorization", sessionId);
     }
+}
+
+
+function onLoad(xhr, resolve, reject) {
+    if (xhr.status / 100 != 2) {
+        reject(xhr.responseText);
+        return;
+    }
+    resolve(xhr.responseText);
 }
 
 export function getBackendVersion() {

@@ -213,6 +213,7 @@
                 map: null,
                 canEdit: false,
                 river: null,
+                endPointBackup: null,
             }
         },
 
@@ -220,6 +221,7 @@
             save: function () {
                 if (!this.spot.title || !this.spot.title.replace(/\s/g, '').length) {
                     this.showError("Нельзя сохранять порог без названия");
+                    return
                 }
 
                 let oldRiver = this.spot.river;
@@ -254,6 +256,8 @@
                         riverId: riverId
                     });
                     this.editMode = false;
+
+                    this.$emit('spot', updated)
                 }, err => this.showError("Не удалось сохранить препятствие: " + err));
             },
             cancelEditing: function () {
@@ -306,7 +310,6 @@
             editEndPoint: function () {
                 return Array.isArray(this.spot.point[0])
             },
-            endPointBackup: null,
             addSpotEndPoint: function () {
                 if (!Array.isArray(this.spot.point[0])) {
                     if (this.endPointBackup) {
