@@ -614,7 +614,7 @@ func (this *GeoHierarchyHandler) removeImageData(req *http.Request, imgs []dao.I
 		if err != nil {
 			log.Errorf("Can not remove preview for by id %d: %v", img.Id, err)
 		}
-		this.LogUserEvent(req, RIVER_LOG_ENTRY_TYPE, img.Id, dao.ENTRY_TYPE_DELETE, "Recursively")
+		this.LogUserEvent(req, IMAGE_LOG_ENTRY_TYPE, img.Id, dao.ENTRY_TYPE_DELETE, "Recursively")
 	}
 }
 
