@@ -55,6 +55,12 @@ func (this *GeoHierarchyHandler) Init() {
 	this.Register("/river/{riverId}/visible", HandlerFunctions{
 		Post: this.ForRoles(this.SetRiverVisible, dao.ADMIN, dao.EDITOR),
 		Put:  this.ForRoles(this.SetRiverVisible, dao.ADMIN, dao.EDITOR)})
+	this.Register("/spot/batch", HandlerFunctions{
+		Get: func(writer http.ResponseWriter, request *http.Request) {
+			OnError(writer, errors.New(""), "404 page not found", http.StatusNotFound)
+		},
+		Post: this.ForRoles(this.SaveSpotBatch, dao.ADMIN, dao.EDITOR),
+	})
 	this.Register("/spot/{spotId}", HandlerFunctions{Get: this.GetSpot,
 		Post:   this.ForRoles(this.SaveSpot, dao.ADMIN, dao.EDITOR),
 		Put:    this.ForRoles(this.SaveSpot, dao.ADMIN, dao.EDITOR),
@@ -294,7 +300,7 @@ func (this *GeoHierarchyHandler) UploadGpx(w http.ResponseWriter, req *http.Requ
 		spot.OrderIndex = i + 1
 		spot.AutomaticOrdering = false
 
-		spotId, err := this.WhiteWaterDao.InsertWhiteWaterPointFull(spot)
+		spotId, err := this.WhiteWaterDao.InsertWhiteWaterPointFull(spot, nil)
 		if err != nil {
 			OnError500(w, err, "Can not insert spot")
 			return
@@ -540,7 +546,7 @@ func (this *GeoHierarchyHandler) SaveSpot(w http.ResponseWriter, r *http.Request
 		id = spot.Id
 		logType = dao.ENTRY_TYPE_MODIFY
 	} else {
-		id, err = this.WhiteWaterDao.InsertWhiteWaterPointFull(spot)
+		id, err = this.WhiteWaterDao.InsertWhiteWaterPointFull(spot, nil)
 		logType = dao.ENTRY_TYPE_CREATE
 	}
 	if err != nil {
@@ -695,4 +701,65 @@ func (this *GeoHierarchyHandler) ImageParentIds(w http.ResponseWriter, req *http
 		return
 	}
 	this.JsonAnswer(w, ids)
+}
+
+func (this *GeoHierarchyHandler) SaveSpotBatch(w http.ResponseWriter, r *http.Request) {
+	batch := SpotBatch{}
+	body, err := decodeJsonBody(r, &batch)
+	if err != nil {
+		OnError500(w, err, "Can not parse json from request body: "+body)
+		return
+	}
+
+	err = this.Storage.WithinTx(func(tx interface{}) error {
+		for _, id := range batch.Delete {
+			err := this.ImgDao.RemoveBySpot(id, tx)
+			if err != nil {
+				return err
+			}
+			err = this.WhiteWaterDao.Remove(id, tx)
+			if err != nil {
+				return err
+			}
+			this.LogUserEvent(r, SPOT_LOG_ENTRY_TYPE, id, SPOT_LOG_ENTRY_TYPE, "")
+		}
+
+		for _, spot := range batch.Update {
+			if spot.River.Id <= 0 {
+				return fmt.Errorf("Can not save spot without river")
+			}
+			if len(strings.TrimSpace(spot.Title)) == 0 {
+				return fmt.Errorf("Can not save spot with empty name")
+			}
+
+			var id int64
+			var logType dao.ChangesLogEntryType
+			if spot.Id > 0 {
+				err = this.WhiteWaterDao.UpdateWhiteWaterPointFull(spot, tx)
+				id = spot.Id
+				logType = dao.ENTRY_TYPE_MODIFY
+			} else {
+				id, err = this.WhiteWaterDao.InsertWhiteWaterPointFull(spot, tx)
+				logType = dao.ENTRY_TYPE_CREATE
+			}
+			if err != nil {
+				return err
+			}
+			this.LogUserEvent(r, SPOT_LOG_ENTRY_TYPE, id, logType, spot.Title)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		OnError500(w, err, "Can't save batch:"+body)
+		return
+	}
+
+	this.JsonAnswer(w, "OK")
+}
+
+type SpotBatch struct {
+	Delete []int64                   `json:"delete"`
+	Update []dao.WhiteWaterPointFull `json:"update"`
 }

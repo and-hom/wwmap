@@ -271,8 +271,8 @@
 <script>
     import FileUpload from 'vue-upload-component';
     import {getWwmapSessionId, hasRole, ROLE_ADMIN, ROLE_EDITOR} from '../../auth'
-    import {store, getSpotFromTree} from '../../main'
-    import {getSpotsFull, nvlReturningId, saveSpot,} from '../../editor'
+    import {store} from '../../main'
+    import {getSpotsFull, nvlReturningId, saveSpotBatch} from '../../editor'
     import {backendApiBase} from '../../config'
     import Sortable from 'sortablejs';
 
@@ -381,71 +381,27 @@
         },
         methods: {
             saveSpotsBatch: function () {
-                try {
-                    let t = this;
-                    this.hideError();
-                    let forDelete = this.spotsForDeleteIds;
-                    let deleteErrors = "";
-                    let saveErrors = "";
+                this.hideError();
+                let forDelete = this.spotsForDeleteIds;
+                let forUpdate = this.spots
+                    .filter(spot => !forDelete.includes(spot.id));
 
-                    let removed = forDelete.map(function (id) {
-                        let failMsg = "";
-                        let httpStatusCode = 200;
-                        let success = removeSpot(id, function (msg, httpCode) {
-                            if (httpCode != 404) {
-                                failMsg = msg;
-                            }
-                            httpStatusCode = httpCode;
-                        });
-                        if (!success) {
-                            deleteErrors += failMsg;
-                        }
-                        return httpStatusCode == 404 || success;
+                saveSpotBatch({
+                    "delete": forDelete,
+                    "update": forUpdate,
+                }).then(_ => {
+
+                    let countryId = this.river.region.country_id;
+                    let regionId = nvlReturningId(this.river.region);
+                    let riverId = this.river.id;
+                    store.commit('showRiverSubentities', {
+                        countryId: countryId,
+                        regionId: regionId,
+                        riverId: riverId,
                     });
-                    let saved = this.spots
-                        .filter(spot => !forDelete.includes(spot.id))
-                        .map(spot => {
-                            saveSpot(spot).then(
-                                savedSpot => {
-                                    let treeSpotItem = getSpotFromTree(t.country.id, nvlReturningId(t.region), t.river.id, savedSpot.id);
-                                    if (treeSpotItem) {
-                                        treeSpotItem.title = savedSpot.title
-                                    }
-                                },
-                                failMsg => saveErrors += failMsg
-                            );
-                            return true;
-                        });
 
-                    let failCount = removed.concat(saved).filter(function (x) {
-                        return !x;
-                    }).length;
-
-                    if (failCount != 0) {
-                        if (saveErrors) {
-                            this.showError("Не получилось сохранить: " + saveErrors);
-                        } else if (deleteErrors) {
-                            this.showError("Не получилось удалить: " + deleteErrors);
-                        }
-                        return false;
-                    }
-                } catch (e) {
-                    this.showError("Не получилось сохранить: " + e);
-                    console.log(e);
-                    return false
-                }
-
-
-                let countryId = this.river.region.country_id;
-                let regionId = nvlReturningId(this.river.region);
-                let riverId = this.river.id;
-                store.commit('showRiverSubentities', {
-                    countryId: countryId,
-                    regionId: regionId,
-                    riverId: riverId,
-                });
-
-                this.pageMode = 'view';
+                    this.pageMode = 'view';
+                }, err => this.showError(err));
             },
             addEmptySpotToBatch: function () {
                 let orderIndex;

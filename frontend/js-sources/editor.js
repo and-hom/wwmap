@@ -57,12 +57,16 @@ export function getSpot(spotId) {
     return doGetJson(backendApiBase + "/spot/" + spotId)
 }
 
-export function saveSpot(spot, failResponseBodyCallback) {
-    return doPostJson(backendApiBase + "/spot/" + spot.id, spot, true, failResponseBodyCallback)
+export function saveSpotBatch(spotBatch) {
+    return doPostJson(backendApiBase + "/spot/batch", spotBatch, true)
 }
 
-export function removeSpot(id, failResponseBodyCallback) {
-    return doDelete(backendApiBase + "/spot/" + id, true, failResponseBodyCallback)
+export function saveSpot(spot) {
+    return doPostJson(backendApiBase + "/spot/" + spot.id, spot, true)
+}
+
+export function removeSpot(id) {
+    return doDelete(backendApiBase + "/spot/" + id, true)
 }
 
 export function getAllRegions() {
