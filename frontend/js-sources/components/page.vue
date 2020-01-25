@@ -148,7 +148,7 @@
                     if (typeof page == 'string' || page instanceof String) {
                         return true
                     }
-                    if (!page.allow) {
+                    if (!page.allow || page.allow.includes('ANONYMOUS') && this.roles != null && this.roles.length == 0) {
                         return true
                     }
 
