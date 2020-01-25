@@ -77,8 +77,15 @@
                            style="font-size: 80%;">Препятствие протяжённое. Добавить конечную точку</a>
                     </div>
                     <div class="col-10">
-                        <ya-map-location ref="locationEdit" v-bind:spot="spot" width="100%" height="600px"
-                                         :editable="true" :ya-search="true" v-bind:refresh-on-change="spot.point"/>
+                        <ya-map-location-and-coords ref="locationEdit"
+                                                    v-bind:spot="spot"
+                                                    width="100%"
+                                                    height="400px"
+                                                    :editable="true"
+                                                    :ya-search="true"
+                                                    :switch-type-hotkeys="true"
+                                                    v-bind:refresh-on-change="spot.point"
+                                                    :show-map-by-default="true"/>
                     </div>
                 </div>
                 <div class="row">

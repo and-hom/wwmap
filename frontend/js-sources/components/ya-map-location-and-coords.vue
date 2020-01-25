@@ -1,7 +1,8 @@
 <template>
     <div v-if="showMap" style="margin-top: 20px;">
-        <div>
-            <button type="button" v-if="showMap" class="btn btn-info" v-on:click="showMap=false">Скрыть карту</button>
+        <div style="margin-bottom: 6px;">
+            <button type="button" v-if="showMap" class="btn btn-info"
+                    v-on:click="showMap=false" style="margin-right: 5px;">Редактировать координаты</button>
             <div style="padding-top:4px; display: inline-block; font-size: smaller;">
                 <strong>Широта:</strong>&nbsp;{{getPoints()[0][0] }}&nbsp;&nbsp;<strong>Долгота:</strong>&nbsp;{{
                 getPoints()[0][1] }}
