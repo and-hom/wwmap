@@ -19,7 +19,6 @@
     "jquery.cookie": "^1.4.1",
     "js-file-download": "^0.4.8",
     "style-loader": "^0.23.1",
-    "template7": "^1.4.2",
     "tether": "^1.4.6"
   },
   "devDependencies": {

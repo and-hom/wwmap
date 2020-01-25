@@ -49,6 +49,7 @@ const moment = require('moment');
 
 require("bootstrap");
 
+require('babel-polyfill');
 
 export var app;
 

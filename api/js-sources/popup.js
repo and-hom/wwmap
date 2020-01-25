@@ -2,7 +2,7 @@ import {initMailtoLinks} from "./util"
 import {loadFragment} from "./template-data";
 
 var $ = require("jquery");
-import Template7 from "template7";
+import Template7 from "./contrib/template7";
 
 export function WWMapPopup(divId, templateId, options) {
     this.divId = divId;

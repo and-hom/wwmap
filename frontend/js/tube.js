@@ -264,8 +264,8 @@ ymaps.modules.define("overlay.BiPlacemark", [
                         forwardLine.push([path[i + 1][0] - xReal, path[i + 1][1] + yReal]);
                     }
                 } else {
-                    forwardLine.push([path[i + 1][0] + m_0_0_l * px1 - m_0_1_l * placemarkRadius, path[i + 1][1] + m_0_0_l * placemarkRadius + m_0_1_l * px1],);
-                    forwardLine.push([path[i + 1][0] - m_0_0_r * px1 - m_0_1_r * placemarkRadius, path[i + 1][1] + m_0_0_r * placemarkRadius - m_0_1_r * px1],);
+                    forwardLine.push([path[i + 1][0] + m_0_0_l * px1 - m_0_1_l * placemarkRadius, path[i + 1][1] + m_0_0_l * placemarkRadius + m_0_1_l * px1]);
+                    forwardLine.push([path[i + 1][0] - m_0_0_r * px1 - m_0_1_r * placemarkRadius, path[i + 1][1] + m_0_0_r * placemarkRadius - m_0_1_r * px1]);
                 }
 
                 if (px1 != 0) {
@@ -279,8 +279,8 @@ ymaps.modules.define("overlay.BiPlacemark", [
                         backLine.unshift([path[i + 1][0] - xReal, path[i + 1][1] + yReal]);
                     }
                 } else {
-                    backLine.unshift([path[i + 1][0] + m_0_0_l * px2 + m_0_1_l * placemarkRadius, path[i + 1][1] - m_0_0_l * placemarkRadius + m_0_1_l * px2],);
-                    backLine.unshift([path[i + 1][0] - m_0_0_r * px2 + m_0_1_r * placemarkRadius, path[i + 1][1] - m_0_0_r * placemarkRadius - m_0_1_r * px2],);
+                    backLine.unshift([path[i + 1][0] + m_0_0_l * px2 + m_0_1_l * placemarkRadius, path[i + 1][1] - m_0_0_l * placemarkRadius + m_0_1_l * px2]);
+                    backLine.unshift([path[i + 1][0] - m_0_0_r * px2 + m_0_1_r * placemarkRadius, path[i + 1][1] - m_0_0_r * placemarkRadius - m_0_1_r * px2]);
                 }
             }
 

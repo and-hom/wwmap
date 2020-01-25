@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "babel-polyfill": "^6.26.0",
     "blueimp-gallery": "^2.36.0",
     "bootstrap": "^4.3.1",
     "bootstrap-vue": "^2.1.0",
