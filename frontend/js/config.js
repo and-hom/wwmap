@@ -3,7 +3,7 @@ LAST_ZOOM_COOKIE_NAME = "last-map-zoom";
 LAST_MAP_TYPE_COOKIE_NAME = "last-map-type";
 
 // environment dependent section
-apiBase = "http://localhost:7007";
+apiBase = "https://wwmap.ru/api";
 // end
 
 CACHED_TILES_TEMPLATE = 'http://wwmap.ru/maps/###/%z/%x/%y.png';
