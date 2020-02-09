@@ -20,7 +20,6 @@
             var converter = new showdown.Converter();
 
             sendRequest('INTEGRATION_ru.md', 'GET', false)
-                .then(resp => this.integrationGuide = converter.makeHtml(resp))
                 .catch(_ => sendRequest('../INTEGRATION_ru.md', 'GET', false))
                 .then(resp => this.integrationGuide = converter.makeHtml(resp))
                 .catch(_ => this.integrationGuide = '<span style="color:red">Can not load</span>');
