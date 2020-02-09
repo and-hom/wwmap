@@ -6,72 +6,16 @@
     <link rel="icon" href="favicon.ico" type="image/x-icon"/>
     <link rel="shortcut icon" href="favicon.ico" type="image/x-icon"/>
 
-    <link rel="stylesheet" href="https://wwmap.ru/css/map.v2.css">
-    <link rel="stylesheet" href="css/map.css">
-    <link rel="stylesheet" href="https://wwmap.ru/css/lightbox.min.css">
-
-    <link rel="stylesheet" href="css/bootstrap.min.css">
-
-    <script type="text/javascript" src="js-editor/polyfill.min.js"></script>
-
-    <script type="text/javascript" src="js-editor/tether.min.js"></script>
-    <script type="text/javascript" src="https://wwmap.ru/js/jquery-3.1.1.min.js"></script>
-    <script type="text/javascript" src="https://wwmap.ru/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="https://wwmap.ru/js/jquery.cookie.js"></script>
     <script type="text/javascript" src="https://api-maps.yandex.ru/2.1/?lang=ru_RU"></script>
-
     <script type="text/javascript" src="https://wwmap.ru/js/map.v2.1.js"></script>
-
-    <script type="text/javascript" src="js-editor/api.js"></script>
-    <script type="text/javascript" src="js-editor/auth.js"></script>
-
-    <script type="text/javascript" src="js-editor/vue.js"></script>
-    <script type="text/javascript" src="js-editor/http-vue-loader.js"></script>
+    <script type="text/javascript" src="js/editor.v2.js"></script>
 </head>
 <body>
 
-<div id="vue-app">
-    <page link="map.htm">
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-10">
-                    <div id="wwmap-container" style="width:100%; height: 700px; padding-bottom:17px;"></div>
-                </div>
-                <div class="col-2">
-                    <div id="wwmap-rivers" class="wwmap-river-menu"></div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-12">
-                </div>
-            </div>
-        </div>
-    </page>
-</div>
+<div id="vue-app"></div>
 
 <script type="text/javascript">
-    $(document).ready(function() {
-
-     Vue.component('auth', httpVueLoader('components/auth.vue'));
-     Vue.component('page', httpVueLoader('components/page.vue'));
-
-     var app = new Vue({
-        el: '#vue-app',
-        data: {
-        },
-        mounted: loadMapWhenDivIsReady
-    });
-  });
-
-  function loadMapWhenDivIsReady() {
-      if($('#wwmap-container').outerWidth()) {
-          wwmap.initWWMap("wwmap-container", "wwmap-rivers", "wwmap")
-      } else {
-          console.log("#div-container is not ready yet: has no offsetWidth");
-          setTimeout(loadMapWhenDivIsReady, 100);
-      }
-  }
-
+    wwmap_editor.initMap();
 </script>
 </body>
 </html>

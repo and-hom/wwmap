@@ -6,62 +6,15 @@
     <link rel="icon" href="favicon.ico" type="image/x-icon"/>
     <link rel="shortcut icon" href="favicon.ico" type="image/x-icon"/>
 
-    <link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="css/bootstrap.min.css">
-
-    <script type="text/javascript" src="js-editor/polyfill.min.js"></script>
-    <script type="text/javascript" src="js-editor/tether.min.js"></script>
-    <script type="text/javascript" src="js-editor/jquery-3.2.1.slim.min.js"></script>
-    <script type="text/javascript" src="js-editor/bootstrap.min.js"></script>
-    <script type="text/javascript" src="js/map.v2.js"></script>
-
-    <script type="text/javascript" src="js-editor/api.js"></script>
-    <script type="text/javascript" src="js-editor/auth.js"></script>
-    <script type="text/javascript" src="js-editor/vue.js"></script>
-    <script type="text/javascript" src="js-editor/http-vue-loader.js"></script>
-    <script type="text/javascript" src="js-editor/showdown.min.js"></script>
+    <script type="text/javascript" src="js/editor.v2.js"></script>
 </head>
 <body>
 
 <div id="vue-app">
-    <page link="tech.htm">
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-12">
-                    <dl>
-                        <dt>Яндекс-карты</dt>
-                        <dd>Карта порогов отображаются с помощью <a target="_blank" href="https://tech.yandex.ru/maps%20/">api Яндекс-карт</a>. Используется слой спутниковых снимков.</dd>
-                        <dt>OSM</dt>
-                        <dd>Один из слоёв карты - <a target="_blank" href="https://www.openstreetmap.org">OpenStreetMap</a></dd>
-                        <dt>Спутниковые снимк Google</dt>
-                        <dd>Иногда важно увидеть порог на нескольких вариантах спутниковой съёмки, потому дополнительно подключены снимки от <a target="_blank" href="https://www.google.ru/maps">Google</a></dd>
-                        <dt>Данные об уровнях воды Центра Регистра и Кадастра</dt>
-                        <dd>Графики уровня воды взяты с <a target="_blank" href="http://gis.vodinfo.ru/">http://gis.vodinfo.ru/informer/</a></dd>
-                        <dt>Источники отчётов</dt>
-                        <dd><ul>
-                                <li><a target="_blank" href="http://tlib.ru">tlib.ru</a></li>
-                                <li><a target="_blank" href="https://huskytm.ru">huskytm.ru</a></li>
-                                <li><a target="_blank" href="http://skitalets.ru">skitalets.ru</a></li>
-                            </ul></dd>
-                        <dt>Кроме того</dt>
-                        <dd>Используются ссылки на Youtube и Яндекс-погоду</dd>
-                    </dl>
-                </div>
-            </div>
-        </div>
-    </page>
 </div>
 
 <script type="text/javascript">
-    Vue.component('auth', httpVueLoader('components/auth.vue'));
-    Vue.component('page', httpVueLoader('components/page.vue'));
-
-    new Vue({
-        el: '#vue-app',
-
-        data: {
-        }
-    });
+    wwmap_editor.initTech();
 </script>
 
 </body>

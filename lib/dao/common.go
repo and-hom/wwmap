@@ -163,32 +163,56 @@ func (this *PostgresStorage) updateReturningId(query string,
 	if err != nil {
 		return []int64{}, err
 	}
-	result := make([]int64, len(rows))
-	for i, row := range rows {
-		result[i] = *row[0].(*int64)
-	}
+	result := this.getFirstColumnAsInt64(rows)
 	return result, nil
 }
 
 func (this *PostgresStorage) updateReturningColumns(query string,
 	mapper func(entity interface{}) ([]interface{}, error),
 	failOnEmptyResult bool, values ...interface{}) ([][]interface{}, error) {
+	return this.updateReturningColumnsWithinTxOptionally(nil, query, mapper, failOnEmptyResult, values...)
+}
 
-	tx, err := this.db.Begin()
-	if err != nil {
-		return [][]interface{}{}, err
+func (this *PostgresStorage) getFirstColumnAsInt64(rows [][]interface{}) []int64 {
+	result := make([]int64, len(rows))
+	for i, row := range rows {
+		result[i] = *row[0].(*int64)
 	}
-	defer func() {
+	return result
+}
+
+func (this *PostgresStorage) updateReturningColumnsWithinTxOptionally(txHolder interface{},
+	query string,
+	mapper func(entity interface{}) ([]interface{}, error),
+	failOnEmptyResult bool, values ...interface{}) ([][]interface{}, error) {
+	var tx *sql.Tx
+	var err error
+
+	if txHolder == nil {
+		tx, err = this.db.Begin()
 		if err != nil {
-			err = tx.Rollback()
-			log.Error("Can't rollback: ", err)
-			return
+			return [][]interface{}{}, err
 		}
-		err = tx.Commit()
-		if err != nil {
-			log.Error("Can't commit: ", err)
-		}
-	}()
+		defer func() {
+			if err != nil {
+				err = tx.Rollback()
+				log.Error("Can't rollback: ", err)
+				return
+			}
+			err = tx.Commit()
+			if err != nil {
+				log.Error("Can't commit: ", err)
+			}
+		}()
+	} else {
+		tx = txHolder.(PgTxHolder).tx
+	}
+	return this.updateReturningColumnsInternal(tx, query, mapper, failOnEmptyResult, values...)
+}
+
+func (this *PostgresStorage) updateReturningColumnsInternal(tx *sql.Tx, query string,
+	mapper func(entity interface{}) ([]interface{}, error),
+	failOnEmptyResult bool, values ...interface{}) ([][]interface{}, error) {
 
 	stmt, err := tx.Prepare(query)
 	if err != nil {

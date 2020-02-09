@@ -1,0 +1,38 @@
+<h3 class="popover-title">
+    {%if properties.link%}<a target="_blank" href="{{properties.link}}">{{properties.title}}</a>{%else%}{{properties.title}}{%endif%}
+</h3>
+
+<div class="popover-content">
+    <a target="_top" href="#" style="float:right;"
+       onclick="wwmap.show_report_popup({{properties.id}}, '{{properties.title}}', '{{properties.river_title}}'); return false">Сообщить о неточности</a>
+    {%if properties.category%}<div><strong>Категория сложности:</strong>&nbsp;{{properties.category}}</div>{%endif%}
+    {%if properties.river_title%}<div><strong>Река:</strong>&nbsp;{{properties.river_title}}</div>{%endif%}
+    <div>{{properties.short_description}}</div>
+    {%if properties.images %}&nbsp;<br/>
+    <div class="wwmap-gallery-div">
+        {% for img in properties.images %}
+        {%if img.source=='youtube'%}
+        <div class="wwmap-gallery-youtube wwmap-gallery-img">
+            <a target="_blank" href="https://www.youtube.com/watch?v={{img.remote_id}}" class="wwmap-gallery-youtube-preview"
+               style="background: url('https://img.youtube.com/vi/{{img.remote_id}}/0.jpg') no-repeat; background-position: center center; background-size: contain;">
+            </a>
+            <a target="_blank" href="https://www.youtube.com/watch?v={{img.remote_id}}" class="wwmap-play-btn"></a>
+        </div>
+        {%else%}
+        <a data-id="{{img.id}}" data-level="{{img.level_str}}" data-lightbox="img-set-{{properties.id}}" target="_blank" href="{{img.url}}">
+            <div class="wwmap-gallery-img">
+                <img style="width:100%;height:100%" src="{{img.preview_url}}"/>
+                {%if img.level["0"] %}
+                <img class="wwmap-gallery-indicator" src="img/lvl{{img.level["0"]}}.png" title="Уровень воды {{img.level["0"]}}/5"/>
+                {%else%}{%if img.avg_level!=0 %}
+                <img class="wwmap-gallery-indicator" src="img/lvl{{img.avg_level}}.png" title="Уровень воды {{img.avg_level}}/5"/>
+                {%endif%}{%endif%}
+            </div>
+        </a>
+        {%endif%}
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+<div class="popover-footer">
+</div>

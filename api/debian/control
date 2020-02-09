@@ -1,0 +1,11 @@
+Source: wwmap-api
+Maintainer: Andrey Khomyakov <and.hom@gmail.com>
+Build-Depends: debhelper (>= 8.0.0)
+Standards-Version: 3.9.3
+Section: misc
+
+Package: wwmap-api
+Priority: extra
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, wwmap-frontend
+Description: Api (html/js/css) for whitewater map

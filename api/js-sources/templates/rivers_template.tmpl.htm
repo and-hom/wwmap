@@ -1,0 +1,12 @@
+<div class="wwmap-river-menu">
+    {{#each rivers}}
+    <div class="wwmap-river-menu-item"><div class="wwmap-river-menu-title">
+            <a href="" style="padding-left:10px;" onclick="wwmap.show_river_info_popup({{id}}); return false;">{{title}}</a>
+        </div><div class="wwmap-river-menu-controls">
+                <a href="" style="padding-left:10px;" onclick="wwmap.show_map_at_and_highlight_river({{bounds}}, {{id}}); return false;"><img src="https://wwmap.ru/img/locate.png" width="25px" alt="Показать на карте" title="Показать на карте"/></a>
+            {{#if ../canEdit}}
+            <a href="https://wwmap.ru/editor.htm#{{region.country_id}},{{region.id}},{{id}}" target="_blank" style="margin-left:-6px;"><img src="https://wwmap.ru/img/edit.png" width="25px" alt="Редактор" title="Редактор"/></a>
+            {{/if}}
+        </div></div>
+    {{/each}}
+</div>

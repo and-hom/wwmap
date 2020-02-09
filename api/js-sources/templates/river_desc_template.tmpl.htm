@@ -1,0 +1,76 @@
+<div class="wwmap-popuptext" style="width:1200px; height:700px;position: relative; overflow-x:hidden;">
+    <div style="float:right; width: 45%; height:100%; padding-left: 25px;">
+        {{#if props.vodinfo_sensors}}
+        <h3>Уровень воды сейчас</h3>
+        {{#each props.vodinfo_sensors}}
+        <img src="http://gis.vodinfo.ru/informer/draw/v2_{{this}}_400_250_30_ffffff_110_8_7_H_none.png" style="margin-bottom:20px; margin-right:20px;"/>
+        {{/each}}
+        {{/if}}
+        <h3>Отчёты</h3>
+        <div class="wwmap-report-list">
+            <ul>
+                {{#each reports}}
+                <h4>{{source}}</h4>
+                {{#each reports}}
+                <li><a target="_blank" href="{{url}}" title="{{title}}"><img src="{{source_logo_url}}"/>&nbsp;{{#if year>1}}<strong>{{year}}&nbsp;</strong>{{/if}}{{title}}</a></li>
+                {{/each}}
+                {{/each}}
+            </ul>
+        </div>
+    </div>
+    <div style="margin-bottom: 20px;">
+        <h3>{{title}}{{#if canEdit}}&nbsp;<a href="https://wwmap.ru/editor.htm#{{region.country_id}},{{region.id}},{{id}}" target="_blank" style="padding-left: 20px;"><img src="https://wwmap.ru/img/edit.png" width="25px" alt="Редактор" title="Редактор"/></a>{{/if}}</h3>
+        {{#if region.id>0 }}<div style="margin-top:-11px; margin-bottom:8px; font-size:70%;color:grey">{{region.title}}</div>{{/if}}
+        <div style="font-size:80%;"><img style="width: 16px; margin-bottom: 1px;" src="https://wwmap.ru/img/cat{{max_category}}-fill.png" title="{{max_category}} к.с."/>&nbsp;&nbsp;{{max_category}}&nbsp;к.с. - Максимальная категория препятствий</div>
+        <div style="font-size:80%;"><img style="width: 16px; margin-bottom: 1px;" src="https://wwmap.ru/img/cat{{avg_category}}-fill.png" title="{{avg_category}} к.с."/>&nbsp;&nbsp;{{avg_category}}&nbsp;к.с. - Минимальная категория трёх самых сложных препятствий</div>
+        <div style="margin-top:11px; text-align: justify;">{{description}}</div>
+    </div>
+    <div style="margin-bottom: 20px;">
+        {{#each imgs}}
+        <a data-id="{{id}}" data-level="{{level}}" data-lightbox="river-img-set" data-title="{{spot_title}}" data-alt="{{spot_title}}" target="_blank" href="{{url}}"><img class="wwmap-gallery-img" src="{{preview_url}}" title="{{spot_title}}" alt="{{spot_title}}"/></a>
+        {{/each}}
+    </div>
+    <div style="margin-bottom: 20px;">
+        {{#each videos}}
+        <iframe width="304" height="200"
+                src="https://www.youtube.com/embed/{{remote_id}}"
+                frameborder="0"
+                allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen
+                style="margin-right: 2px; margin-bottom: 2px;"></iframe>
+        {{/each}}
+        <a target="_blank" href="https://www.youtube.com/results?search_query={{search_query}}" style="display:block;">Поискать видео на Youtube</a>
+    </div>
+    {{#if weather_point }}
+    <div style="margin-bottom: 20px;">
+        <a target="_blank" href="https://yandex.ru/pogoda/?lat={{weather_point[0]}}&lon={{weather_point[1]}}">Прогноз погоды по данным Яндекс-погоды</a>
+    </div>
+    {{/if}}
+    <div style="">
+        <h3>Скачать</h3>
+        <table class="wwmap-river-download-table" style="width: auto;">
+            <tr>
+                <td><label for="gpx">GPX для навигатора с русскими названиями</label></td>
+                <td><a id="gpx" href="{{apiUrl}}/{{id}}/gpx" style="padding-right:10px;" alt="Скачать GPX с точками порогов">GPX</a></td>
+            </tr>
+            <tr>
+                <td><label for="gpx_en">GPX для навигатора без поддержки русских букв</label></td>
+                <td><a id="gpx_en" href="{{apiUrl}}/{{id}}/gpx?tr=true" alt="Скачать GPX с точками порогов">GPX<sub>en</sub></a></td>
+            </tr>
+            <tr>
+                <td><label for="csv_en">Пороги таблицей</label></td>
+                <td><a id="csv_en" href="{{apiUrl}}/{{id}}/csv" alt="Скачать таблицу с точками порогов">CSV</a></td>
+            </tr>
+            <tr>
+                <td><label for="csv_en">Пороги таблицей латиницей</label></td>
+                <td><a id="csv_en" href="{{apiUrl}}/{{id}}/csv?tr=true" alt="Скачать таблицу с точками порогов">CSV<sub>en</sub></a></td>
+            </tr>
+            {{#if props.export_pdf}}
+            <tr>
+                <td><label for="pdf_desc">Краткое описание для печати</label></td>
+                <td><a id="pdf_desc" href="{{html}}" target="_blank" alt="Скачать описание для печати">Описание<br/>для&nbsp;печати</a></td>
+            </tr>
+            {{/if}}
+        </table>
+    </div>
+</div>

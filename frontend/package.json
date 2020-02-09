@@ -4,20 +4,39 @@
   "description": "WWMap frontend",
   "main": "webpack.config.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "babel-polyfill": "^6.26.0",
+    "blueimp-gallery": "^2.36.0",
+    "bootstrap": "^4.3.1",
+    "bootstrap-vue": "^2.1.0",
+    "chart.js": "^2.9.3",
     "core-js": "^2.6.10",
-    "@turf/turf": "^5.1.6",
     "css-loader": "^3.1.0",
+    "image-webpack-loader": "^6.0.0",
+    "inputmask": "^4.0.9",
     "jqtpl-dsx": "^1.0.4",
     "jquery": "^3.1.1",
     "jquery.cookie": "^1.4.1",
-    "js-file-download": "^0.4.8",
+    "moment": "^2.24.0",
+    "polyfill": "^0.1.0",
+    "popper": "^1.0.1",
+    "shutdown": "^0.3.0",
+    "sortablejs": "^1.10.1",
     "style-loader": "^0.23.1",
-    "tether": "^1.4.6"
+    "tether": "^1.4.6",
+    "uuid": "^3.3.3",
+    "vue": "^2.6.10",
+    "vue-gallery": "^2.0.1",
+    "vue-rate-it": "^2.1.0",
+    "vue-select": "^3.2.0",
+    "vue-upload-component": "^2.8.20",
+    "vuejs-datepicker": "^1.6.2",
+    "vuex": "^3.1.2"
   },
   "devDependencies": {
     "@babel/core": "^7.6.4",
@@ -30,6 +49,8 @@
     "file-loader": "^4.1.0",
     "file-replace-loader": "^1.0.1",
     "mini-css-extract-plugin": "^0.8.0",
+    "vue-loader": "^15.7.2",
+    "vue-template-compiler": "^2.6.10",
     "webpack": "^4.36.1",
     "webpack-cli": "^3.3.4"
   }

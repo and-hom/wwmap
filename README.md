@@ -1,5 +1,6 @@
 ## Packages and apps
 
+* **api** - js api to add whitewater objects to yandex map (see INTEGRATION_ru.md)
 * **backend** - map backend provides river and whitewater information from database
 * **config** - package installs common configuration file of project
 * **cron** - crontab file and utilities called periodically:
@@ -9,7 +10,7 @@
     * **spot-sort** - spot ordering tool. Calculates order index for each spot relying on the rivar track(s)
 * **data** - utilities for OSM xml parsing
 * **db** - database migrations package
-* **frontend** - map frontend: html, css, js, images
+* **frontend** - wwmap site and backoffice frontend
 * **lib** - not a package - common go sources
 * **t-cache** - app for caching of slow tiles
 
@@ -35,7 +36,7 @@ CREATE EXTENSION postgis;
 5. Install ``wwmap-backend`` and run ``service wwmap-backend start``
 5. Install ``wwmap-t-cache`` and run ``service wwmap-t-cache start``
 6. Install ``nginx`` and remove all from sites-enabled.
-7. Install ``wwmap-frontend`` and run ``service nginx restart``
+7. Install ``wwmap-frontend``, ``wwmap-api`` and run ``service nginx restart``
 8. In file ``/etc/wwmap/config.yaml`` set real yandex disk credentials in the ``backup`` section. Install ``pyyaml`` python package:
 ```
 LC_ALL='ru_RU.UTF-8' pip install pyyaml

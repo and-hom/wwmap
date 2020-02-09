@@ -3,6 +3,7 @@ package dao
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/lib/dao/queries"
@@ -112,12 +113,16 @@ func (this whiteWaterStorage) FindFull(id int64) (WhiteWaterPointFull, error) {
 	return result.(WhiteWaterPointFull), nil
 }
 
-func (this whiteWaterStorage) InsertWhiteWaterPointFull(whiteWaterPoint WhiteWaterPointFull) (int64, error) {
-	params, err := paramsFull(whiteWaterPoint)
+func (this whiteWaterStorage) InsertWhiteWaterPointFull(whiteWaterPoint WhiteWaterPointFull, tx interface{}) (int64, error) {
+	ids, err := this.updateReturningColumnsWithinTxOptionally(tx, this.insertFullQuery, paramsFull, true, whiteWaterPoint)
 	if err != nil {
-		return -1, nil
+		return 0, err
 	}
-	return this.insertReturningId(this.insertFullQuery, params...)
+	idsInt64 := this.getFirstColumnAsInt64(ids)
+	if len(ids) == 0 {
+		return 0, errors.New("No id of inserted row returned")
+	}
+	return idsInt64[0], nil
 }
 
 func (this whiteWaterStorage) UpdateWhiteWaterPointsFull(whiteWaterPoints ...WhiteWaterPointFull) error {
@@ -125,18 +130,25 @@ func (this whiteWaterStorage) UpdateWhiteWaterPointsFull(whiteWaterPoints ...Whi
 	for i, p := range whiteWaterPoints {
 		vars[i] = p
 	}
-	return this.performUpdates(this.updateFullQuery,
-		func(entity interface{}) ([]interface{}, error) {
-			wwp := entity.(WhiteWaterPointFull)
-			params, err := paramsFull(wwp)
-			if err != nil {
-				return nil, err
-			}
-			return append([]interface{}{wwp.Id}, params...), nil
-		}, vars...)
+	return this.performUpdates(this.updateFullQuery, WhiteWaterPointFullMapper, vars...)
 }
 
-func paramsFull(wwp WhiteWaterPointFull) ([]interface{}, error) {
+func (this whiteWaterStorage) UpdateWhiteWaterPointFull(whiteWaterPoint WhiteWaterPointFull, tx interface{}) error {
+	return this.performUpdatesWithinTxOptionally(tx, this.updateFullQuery, WhiteWaterPointFullMapper, whiteWaterPoint)
+}
+
+func WhiteWaterPointFullMapper(entity interface{}) ([]interface{}, error) {
+	wwp := entity.(WhiteWaterPointFull)
+	params, err := paramsFull(wwp)
+	if err != nil {
+		return nil, err
+	}
+	return append([]interface{}{wwp.Id}, params...), nil
+}
+
+func paramsFull(p interface{}) ([]interface{}, error) {
+	wwp := p.(WhiteWaterPointFull)
+
 	pointBytes, err := json.Marshal(wwp.Point.ToPg())
 	if err != nil {
 		return nil, err

@@ -1,0 +1,39 @@
+{
+  "name": "wwmap-js-api",
+  "version": "2.1.0",
+  "description": "WWMap javascript API",
+  "main": "webpack.config.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@turf/turf": "^5.1.6",
+    "core-js": "^2.6.10",
+    "css-loader": "^3.1.0",
+    "dynamic-import": "^0.1.1",
+    "jqtpl-dsx": "^1.0.4",
+    "jquery": "^3.1.1",
+    "jquery.cookie": "^1.4.1",
+    "js-file-download": "^0.4.8",
+    "style-loader": "^0.23.1",
+    "tether": "^1.4.6"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.6.4",
+    "@babel/plugin-transform-arrow-functions": "^7.2.0",
+    "@babel/plugin-transform-async-to-generator": "^7.5.0",
+    "@babel/plugin-transform-modules-commonjs": "^7.6.0",
+    "@babel/preset-env": "^7.6.3",
+    "babel-loader": "^8.0.6",
+    "core-js": "^2.6.10",
+    "file-loader": "^4.3.0",
+    "file-replace-loader": "^1.0.1",
+    "mini-css-extract-plugin": "^0.8.0",
+    "raw-loader": "^4.0.0",
+    "webpack": "^4.36.1",
+    "webpack-cli": "^3.3.4"
+  }
+}

@@ -1,0 +1,35 @@
+.role-admin {
+    color: red
+}
+
+.role-editor {
+    color: orange
+}
+
+.role-user {
+    color: green
+}
+
+.wwmap-user-row {
+
+}
+.wwmap-user-row-experimental {
+    background-color: #f77;
+}
+
+
+.wwmap-changes-log-change {
+    background-color: #fcf8e3;
+}
+
+.wwmap-changes-log-create {
+    background-color: #f0fcf0;
+}
+
+.wwmap-changes-log-delete {
+    background-color: #fcf0f0;
+}
+
+ul {
+    list-style-type: none;
+}

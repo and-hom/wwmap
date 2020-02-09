@@ -6,136 +6,15 @@
     <link rel="icon" href="favicon.ico" type="image/x-icon"/>
     <link rel="shortcut icon" href="favicon.ico" type="image/x-icon"/>
 
-    <link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="css/bootstrap.min.css">
-
-    <script type="text/javascript" src="js-editor/polyfill.min.js"></script>
-
-    <script type="text/javascript" src="js-editor/tether.min.js"></script>
-    <script type="text/javascript" src="js-editor/jquery-3.2.1.slim.min.js"></script>
-    <script type="text/javascript" src="js-editor/popper.min.js"></script>
-    <script type="text/javascript" src="js-editor/bootstrap.min.js"></script>
-
-    <script type="text/javascript" src="js-editor/api.js"></script>
-    <script type="text/javascript" src="js-editor/auth.js"></script>
-    <script type="text/javascript" src="js-editor/editor.js"></script>
-    <script type="text/javascript" src="js-editor/vue.js"></script>
-    <script type="text/javascript" src="js-editor/http-vue-loader.js"></script>
-    <script type="text/javascript" src="js-editor/showdown.min.js"></script>
+    <script type="text/javascript" src="js/editor.v2.js"></script>
 </head>
 <body>
 
 <div id="vue-app">
-    <page link="users.htm">
-        <ask-role id="ask-role" :roles="['ADMIN', 'EDITOR', 'USER']" :ok-fn="function(userId, role) { setRole(userId, role) }"></ask-role>
-
-        <div class="container-fluid" v-if="admin()">
-            <div class="row">
-                <div class="col-12">
-                    <table class="table">
-                        <thead>
-                        <tr>
-                            <td>
-                                Id
-                            </td>
-                            <td>
-                                Логин
-                            </td>
-                            <td>
-                                Провайдер авторизации/Удалённый Id
-                            </td>
-                            <td>
-                                Имя
-                            </td>
-                            <td>
-                                Роли
-                            </td>
-                            <td></td>
-                        </tr>
-                        </thead>
-                        <tr v-for="user in users" :class="rowClass(user)">
-                            <td>
-                                {{user.id}}
-                            </td>
-                            <td>
-                                {{user.info.login}}
-                            </td>
-                            <td>
-                                {{user.auth_provider}}/{{user.ext_id}}
-                            </td>
-                            <td>
-                                {{user.info.first_name}} {{user.info.last_name}}
-                            </td>
-                            <td :class="roleClass(user)">
-                                {{user.role}}
-                            </td>
-                            <td style="white-space: nowrap;">
-                                <button class="btn btn-primary" data-toggle="modal" data-target="#ask-role"
-                                        :data-user-id="user.id" :data-current-role="user.role" :data-label="roleChangeText(user)">Сменить роль</button>
-                                <button class="btn btn-primary" style="width: 150px;" v-on:click="toggleExperimental(user)">{{experimentalFeatureSwitchText(user)}}</button>
-                                <log-dropdown object-type="USER" :object-id="user.id"/>
-                            </td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </page>
 </div>
 
 <script type="text/javascript">
-
-    Vue.component('auth', httpVueLoader('components/auth.vue'))
-    Vue.component('ask-role', httpVueLoader('components/ask-role.vue'))
-    Vue.component('page', httpVueLoader('components/page.vue'))
-    Vue.component('log', httpVueLoader('components/log.vue'))
-    Vue.component('log-dropdown', httpVueLoader('components/log-dropdown.vue'))
-
-    function getUsers() {
-        return doGetJsonSync(backendApiBase + "/user", true)
-    }
-
-    var app = new Vue({
-        el: '#vue-app',
-
-        data: {
-            users: getUsers(),
-            availableRoles: ["ADMIN","EDITOR", "USER"],
-            userInfo: getAuthorizedUserInfoOrNull(),
-            admin: function() {
-                var userInfo = getAuthorizedUserInfoOrNull();
-                return userInfo && userInfo.roles && userInfo.roles.indexOf("ADMIN") > -1;
-            },
-            roleClass: function(user) {
-                return "role-" + user.role.toLowerCase()
-            },
-            setRole: function(userId, role) {
-                this.users = doPostJsonSync(backendApiBase + '/user/' + userId + '/role', role, true)
-            },
-            toggleExperimental: function(user) {
-                console.log(user)
-                this.users = doPostJsonSync(backendApiBase + '/user/' + user.id + '/experimental', !user.experimental_features, true)
-            },
-            roleChangeText:function(user) {
-                return 'Сменить роль для ' + user.info.login + '. Текущая роль - ' + user.role
-            },
-            experimentalFeatureSwitchText:function(user) {
-                return user.experimental_features
-                    ? "Выкл эксперимент"
-                    : "Вкл эксперимент"
-            },
-            rowClass: function (user) {
-                let cssClass = "wwmap-user-row";
-                if (user.experimental_features) {
-                    cssClass += " wwmap-user-row-experimental"
-                }
-                return cssClass
-            },
-        }
-    })
-
-
-
+    wwmap_editor.initUsers();
 </script>
 
 </body>
