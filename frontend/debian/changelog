@@ -1,3 +1,10 @@
+wwmap-frontend (0.0.58) unstable; urgency=medium
+
+  * #250 Use webpack for frontend
+  * #250 Api moved to separate package
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sun, 09 Feb 2020 10:42:24 +0300
+
 wwmap-frontend (0.0.57) unstable; urgency=medium
 
   * #265 Level page refactoring
