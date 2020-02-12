@@ -1,6 +1,6 @@
 <template>
     <div>
-        <window-title v-bind:text="spot.title + ' / ' + spot.title"></window-title>
+        <window-title v-bind:text="river.title + ' / ' + spot.title"></window-title>
         <div style="display:none;" :id="initialSpot.id"></div>
         <ask id="del-spot" title="Точно?" msg="Совсем удалить?" :ok-fn="function() { remove(); }"></ask>
         <ask id="mid-point-about" title="Опорные точки" :no-btn="false" ok-btn-title="Понятно"
