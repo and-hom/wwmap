@@ -5,6 +5,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/cron/catalog-sync/huskytm"
 	"github.com/and-hom/wwmap/cron/catalog-sync/libru"
+	"github.com/and-hom/wwmap/cron/catalog-sync/riskru"
 	"github.com/and-hom/wwmap/cron/catalog-sync/skitalets"
 	"github.com/and-hom/wwmap/cron/catalog-sync/tlib"
 	"github.com/and-hom/wwmap/lib/dao"
@@ -180,6 +181,7 @@ func (this *RiverHandler) groupReports(reports []dao.VoyageReport, river dao.Riv
 	reportsListBuilder.addReportDtos(tlib.SOURCE, "tlib.ru")
 	reportsListBuilder.addReportDtos(skitalets.SOURCE, "Скиталец")
 	reportsListBuilder.addReportDtos(libru.SOURCE, "lib.ru/TURIZM")
+	reportsListBuilder.addReportDtos(riskru.SOURCE, "RISK.RU")
 	reportsListBuilder.others()
 	return reportsListBuilder.reportsList
 }
