@@ -23,37 +23,13 @@ const SITE_URL_BASE = "http://www.skitalets.ru"
 const DEFAULT_AUTHOR = "skitalets.ru"
 const ENCODING string = "cp1251"
 
-var DATE_FORMAT = []DateExtractor{
-	CreateDateExtractor("\\d{2}\\.\\d{2}\\.\\d{4}", "02.01.2006"),
-	CreateDateExtractor("\\d{2}\\.\\d{2}\\s+\\d{4}", "02.01 2006"),
-	CreateDateExtractor("\\d{2}\\.\\d{2}\\.\\d{2}", "02.01.06"),
-	CreateDateExtractor("\\d{4}", "2006"),
+var DATE_FORMAT = []common.DateExtractor{
+	common.CreateDateExtractor("\\d{2}\\.\\d{2}\\.\\d{4}", "02.01.2006"),
+	common.CreateDateExtractor("\\d{2}\\.\\d{2}\\s+\\d{4}", "02.01 2006"),
+	common.CreateDateExtractor("\\d{2}\\.\\d{2}\\.\\d{2}", "02.01.06"),
+	common.CreateDateExtractor("\\d{4}", "2006"),
 }
 var separatorRe = regexp.MustCompile("[\\s,]")
-
-type DateExtractor struct {
-	DateFormat string
-	DateRegexp *regexp.Regexp
-}
-
-func CreateDateExtractor(dateRegexp, dateFormat string) DateExtractor {
-	return DateExtractor{
-		DateFormat: dateFormat,
-		DateRegexp: regexp.MustCompile(dateRegexp),
-	}
-}
-
-func (this DateExtractor) GetDate(line string) (time.Time, bool) {
-	found := this.DateRegexp.FindString(line)
-	if found == "" {
-		return zero, false
-	}
-	t, err := time.Parse(this.DateFormat, found)
-	if err != nil {
-		return zero, false
-	}
-	return t, true
-}
 
 var zero = util.ZeroDateUTC()
 
@@ -99,7 +75,7 @@ func (this SkitaletsReportsProvider) ReportsSince(t time.Time) ([]dao.VoyageRepo
 
 	rows := document.Find(".stable tr")
 	rows.Each(func(i int, row *goquery.Selection) {
-		if (row.Find("thead").Length() > 0) {
+		if row.Find("thead").Length() > 0 {
 			return
 		}
 
@@ -114,7 +90,7 @@ func (this SkitaletsReportsProvider) ReportsSince(t time.Time) ([]dao.VoyageRepo
 			log.Warnf("Can not find href for %s", link.Text())
 			return
 		}
-		title := link.Text();
+		title := link.Text()
 		author := row.Find("td:nth-of-type(6)").Text()
 		if strings.TrimSpace(author) == "" {
 			author = DEFAULT_AUTHOR

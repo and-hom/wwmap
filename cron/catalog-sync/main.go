@@ -1,45 +1,46 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	log "github.com/Sirupsen/logrus"
+	"github.com/and-hom/wwmap/cron/catalog-sync/common"
 	"github.com/and-hom/wwmap/cron/catalog-sync/huskytm"
 	"github.com/and-hom/wwmap/cron/catalog-sync/libru"
+	"github.com/and-hom/wwmap/cron/catalog-sync/pdf"
+	"github.com/and-hom/wwmap/cron/catalog-sync/riskru"
 	"github.com/and-hom/wwmap/cron/catalog-sync/skitalets"
+	"github.com/and-hom/wwmap/cron/catalog-sync/tlib"
+	"github.com/and-hom/wwmap/lib/blob"
 	"github.com/and-hom/wwmap/lib/config"
 	"github.com/and-hom/wwmap/lib/dao"
-	"github.com/and-hom/wwmap/cron/catalog-sync/common"
-	"github.com/and-hom/wwmap/cron/catalog-sync/tlib"
-	"github.com/and-hom/wwmap/cron/catalog-sync/pdf"
-	"github.com/and-hom/wwmap/lib/blob"
-	"fmt"
-	"flag"
-	"strings"
 	"github.com/and-hom/wwmap/lib/notification"
+	"strings"
 )
 
 type App struct {
-	CountryDao         dao.CountryDao
-	RegionDao          dao.RegionDao
-	RiverDao           dao.RiverDao
-	WhiteWaterDao      dao.WhiteWaterDao
-	ImgDao             dao.ImgDao
-	VoyageReportDao    dao.VoyageReportDao
-	NotificationDao    dao.NotificationDao
-	WwPassportDao      dao.WwPassportDao
-	Configuration      config.WordpressSync
-	Notifications      config.Notifications
+	CountryDao      dao.CountryDao
+	RegionDao       dao.RegionDao
+	RiverDao        dao.RiverDao
+	WhiteWaterDao   dao.WhiteWaterDao
+	ImgDao          dao.ImgDao
+	VoyageReportDao dao.VoyageReportDao
+	NotificationDao dao.NotificationDao
+	WwPassportDao   dao.WwPassportDao
+	Configuration   config.WordpressSync
+	Notifications   config.Notifications
 
-	ImgUrlBase         string
-	ImgUrlPreviewBase  string
-	ResourceBase       string
+	ImgUrlBase        string
+	ImgUrlPreviewBase string
+	ResourceBase      string
 
 	NotificationHelper notification.NotificationHelper
 
-	stat               *ImportExportReport
-	reportProviders    []common.WithReportProvider
-	catalogConnectors  []common.WithCatalogConnector
+	stat              *ImportExportReport
+	reportProviders   []common.WithReportProvider
+	catalogConnectors []common.WithCatalogConnector
 
-	sourceOnly         string
+	sourceOnly string
 }
 
 func CreateApp() App {
@@ -48,48 +49,49 @@ func CreateApp() App {
 
 	pgStorage := dao.NewPostgresStorage(configuration.Db)
 	riverPassportPdfStorage := blob.BasicFsStorage{
-		BaseDir:configuration.RiverPassportPdfStorage.Dir,
+		BaseDir: configuration.RiverPassportPdfStorage.Dir,
 	}
 	riverPassportHtmlStorage := blob.BasicFsStorage{
-		BaseDir:configuration.RiverPassportHtmlStorage.Dir,
+		BaseDir: configuration.RiverPassportHtmlStorage.Dir,
 	}
 	userDao := dao.NewUserPostgresDao(pgStorage)
 	notificationDao := dao.NewNotificationPostgresDao(pgStorage)
 	return App{
-		VoyageReportDao:dao.NewVoyageReportPostgresDao(pgStorage),
-		CountryDao:dao.NewCountryPostgresDao(pgStorage),
-		RegionDao:dao.NewRegionPostgresDao(pgStorage),
-		RiverDao:dao.NewRiverPostgresDao(pgStorage),
-		WhiteWaterDao:dao.NewWhiteWaterPostgresDao(pgStorage),
-		ImgDao:dao.NewImgPostgresDao(pgStorage),
-		WwPassportDao:dao.NewWWPassportPostgresDao(pgStorage),
-		NotificationDao:notificationDao,
-		Configuration:configuration.Sync,
-		Notifications:configuration.Notifications,
-		stat: &ImportExportReport{},
-		reportProviders:[]common.WithReportProvider{
+		VoyageReportDao: dao.NewVoyageReportPostgresDao(pgStorage),
+		CountryDao:      dao.NewCountryPostgresDao(pgStorage),
+		RegionDao:       dao.NewRegionPostgresDao(pgStorage),
+		RiverDao:        dao.NewRiverPostgresDao(pgStorage),
+		WhiteWaterDao:   dao.NewWhiteWaterPostgresDao(pgStorage),
+		ImgDao:          dao.NewImgPostgresDao(pgStorage),
+		WwPassportDao:   dao.NewWWPassportPostgresDao(pgStorage),
+		NotificationDao: notificationDao,
+		Configuration:   configuration.Sync,
+		Notifications:   configuration.Notifications,
+		stat:            &ImportExportReport{},
+		reportProviders: []common.WithReportProvider{
 			common.WithReportProvider(func() (common.ReportProvider, error) {
 				return huskytm.GetReportProvider(configuration.Sync.Login, configuration.Sync.Password, configuration.Sync.MinDeltaBetweenRequests)
 			}),
 			common.WithReportProvider(tlib.GetReportProvider),
 			common.WithReportProvider(libru.GetReportProvider),
 			common.WithReportProvider(skitalets.GetReportProvider),
+			common.WithReportProvider(riskru.GetReportProvider),
 		},
 		catalogConnectors: []common.WithCatalogConnector{
-			{F:func() (common.CatalogConnector, error) {
+			{F: func() (common.CatalogConnector, error) {
 				return huskytm.GetCatalogConnector(configuration.Sync.Login, configuration.Sync.Password, configuration.Sync.MinDeltaBetweenRequests)
 			}},
-			{F:func() (common.CatalogConnector, error) {
+			{F: func() (common.CatalogConnector, error) {
 				return pdf.GetCatalogConnector(riverPassportPdfStorage, riverPassportHtmlStorage, configuration.RiverPassportPdfStorage.UrlBase)
 			}},
 		},
-		ImgUrlBase:configuration.ImgStorage.Full.UrlBase,
-		ImgUrlPreviewBase:configuration.ImgStorage.Preview.UrlBase,
-		ResourceBase:configuration.Content.ResourceBase,
-		NotificationHelper:notification.NotificationHelper{
-			UserDao:userDao,
-			NotificationDao:notificationDao,
-			FallbackEmailRecipient:configuration.Notifications.FallbackEmailRecipient,
+		ImgUrlBase:        configuration.ImgStorage.Full.UrlBase,
+		ImgUrlPreviewBase: configuration.ImgStorage.Preview.UrlBase,
+		ResourceBase:      configuration.Content.ResourceBase,
+		NotificationHelper: notification.NotificationHelper{
+			UserDao:                userDao,
+			NotificationDao:        notificationDao,
+			FallbackEmailRecipient: configuration.Notifications.FallbackEmailRecipient,
 		},
 	}
 }
@@ -127,7 +129,7 @@ func parseFlags(app App) (Stage, string, error) {
 	for id, _ := range sourceIdsMap {
 		sourceIds = append(sourceIds, id)
 	}
-	sourcePtr := flag.String("source", "", "Run only selected source. Available are: " + strings.Join(sourceIds, ", "))
+	sourcePtr := flag.String("source", "", "Run only selected source. Available are: "+strings.Join(sourceIds, ", "))
 
 	flag.Parse()
 	log.Debug("stage=", *stageStr)
@@ -154,7 +156,7 @@ func main() {
 	log.Infof("Starting wwmap")
 	app := CreateApp()
 
-	stage, source, err := parseFlags(app);
+	stage, source, err := parseFlags(app)
 	if err != nil {
 		log.Fatal(err)
 	}

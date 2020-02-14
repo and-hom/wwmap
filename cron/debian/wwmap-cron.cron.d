@@ -2,6 +2,7 @@
 0 0 * * 7 wwmap wwmap-backup >> /var/log/wwmap/cron/backup.log 2>&1
 0 1 * * * wwmap wwmap-catalog-sync -source pdf >> /var/log/wwmap/cron/cat-sync-pdf.log 2>&1
 0 0 * * * wwmap wwmap-catalog-sync -source tlib >> /var/log/wwmap/cron/cat-sync-tlib.log 2>&1
+0 2 * * 5 wwmap wwmap-catalog-sync -source riskru >> /var/log/wwmap/cron/cat-sync-risk.log 2>&1
 # 0 0 * 5 * wwmap wwmap-catalog-sync -source libru # Site is dead. Nothing will be changed. Call manually.
 0 0 * * 5 wwmap wwmap-catalog-sync -source skitalets >> /var/log/wwmap/cron/cat-sync-skitalets.log 2>&1
 0 0 * * 6 wwmap wwmap-catalog-sync -source huskytm  >> /var/log/wwmap/cron/cat-sync-huskytm.log 2>&1
