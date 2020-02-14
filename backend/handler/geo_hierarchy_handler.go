@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	log "github.com/Sirupsen/logrus"
+	"github.com/and-hom/wwmap/cron/vodinfo-eye/graduation"
 	"github.com/and-hom/wwmap/lib/blob"
 	"github.com/and-hom/wwmap/lib/dao"
 	"github.com/and-hom/wwmap/lib/geo"
@@ -21,6 +22,8 @@ import (
 
 type GeoHierarchyHandler struct {
 	App
+	LevelDao                 dao.LevelDao
+	LevelSensorDao           dao.LevelSensorDao
 	ImgStorage               blob.BlobStorage
 	PreviewImgStorage        blob.BlobStorage
 	RiverPassportPdfStorage  blob.BlobStorage
@@ -374,9 +377,11 @@ func (this *GeoHierarchyHandler) SaveRiver(w http.ResponseWriter, r *http.Reques
 	var id int64
 	var logEntryType dao.ChangesLogEntryType
 	if river.Id > 0 {
+		this.updateImageLevelsIfNecessary(r, riverForDb)
 		err = this.RiverDao.SaveFull(riverForDb)
 		id = river.Id
 		logEntryType = dao.ENTRY_TYPE_MODIFY
+
 	} else {
 		id, err = this.RiverDao.Insert(riverForDb)
 		logEntryType = dao.ENTRY_TYPE_CREATE
@@ -388,6 +393,44 @@ func (this *GeoHierarchyHandler) SaveRiver(w http.ResponseWriter, r *http.Reques
 
 	this.writeRiver(id, w)
 	this.LogUserEvent(r, RIVER_LOG_ENTRY_TYPE, id, logEntryType, riverForDb.Title)
+}
+
+func (this *GeoHierarchyHandler) updateImageLevelsIfNecessary(req *http.Request, river dao.River) {
+	existing, err := this.RiverDao.Find(river.Id)
+	if err != nil {
+		log.Errorf("Can't select existing river for level update: %v", err)
+		return
+	}
+	existingSensors := existing.GetSensorIds()
+	newSensors := river.GetSensorIds()
+
+	if util.StringSliceEqual(newSensors, existingSensors) {
+		return
+	}
+
+	imgs, err := this.ImgDao.ListAllByRiver(river.Id)
+	if err != nil {
+		log.Errorf("Can't list images bor river %d: %v", river.Id, err)
+		return
+	}
+
+	for _, img := range imgs {
+		if img.Date == nil {
+			continue
+		}
+		manualLevel, manualLevelSet := img.Level[dao.IMG_WATER_LEVEL_MANUAL]
+		if !manualLevelSet {
+			manualLevel = -1
+		}
+		level := graduation.GetLevelBySensors(this.LevelSensorDao, this.LevelDao, newSensors, *img.Date, 1, manualLevel)
+		err = this.ImgDao.SetDateAndLevel(img.Id, *img.Date, level)
+		if err != nil {
+			log.Errorf("Can not set image %d level and date to %v:%v: %v", img.Id, img.Date, level, err)
+			continue
+		}
+
+		this.LogUserEvent(req, IMAGE_LOG_ENTRY_TYPE, img.Id, dao.ENTRY_TYPE_MODIFY, "River sensors changed")
+	}
 }
 
 func (this *GeoHierarchyHandler) SetRiverVisible(w http.ResponseWriter, r *http.Request) {

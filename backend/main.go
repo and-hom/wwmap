@@ -104,6 +104,8 @@ func main() {
 		&handler.UserInfoHandler{app},
 		&handler.GeoHierarchyHandler{
 			App:                      app,
+			LevelDao:                 levelDao,
+			LevelSensorDao:           levelSensorDao,
 			ImgStorage:               imgStorage,
 			PreviewImgStorage:        imgPreviewStorage,
 			RiverPassportHtmlStorage: riverPassportHtmlStorage,
