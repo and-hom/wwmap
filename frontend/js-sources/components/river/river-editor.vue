@@ -246,21 +246,21 @@
                             riverId: updated.id,
                             spotId: null
                         });
-                        store.commit('showCountrySubentities', updated.region.country_id);
+                        store.dispatch('reloadCountrySubentities', updated.region.country_id);
 
                         if (new_region_id > 0 && !updated.region.fake) {
-                            store.commit('showRegionSubentities', {
+                            store.dispatch('reloadRegionSubentities', {
                                 countryId: updated.region.country_id,
                                 regionId: new_region_id
                             });
                         }
                         if (this.prevCountryId > 0 && this.prevRegionId > 0 && !this.prevRegionFake && this.prevRegionId != new_region_id) {
-                            store.commit('showRegionSubentities', {
+                            store.dispatch('reloadRegionSubentities', {
                                 countryId: this.prevCountryId,
                                 regionId: this.prevRegionId
                             });
                         } else if (this.prevCountryId > 0 && this.prevCountryId != updated.region.country_id) {
-                            store.commit('showCountrySubentities', this.prevCountryId);
+                            store.dispatch('reloadCountrySubentities', this.prevCountryId);
                         }
 
                         this.reloadMap();

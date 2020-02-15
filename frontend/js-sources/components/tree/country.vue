@@ -19,7 +19,7 @@
         props: ['country'],
         created: function () {
             if (isActiveEntity(this.country.id)) {
-                store.commit('showCountrySubentities', this.country.id);
+                store.dispatch('reloadCountrySubentities', this.country.id);
                 if (getActiveEntityLevel() == COUNTRY_ACTIVE_ENTITY_LEVEL) {
                     this.onSelectCountry()
                 }
@@ -34,7 +34,7 @@
                         if (country && (country.regions || country.rivers)) {
                             store.commit('hideCountrySubentities', t.country.id);
                         } else {
-                            store.commit('showCountrySubentities', t.country.id);
+                            store.dispatch('reloadCountrySubentities', t.country.id);
                         }
                         t.onSelectCountry();
                     });

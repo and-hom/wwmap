@@ -15,7 +15,7 @@
         props: ['region', 'country'],
         created: function() {
             if (isActiveEntity(this.country.id, this.region.id)) {
-                store.commit('showRegionSubentities', {
+                store.dispatch('reloadRegionSubentities', {
                     countryId: this.country.id,
                     regionId: this.region.id
                 });
@@ -30,7 +30,11 @@
                     let t = this;
                     store.commit('onTreeSwitch', function () {
                         let idsPath = {countryId: t.country.id, regionId: t.region.id};
-                        store.commit(t.region.rivers ? 'hideRegionSubentities' : 'showRegionSubentities', idsPath);
+                        if (t.region.rivers) {
+                            store.commit('hideRegionSubentities', idsPath);
+                        } else {
+                            store.dispatch('reloadRegionSubentities', idsPath);
+                        }
                         t.onSelectRegion();
                     });
                     return false

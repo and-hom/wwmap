@@ -56,7 +56,6 @@ export function getRiverFromTree(countryId, regionId, riverId) {
 export function getRegionFromTree(countryId, regionId) {
     let country = getById(store.state.treePath, countryId);
     if (!country) {
-        //country = showCountrySubentities(countryId)
         return null;
     }
 
@@ -105,7 +104,7 @@ export function navigateToSpot(spotId, edit) {
                 editMode: edit,
             });
 
-            store.commit('showRiverSubentities', {
+            store.dispatch('reloadRiverSubentities', {
                 countryId: countryId,
                 regionId: regionId,
                 riverId: riverId
@@ -150,6 +149,38 @@ export const store = new Vuex.Store({
         sensors: sensors,
     },
     getters: {},
+    actions: {
+        reloadCountrySubentities(context, id) {
+            return Promise.all([getRiversByCountry(id), getRegions(id)]).then(result => {
+                context.commit('showCountrySubentities', {
+                    id: id,
+                    rivers: result[0],
+                    regions: result[1],
+                })
+            })
+        },
+
+        reloadRegionSubentities(context, payload) {
+            getRiversByRegion(payload.countryId, payload.regionId).then(rivers => {
+                return context.commit('showRegionSubentities', {
+                    countryId: payload.countryId,
+                    regionId: payload.regionId,
+                    rivers: rivers
+                });
+            });
+        },
+
+        reloadRiverSubentities(context, payload) {
+            getSpots(payload.riverId).then(spots => {
+                return context.commit('showRiverSubentities', {
+                    countryId: payload.countryId,
+                    regionId: payload.regionId,
+                    riverId: payload.riverId,
+                    spots: spots
+                });
+            });
+        },
+    },
     mutations: {
         setTreePath(state, treePath) {
             state.treePath = treePath;
@@ -223,12 +254,10 @@ export const store = new Vuex.Store({
             state.rivereditorstate.region = payload.region;
         },
 
-        showCountrySubentities(state, id) {
-            Promise.all([getRiversByCountry(id), getRegions(id)]).then(result => {
-                let country = getById(store.state.treePath, id);
-                Vue.set(country, "rivers", result[0]);
-                Vue.set(country, "regions", result[1]);
-            })
+        showCountrySubentities(state, payload) {
+            let country = getById(store.state.treePath, payload.id);
+            Vue.set(country, "rivers", payload.rivers);
+            Vue.set(country, "regions", payload.regions);
         },
         hideCountrySubentities(state, id) {
             let country = getById(store.state.treePath, id);
@@ -237,12 +266,10 @@ export const store = new Vuex.Store({
         },
 
         showRegionSubentities(state, payload) {
-            getRiversByRegion(payload.countryId, payload.regionId).then(rivers => {
-                let region = getRegionFromTree(payload.countryId, payload.regionId);
-                if (region) {
-                    Vue.set(region, "rivers", rivers)
-                }
-            });
+            let region = getRegionFromTree(payload.countryId, payload.regionId);
+            if (region) {
+                Vue.set(region, "rivers", payload.rivers)
+            }
         },
 
         hideRegionSubentities(state, payload) {
@@ -253,15 +280,14 @@ export const store = new Vuex.Store({
         },
 
         showRiverSubentities(state, payload) {
-            getSpots(payload.riverId).then(spots => {
-                let river = getRiverFromTree(payload.countryId, payload.regionId, payload.riverId);
-                if (river) {
-                    Vue.set(river, "spots", spots)
-                }
-            });
+            let river = getRiverFromTree(payload.countryId, payload.regionId, payload.riverId);
+            if (river) {
+                Vue.set(river, "spots", payload.spots)
+            }
         },
+
         hideRiverSubentities(state, payload) {
-            var river = getRiverFromTree(payload.countryId, payload.regionId, payload.riverId);
+            let river = getRiverFromTree(payload.countryId, payload.regionId, payload.riverId);
             Vue.delete(river, "spots")
         },
 

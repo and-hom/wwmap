@@ -258,7 +258,7 @@
                         riverId: riverId,
                         spotId: updated.id,
                     });
-                    store.commit('showRiverSubentities', {
+                    store.dispatch('reloadRiverSubentities', {
                         countryId: countryId,
                         regionId: regionId,
                         riverId: riverId
@@ -302,7 +302,7 @@
                     regionId: regionId,
                     riverId: riverId,
                 });
-                store.commit('showRiverSubentities', {
+                store.dispatch('reloadRiverSubentities', {
                     countryId: countryId,
                     regionId: regionId,
                     riverId: riverId

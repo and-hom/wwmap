@@ -159,10 +159,10 @@
                 });
                 store.commit("setRiverEditorVisible", false);
                 if (this.river.region.fake || this.river.region.id == 0) {
-                    store.commit('showCountrySubentities', this.country.id);
+                    store.dispatch('reloadCountrySubentities', this.country.id);
                     store.commit('showCountryPage', {country: this.country});
                 } else {
-                    store.commit('showRegionSubentities', {
+                    store.dispatch('reloadRegionSubentities', {
                         countryId: this.country.id,
                         regionId: nvlReturningId(this.river.region)
                     });

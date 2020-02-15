@@ -336,7 +336,7 @@
         updated() {
             let t = this;
             if (this.$refs.uploadGpx && this.$refs.uploadGpx.value.length && this.$refs.uploadGpx.uploaded && this.gpxJustUploaded) {
-                store.commit('showRiverSubentities', {
+                store.dispatch('reloadRiverSubentities', {
                     countryId: this.river.region.country_id,
                     regionId: nvlReturningId(this.river.region),
                     riverId: this.river.id,
@@ -394,7 +394,7 @@
                     let countryId = this.river.region.country_id;
                     let regionId = nvlReturningId(this.river.region);
                     let riverId = this.river.id;
-                    store.commit('showRiverSubentities', {
+                    store.dispatch('reloadRiverSubentities', {
                         countryId: countryId,
                         regionId: regionId,
                         riverId: riverId,

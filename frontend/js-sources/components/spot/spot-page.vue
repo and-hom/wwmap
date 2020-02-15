@@ -133,11 +133,11 @@
                     spotId: null
                 });
                 store.commit("setSpotEditorVisible", false);
-                store.commit('showRegionSubentities', {
+                store.dispatch('reloadRegionSubentities', {
                     countryId: this.country.id,
                     regionId: nvlReturningId(this.spot.region)
                 });
-                store.commit('showRiverSubentities', {
+                store.dispatch('reloadRiverSubentities', {
                     countryId: this.country.id,
                     regionId: nvlReturningId(this.spot.region),
                     riverId: this.river.id,

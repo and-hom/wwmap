@@ -29,7 +29,7 @@
             var riverSelected = isActiveEntity(this.country.id, nvlReturningId(this.region), this.river.id);
 
             if (riverSelected) {
-                store.commit('showRiverSubentities', {
+                store.dispatch('reloadRiverSubentities', {
                     countryId: this.country.id,
                     regionId: nvlReturningId(this.region),
                     riverId: this.river.id,
@@ -56,7 +56,11 @@
                             regionId: nvlReturningId(t.region),
                             riverId: t.river.id
                         };
-                        store.commit(t.river.spots ? 'hideRiverSubentities' : 'showRiverSubentities', idsPath);
+                        if (t.river.spots) {
+                            store.commit('hideRiverSubentities', idsPath);
+                        } else {
+                            store.dispatch('reloadRiverSubentities', idsPath)
+                        }
                         t.onSelectRiver();
                     });
                 },
