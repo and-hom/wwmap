@@ -33,6 +33,8 @@ import {
     getRiversByRegion,
     getSpot,
     getSpots,
+    nvlReturningId,
+    setActiveEntityUrlHash,
     REGION_ACTIVE_ENTITY_LEVEL,
     RIVER_ACTIVE_ENTITY_LEVEL,
     SPOT_ACTIVE_ENTITY_LEVEL
@@ -55,6 +57,9 @@ export var app;
 
 
 export function getById(arr, id) {
+    if (!arr) {
+        return null
+    }
     var filtered = arr.filter(function (x) {
         return x.id === id
     });
@@ -73,16 +78,14 @@ export function getRiverFromTree(countryId, regionId, riverId) {
 
     if (regionId && regionId > 0) {
         var region = getById(country.regions, regionId);
-        let rivers = region.rivers;
-        if (!rivers) {
-            rivers = [];//getRiversByRegion(countryId, region.id);
-            Vue.set(region, "rivers", rivers);
+        if(!region) {
+            return null
         }
-        river = getById(rivers, riverId)
+
+        return  getById(region.rivers, riverId)
     } else {
-        river = getById(country.rivers, riverId)
+        return  getById(country.rivers, riverId)
     }
-    return river;
 }
 
 export function getRegionFromTree(countryId, regionId) {
@@ -111,6 +114,40 @@ export function getSpotsFromTree(countryId, regionId, riverId) {
         river = getById(getById(store.state.treePath, countryId).rivers, riverId)
     }
     return river.spots ? river.spots : []
+}
+
+export function navigateToSpot(spotId, edit) {
+    getSpot(spotId).then(spot => {
+        let countryId = spot.river.region.country_id;
+        let regionId = nvlReturningId(spot.river.region);
+        let riverId = spot.river.id;
+
+        let t = this;
+        store.commit('onTreeSwitch', function () {
+            setActiveEntityUrlHash(countryId, regionId, riverId, spotId);
+            store.commit('setActiveEntityState', {
+                countryId: countryId,
+                regionId: regionId,
+                riverId: riverId,
+                spotId: spotId
+            });
+
+            store.commit('hideAll');
+            store.commit('selectSpot', {
+                country: {"id": countryId},
+                region: spot.river.region,
+                river: spot.river,
+                spotId: spotId,
+                editMode: edit,
+            });
+
+            store.commit('showRiverSubentities', {
+                countryId: countryId,
+                regionId: regionId,
+                riverId: riverId
+            });
+        });
+    });
 }
 
 
@@ -191,7 +228,7 @@ export const store = new Vuex.Store({
                 state.spoteditorstate.region = payload.region;
                 state.spoteditorstate.river = payload.river;
                 state.spoteditorstate.spot = spot;
-                state.spoteditorstate.editMode = false;
+                state.spoteditorstate.editMode = payload.editMode ? true : false;
                 state.spoteditorstate.visible = true;
             });
         },

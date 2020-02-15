@@ -32,7 +32,9 @@
                      :region="region"
                      :images="images"
                      :schemas="schemas"
-                     :videos="videos"/>
+                     :videos="videos"
+
+                     v-on:spotClick="navigateToSpot($event, false)"/>
 
         <spot-editor v-if="editMode"
                      ref="editor"
@@ -46,12 +48,14 @@
                      v-on:images="images = $event"
                      v-on:schemas="schemas = $event"
                      v-on:videos="videos = $event"
-                     v-on:spot="spot = $event"/>
+                     v-on:spot="spot = $event"
+
+                     v-on:spotClick="navigateToSpot($event, true)"/>
     </div>
 </template>
 
 <script>
-    import {store} from '../../main';
+    import {store, navigateToSpot} from '../../main';
     import {hasRole, ROLE_ADMIN, ROLE_EDITOR} from '../../auth';
     import {getImages, getSpot, nvlReturningId, removeSpot, setActiveEntityUrlHash} from '../../editor';
 
@@ -158,6 +162,9 @@
             },
             hideError: function () {
                 store.commit("setErrMsg", null);
+            },
+            navigateToSpot: function(id, edit) {
+                navigateToSpot(id, edit);
             },
         }
     }

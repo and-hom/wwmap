@@ -38,8 +38,12 @@
             {{ spot.short_description }}
         </div>
         <div class="wwmap-desc-section-div">
-            <ya-map-location ref="locationView" v-bind:spot="spot" width="70%" height="600px" :editable="false"
-                             :zoom="15"></ya-map-location>
+            <ya-map-location ref="locationView"
+                             v-bind:spot="spot"
+                             width="70%" height="600px"
+                             :editable="false"
+                             :zoom="15"
+                             v-on:spotClick = "$emit('spotClick', $event)"/>
             <div style="padding-top:4px;">
                 <strong>Широта:</strong>&nbsp;{{ spotPoint0()[0] }}&nbsp;&nbsp;&nbsp;<strong>Долгота:</strong>&nbsp;{{
                 spotPoint0()[1] }}

@@ -183,8 +183,14 @@
                             geoObjectOpenBalloonOnClick: false,
                             geoObjectStrokeWidth: 3,
                             splitRequests: false
-                        })
-                    ;
+                        });
+
+                    let t = this;
+                    objectManager.objects.events.add(['click'], function (e) {
+                        let id = e.get('objectId');
+                        t.$emit('spotClick', id);
+                    });
+
                     this.map.geoObjects.add(objectManager);
                     this.objectManager = objectManager
                 },

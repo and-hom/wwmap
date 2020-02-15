@@ -17,7 +17,8 @@
                 :ya-search="yaSearch"
                 :refresh-on-change="refreshOnChange"
                 :default-map="defaultMap"
-                :switch-type-hotkeys="switchTypeHotkeys"/>
+                :switch-type-hotkeys="switchTypeHotkeys"
+                v-on:spotClick = "$emit('spotClick', $event)"/>
     </div>
     <div v-else :style="divStyle">
         <div class="btn-group" role="group" aria-label="Basic example">
@@ -83,7 +84,7 @@
             showMapByDefault: {
                 type: Boolean,
                 default: true
-            }
+            },
         },
         data: function () {
             return {

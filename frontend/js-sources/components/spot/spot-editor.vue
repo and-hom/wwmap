@@ -85,7 +85,8 @@
                                                     :ya-search="true"
                                                     :switch-type-hotkeys="true"
                                                     v-bind:refresh-on-change="spot.point"
-                                                    :show-map-by-default="true"/>
+                                                    :show-map-by-default="true"
+                                                    v-on:spotClick = "$emit('spotClick', $event)"/>
                     </div>
                 </div>
                 <div class="row">

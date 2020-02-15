@@ -80,7 +80,7 @@
 <script>
     import FileUpload from 'vue-upload-component';
     import {getWwmapSessionId, hasRole, ROLE_ADMIN, ROLE_EDITOR} from '../../auth'
-    import {getRiverFromTree, store} from '../../main'
+    import {getRiverFromTree, navigateToSpot, store} from '../../main'
     import {emptyBounds, getRiverBounds, setRiverVisible,} from '../../editor'
     import {backendApiBase} from '../../config'
     import {addMapLayers, registerMapSwitchLayersHotkeys} from '../../map-common';
@@ -208,6 +208,12 @@
                                 geoObjectStrokeWidth: 3,
                                 splitRequests: true
                             });
+
+                            objectManager.objects.events.add(['click'], function (e) {
+                                let id = e.get('objectId');
+                                navigateToSpot(id, false);
+                            });
+
                             map.geoObjects.add(objectManager);
                             t.map = map;
                             t.objectManager = objectManager;
