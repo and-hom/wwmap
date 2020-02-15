@@ -53,7 +53,7 @@
 </template>
 
 <script>
-    import {store, getById} from '../main'
+    import {store, getById} from '../app-state'
 
 
     export default {

@@ -137,7 +137,7 @@
     import FileUpload from 'vue-upload-component';
     import {getWwmapSessionId, hasRole, ROLE_ADMIN, ROLE_EDITOR} from '../../auth'
     import {sensors, sensorsById} from '../../sensors'
-    import {getRiverFromTree, store} from '../../main'
+    import {store} from '../../app-state'
     import {
         addMeteoPoint,
         emptyBounds,
@@ -240,7 +240,7 @@
                         this.hideError();
                         var new_region_id = nvlReturningId(updated.region);
                         setActiveEntityUrlHash(updated.region.country_id, new_region_id, updated.id);
-                        store.commit('setActiveEntityState', {
+                        store.commit('setTreeSelection', {
                             countryId: updated.region.country_id,
                             regionId: new_region_id,
                             riverId: updated.id,

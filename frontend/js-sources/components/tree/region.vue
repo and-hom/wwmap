@@ -9,7 +9,7 @@
 
 <script>
     import {getActiveEntityLevel, isActiveEntity, REGION_ACTIVE_ENTITY_LEVEL, setActiveEntityUrlHash,} from '../../editor';
-    import {store} from '../../main';
+    import {store} from '../../app-state';
 
     module.exports = {
         props: ['region', 'country'],
@@ -20,7 +20,7 @@
                     regionId: this.region.id
                 });
                 if (getActiveEntityLevel()==REGION_ACTIVE_ENTITY_LEVEL) {
-                    this.selectRegion()
+                    this.onSelectRegion()
                 }
             }
         },
@@ -31,19 +31,18 @@
                     store.commit('onTreeSwitch', function () {
                         let idsPath = {countryId: t.country.id, regionId: t.region.id};
                         store.commit(t.region.rivers ? 'hideRegionSubentities' : 'showRegionSubentities', idsPath);
-                        t.selectRegion();
+                        t.onSelectRegion();
                     });
                     return false
                 },
-                selectRegion:function() {
+                onSelectRegion:function() {
                     setActiveEntityUrlHash(this.country.id, this.region.id);
 
-                    store.commit('setActiveEntityState', {
+                    store.commit('setTreeSelection', {
                         countryId: this.country.id,
                         regionId: this.region.id
                     });
-                    store.commit('hideAll');
-                    store.commit('selectRegion', {
+                    store.commit('showRegionPage', {
                         country: this.country,
                         regionId: this.region.id
                     });

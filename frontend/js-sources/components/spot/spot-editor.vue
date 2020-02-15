@@ -170,7 +170,7 @@
         saveSpot,
         setActiveEntityUrlHash
     } from '../../editor'
-    import {store} from '../../main';
+    import {store} from '../../app-state';
     import {hasRole, ROLE_ADMIN, ROLE_EDITOR} from '../../auth';
 
     module.exports = {
@@ -252,7 +252,7 @@
                     let riverId = this.spot.river.id;
 
                     setActiveEntityUrlHash(countryId, regionId, riverId, updated.id);
-                    store.commit('setActiveEntityState', {
+                    store.commit('setTreeSelection', {
                         contryId: countryId,
                         regionId: regionId,
                         riverId: riverId,
@@ -297,7 +297,7 @@
                 let regionId = nvlReturningId(this.river.region);
                 let riverId = this.river.id;
                 setActiveEntityUrlHash(countryId, regionId, riverId);
-                store.commit('setActiveEntityState', {
+                store.commit('setTreeSelection', {
                     contryId: countryId,
                     regionId: regionId,
                     riverId: riverId,
@@ -307,8 +307,7 @@
                     regionId: regionId,
                     riverId: riverId
                 });
-                store.commit('hideAll');
-                store.commit('selectRiver', {
+                store.commit('showRiverPage', {
                     country: {id: this.river.region.country_id},
                     region: this.river.region,
                     riverId: this.river.id

@@ -80,7 +80,7 @@
 <script>
     import FileUpload from 'vue-upload-component';
     import {getWwmapSessionId, hasRole, ROLE_ADMIN, ROLE_EDITOR} from '../../auth'
-    import {getRiverFromTree, navigateToSpot, store} from '../../main'
+    import {getRiverFromTree, navigateToSpot, store} from '../../app-state'
     import {emptyBounds, getRiverBounds, setRiverVisible,} from '../../editor'
     import {backendApiBase} from '../../config'
     import {addMapLayers, registerMapSwitchLayersHotkeys} from '../../map-common';

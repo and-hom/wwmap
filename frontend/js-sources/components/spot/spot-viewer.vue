@@ -132,8 +132,8 @@
 </style>
 
 <script>
-    import {getImages, getRiver, getSpotMainImageUrl} from '../../editor'
-    import {store} from '../../main';
+    import {getRiver} from '../../editor'
+    import {store} from '../../app-state';
     import {hasRole, ROLE_ADMIN, ROLE_EDITOR} from '../../auth';
     import {backendApiBase} from '../../config'
 

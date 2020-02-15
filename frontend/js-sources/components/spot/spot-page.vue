@@ -55,7 +55,7 @@
 </template>
 
 <script>
-    import {store, navigateToSpot} from '../../main';
+    import {store, navigateToSpot} from '../../app-state';
     import {hasRole, ROLE_ADMIN, ROLE_EDITOR} from '../../auth';
     import {getImages, getSpot, nvlReturningId, removeSpot, setActiveEntityUrlHash} from '../../editor';
 
@@ -126,7 +126,7 @@
             },
             closeEditorAndShowParent: function () {
                 setActiveEntityUrlHash(this.country.id, nvlReturningId(this.region), this.river.id);
-                store.commit('setActiveEntityState', {
+                store.commit('setTreeSelection', {
                     countryId: this.country.id,
                     regionId: nvlReturningId(this.region),
                     riverId: this.river.id,
@@ -142,7 +142,7 @@
                     regionId: nvlReturningId(this.spot.region),
                     riverId: this.river.id,
                 });
-                store.commit('selectRiver', {
+                store.commit('showRiverPage', {
                     country: this.country,
                     regionId: this.spot.region,
                     riverId: this.river.id,
