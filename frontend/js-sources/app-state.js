@@ -104,7 +104,7 @@ export function navigateToSpot(spotId, edit) {
                 editMode: edit,
             });
 
-            store.dispatch('reloadRiverSubentities', {
+            store.dispatch('showRiverSubentities', {
                 countryId: countryId,
                 regionId: regionId,
                 riverId: riverId
@@ -159,6 +159,12 @@ export const store = new Vuex.Store({
                 })
             })
         },
+        showCountrySubentities(context, id) {
+            let country = getById(context.state.treePath, id);
+            if (country && !country.regions && !country.rivers) {
+                return context.dispatch('reloadCountrySubentities', id)
+            }
+        },
 
         reloadRegionSubentities(context, payload) {
             getRiversByRegion(payload.countryId, payload.regionId).then(rivers => {
@@ -167,6 +173,19 @@ export const store = new Vuex.Store({
                     regionId: payload.regionId,
                     rivers: rivers
                 });
+            });
+        },
+
+        showRegionSubentities(context, payload) {
+            return context.dispatch('showCountrySubentities', payload.countryId).then(_ => {
+                if (!payload.regionId || payload.regionId <= 0) {
+                    return
+                }
+
+                let region = getRegionFromTree(payload.countryId, payload.regionId);
+                if (!region.rivers) {
+                    return context.dispatch('reloadRegionSubentities', payload)
+                }
             });
         },
 
@@ -179,6 +198,15 @@ export const store = new Vuex.Store({
                     spots: spots
                 });
             });
+        },
+
+        showRiverSubentities(context, payload) {
+            context.dispatch('showRegionSubentities', payload).then(_ => {
+                let river = getRiverFromTree(payload.countryId, payload.regionId, payload.riverId);
+                if (river) {
+                    return context.dispatch('reloadRiverSubentities', payload)
+                }
+            })
         },
     },
     mutations: {
