@@ -1,21 +1,22 @@
 <template>
     <div class="auth" v-if="userInfo">
         <div>Привет, {{userName}}!</div>
-        <a href="javascript:clearSessionId(); location.reload();">Выход</a>
+        <a href="javascript:void(0);" v-on:click="clearSessionId">Выход</a>
         <div style="float:right; color: grey; font-size:60%; padding-left:10px;">
             <strong>{{userInfo.auth_provider}}/</strong>{{userInfo.login}}
         </div>
     </div>
     <div class="auth" v-else>
         <div>Здравствуйте! Для редактирования надо</div>
-        авторизоваться через <a href="javascript:YANDEX_AUTH.authRedirect();">Яндекс</a>, <a
-            href="javascript:GOOGLE_AUTH.authRedirect();">Google</a> или <a
-            href="javascript:VK_AUTH.authRedirect();">ВК</a>
+        авторизоваться через <a href="javascript:void(0);" v-on:click="yndxRedirect">Яндекс</a>, <a
+            href="javascript:void(0);" v-on:click="googleRedirect">Google</a> или <a
+            href="javascript:void(0);" v-on:click="vkRedirect">ВК</a>
     </div>
 </template>
 
 <script>
-    import {getAuthorizedUserInfoOrNull} from '../auth'
+    import {getAuthorizedUserInfoOrNull, clearSessionId, YANDEX_AUTH, GOOGLE_AUTH, VK_AUTH} from '../auth'
+
 
     module.exports = {
         created: function() {
@@ -37,6 +38,19 @@
         data: function () {
             return {
                 userInfo: null,
+                clearSessionId: function () {
+                    clearSessionId();
+                    location.reload();
+                },
+                yndxRedirect: function () {
+                    YANDEX_AUTH.authRedirect();
+                },
+                googleRedirect: function () {
+                    GOOGLE_AUTH.authRedirect();
+                },
+                vkRedirect: function () {
+                    VK_AUTH.authRedirect();
+                },
             }
         }
     }

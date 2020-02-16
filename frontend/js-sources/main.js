@@ -37,7 +37,8 @@ import {
     RIVER_ACTIVE_ENTITY_LEVEL,
     SPOT_ACTIVE_ENTITY_LEVEL
 } from './editor'
-import {getAuthorizedUserInfoOrNull} from './auth'
+import {getAuthorizedUserInfoOrNull, getTokenFromRequestAndStartWwmapSession, acquireTokenVk, startWwmapSession} from './auth'
+import {parseParams} from './api'
 import {sensors} from './sensors'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'vue-select/dist/vue-select.css';
@@ -394,4 +395,23 @@ function init(page) {
 
 export function getApp() {
     return app
+}
+
+
+// Auth
+
+export function auth_parseParams(paramsStr) {
+    return parseParams(paramsStr)
+}
+
+export function auth_getTokenFromRequestAndStartWwmapSession(authSource, callback) {
+    return getTokenFromRequestAndStartWwmapSession(authSource).then(_ => callback())
+}
+
+export function auth_acquireTokenVk(code, callback) {
+    acquireTokenVk(code, callback)
+}
+
+export function auth_startWwmapSession(source, token, callback) {
+    startWwmapSession(source, token).then(_ => callback())
 }

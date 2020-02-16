@@ -12,10 +12,11 @@
         var hash = window.location.hash;
         if (hash) {
             hash = hash.substr(1);
-            params = wwmap_editor.parseParams(hash);
+            params = wwmap_editor.auth_parseParams(hash);
             if (params['state']) {
-                wwmap_editor.getTokenFromRequestAndStartWwmapSession('google');
-                window.location.href = wwmap_editor.decodeURIComponent(params['state']);
+                wwmap_editor.auth_getTokenFromRequestAndStartWwmapSession('google', function() {
+                    window.location.href = decodeURIComponent(params['state']);
+                });
             } else {
                 document.write('Пропущен параметр state');
             }
