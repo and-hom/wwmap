@@ -1,3 +1,10 @@
+wwmap-frontend (0.0.60) unstable; urgency=medium
+
+  * #233 Switch to another spot on editor map click
+  * #249 Api v2 removed (unused)
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Thu, 27 Feb 2020 22:43:43 +0300
+
 wwmap-frontend (0.0.59) unstable; urgency=medium
 
   * #250 Auth fix 

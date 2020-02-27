@@ -1,3 +1,9 @@
+wwmap-t-cache (0.0.6) unstable; urgency=medium
+
+  * Parametrize server read/write timeout
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Thu, 27 Feb 2020 22:45:39 +0300
+
 wwmap-t-cache (0.0.5) unstable; urgency=medium
 
   * #114 Enable wwmap services by default
