@@ -39,3 +39,17 @@ const DATE_FORMAT = "2006-01-02"
 func FormatDate(t time.Time) string {
 	return t.Format(DATE_FORMAT)
 }
+
+func StringSliceEqual(a, b []string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+
+	for i := 0; i < len(a); i++ {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+
+	return true
+}

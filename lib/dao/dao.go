@@ -108,8 +108,8 @@ type ImgDao interface {
 	List(wwId int64, limit int, _type ImageType, enabledOnly bool) ([]Img, error)
 	ListExt(wwId int64, limit int, _type ImageType, enabledOnly bool) ([]ImgExt, error)
 	ListAllBySpot(wwId int64) ([]Img, error)
-	ListMainByRiver(wwId int64) ([]Img, error)
-	ListAllByRiver(wwId int64) ([]Img, error)
+	ListMainByRiver(riverId int64) ([]Img, error)
+	ListAllByRiver(riverId int64) ([]Img, error)
 	SetEnabled(id int64, enabled bool) error
 	SetDateAndLevel(id int64, date time.Time, level map[string]int8) error
 	SetManualLevel(id int64, level int8) (map[string]int8, error)
