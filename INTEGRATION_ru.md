@@ -4,10 +4,10 @@
 
 _Например, в wordpress есть специальный плагин, чтобы подключить свой css к отдельной странице. Остальное возможно в рамках редактирования html страницы_
 
-1. Подключаем javascript
+0. Подключем API Яндекс-карт по инструкции (только пункты про получение ключа и подключение javascript): https://tech.yandex.ru/maps/jsapi/doc/2.1/quick-start/index-docpage/#get-api-key
+1. Подключаем javascript для работы с данными wwmap
 
     ```html
-        <script type="text/javascript" src="https://api-maps.yandex.ru/2.1/?lang=ru_RU"></script>
         <script type="text/javascript" src="https://wwmap.ru/js/map.v2.1.js"></script>
     ```
  

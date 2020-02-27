@@ -1,9 +1,9 @@
 import {backendApiBase} from './config'
-import {doGetJson} from './api'
+import {doGetJson, parseParams} from './api'
 
-const YANDEX_AUTH = new AuthSource("yandex", "https://oauth.yandex.ru/authorize?response_type=token&client_id=f50947e6ab4944e1b1c14f2a21f76271");
-const GOOGLE_AUTH = new AuthSource("google", "https://accounts.google.com/o/oauth2/v2/auth?client_id=61884443528-vfpuce81u3ka0aithbpjn405avkjqrt9.apps.googleusercontent.com&redirect_uri=https%3A%2F%2Fwwmap.ru%2Fredirector-google.htm&response_type=token&scope=profile%20email");
-const VK_AUTH = new AuthSource("vk", "https://oauth.vk.com/authorize?client_id=6703809&display=page&redirect_uri=https://wwmap.ru/redirector-vk.htm&response_type=code");
+export const YANDEX_AUTH = new AuthSource("yandex", "https://oauth.yandex.ru/authorize?response_type=token&client_id=f50947e6ab4944e1b1c14f2a21f76271");
+export const GOOGLE_AUTH = new AuthSource("google", "https://accounts.google.com/o/oauth2/v2/auth?client_id=61884443528-vfpuce81u3ka0aithbpjn405avkjqrt9.apps.googleusercontent.com&redirect_uri=https%3A%2F%2Fwwmap.ru%2Fredirector-google.htm&response_type=token&scope=profile%20email");
+export const VK_AUTH = new AuthSource("vk", "https://oauth.vk.com/authorize?client_id=6703809&display=page&redirect_uri=https://wwmap.ru/redirector-vk.htm&response_type=code");
 
 const WWMAP_SESSION_ID = 'wwmap_token';
 
@@ -45,7 +45,7 @@ export function acquireTokenVk(code, callback) {
     doGetJson(backendApiBase + "/vk/token?code=" + code).then(authObj => callback(authObj))
 }
 
-function startWwmapSession(source, token) {
+export function startWwmapSession(source, token) {
     return getUserInfoByUrl(backendApiBase + '/session-start?provider=' + source + "&token=" + token)
         .then(userInfo => {
 
@@ -69,8 +69,9 @@ function getUserInfoByUrl(url) {
 export function getTokenFromRequestAndStartWwmapSession(authSource) {
     var token = extractFieldFromHash('access_token');
     if (token) {
-        startWwmapSession(authSource, token)
+        return startWwmapSession(authSource, token)
     }
+    return Promise.reject("Token is missing")
 }
 
 var cachedUserInfo = null;

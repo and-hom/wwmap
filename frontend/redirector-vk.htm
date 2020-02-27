@@ -19,7 +19,7 @@
                         return null;
                     }
                     else {
-                        return wwmap_editor.decodeURI(results[1]) || 0;
+                        return decodeURI(results[1]) || 0;
                     }
                 };
             }
@@ -48,12 +48,12 @@
             throw ''
         }
 
-        wwmap_editor.acquireTokenVk(code, function(authObj) {
+        wwmap_editor.auth_acquireTokenVk(code, function(authObj) {
             if (authObj) {
-                startWwmapSession('vk', authObj.access_token)
+                wwmap_editor.auth_startWwmapSession('vk', authObj.access_token, function() {
+                    window.location.href = decodeURIComponent(state)
+                })
             }
-
-            window.location.href = wwmap_editor.decodeURIComponent(state)
         });
     </script>
 </body>

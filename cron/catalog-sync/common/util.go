@@ -31,3 +31,12 @@ func (this DateExtractor) GetDate(line string) (time.Time, bool) {
 	}
 	return t, true
 }
+
+func AppendIfMissing(slice []string, s string) []string {
+	for _, ele := range slice {
+		if ele == s {
+			return slice
+		}
+	}
+	return append(slice, s)
+}

@@ -1,3 +1,9 @@
+wwmap-frontend (0.0.59) unstable; urgency=medium
+
+  * #250 Auth fix 
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sun, 16 Feb 2020 23:51:48 +0300
+
 wwmap-frontend (0.0.58) unstable; urgency=medium
 
   * #250 Use webpack for frontend
