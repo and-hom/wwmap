@@ -12,16 +12,16 @@
 </template>
 
 <script type="text/javascript">
-    import {store, getById} from '../../main'
+    import {store, getById} from '../../app-state'
     import {COUNTRY_ACTIVE_ENTITY_LEVEL, getActiveEntityLevel, isActiveEntity, setActiveEntityUrlHash} from '../../editor'
 
     module.exports = {
         props: ['country'],
         created: function () {
             if (isActiveEntity(this.country.id)) {
-                store.commit('showCountrySubentities', this.country.id);
+                store.dispatch('reloadCountrySubentities', this.country.id);
                 if (getActiveEntityLevel() == COUNTRY_ACTIVE_ENTITY_LEVEL) {
-                    this.selectCountry()
+                    this.onSelectCountry()
                 }
             }
         },
@@ -34,18 +34,17 @@
                         if (country && (country.regions || country.rivers)) {
                             store.commit('hideCountrySubentities', t.country.id);
                         } else {
-                            store.commit('showCountrySubentities', t.country.id);
+                            store.dispatch('reloadCountrySubentities', t.country.id);
                         }
-                        t.selectCountry();
+                        t.onSelectCountry();
                     });
                     return false
                 },
-                selectCountry: function () {
+                onSelectCountry: function () {
                     setActiveEntityUrlHash(this.country.id);
 
-                    store.commit('setActiveEntityState', this.country.id);
-                    store.commit('hideAll');
-                    store.commit('selectCountry', {country: this.country});
+                    store.commit('setTreeSelection', this.country.id);
+                    store.commit('showCountryPage', {country: this.country});
                 },
                 countryClass: function () {
                     if (this.country.id == store.state.selectedCountry) {

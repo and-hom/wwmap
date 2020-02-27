@@ -37,7 +37,7 @@
 </template>
 
 <script>
-    import {store} from "../main";
+    import {store} from '../app-state';
     import {getImages, removeImage, setImageEnabled} from "../editor"
     import {parseParams, doPostJson} from "../api"
     import {getWwmapSessionId} from "../auth"

@@ -137,7 +137,7 @@
     import FileUpload from 'vue-upload-component';
     import {getWwmapSessionId, hasRole, ROLE_ADMIN, ROLE_EDITOR} from '../../auth'
     import {sensors, sensorsById} from '../../sensors'
-    import {getRiverFromTree, store} from '../../main'
+    import {store} from '../../app-state'
     import {
         addMeteoPoint,
         emptyBounds,
@@ -240,27 +240,27 @@
                         this.hideError();
                         var new_region_id = nvlReturningId(updated.region);
                         setActiveEntityUrlHash(updated.region.country_id, new_region_id, updated.id);
-                        store.commit('setActiveEntityState', {
+                        store.commit('setTreeSelection', {
                             countryId: updated.region.country_id,
                             regionId: new_region_id,
                             riverId: updated.id,
                             spotId: null
                         });
-                        store.commit('showCountrySubentities', updated.region.country_id);
+                        store.dispatch('reloadCountrySubentities', updated.region.country_id);
 
                         if (new_region_id > 0 && !updated.region.fake) {
-                            store.commit('showRegionSubentities', {
+                            store.dispatch('reloadRegionSubentities', {
                                 countryId: updated.region.country_id,
                                 regionId: new_region_id
                             });
                         }
                         if (this.prevCountryId > 0 && this.prevRegionId > 0 && !this.prevRegionFake && this.prevRegionId != new_region_id) {
-                            store.commit('showRegionSubentities', {
+                            store.dispatch('reloadRegionSubentities', {
                                 countryId: this.prevCountryId,
                                 regionId: this.prevRegionId
                             });
                         } else if (this.prevCountryId > 0 && this.prevCountryId != updated.region.country_id) {
-                            store.commit('showCountrySubentities', this.prevCountryId);
+                            store.dispatch('reloadCountrySubentities', this.prevCountryId);
                         }
 
                         this.reloadMap();

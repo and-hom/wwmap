@@ -12,7 +12,7 @@
 
 <script>
     import {hasRole, ROLE_ADMIN, ROLE_EDITOR} from '../../auth'
-    import {store} from '../../main';
+    import {store} from '../../app-state';
 
     module.exports = {
         props: ['country'],

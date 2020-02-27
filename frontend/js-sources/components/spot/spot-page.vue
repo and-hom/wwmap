@@ -32,7 +32,9 @@
                      :region="region"
                      :images="images"
                      :schemas="schemas"
-                     :videos="videos"/>
+                     :videos="videos"
+
+                     v-on:spotClick="navigateToSpot($event, false)"/>
 
         <spot-editor v-if="editMode"
                      ref="editor"
@@ -46,12 +48,14 @@
                      v-on:images="images = $event"
                      v-on:schemas="schemas = $event"
                      v-on:videos="videos = $event"
-                     v-on:spot="spot = $event"/>
+                     v-on:spot="spot = $event"
+
+                     v-on:spotClick="navigateToSpot($event, true)"/>
     </div>
 </template>
 
 <script>
-    import {store} from '../../main';
+    import {store, navigateToSpot} from '../../app-state';
     import {hasRole, ROLE_ADMIN, ROLE_EDITOR} from '../../auth';
     import {getImages, getSpot, nvlReturningId, removeSpot, setActiveEntityUrlHash} from '../../editor';
 
@@ -122,23 +126,23 @@
             },
             closeEditorAndShowParent: function () {
                 setActiveEntityUrlHash(this.country.id, nvlReturningId(this.region), this.river.id);
-                store.commit('setActiveEntityState', {
+                store.commit('setTreeSelection', {
                     countryId: this.country.id,
                     regionId: nvlReturningId(this.region),
                     riverId: this.river.id,
                     spotId: null
                 });
                 store.commit("setSpotEditorVisible", false);
-                store.commit('showRegionSubentities', {
+                store.dispatch('reloadRegionSubentities', {
                     countryId: this.country.id,
                     regionId: nvlReturningId(this.spot.region)
                 });
-                store.commit('showRiverSubentities', {
+                store.dispatch('reloadRiverSubentities', {
                     countryId: this.country.id,
                     regionId: nvlReturningId(this.spot.region),
                     riverId: this.river.id,
                 });
-                store.commit('selectRiver', {
+                store.commit('showRiverPage', {
                     country: this.country,
                     regionId: this.spot.region,
                     riverId: this.river.id,
@@ -158,6 +162,9 @@
             },
             hideError: function () {
                 store.commit("setErrMsg", null);
+            },
+            navigateToSpot: function(id, edit) {
+                navigateToSpot(id, edit);
             },
         }
     }

@@ -60,7 +60,7 @@
 </template>
 
 <script>
-    import {store} from '../../main';
+    import {store} from '../../app-state';
     import {hasRole, ROLE_ADMIN, ROLE_EDITOR} from '../../auth';
     import {getRiver, getRiverBounds, nvlReturningId, removeRiver, setActiveEntityUrlHash} from '../../editor';
 
@@ -151,7 +151,7 @@
             },
             closeEditorAndShowParent: function () {
                 setActiveEntityUrlHash(this.country.id, nvlReturningId(this.region));
-                store.commit('setActiveEntityState', {
+                store.commit('setTreeSelection', {
                     countryId: this.country.id,
                     regionId: nvlReturningId(this.region),
                     riverId: null,
@@ -159,14 +159,14 @@
                 });
                 store.commit("setRiverEditorVisible", false);
                 if (this.river.region.fake || this.river.region.id == 0) {
-                    store.commit('showCountrySubentities', this.country.id);
-                    store.commit('selectCountry', {country: this.country});
+                    store.dispatch('reloadCountrySubentities', this.country.id);
+                    store.commit('showCountryPage', {country: this.country});
                 } else {
-                    store.commit('showRegionSubentities', {
+                    store.dispatch('reloadRegionSubentities', {
                         countryId: this.country.id,
                         regionId: nvlReturningId(this.river.region)
                     });
-                    store.commit('selectRegion', {
+                    store.commit('showRegionPage', {
                         country: this.country,
                         countryId: nvlReturningId(this.river.region)
                     });
