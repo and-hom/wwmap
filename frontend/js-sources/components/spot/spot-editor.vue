@@ -258,7 +258,7 @@
                         riverId: riverId,
                         spotId: updated.id,
                     });
-                    store.dispatch('reloadRiverSubentities', {
+                    store.dispatch(riverChanged ? 'showRiverSubentities' : 'reloadRiverSubentities', {
                         countryId: countryId,
                         regionId: regionId,
                         riverId: riverId

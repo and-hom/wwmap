@@ -316,7 +316,9 @@ export const store = new Vuex.Store({
 
         hideRiverSubentities(state, payload) {
             let river = getRiverFromTree(payload.countryId, payload.regionId, payload.riverId);
-            Vue.delete(river, "spots")
+            if (river) {
+                Vue.delete(river, "spots")
+            }
         },
 
         setRiverEditorPageMode(state, mode) {
