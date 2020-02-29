@@ -416,7 +416,6 @@ func (this whiteWaterStorage) GetRiverBounds(riverId int64) (geo.Bbox, error) {
 		if err != nil {
 			return geo.Bbox{}, err
 		}
-		fmt.Println(pointString)
 		return ParseBounds(pointString)
 	}, riverId)
 	if err != nil {
