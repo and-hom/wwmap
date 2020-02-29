@@ -764,7 +764,7 @@ func (this *GeoHierarchyHandler) SaveSpotBatch(w http.ResponseWriter, r *http.Re
 			if err != nil {
 				return err
 			}
-			this.LogUserEvent(r, SPOT_LOG_ENTRY_TYPE, id, SPOT_LOG_ENTRY_TYPE, "")
+			this.LogUserEvent(r, SPOT_LOG_ENTRY_TYPE, id, dao.ENTRY_TYPE_DELETE, "")
 		}
 
 		for _, spot := range batch.Update {
