@@ -1,5 +1,6 @@
 <template>
     <div>
+        <breadcrumbs :country="country" :region="region"/>
         <h1>{{ river.title }}</h1>
         <div style="float:right;">
             <div style="width: 700px;">

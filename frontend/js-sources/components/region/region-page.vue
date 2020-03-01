@@ -6,6 +6,7 @@
                 <button type="button" class="btn btn-primary" v-on:click="add_river()">Добавить реку</button>
             </div>
         </div>
+        <breadcrumbs :country="country"/>
         <h1>{{ region.title }}</h1>
     </div>
 </template>

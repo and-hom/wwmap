@@ -1,5 +1,6 @@
 <template>
     <div class="spot-display">
+        <breadcrumbs :country="country" :region="region" :river="river"/>
         <h1>{{ spot.title }}</h1>
         <div style="float:right; width:400px; margin-left: 20px;">
             <img v-if="spotMainUrl" :src="spotMainUrl" style="width:100%; cursor: pointer;"
