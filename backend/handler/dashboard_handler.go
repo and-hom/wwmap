@@ -12,6 +12,12 @@ import (
 
 const DEFAULT_PLOT_DAYS = 10
 
+const GRAD_COLOR_C5 = "#0055bb80"
+const GRAD_COLOR_C4 = "#0055bb65"
+const GRAD_COLOR_C3 = "#0055bb50"
+const GRAD_COLOR_C2 = "#0055bb35"
+const GRAD_COLOR_C1 = "#0055bb20"
+
 type DashboardHandler struct {
 	App
 	LevelDao       dao.LevelDao
@@ -99,7 +105,8 @@ func (this *DashboardHandler) Levels(w http.ResponseWriter, req *http.Request) {
 		line := JChartDataSet{
 			BackgroundColor: []string{"blue"},
 			BorderColor:     []string{"blue"},
-			Fill:            false,
+			Fill:            "false",
+			BorderWidth:     3,
 		}
 		for i := int64(0); i < days; i++ {
 			hoursOffset := time.Duration(int64(time.Hour) * 24 * (1 + i - days))
@@ -116,11 +123,6 @@ func (this *DashboardHandler) Levels(w http.ResponseWriter, req *http.Request) {
 			line.Data = append(line.Data, levelValue)
 		}
 
-		sensorData := JChartData{
-			Labels:   labels,
-			DataSets: []JChartDataSet{line},
-		}
-
 		sensorMetrics := SensorMetrics{}
 		for i := 0; i < len(levelSensors); i++ {
 			if levelSensors[i].Id == sensorId {
@@ -132,6 +134,18 @@ func (this *DashboardHandler) Levels(w http.ResponseWriter, req *http.Request) {
 			}
 		}
 
+		sensorData := JChartData{
+			Labels: labels,
+			DataSets: []JChartDataSet{
+				line,
+				graduationLine(days, 1, sensorMetrics.L0, GRAD_COLOR_C1),
+				graduationLine(days, 2, sensorMetrics.L1, GRAD_COLOR_C2),
+				graduationLine(days, 3, sensorMetrics.L2, GRAD_COLOR_C3),
+				graduationLine(days, 4, sensorMetrics.L3, GRAD_COLOR_C4),
+				graduationLine(days, 4, 1000, GRAD_COLOR_C5),
+			},
+		}
+
 		result[sensorId] = SensorData{
 			SensorId:      sensorId,
 			Rivers:        rivers,
@@ -141,6 +155,27 @@ func (this *DashboardHandler) Levels(w http.ResponseWriter, req *http.Request) {
 	}
 
 	this.JsonAnswer(w, result)
+}
+
+func graduationLine(days int64, grade int, y int, color string) JChartDataSet {
+	fill := "-1"
+	if grade == 1 {
+		fill = "origin"
+	}
+	line := JChartDataSet{
+		BackgroundColor: []string{color},
+		BorderColor:     []string{color},
+		Fill:            fill,
+		PointRadius:     0,
+		BorderWidth:     0,
+		Label:           fmt.Sprintf("l %d", grade),
+	}
+
+	for i := int64(0); i < days; i++ {
+		line.Data = append(line.Data, &y)
+	}
+
+	return line
 }
 
 func parseDate(paramName string, req *http.Request, defaultOffsetDays int) (time.Time, error) {
@@ -176,7 +211,9 @@ type JChartDataSet struct {
 	BackgroundColor []string `json:"backgroundColor"`
 	BorderColor     []string `json:"borderColor"`
 	Data            []*int   `json:"data"`
-	Fill            bool     `json:"fill"`
+	Fill            string   `json:"fill"`
+	PointRadius     int      `json:"pointRadius"`
+	BorderWidth     int      `json:"borderWidth"`
 }
 
 type RiverWithRegionDto struct {
