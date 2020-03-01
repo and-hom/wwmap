@@ -23,6 +23,8 @@ const (
 	Y_LEVEL_VALUE_AREA_MAX = 240
 )
 
+const HTTP_TIMEOUT_SEC = 15
+
 func main() {
 	log.Infof("Starting wwmap vodinfo import")
 	configuration := config.Load("")
@@ -46,7 +48,7 @@ func main() {
 		levelSensorDao: dao.NewLevelSensorPostgresDao(storage),
 		graduator:      graduator,
 		client: http.Client{
-			Timeout: 4 * time.Second,
+			Timeout: HTTP_TIMEOUT_SEC * time.Second,
 		},
 		patternMatcher: patternMatcher,
 		backScanDays:   9,
