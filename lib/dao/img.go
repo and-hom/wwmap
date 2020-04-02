@@ -183,8 +183,15 @@ func (this imgStorage) GetMainForSpot(spotId int64) (Img, bool, error) {
 	return result.(Img), found, nil
 }
 
-func (this imgStorage) InsertLocal(wwId int64, _type ImageType, source string, datePublished time.Time, date pq.NullTime) (Img, error) {
-	params := []interface{}{wwId, _type, source, datePublished, date}
+func (this imgStorage) InsertLocal(wwId int64, _type ImageType, source string,
+	datePublished time.Time, date pq.NullTime, level map[string]int8) (Img, error) {
+
+	levelB, err := json.Marshal(level)
+	if err != nil {
+		return Img{}, err
+	}
+
+	params := []interface{}{wwId, _type, source, datePublished, date, date, string(levelB)}
 	vals, err := this.updateReturningColumns(this.insertLocalQuery, ArrayMapper, true, params)
 	if err != nil {
 		return Img{}, err

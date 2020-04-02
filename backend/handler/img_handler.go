@@ -179,7 +179,8 @@ func (this *ImgHandler) Upload(w http.ResponseWriter, req *http.Request) {
 	if imgType == dao.IMAGE_TYPE_IMAGE {
 		realDate = getImageRealDate(bytes.NewReader(headCacher.GetCache().Bytes()))
 	}
-	img, err := this.ImgDao.InsertLocal(spotId, imgType, dao.IMG_SOURCE_WWMAP, time.Now(), realDate)
+	level := this.getLevelsForDate(spotId, realDate)
+	img, err := this.ImgDao.InsertLocal(spotId, imgType, dao.IMG_SOURCE_WWMAP, time.Now(), realDate, level)
 	if err != nil {
 		OnError500(w, err, "Can not insert")
 		return
@@ -221,6 +222,20 @@ func getImageRealDate(f io.Reader) pq.NullTime {
 		return pq.NullTime{Valid: false}
 	}
 	return pq.NullTime{Time: dateTime, Valid: true}
+}
+
+func (this *ImgHandler) getLevelsForDate(spotId int64, date pq.NullTime) map[string]int8 {
+	if !date.Valid {
+		return make(map[string]int8)
+	}
+	river, err := this.RiverDao.FindForSpot(spotId)
+	if err != nil {
+		logrus.Errorf("Can not select river for spot: id=%d", spotId)
+		return make(map[string]int8)
+	} else {
+		sensorIds := river.GetSensorIds()
+		return graduation.GetLevelBySensors(this.LevelSensorDao, this.LevelDao, sensorIds, date.Time, 1, -1)
+	}
 }
 
 func storageKey(img dao.Img) string {

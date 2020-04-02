@@ -35,8 +35,8 @@ INSERT INTO image(report_id, white_water_rapid_id,source,remote_id,url,preview_u
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT(source, remote_id) DO UPDATE SET date_published=image.date_published RETURNING id
 
 --@insert-local
-INSERT INTO image(id,report_id, white_water_rapid_id, "type", source,remote_id,url,preview_url,date_published, date)
-VALUES (nextval('id_gen'), 0, $1, $2, $3, CAST(currval('id_gen') AS CHARACTER VARYING),'','',$4, $5)
+INSERT INTO image(id,report_id, white_water_rapid_id, "type", source,remote_id,url,preview_url,date_published, date, date_level_updated, level)
+VALUES (nextval('id_gen'), 0, $1, $2, $3, CAST(currval('id_gen') AS CHARACTER VARYING),'','',$4, $5, $6, $7)
 RETURNING id, enabled
 
 --@delete-by-spot
