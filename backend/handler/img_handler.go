@@ -247,8 +247,9 @@ func (this *ImgHandler) Delete(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if existing.Source == dao.IMG_SOURCE_WWMAP {
-		imgRemoveErr := this.ImgStorage.Remove(imgIdStr)
-		previewRemoveErr := this.PreviewImgStorage.Remove(imgIdStr)
+		storageKey := storageKeyById(imgIdStr)
+		imgRemoveErr := this.ImgStorage.Remove(storageKey)
+		previewRemoveErr := this.PreviewImgStorage.Remove(storageKey)
 		if imgRemoveErr != nil {
 			logrus.Errorf("Can not delete image data: ", imgRemoveErr)
 		}
