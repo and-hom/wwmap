@@ -1,7 +1,9 @@
 package util
 
 import (
+	"bytes"
 	"github.com/Sirupsen/logrus"
+	"io"
 	"time"
 )
 
@@ -52,4 +54,35 @@ func StringSliceEqual(a, b []string) bool {
 	}
 
 	return true
+}
+
+func CreateHeadCachingReader(r io.Reader, len int) HeadCachingReader {
+	return &headCachingReader{
+		r,
+		len,
+		bytes.NewBuffer(make([]byte, 0)),
+	}
+}
+
+type HeadCachingReader interface {
+	io.Reader
+	GetCache() *bytes.Buffer
+}
+
+type headCachingReader struct {
+	r   io.Reader
+	len int
+	buf *bytes.Buffer
+}
+
+func (t *headCachingReader) Read(p []byte) (n int, err error) {
+	n, err = t.r.Read(p)
+	if n > 0 && err == nil && t.buf.Len() < t.len {
+		t.buf.Write(p[:n])
+	}
+	return n, err
+}
+
+func (t *headCachingReader) GetCache() *bytes.Buffer {
+	return t.buf
 }
