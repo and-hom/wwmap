@@ -53,8 +53,12 @@
                     <div v-else>Из отчёта <a target="_blank" :href="image.report_url">{{image.report_title}}</a></div>
                     Опубликовано {{image.date_published|formatDateTimeStr}}
                     <div v-if="image.type=='image'"><b>Фактическая</b> дата снимка:
-                        <img-date-and-level :spot-id="spot.id" :img-id="image.id" v-model="image.date"
-                                            :level="image.level" v-on:level="image.level = $event"/>
+                        <img-date-and-level :spot-id="spot.id"
+                                            :img-id="image.id"
+                                            :date="image.date"
+                                            :level="image.level"
+                                            v-on:level="image.level = $event"
+                                            v-on:date="image.date = $event"/>
                     </div>
                 </td>
                 <td>
