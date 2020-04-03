@@ -2,7 +2,6 @@ package dao
 
 import (
 	. "github.com/and-hom/wwmap/lib/geo"
-	"github.com/lib/pq"
 	_ "github.com/lib/pq"
 	"io"
 	"time"
@@ -104,7 +103,7 @@ type VoyageReportDao interface {
 
 type ImgDao interface {
 	IdEntity
-	InsertLocal(wwId int64, _type ImageType, source string, datePublished time.Time, date pq.NullTime, level map[string]int8) (Img, error)
+	InsertLocal(wwId int64, _type ImageType, source string, datePublished time.Time, date *time.Time, level map[string]int8) (Img, error)
 	Upsert(img ...Img) ([]Img, error)
 	Find(id int64) (Img, bool, error)
 	List(wwId int64, limit int, _type ImageType, enabledOnly bool) ([]Img, error)

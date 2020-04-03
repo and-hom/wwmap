@@ -12,7 +12,6 @@ import (
 	. "github.com/and-hom/wwmap/lib/http"
 	"github.com/and-hom/wwmap/lib/util"
 	"github.com/gorilla/mux"
-	"github.com/lib/pq"
 	"github.com/rwcarlsen/goexif/exif"
 	"github.com/rwcarlsen/goexif/mknote"
 	"golang.org/x/image/draw"
@@ -175,7 +174,7 @@ func (this *ImgHandler) Upload(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	realDate := pq.NullTime{Valid: false}
+	var realDate *time.Time = nil
 	if imgType == dao.IMAGE_TYPE_IMAGE {
 		realDate = util.GetImageRealDate(bytes.NewReader(headCacher.GetCache().Bytes()))
 	}
@@ -210,8 +209,8 @@ func (this *ImgHandler) Upload(w http.ResponseWriter, req *http.Request) {
 	this.LogUserEvent(req, IMAGE_LOG_ENTRY_TYPE, img.Id, dao.ENTRY_TYPE_CREATE, fmt.Sprintf("%s/%s", img.Source, img.RemoteId))
 }
 
-func (this *ImgHandler) getLevelsForDate(spotId int64, date pq.NullTime) map[string]int8 {
-	if !date.Valid {
+func (this *ImgHandler) getLevelsForDate(spotId int64, date *time.Time) map[string]int8 {
+	if date == nil {
 		return make(map[string]int8)
 	}
 	river, err := this.RiverDao.FindForSpot(spotId)
@@ -220,7 +219,7 @@ func (this *ImgHandler) getLevelsForDate(spotId int64, date pq.NullTime) map[str
 		return make(map[string]int8)
 	} else {
 		sensorIds := river.GetSensorIds()
-		return graduation.GetLevelBySensors(this.LevelSensorDao, this.LevelDao, sensorIds, date.Time, 1, -1)
+		return graduation.GetLevelBySensors(this.LevelSensorDao, this.LevelDao, sensorIds, *date, 1, -1)
 	}
 }
 

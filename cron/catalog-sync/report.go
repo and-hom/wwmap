@@ -8,7 +8,6 @@ import (
 	"github.com/and-hom/wwmap/cron/vodinfo-eye/graduation"
 	"github.com/and-hom/wwmap/lib/dao"
 	"github.com/and-hom/wwmap/lib/util"
-	"github.com/lib/pq"
 	"html/template"
 	"net/http"
 	"strings"
@@ -147,9 +146,9 @@ func (this *App) findMatchAndStoreImages(report dao.VoyageReport, rivers []dao.R
 
 		imgDate := util.GetImageRealDate(resp.Body)
 
-		if imgDate.Valid {
-			img.Date = &(imgDate.Time)
-			img.DateLevelUpdated = imgDate.Time
+		if imgDate != nil {
+			img.Date = imgDate
+			img.DateLevelUpdated = *imgDate
 			img.Level = this.getLevelsForDate(img.WwId, imgDate)
 		}
 	}
@@ -162,8 +161,8 @@ func (this *App) findMatchAndStoreImages(report dao.VoyageReport, rivers []dao.R
 	return err
 }
 
-func (this *App) getLevelsForDate(spotId int64, date pq.NullTime) map[string]int8 {
-	if !date.Valid {
+func (this *App) getLevelsForDate(spotId int64, date *time.Time) map[string]int8 {
+	if date == nil {
 		return make(map[string]int8)
 	}
 	river, err := this.RiverDao.FindForSpot(spotId)
@@ -172,7 +171,7 @@ func (this *App) getLevelsForDate(spotId int64, date pq.NullTime) map[string]int
 		return make(map[string]int8)
 	} else {
 		sensorIds := river.GetSensorIds()
-		return graduation.GetLevelBySensors(this.LevelSensorDao, this.LevelDao, sensorIds, date.Time, 1, -1)
+		return graduation.GetLevelBySensors(this.LevelSensorDao, this.LevelDao, sensorIds, *date, 1, -1)
 	}
 }
 
