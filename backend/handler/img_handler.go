@@ -177,7 +177,7 @@ func (this *ImgHandler) Upload(w http.ResponseWriter, req *http.Request) {
 
 	realDate := pq.NullTime{Valid: false}
 	if imgType == dao.IMAGE_TYPE_IMAGE {
-		realDate = getImageRealDate(bytes.NewReader(headCacher.GetCache().Bytes()))
+		realDate = util.GetImageRealDate(bytes.NewReader(headCacher.GetCache().Bytes()))
 	}
 	level := this.getLevelsForDate(spotId, realDate)
 	img, err := this.ImgDao.InsertLocal(spotId, imgType, dao.IMG_SOURCE_WWMAP, time.Now(), realDate, level)
@@ -208,20 +208,6 @@ func (this *ImgHandler) Upload(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	this.LogUserEvent(req, IMAGE_LOG_ENTRY_TYPE, img.Id, dao.ENTRY_TYPE_CREATE, fmt.Sprintf("%s/%s", img.Source, img.RemoteId))
-}
-
-func getImageRealDate(f io.Reader) pq.NullTime {
-	_exif, err := exif.Decode(f)
-	if err != nil {
-		logrus.Warn("Can't parse exif: ", err)
-		return pq.NullTime{Valid: false}
-	}
-	dateTime, err := _exif.DateTime()
-	if err != nil {
-		logrus.Warn("Can't get date from exif: ", err)
-		return pq.NullTime{Valid: false}
-	}
-	return pq.NullTime{Time: dateTime, Valid: true}
 }
 
 func (this *ImgHandler) getLevelsForDate(spotId int64, date pq.NullTime) map[string]int8 {

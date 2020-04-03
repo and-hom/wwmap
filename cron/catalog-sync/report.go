@@ -1,14 +1,18 @@
 package main
 
 import (
-	"github.com/and-hom/wwmap/lib/dao"
-	"strings"
-	log "github.com/Sirupsen/logrus"
-	"time"
-	"github.com/and-hom/wwmap/cron/catalog-sync/common"
-	"html/template"
-	"github.com/and-hom/wwmap/cron/catalog-sync/bindata"
 	"bytes"
+	log "github.com/Sirupsen/logrus"
+	"github.com/and-hom/wwmap/cron/catalog-sync/bindata"
+	"github.com/and-hom/wwmap/cron/catalog-sync/common"
+	"github.com/and-hom/wwmap/cron/vodinfo-eye/graduation"
+	"github.com/and-hom/wwmap/lib/dao"
+	"github.com/and-hom/wwmap/lib/util"
+	"github.com/lib/pq"
+	"html/template"
+	"net/http"
+	"strings"
+	"time"
 )
 
 const COMMON_TIME_FORMAT string = "2006-01-02T15:04:05"
@@ -112,14 +116,14 @@ func (this *App) findMatchAndStoreImages(report dao.VoyageReport, rivers []dao.R
 		log.Errorf("Can not load images for report %d", report.Id)
 		return err
 	}
-	log.Debugf("%d images found for %s %d", len(imgs), report.Source, report.Id)
-	log.Debugf("Bind images to ww spots for report %d", report.Id)
+	log.Infof("%d images found for %s %d", len(imgs), report.Source, report.Id)
+	log.Infof("Bind images to ww spots for report %d", report.Id)
 	matchedImgs := []dao.Img{}
 	candidates, err := this.matchImgsToWhiteWaterPoints(report, imgs, rivers)
 	if err != nil {
 		return err
 	}
-	log.Debugf("%d images matched for %s %d", len(candidates), report.Source, report.Id)
+	log.Infof("%d images matched for %s %d", len(candidates), report.Source, report.Id)
 
 	for _, imgToWwpts := range candidates {
 		if len(imgToWwpts.Wwpts) == 1 {
@@ -130,12 +134,46 @@ func (this *App) findMatchAndStoreImages(report dao.VoyageReport, rivers []dao.R
 		}
 	}
 
+	client := http.Client{Timeout: 30 * time.Second}
+
+	for _, img := range matchedImgs {
+		log.Infof("Fetch image %s to get date from exif", img.RawUrl)
+		resp, err := client.Get(img.RawUrl)
+		if err != nil {
+			log.Error("Can't download image for exif parsing: ", err)
+			continue
+		}
+		defer resp.Body.Close()
+
+		imgDate := util.GetImageRealDate(resp.Body)
+
+		if imgDate.Valid {
+			img.Date = &(imgDate.Time)
+			img.DateLevelUpdated = imgDate.Time
+			img.Level = this.getLevelsForDate(img.WwId, imgDate)
+		}
+	}
+
 	log.Infof("Store %d images for report %d", len(matchedImgs), report.Id)
 	_, err = this.ImgDao.Upsert(matchedImgs...)
 	if err != nil {
 		log.Errorf("Can not upsert images for report %d", report.Id)
 	}
 	return err
+}
+
+func (this *App) getLevelsForDate(spotId int64, date pq.NullTime) map[string]int8 {
+	if !date.Valid {
+		return make(map[string]int8)
+	}
+	river, err := this.RiverDao.FindForSpot(spotId)
+	if err != nil {
+		log.Errorf("Can not select river for spot: id=%d", spotId)
+		return make(map[string]int8)
+	} else {
+		sensorIds := river.GetSensorIds()
+		return graduation.GetLevelBySensors(this.LevelSensorDao, this.LevelDao, sensorIds, date.Time, 1, -1)
+	}
 }
 
 type ImgWwPoints struct {
@@ -160,8 +198,8 @@ func (this *App) matchImgsToWhiteWaterPoints(report dao.VoyageReport, imgs []dao
 						img.ReportId = report.Id
 						if !found {
 							rec = ImgWwPoints{
-								Img:img,
-								Wwpts:[]dao.WhiteWaterPointWithRiverTitle{},
+								Img:   img,
+								Wwpts: []dao.WhiteWaterPointWithRiverTitle{},
 							}
 						}
 						rec.Wwpts = append(rec.Wwpts, wwpt)
@@ -180,7 +218,7 @@ func forCompare(s string) string {
 
 func (this *App) Fatalf(err error, pattern string, args ...interface{}) {
 	this.Report(err)
-	log.Fatalf(pattern + ": " + err.Error(), args)
+	log.Fatalf(pattern+": "+err.Error(), args)
 }
 
 func (this *App) Report(err error) {
@@ -193,9 +231,9 @@ func (this *App) Report(err error) {
 		log.Fatal("Can not process email template:\t", err)
 	}
 	this.NotificationHelper.SendToRole(dao.Notification{
-		Comment:buf.String(),
-		Recipient:dao.NotificationRecipient{Provider: dao.NOTIFICATION_PROVIDER_EMAIL, Recipient:"info@wwmap.ru"},
-		Classifier:"repor-import",
-		SendBefore:time.Now().Add(2 * time.Hour),
+		Comment:    buf.String(),
+		Recipient:  dao.NotificationRecipient{Provider: dao.NOTIFICATION_PROVIDER_EMAIL, Recipient: "info@wwmap.ru"},
+		Classifier: "repor-import",
+		SendBefore: time.Now().Add(2 * time.Hour),
 	}, dao.ADMIN)
 }

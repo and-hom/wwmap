@@ -15,6 +15,8 @@ import (
 	"github.com/and-hom/wwmap/lib/config"
 	"github.com/and-hom/wwmap/lib/dao"
 	"github.com/and-hom/wwmap/lib/notification"
+	"github.com/rwcarlsen/goexif/exif"
+	"github.com/rwcarlsen/goexif/mknote"
 	"strings"
 )
 
@@ -27,8 +29,11 @@ type App struct {
 	VoyageReportDao dao.VoyageReportDao
 	NotificationDao dao.NotificationDao
 	WwPassportDao   dao.WwPassportDao
-	Configuration   config.WordpressSync
-	Notifications   config.Notifications
+	LevelSensorDao  dao.LevelSensorDao
+	LevelDao        dao.LevelDao
+
+	Configuration config.WordpressSync
+	Notifications config.Notifications
 
 	ImgUrlBase        string
 	ImgUrlPreviewBase string
@@ -65,6 +70,8 @@ func CreateApp() App {
 		ImgDao:          dao.NewImgPostgresDao(pgStorage),
 		WwPassportDao:   dao.NewWWPassportPostgresDao(pgStorage),
 		NotificationDao: notificationDao,
+		LevelDao:        dao.NewLevelPostgresDao(pgStorage),
+		LevelSensorDao:  dao.NewLevelSensorPostgresDao(pgStorage),
 		Configuration:   configuration.Sync,
 		Notifications:   configuration.Notifications,
 		stat:            &ImportExportReport{},
@@ -153,6 +160,8 @@ func parseFlags(app App) (Stage, string, error) {
 }
 
 func main() {
+	exif.RegisterParsers(mknote.All...)
+
 	log.Infof("Starting wwmap")
 	app := CreateApp()
 
