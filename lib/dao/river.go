@@ -165,7 +165,7 @@ func (this riverStorage) Save(rivers ...RiverTitle) error {
 }
 
 func (this riverStorage) listRiverFull(query string, queryParams ...interface{}) ([]River, error) {
-	found, err := this.doFindList(query, riverMapperFull, queryParams)
+	found, err := this.doFindList(query, riverMapperFull, queryParams...)
 	if err != nil {
 		return []River{}, err
 	}
