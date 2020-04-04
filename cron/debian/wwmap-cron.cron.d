@@ -1,4 +1,5 @@
 */1 * * * * wwmap wwmap-notifier >> /var/log/wwmap/cron/notifier.log 2>&1
+0 23 * * * * wwmap wwmap-log-notifications >> /var/log/wwmap/cron/log-notifications.log 2>&1
 0 0 * * 7 wwmap wwmap-backup >> /var/log/wwmap/cron/backup.log 2>&1
 0 1 * * * wwmap wwmap-catalog-sync -source pdf >> /var/log/wwmap/cron/cat-sync-pdf.log 2>&1
 0 0 * * * wwmap wwmap-catalog-sync -source tlib >> /var/log/wwmap/cron/cat-sync-tlib.log 2>&1
