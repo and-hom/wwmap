@@ -42,7 +42,7 @@ func (this *App) doSyncReports(reportProvider *common.ReportProvider) error {
 
 	reports, next, err := (*reportProvider).ReportsSince(lastId.(time.Time))
 	if err != nil {
-		log.Error("Can not get posts")
+		log.Error("Can not get posts: ", err)
 		return err
 	}
 	if len(reports) == 0 {
@@ -136,6 +136,7 @@ func (this *App) findMatchAndStoreImages(report dao.VoyageReport, rivers []dao.R
 	client := http.Client{Timeout: 30 * time.Second}
 
 	for _, img := range matchedImgs {
+		this.rateLimit.WaitIfNecessary()
 		log.Infof("Fetch image %s to get date from exif", img.RawUrl)
 		resp, err := client.Get(img.RawUrl)
 		if err != nil {

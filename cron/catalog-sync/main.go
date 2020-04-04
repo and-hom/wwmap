@@ -15,9 +15,11 @@ import (
 	"github.com/and-hom/wwmap/lib/config"
 	"github.com/and-hom/wwmap/lib/dao"
 	"github.com/and-hom/wwmap/lib/notification"
+	"github.com/and-hom/wwmap/lib/util"
 	"github.com/rwcarlsen/goexif/exif"
 	"github.com/rwcarlsen/goexif/mknote"
 	"strings"
+	"time"
 )
 
 type App struct {
@@ -46,6 +48,7 @@ type App struct {
 	catalogConnectors []common.WithCatalogConnector
 
 	sourceOnly string
+	rateLimit  util.RateLimit
 }
 
 func CreateApp() App {
@@ -100,6 +103,7 @@ func CreateApp() App {
 			NotificationDao:        notificationDao,
 			FallbackEmailRecipient: configuration.Notifications.FallbackEmailRecipient,
 		},
+		rateLimit: util.NewRateLimit(time.Second),
 	}
 }
 
