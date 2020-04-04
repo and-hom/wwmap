@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -240,7 +241,10 @@ func (this *HuskytmReportProvider) cacheImages() error {
 
 func (this *HuskytmReportProvider) Images(reportId string) ([]dao.Img, error) {
 	if len(this.images) == 0 {
-		this.cacheImages()
+		err := this.cacheImages()
+		if err != nil {
+			log.Warn("Failed to load image data: ", err)
+		}
 	}
 	reportIdInt, err := strconv.ParseInt(reportId, 10, 32)
 	if err != nil {
@@ -252,7 +256,8 @@ func (this *HuskytmReportProvider) Images(reportId string) ([]dao.Img, error) {
 	for _, imgSearchResult := range this.cachedImgSearchResults[int(reportIdInt)] {
 		for i := 0; i < len(this.images); i++ {
 			img := this.images[i]
-			if imgSearchResult.url == img.RawUrl {
+			urlWithoutSchema := strings.Replace(img.RawUrl, "https:", "", -1)
+			if imgSearchResult.url == urlWithoutSchema {
 				img.LabelsForSearch = append([]string{imgSearchResult.title}, img.LabelsForSearch...)
 				imgsFound = append(imgsFound, img)
 			}
