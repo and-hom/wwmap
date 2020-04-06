@@ -173,7 +173,10 @@
                         return "nav-item active"
                     }
                     if (page.sub) {
-                        return "nav-item dropdown"
+                        let t = this
+                        return page.sub.filter(s => s.href == t.link).length == 0
+                            ? "nav-item dropdown"
+                            : "nav-item dropdown active";
                     }
                     return "nav-item"
                 },
