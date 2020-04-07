@@ -35,7 +35,7 @@ func (this voyageReportStorage) UpsertVoyageReports(reports ...VoyageReport) ([]
 	for i := 0; i < len(reports); i++ {
 		reports_i[i] = reports[i]
 	}
-	ids, err := this.updateReturningId(this.upsertQuery, func(entity interface{}) ([]interface{}, error) {
+	ids, err := this.UpdateReturningId(this.upsertQuery, func(entity interface{}) ([]interface{}, error) {
 		_report := entity.(VoyageReport)
 		tags, err := json.Marshal(_report.Tags)
 		if err != nil {
@@ -58,7 +58,7 @@ func (this voyageReportStorage) UpsertVoyageReports(reports ...VoyageReport) ([]
 }
 
 func (this voyageReportStorage) GetLastId(source string) (interface{}, error) {
-	lastDate, found, err := this.doFindAndReturn(this.getLastIdQuery, func(rows *sql.Rows) (time.Time, error) {
+	lastDate, found, err := this.DoFindAndReturn(this.getLastIdQuery, func(rows *sql.Rows) (time.Time, error) {
 		lastDate := time.Unix(0, 0)
 		err := rows.Scan(&lastDate)
 		return lastDate, err
@@ -84,11 +84,11 @@ func (this voyageReportStorage) ForEach(source string, callback func(report *Voy
 }
 
 func (this voyageReportStorage) AssociateWithRiver(voyageReportId, riverId int64) error {
-	return this.performUpdates(this.upsertRiverLinkQuery, ArrayMapper, []interface{}{voyageReportId, riverId})
+	return this.PerformUpdates(this.upsertRiverLinkQuery, ArrayMapper, []interface{}{voyageReportId, riverId})
 }
 
 func (this voyageReportStorage) List(riverId int64, limitByGroup int) ([]VoyageReport, error) {
-	result, err := this.doFindList(this.listQuery, readReportFromRows, riverId, limitByGroup)
+	result, err := this.DoFindList(this.listQuery, readReportFromRows, riverId, limitByGroup)
 
 	if err != nil {
 		return []VoyageReport{}, err
@@ -98,7 +98,7 @@ func (this voyageReportStorage) List(riverId int64, limitByGroup int) ([]VoyageR
 
 func (this voyageReportStorage) RemoveRiverLink(id int64, tx interface{}) error {
 	log.Infof("Remove spot %d", id)
-	return this.performUpdatesWithinTxOptionally(tx, this.deleteRiverLinkQuery, IdMapper, id)
+	return this.PerformUpdatesWithinTxOptionally(tx, this.deleteRiverLinkQuery, IdMapper, id)
 }
 
 func readReportFromRows(rows *sql.Rows) (VoyageReport, error) {

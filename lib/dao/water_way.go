@@ -51,7 +51,7 @@ func (this waterWayStorage) AddWaterWays(waterways ...WaterWay) error {
 	for i, p := range waterways {
 		vars[i] = p
 	}
-	return this.performUpdates(this.insertQuery,
+	return this.PerformUpdates(this.insertQuery,
 		func(entity interface{}) ([]interface{}, error) {
 			waterway := entity.(WaterWay)
 
@@ -64,7 +64,7 @@ func (this waterWayStorage) AddWaterWays(waterways ...WaterWay) error {
 }
 
 func (this waterWayStorage) UpdateWaterWay(waterway WaterWay) error {
-	return this.performUpdates("",
+	return this.PerformUpdates("",
 		func(entity interface{}) ([]interface{}, error) {
 			waterway := entity.(WaterWay)
 
@@ -205,14 +205,14 @@ func scanWaterWay4RouterNonFlipped(rows *sql.Rows) (WaterWay4Router, error) {
 }
 
 func (this waterWayStorage) UnlinkRiver(id int64, tx interface{}) error {
-	return this.performUpdatesWithinTxOptionally(tx, this.unlinkRiverQuery, IdMapper, id)
+	return this.PerformUpdatesWithinTxOptionally(tx, this.unlinkRiverQuery, IdMapper, id)
 }
 
 const DETECTION_MIN_DISTANCE_METERS = 30
 
 func (this waterWayStorage) DetectForRiver(riverId int64) ([]WaterWay, error) {
 	log.Debug(this.detectForRiverQuery)
-	result, err := this.doFindList(this.detectForRiverQuery, scanWaterWay, riverId, DETECTION_MIN_DISTANCE_METERS)
+	result, err := this.DoFindList(this.detectForRiverQuery, scanWaterWay, riverId, DETECTION_MIN_DISTANCE_METERS)
 	if err != nil {
 		return []WaterWay{}, err
 	}
@@ -220,11 +220,11 @@ func (this waterWayStorage) DetectForRiver(riverId int64) ([]WaterWay, error) {
 }
 
 func (this waterWayStorage) BindWaterwaysToRivers() error {
-	return this.performUpdates(this.bindToRiverQuery, IdMapper, 300)
+	return this.PerformUpdates(this.bindToRiverQuery, IdMapper, 300)
 }
 
 func (this waterWayStorage) ListByRiverIds(riverIds ...int64) ([]WaterWay, error) {
-	result, err := this.doFindList(this.listByRiverIdsQuery, scanWaterWay, pq.Array(riverIds))
+	result, err := this.DoFindList(this.listByRiverIdsQuery, scanWaterWay, pq.Array(riverIds))
 	if err != nil {
 		return []WaterWay{}, err
 	}
@@ -232,7 +232,7 @@ func (this waterWayStorage) ListByRiverIds(riverIds ...int64) ([]WaterWay, error
 }
 
 func (this waterWayStorage) ListByBboxNonFilpped(bbox geo.Bbox) ([]WaterWay4Router, error) {
-	result, err := this.doFindList(this.listByBbox4RouterQuery, scanWaterWay4RouterNonFlipped, bbox.Y1, bbox.X1, bbox.Y2, bbox.X2)
+	result, err := this.DoFindList(this.listByBbox4RouterQuery, scanWaterWay4RouterNonFlipped, bbox.Y1, bbox.X1, bbox.Y2, bbox.X2)
 	if err != nil {
 		return []WaterWay4Router{}, err
 	}
@@ -240,7 +240,7 @@ func (this waterWayStorage) ListByBboxNonFilpped(bbox geo.Bbox) ([]WaterWay4Rout
 }
 
 func (this waterWayStorage) ListByRiverIdNonFlipped(riverId int64) ([]WaterWay4Router, error) {
-	result, err := this.doFindList(this.listByRiverId4RouterQuery, scanWaterWayTiny, riverId)
+	result, err := this.DoFindList(this.listByRiverId4RouterQuery, scanWaterWayTiny, riverId)
 	if err != nil {
 		return []WaterWay4Router{}, err
 	}
@@ -248,7 +248,7 @@ func (this waterWayStorage) ListByRiverIdNonFlipped(riverId int64) ([]WaterWay4R
 }
 
 func (this waterWayStorage) ListByBbox(bbox geo.Bbox) ([]WaterWay, error) {
-	result, err := this.doFindList(this.listByBboxQuery, scanWaterWay, bbox.Y1, bbox.X1, bbox.Y2, bbox.X2)
+	result, err := this.DoFindList(this.listByBboxQuery, scanWaterWay, bbox.Y1, bbox.X1, bbox.Y2, bbox.X2)
 	if err != nil {
 		return []WaterWay{}, err
 	}
@@ -261,7 +261,7 @@ type PgWaterWayRef struct {
 }
 
 func (this waterWayStorage) List(limit int, offset int) ([]WaterWay4PathCorrection, error) {
-	lst, err := this.doFindList(this.listByBbox4CorrectionQuery, func(rows *sql.Rows) (WaterWay4PathCorrection, error) {
+	lst, err := this.DoFindList(this.listByBbox4CorrectionQuery, func(rows *sql.Rows) (WaterWay4PathCorrection, error) {
 		waterway := WaterWay4PathCorrection{}
 		pathString := ""
 		pathSimplifiedString := ""
@@ -290,7 +290,7 @@ func (this waterWayStorage) List(limit int, offset int) ([]WaterWay4PathCorrecti
 	}
 
 	pointsByRiverId := make(map[int64][]geo.Point)
-	_, err = this.doFindList(this.listRefPoints, func(rows *sql.Rows) (int64, error) {
+	_, err = this.DoFindList(this.listRefPoints, func(rows *sql.Rows) (int64, error) {
 		id := int64(0)
 		pointStr := ""
 		var p geo.PgPointOrLineString

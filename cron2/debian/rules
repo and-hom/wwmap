@@ -1,0 +1,12 @@
+#!/usr/bin/make -f
+%:
+	dh $@
+
+DEB_VERSION = $(shell dpkg-parsechangelog --show-field Version)
+
+build:
+	go build -ldflags "-X main.version=$(DEB_VERSION)"
+
+override_dh_auto_install:
+	install -D -m 0755 cron2 $$(pwd)/debian/wwmap-cron/usr/bin/wwmap-cron
+	install -D -m 0644 etc/wwmap-cron.systemd $$(pwd)/debian/wwmap-cron/lib/systemd/system/wwmap-cron.service

@@ -4,10 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
+	"github.com/and-hom/wwmap/backend/passport"
 	"github.com/and-hom/wwmap/lib/config"
+	"github.com/and-hom/wwmap/lib/dao"
 	. "github.com/and-hom/wwmap/lib/http"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"golang.org/x/net/context"
+	"io/ioutil"
 	"net/http"
 	"os"
 )
@@ -20,6 +24,8 @@ const (
 	POST    = "POST"
 	DELETE  = "DELETE"
 )
+
+const USER_REQUEST_VARIABLE = "user"
 
 type ApiHandler interface {
 	Init()
@@ -121,4 +127,71 @@ func WrapWithLogging(h http.Handler, configuration config.Configuration) http.Ha
 		return handlers.LoggingHandler(os.Stdout, h)
 	}
 	return h
+}
+
+func DecodeJsonBody(r *http.Request, obj interface{}) (string, error) {
+	bodyBytes, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		return "", err
+	}
+	err = json.Unmarshal(bodyBytes, obj)
+	return string(bodyBytes), err
+}
+
+func CheckRoleAllowed(r *http.Request, userDao dao.UserDao, allowedRoles ...dao.Role) (*http.Request, bool, error) {
+	sessionId := r.FormValue("session_id")
+	if sessionId == "" {
+		sessionId = r.Header.Get("Authorization")
+	}
+	if sessionId == "" {
+		return r, false, nil
+	}
+	user, err := userDao.GetBySession(sessionId)
+	if err != nil {
+		return r, false, err
+	}
+	rWithUser := r.WithContext(context.WithValue(r.Context(), USER_REQUEST_VARIABLE, &user))
+
+	for i := 0; i < len(allowedRoles); i++ {
+		if allowedRoles[i] == user.Role {
+			return rWithUser, true, nil
+		}
+	}
+	return rWithUser, false, nil
+}
+
+func ForRoles(payload HandlerFunction, userDao dao.UserDao, roles ...dao.Role) HandlerFunction {
+	if len(roles) == 0 {
+		return payload
+	}
+	return func(writer http.ResponseWriter, request *http.Request) {
+		r2, ok := CheckRoleAllowedAndMakeResponse(writer, userDao, request, roles...)
+		if ok {
+			payload(writer, r2)
+		}
+	}
+}
+
+func CheckRoleAllowedAndMakeResponse(w http.ResponseWriter, userDao dao.UserDao, r *http.Request, allowedRoles ...dao.Role) (*http.Request, bool) {
+	r2, allowed, err := CheckRoleAllowed(r, userDao, allowedRoles...)
+	if err != nil {
+		switch err.(type) {
+		default:
+			OnError500(w, err, "Can not check permissions")
+		case passport.UnauthorizedError:
+			OnError(w, err, "Unauthorized", http.StatusUnauthorized)
+		}
+		return r2, false
+	}
+	if !allowed {
+		msg := ""
+		if len(allowedRoles) == 1 {
+			msg = fmt.Sprintf("Sorry! You haven't role %s", allowedRoles[0])
+		} else {
+			msg = fmt.Sprintf("Sorry! You haven't any of following roles: %s", dao.Join(", ", allowedRoles...))
+		}
+		OnError(w, nil, msg, http.StatusUnauthorized)
+		return r2, false
+	}
+	return r2, true
 }

@@ -52,14 +52,14 @@ func (this userStorage) CreateIfNotExists(user User) (int64, Role, string, bool,
 }
 
 func (this userStorage) List() ([]User, error) {
-	result, err := this.doFindList(this.listQuery, userMapper)
+	result, err := this.DoFindList(this.listQuery, userMapper)
 	if err != nil {
 		return []User{}, err
 	}
 	return result.([]User), nil
 }
 func (this userStorage) ListByRole(role Role) ([]User, error) {
-	result, err := this.doFindList(this.listByRoleQuery, userMapper, role)
+	result, err := this.DoFindList(this.listByRoleQuery, userMapper, role)
 	if err != nil {
 		return []User{}, err
 	}
@@ -89,7 +89,7 @@ func (this userStorage) SetExperimentalFeatures(userId int64, enable bool) (bool
 }
 
 func (this userStorage) GetBySession(sessionId string) (User, error) {
-	user, found, err := this.doFindAndReturn(this.getBySessionQuery, userMapper, sessionId)
+	user, found, err := this.DoFindAndReturn(this.getBySessionQuery, userMapper, sessionId)
 	if err != nil {
 		return User{}, err
 	}
@@ -100,7 +100,7 @@ func (this userStorage) GetBySession(sessionId string) (User, error) {
 }
 
 func (this userStorage) GetRole(provider AuthProvider, extId string) (Role, error) {
-	role, found, err := this.doFindAndReturn(this.getRoleQuery, func(rows *sql.Rows) error {
+	role, found, err := this.DoFindAndReturn(this.getRoleQuery, func(rows *sql.Rows) error {
 		role := USER
 		return rows.Scan(&role)
 	}, string(provider), extId)

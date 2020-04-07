@@ -1,0 +1,6 @@
+#!/bin/sh
+
+#DEBHELPER#
+
+mkdir -p /var/lib/wwmap/cron
+chown wwmap:wwmap /var/lib/wwmap/cron

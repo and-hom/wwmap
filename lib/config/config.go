@@ -43,6 +43,12 @@ type TileCache struct {
 	Types        map[string][]string `yaml:"types"`
 }
 
+type Cron struct {
+	BindTo       string        `yaml:"bind_to"`
+	ReadTimeout  time.Duration `yaml:"read_timeout"`
+	WriteTimeout time.Duration `yaml:"write_timeout"`
+}
+
 type WordpressSync struct {
 	Login                   string        `yaml:"login"`
 	Password                string        `yaml:"password"`
@@ -94,6 +100,7 @@ type Configuration struct {
 	Api                      Api                  `yaml:"api"`
 	Content                  Content              `yaml:"content"`
 	TileCache                TileCache            `yaml:"tile-cache"`
+	Cron                     Cron                 `yaml:"cron"`
 	Sync                     WordpressSync        `yaml:"sync"`
 	ImgStorage               ImgStorage           `yaml:"img-storage"`
 	RiverPassportPdfStorage  BlobStorageParams    `yaml:"river-passport-pdf-storage"`

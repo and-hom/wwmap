@@ -80,7 +80,7 @@ func (this *PgTxHolder) performUpdates(query string, mapper func(entity interfac
 }
 
 // Temporary method before issue #111 implemented
-func (this *PostgresStorage) performUpdatesWithinTxOptionally(tx interface{}, query string, mapper func(entity interface{}) ([]interface{}, error), values ...interface{}) error {
+func (this *PostgresStorage) PerformUpdatesWithinTxOptionally(tx interface{}, query string, mapper func(entity interface{}) ([]interface{}, error), values ...interface{}) error {
 	if tx != nil {
 		txHolder, ok := tx.(PgTxHolder)
 		if !ok {
@@ -88,5 +88,5 @@ func (this *PostgresStorage) performUpdatesWithinTxOptionally(tx interface{}, qu
 		}
 		return txHolder.performUpdates(query, mapper, values...)
 	}
-	return this.performUpdates(query, mapper, values...)
+	return this.PerformUpdates(query, mapper, values...)
 }

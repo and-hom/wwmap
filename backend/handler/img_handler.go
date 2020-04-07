@@ -277,7 +277,7 @@ func (this *ImgHandler) SetEnabled(w http.ResponseWriter, req *http.Request) {
 	}
 
 	enabled := false
-	body, err := decodeJsonBody(req, &enabled)
+	body, err := DecodeJsonBody(req, &enabled)
 	if err != nil {
 		OnError(w, err, "Can not unmarshal request body: "+body, http.StatusBadRequest)
 		return
@@ -304,7 +304,7 @@ func (this *ImgHandler) SetDate(w http.ResponseWriter, req *http.Request) {
 	}
 
 	date := util.ZeroDateUTC()
-	body, err := decodeJsonBody(req, &date)
+	body, err := DecodeJsonBody(req, &date)
 	if err != nil {
 		OnError(w, err, "Can not unmarshal request body: "+body, http.StatusBadRequest)
 		return
@@ -355,7 +355,7 @@ func (this *ImgHandler) SetManualLevel(w http.ResponseWriter, req *http.Request)
 	}
 
 	level := int8(0)
-	body, err := decodeJsonBody(req, &level)
+	body, err := DecodeJsonBody(req, &level)
 	if err != nil {
 		OnError(w, err, "Can not unmarshal request body: "+body, http.StatusBadRequest)
 		return
@@ -401,7 +401,7 @@ func (this *ImgHandler) SetPreview(w http.ResponseWriter, req *http.Request) {
 	}
 
 	imgId := int64(0)
-	body, err := decodeJsonBody(req, &imgId)
+	body, err := DecodeJsonBody(req, &imgId)
 	if err != nil {
 		OnError(w, err, "Can not unmarshal request body: "+body, http.StatusBadRequest)
 	}

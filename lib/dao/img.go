@@ -65,7 +65,7 @@ func NewImgPostgresDao(postgresStorage PostgresStorage) ImgDao {
 
 func (this imgStorage) Upsert(imgs ...Img) ([]Img, error) {
 
-	ids, err := this.updateReturningId(this.upsertQuery, func(entity interface{}) ([]interface{}, error) {
+	ids, err := this.UpdateReturningId(this.upsertQuery, func(entity interface{}) ([]interface{}, error) {
 		_img := entity.(Img)
 		return []interface{}{_img.ReportId, _img.WwId, _img.Source, _img.RemoteId, _img.Url, _img.PreviewUrl, _img.DatePublished, _img.Type}, nil
 	}, true, this.toInterface(imgs...)...)
@@ -128,7 +128,7 @@ func imgExtMapper(rows *sql.Rows) (ImgExt, error) {
 }
 
 func (this imgStorage) List(wwId int64, limit int, _type ImageType, enabledOnly bool) ([]Img, error) {
-	result, err := this.doFindList(this.listQuery, imgMapper, wwId, _type, enabledOnly, limit)
+	result, err := this.DoFindList(this.listQuery, imgMapper, wwId, _type, enabledOnly, limit)
 	if err != nil {
 		return []Img{}, err
 	}
@@ -136,7 +136,7 @@ func (this imgStorage) List(wwId int64, limit int, _type ImageType, enabledOnly 
 }
 
 func (this imgStorage) ListExt(wwId int64, limit int, _type ImageType, enabledOnly bool) ([]ImgExt, error) {
-	result, err := this.doFindList(this.listExtQuery, imgExtMapper, wwId, _type, enabledOnly, limit)
+	result, err := this.DoFindList(this.listExtQuery, imgExtMapper, wwId, _type, enabledOnly, limit)
 	if err != nil {
 		return []ImgExt{}, err
 	}
@@ -144,7 +144,7 @@ func (this imgStorage) ListExt(wwId int64, limit int, _type ImageType, enabledOn
 }
 
 func (this imgStorage) ListAllBySpot(wwId int64) ([]Img, error) {
-	result, err := this.doFindList(this.listAllBySpotQuery, imgMapper, wwId)
+	result, err := this.DoFindList(this.listAllBySpotQuery, imgMapper, wwId)
 	if err != nil {
 		return []Img{}, err
 	}
@@ -152,7 +152,7 @@ func (this imgStorage) ListAllBySpot(wwId int64) ([]Img, error) {
 }
 
 func (this imgStorage) ListAllByRiver(riverId int64) ([]Img, error) {
-	result, err := this.doFindList(this.listAllByRiverQuery, imgMapper, riverId)
+	result, err := this.DoFindList(this.listAllByRiverQuery, imgMapper, riverId)
 	if err != nil {
 		return []Img{}, err
 	}
@@ -160,7 +160,7 @@ func (this imgStorage) ListAllByRiver(riverId int64) ([]Img, error) {
 }
 
 func (this imgStorage) ListMainByRiver(riverId int64) ([]Img, error) {
-	result, err := this.doFindList(this.listMainByRiverQuery, imgMapper, riverId, string(IMAGE_TYPE_IMAGE))
+	result, err := this.DoFindList(this.listMainByRiverQuery, imgMapper, riverId, string(IMAGE_TYPE_IMAGE))
 	if err != nil {
 		return []Img{}, err
 	}
@@ -168,7 +168,7 @@ func (this imgStorage) ListMainByRiver(riverId int64) ([]Img, error) {
 }
 
 func (this imgStorage) Find(id int64) (Img, bool, error) {
-	result, found, err := this.doFindAndReturn(this.findQuery, imgMapper, id)
+	result, found, err := this.DoFindAndReturn(this.findQuery, imgMapper, id)
 	if err != nil {
 		return Img{}, found, err
 	}
@@ -176,7 +176,7 @@ func (this imgStorage) Find(id int64) (Img, bool, error) {
 }
 
 func (this imgStorage) GetMainForSpot(spotId int64) (Img, bool, error) {
-	result, found, err := this.doFindAndReturn(this.getMainForSpotQuery, imgMapper, spotId)
+	result, found, err := this.DoFindAndReturn(this.getMainForSpotQuery, imgMapper, spotId)
 	if err != nil || !found {
 		return Img{}, found, err
 	}
@@ -212,11 +212,11 @@ func (this imgStorage) InsertLocal(wwId int64, _type ImageType, source string, u
 
 func (this imgStorage) Remove(id int64, tx interface{}) error {
 	log.Infof("Remove image %d", id)
-	return this.performUpdatesWithinTxOptionally(tx, this.deleteQuery, IdMapper, id)
+	return this.PerformUpdatesWithinTxOptionally(tx, this.deleteQuery, IdMapper, id)
 }
 
 func (this imgStorage) SetEnabled(id int64, enabled bool) error {
-	return this.performUpdates(this.setEnabledQuery, ArrayMapper, []interface{}{enabled, id})
+	return this.PerformUpdates(this.setEnabledQuery, ArrayMapper, []interface{}{enabled, id})
 }
 
 func (this imgStorage) toInterface(imgs ...Img) []interface{} {
@@ -228,11 +228,11 @@ func (this imgStorage) toInterface(imgs ...Img) []interface{} {
 }
 
 func (this imgStorage) SetMain(spotId int64, id int64) error {
-	return this.performUpdates(this.setMainQuery, ArrayMapper, []interface{}{spotId, id})
+	return this.PerformUpdates(this.setMainQuery, ArrayMapper, []interface{}{spotId, id})
 }
 
 func (this imgStorage) DropMainForSpot(spotId int64) error {
-	return this.performUpdates(this.dropMainForSpotQuery, IdMapper, spotId)
+	return this.PerformUpdates(this.dropMainForSpotQuery, IdMapper, spotId)
 }
 
 func (this imgStorage) SetDateAndLevel(id int64, date time.Time, level map[string]int8) error {
@@ -248,7 +248,7 @@ func (this imgStorage) SetDateAndLevel(id int64, date time.Time, level map[strin
 		return err
 	}
 
-	return this.performUpdates(this.setSetLevelAndDateQuery, ArrayMapper, []interface{}{id, nullableDate, string(levelB)})
+	return this.PerformUpdates(this.setSetLevelAndDateQuery, ArrayMapper, []interface{}{id, nullableDate, string(levelB)})
 }
 
 func (this imgStorage) SetManualLevel(id int64, level int8) (map[string]int8, error) {
@@ -280,17 +280,17 @@ func (this imgStorage) ResetManualLevel(id int64) (map[string]int8, error) {
 }
 
 func (this imgStorage) RemoveBySpot(spotId int64, tx interface{}) error {
-	return this.performUpdatesWithinTxOptionally(tx, this.deleteForSpot, IdMapper, spotId)
+	return this.PerformUpdatesWithinTxOptionally(tx, this.deleteForSpot, IdMapper, spotId)
 }
 
 func (this imgStorage) RemoveByRiver(riverId int64, tx interface{}) error {
-	return this.performUpdatesWithinTxOptionally(tx, this.deleteForRiver, IdMapper, riverId)
+	return this.PerformUpdatesWithinTxOptionally(tx, this.deleteForRiver, IdMapper, riverId)
 }
 
 func (this imgStorage) GetParentIds(imgIds []int64) (map[int64]ImageParentIds, error) {
 	result := make(map[int64]ImageParentIds)
 
-	_, err := this.doFindList(this.parentIds, func(rows *sql.Rows) (int, error) {
+	_, err := this.DoFindList(this.parentIds, func(rows *sql.Rows) (int, error) {
 		imgId := int64(0)
 		parentIds := ImageParentIds{}
 		err := rows.Scan(&imgId, &parentIds.SpotId)
