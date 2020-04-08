@@ -1,38 +1,49 @@
 <template>
 
     <page link="timeline.htm">
-        <div style="margin-left:10px; margin-top: 10px;">
+        <div style="margin-left:10px; margin-top: 10px; ">
             <h2>Таймлайн</h2>
-            <GChart
-                    :settings="{packages: ['timeline']}"
-                    :data="timeline"
-                    :options="chartOptions"
-                    :createChart="(el, google) => new google.visualization.Timeline(el)"
-                    @ready="onChartReady"
-            />
-            <div class="legend">
-                <span><svg><rect :fill="COLOR_NEW"/></svg>NEW</span>
-                <span><svg><rect :fill="COLOR_RUNNING"/></svg>RUNNING</span>
-                <span><svg><rect :fill="COLOR_DONE"/></svg>DONE</span>
-                <span><svg><rect :fill="COLOR_FAIL"/></svg>FAIL</span>
+            <div style="display: flex;">
+                <div style="display:inline-block">
+                    <GChart
+                            :settings="{packages: ['timeline']}"
+                            :data="timeline"
+                            :options="chartOptions"
+                            :createChart="(el, google) => new google.visualization.Timeline(el)"
+                            @ready="onChartReady"
+                    />
+                </div>
+                <div style="display:inline-block">
+                    <ul class="legend">
+                        <li><svg><rect :fill="COLOR_NEW"/></svg>NEW</li>
+                        <li><svg><rect :fill="COLOR_RUNNING"/></svg>RUNNING</li>
+                        <li><svg><rect :fill="COLOR_DONE"/></svg>DONE</li>
+                        <li><svg><rect :fill="COLOR_FAIL"/></svg>FAIL</li>
+                    </ul>
+                </div>
             </div>
         </div>
     </page>
 </template>
 
 <style>
-    .legend span {
-        margin: 7px;
-
+    .legend {
+        list-style-type: none;
     }
 
-    .legend span svg {
+    .legend li {
+        margin: 7px;
+        width: auto;
+        height: auto;
+    }
+
+    .legend li svg {
         width: 12px;
         height: 12px;
         margin-right: 5px;
     }
 
-    .legend span svg rect {
+    .legend li svg rect {
         width: 10px;
         height: 10px;
     }
@@ -112,6 +123,7 @@
                 timeline: [],
                 chartOptions: {
                     width: 1200,
+                    height: 800,
                     timeline: {
                         showBarLabels: false,
                     },
@@ -131,6 +143,12 @@
             }
         },
         methods: {
+            chartHeight: function () {
+                if (this.timeline.length == 0) {
+                    return 200
+                }
+
+            },
             toColor: function (status) {
                 switch (status) {
                     case 'NEW':
