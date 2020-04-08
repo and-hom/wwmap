@@ -9,14 +9,12 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"sync"
 )
 
 type Runner struct {
 	Job          Job
 	ExecutionDao ExecutionDao
 	BlobStorage  blob.BlobStorage
-	wg           sync.WaitGroup
 }
 
 func (this Runner) Run() {
@@ -28,13 +26,13 @@ func (this Runner) Run() {
 	jobId := fmt.Sprintf("%d", this.Job.Id)
 	logId := fmt.Sprintf("%d", execution.Id)
 
-	log.Infof("Run command %d %s %s \"%s\"", this.Job.Id, this.Job.Title, this.Job.Expr, this.Job.Command)
+	log.Infof("Run job %d execution %d: %s %s \"%s\"",
+		this.Job.Id, execution.Id, this.Job.Title, this.Job.Expr, this.Job.Command)
 	parts := strings.Split(this.Job.Command, " ")
 	cmd := exec.Command(parts[0], parts[1:]...)
 	stdout := stdOut(cmd.StdoutPipe())
 	stderr := stdOut(cmd.StderrPipe())
 
-	this.wg.Add(2)
 	go this.copyStream(jobId, logId, "out", stdout)()
 	go this.copyStream(jobId, logId, "err", stderr)()
 
@@ -44,7 +42,7 @@ func (this Runner) Run() {
 		this.updateStatus(execution, FAIL)
 	}
 
-	this.wg.Wait()
+	cmd.Wait()
 	this.updateStatus(execution, DONE)
 }
 
@@ -80,6 +78,5 @@ func (this Runner) copyStream(jobId string, logId string, qualifier string, stre
 			}
 		}
 		defer stream.Close()
-		this.wg.Done()
 	}
 }
