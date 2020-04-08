@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/lib/blob"
 	"github.com/and-hom/wwmap/lib/config"
@@ -30,28 +31,22 @@ func main() {
 		Mkdirs:  true,
 	}
 
-	c := cron.New()
+	registry := CronWithRegistry{
+		cron:         cron.New(),
+		jobRegistry:  make(map[int64]cron.EntryID),
+		executionDao: executionDao,
+		logStorage:   logStorage,
+	}
 	jobs, err := jobDao.list()
 	if err != nil {
 		log.Fatal("Can't list jobs: ", err)
 	}
 	for i := 0; i < len(jobs); i++ {
-		if !jobs[i].Enabled {
-			log.Infof("Skip diabled job %d %s %s \"%s\"", jobs[i].Id, jobs[i].Title, jobs[i].Expr, jobs[i].Command)
-			continue
-		}
-		log.Infof("Register job %d %s %s \"%s\"", jobs[i].Id, jobs[i].Title, jobs[i].Expr, jobs[i].Command)
-		runner := Runner{
-			Job:          jobs[i],
-			BlobStorage:  logStorage,
-			ExecutionDao: executionDao,
-		}
-		_, err = c.AddFunc(jobs[i].Expr, runner.Run)
-		if err != nil {
+		if err := registry.Register(jobs[i]); err != nil {
 			log.Fatalf("Can't add job %d: %v", jobs[i], err)
 		}
 	}
-	c.Start()
+	registry.cron.Start()
 
 	r := mux.NewRouter()
 
@@ -61,6 +56,8 @@ func main() {
 		executionDao: executionDao,
 		userDao:      dao.NewUserPostgresDao(storage),
 		version:      version,
+		enable:       registry.Register,
+		disable:      registry.Unregister,
 	}
 
 	handler.Init()
@@ -82,4 +79,41 @@ func main() {
 	if err != nil {
 		log.Fatalf("Can not start server: %v", err)
 	}
+}
+
+type CronWithRegistry struct {
+	cron         *cron.Cron
+	jobRegistry  map[int64]cron.EntryID
+	logStorage   blob.BlobStorage
+	executionDao ExecutionDao
+}
+
+func (this CronWithRegistry) Register(job Job) error {
+	if !job.Enabled {
+		log.Infof("Skip diabled job %d %s %s \"%s\"", job.Id, job.Title, job.Expr, job.Command)
+		return nil
+	}
+	log.Infof("Register job %d %s %s \"%s\"", job.Id, job.Title, job.Expr, job.Command)
+	runner := Runner{
+		Job:          job,
+		BlobStorage:  this.logStorage,
+		ExecutionDao: this.executionDao,
+	}
+	entryId, err := this.cron.AddFunc(job.Expr, runner.Run)
+	if err != nil {
+		return err
+	}
+
+	this.jobRegistry[job.Id] = entryId
+	return nil
+}
+
+func (this CronWithRegistry) Unregister(jobId int64) error {
+	entryId, ok := this.jobRegistry[jobId]
+	if !ok {
+		return fmt.Errorf("Job with id=%d is not registered in cron", jobId)
+	}
+	this.cron.Remove(entryId)
+	delete(this.jobRegistry, jobId)
+	return nil
 }

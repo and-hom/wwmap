@@ -18,7 +18,7 @@ func NewJobPostgresStorage(postgres dao.PostgresStorage) JobDao {
 	return JobDao{
 		PostgresStorage: postgres,
 		insertQuery:     "INSERT INTO cron.job(title, expr, enabled, command) VALUES ($1,$2,$3,$4) RETURNING id",
-		updateQuery:     "UPDATE cron.job SET title=$2, expr=$3, enabled=$4, command=$5 WHERE id=$1",
+		updateQuery:     "UPDATE cron.job SET title=$2, expr=$3, enabled=$4, command=$5 WHERE id=$1 RETURNING enabled<>(SELECT enabled FROM cron.job WHERE id=$1)",
 		listQuery:       "SELECT id, title, expr, enabled, command FROM cron.job ORDER BY id DESC",
 		getQuery:        "SELECT id, title, expr, enabled, command FROM cron.job WHERE id=$1",
 		deleteQuery:     "DELETE FROM cron.job WHERE id=$1",
@@ -59,11 +59,15 @@ func (this JobDao) insert(job Job) (int64, error) {
 	return id[0], err
 }
 
-func (this JobDao) update(job Job) error {
-	return this.PerformUpdates(this.updateQuery, func(entity interface{}) ([]interface{}, error) {
+func (this JobDao) update(job Job) (bool, error) {
+	result, err := this.UpdateReturningColumns(this.updateQuery, func(entity interface{}) ([]interface{}, error) {
 		_e := entity.(Job)
 		return []interface{}{_e.Id, _e.Title, _e.Expr, _e.Enabled, _e.Command}, nil
-	}, job)
+	}, true, job)
+	if err != nil {
+		return false, err
+	}
+	return *(result[0][0].(*bool)), err
 }
 
 func scanJob(rows *sql.Rows) (Job, error) {

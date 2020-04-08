@@ -19,6 +19,8 @@ type CronHandler struct {
 	executionDao ExecutionDao
 	userDao      dao.UserDao
 	version      string
+	enable       func(Job) error
+	disable      func(int64) error
 }
 
 func (this *CronHandler) Init() {
@@ -81,14 +83,44 @@ func (this *CronHandler) Upsert(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if job.Id > 0 {
-		err = this.jobDao.update(job)
+		var enabledStateChanged bool
+		enabledStateChanged, err = this.jobDao.update(job)
+		if err != nil {
+			http2.OnError500(w, err, "Can't update")
+			return
+		}
+		if this.changeJobState(enabledStateChanged, job, w) {
+			return
+		}
 	} else {
-		_, err = this.jobDao.insert(job)
-	}
-	if err != nil {
-		http2.OnError500(w, err, "Can't insert or update")
+		id, err := this.jobDao.insert(job)
+		if err != nil {
+			http2.OnError500(w, err, "Can't insert")
+			return
+		}
+		job.Id = id
+		if this.changeJobState(job.Enabled, job, w) {
+			return
+		}
 	}
 	this.JsonAnswer(w, true)
+}
+
+func (this *CronHandler) changeJobState(enabledStateChanged bool, job Job, w http.ResponseWriter) bool {
+	if enabledStateChanged {
+		if job.Enabled {
+			if err := this.enable(job); err != nil {
+				http2.OnError500(w, err, "Can't register job in cron!")
+				return true
+			}
+		} else {
+			if err := this.disable(job.Id); err != nil {
+				http2.OnError500(w, err, "Can't unregister job from cron!")
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func (this *CronHandler) Delete(w http.ResponseWriter, req *http.Request) {
@@ -100,14 +132,19 @@ func (this *CronHandler) Delete(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err = this.executionDao.removeByJob(id)
-	if err != nil {
-		http2.OnError500(w, err, fmt.Sprintf("Can't delete executions for job with id %d", id))
+	if err := this.disable(id); err != nil {
+		http2.OnError500(w, err, fmt.Sprintf("Can't unregister job id=%d from cron", id))
+		return
 	}
 
-	err = this.jobDao.remove(id)
-	if err != nil {
+	if err := this.executionDao.removeByJob(id); err != nil {
+		http2.OnError500(w, err, fmt.Sprintf("Can't delete executions for job with id %d", id))
+		return
+	}
+
+	if err := this.jobDao.remove(id); err != nil {
 		http2.OnError500(w, err, fmt.Sprintf("Can't delete job with id %d", id))
+		return
 	}
 }
 
@@ -158,7 +195,7 @@ func (this *CronHandler) Timeline(w http.ResponseWriter, req *http.Request) {
 			fmt.Sprintf("%d - %s", job.Id, job.Title),
 			executions[i].Status,
 			tStart,
-			max(tStart, tEnd),
+			max(tStart+1, tEnd),
 		}
 	}
 	this.JsonAnswer(w, data)
