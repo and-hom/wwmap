@@ -13,6 +13,6 @@ CREATE TABLE cron.execution
     id     BIGINT PRIMARY KEY                       DEFAULT nextval('id_gen'),
     job_id BIGINT REFERENCES cron.job (id) NOT NULL,
     start  TIMESTAMP WITHOUT TIME ZONE     NOT NULL DEFAULT now(),
-    "end"  TIMESTAMP WITHOUT TIME ZONE CHECK ( "end" >= start ),
+    "end"  TIMESTAMP WITHOUT TIME ZONE CHECK ( "end" IS NULL OR "end" >= start ),
     status VARCHAR(8)                      NOT NULL DEFAULT 'NEW'
 );
