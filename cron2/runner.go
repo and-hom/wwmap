@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"syscall"
 )
 
 type Runner struct {
@@ -28,22 +29,31 @@ func (this Runner) Run() {
 
 	log.Infof("Run job %d execution %d: %s %s \"%s\"",
 		this.Job.Id, execution.Id, this.Job.Title, this.Job.Expr, this.Job.Command)
-	parts := strings.Split(this.Job.Command, " ")
-	cmd := exec.Command(parts[0], parts[1:]...)
+	cmd := exec.Command("bash", "-c", this.Job.Command)
 	stdout := stdOut(cmd.StdoutPipe())
 	stderr := stdOut(cmd.StderrPipe())
 
 	go this.copyStream(jobId, logId, "out", stdout)()
 	go this.copyStream(jobId, logId, "err", stderr)()
 
-	err = cmd.Start()
-	if err != nil {
+	exitStatus := DONE
+
+	if err := cmd.Start(); err != nil {
 		log.Error(err)
-		this.updateStatus(execution, FAIL)
+		exitStatus = FAIL
 	}
 
-	cmd.Wait()
-	this.updateStatus(execution, DONE)
+	if err := cmd.Wait(); err != nil {
+		log.Error(err)
+		exitStatus = FAIL
+	}
+
+	waitStatus, ok := cmd.ProcessState.Sys().(syscall.WaitStatus)
+	if ok && waitStatus.ExitStatus() > 0 {
+		log.Errorf("Execution %d exited with status %d", execution.Id, waitStatus.ExitStatus())
+		exitStatus = FAIL
+	}
+	this.updateStatus(execution, exitStatus)
 }
 
 func stdOut(pipe io.ReadCloser, err error) io.ReadCloser {
