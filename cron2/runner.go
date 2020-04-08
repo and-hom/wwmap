@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"sync"
 )
@@ -24,6 +25,7 @@ func (this Runner) Run() {
 		log.Error("Can't insert execution: ", err)
 		execution = Execution{Id: -1} // fake execution
 	}
+	jobId := fmt.Sprintf("%d", this.Job.Id)
 	logId := fmt.Sprintf("%d", execution.Id)
 
 	log.Infof("Run command %d %s %s \"%s\"", this.Job.Id, this.Job.Title, this.Job.Expr, this.Job.Command)
@@ -33,8 +35,8 @@ func (this Runner) Run() {
 	stderr := stdOut(cmd.StderrPipe())
 
 	this.wg.Add(2)
-	go this.copyStream(logId, "out-", stdout)()
-	go this.copyStream(logId, "err-", stderr)()
+	go this.copyStream(jobId, logId, "out", stdout)()
+	go this.copyStream(jobId, logId, "err", stderr)()
 
 	err = cmd.Start()
 	if err != nil {
@@ -64,9 +66,9 @@ func (this Runner) updateStatus(e Execution, s Status) {
 	}
 }
 
-func (this Runner) copyStream(logId string, qualifier string, stream io.ReadCloser) func() {
+func (this Runner) copyStream(jobId string, logId string, qualifier string, stream io.ReadCloser) func() {
 	return func() {
-		id := qualifier + logId
+		id := filepath.Join(jobId, logId, qualifier)
 		if err := this.BlobStorage.Store(id, stream); err != nil {
 			if strings.HasSuffix(err.Error(), os.ErrClosed.Error()) {
 				err = this.BlobStorage.Remove(id)

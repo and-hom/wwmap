@@ -25,7 +25,10 @@ func main() {
 	jobDao := NewJobPostgresStorage(storage)
 	executionDao := NewExecutionPostgresStorage(storage)
 
-	logStorage := blob.BasicFsStorage{BaseDir: configuration.LogDir}
+	logStorage := blob.BasicFsStorage{
+		BaseDir: configuration.LogDir,
+		Mkdirs:  true,
+	}
 
 	c := cron.New()
 	jobs, err := jobDao.list()
