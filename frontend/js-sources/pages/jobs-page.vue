@@ -30,6 +30,7 @@
                     <td>
                         <button v-on:click="jobForEdit={ ...job }" data-toggle="modal" data-target="#add-job">Правка
                         </button>
+                        <button v-on:click="remove(job.id)">Удалить</button>
                     </td>
                 </tr>
                 </tbody>
@@ -50,7 +51,7 @@
 </style>
 
 <script>
-    import {doGetJson} from '../api'
+    import {doDelete, doGetJson} from '../api'
     import {cronApiBase} from '../config'
 
     export default {
@@ -74,6 +75,9 @@
                 doGetJson(cronApiBase + "/job", true).then(jobs => {
                     this.jobs = jobs;
                 })
+            },
+            remove: function (id) {
+                doDelete(cronApiBase + "/job/" + id, true).then(this.refresh)
             },
             rowClass: function (job) {
                 return job.enabled ? 'job-enabled' : 'job-disabled'

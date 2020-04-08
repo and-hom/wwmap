@@ -159,7 +159,7 @@ func (this *PostgresStorage) UpdateReturningId(query string,
 	mapper func(entity interface{}) ([]interface{}, error),
 	failOnEmptyResult bool, values ...interface{}) ([]int64, error) {
 
-	rows, err := this.updateReturningColumns(query, mapper, failOnEmptyResult, values...)
+	rows, err := this.UpdateReturningColumns(query, mapper, failOnEmptyResult, values...)
 	if err != nil {
 		return []int64{}, err
 	}
@@ -167,7 +167,7 @@ func (this *PostgresStorage) UpdateReturningId(query string,
 	return result, nil
 }
 
-func (this *PostgresStorage) updateReturningColumns(query string,
+func (this *PostgresStorage) UpdateReturningColumns(query string,
 	mapper func(entity interface{}) ([]interface{}, error),
 	failOnEmptyResult bool, values ...interface{}) ([][]interface{}, error) {
 	return this.updateReturningColumnsWithinTxOptionally(nil, query, mapper, failOnEmptyResult, values...)

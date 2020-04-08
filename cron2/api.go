@@ -100,6 +100,11 @@ func (this *CronHandler) Delete(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	err = this.executionDao.removeByJob(id)
+	if err != nil {
+		http2.OnError500(w, err, fmt.Sprintf("Can't delete executions for job with id %d", id))
+	}
+
 	err = this.jobDao.remove(id)
 	if err != nil {
 		http2.OnError500(w, err, fmt.Sprintf("Can't delete job with id %d", id))

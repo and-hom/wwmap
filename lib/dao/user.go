@@ -38,7 +38,7 @@ func (this userStorage) CreateIfNotExists(user User) (int64, Role, string, bool,
 	if err != nil {
 		return 0, ANONYMOUS, user.SessionId, false, err
 	}
-	cols, err := this.updateReturningColumns(this.createQuery, ArrayMapper, true, []interface{}{user.ExtId, string(user.AuthProvider), user.Role, string(userInfo), user.SessionId})
+	cols, err := this.UpdateReturningColumns(this.createQuery, ArrayMapper, true, []interface{}{user.ExtId, string(user.AuthProvider), user.Role, string(userInfo), user.SessionId})
 	if err != nil {
 		return 0, ANONYMOUS, user.SessionId, false, err
 	}
@@ -67,7 +67,7 @@ func (this userStorage) ListByRole(role Role) ([]User, error) {
 }
 
 func (this userStorage) SetRole(userId int64, role Role) (Role, Role, error) {
-	cols, err := this.updateReturningColumns(this.setRoleQuery, ArrayMapper, true, []interface{}{userId, role})
+	cols, err := this.UpdateReturningColumns(this.setRoleQuery, ArrayMapper, true, []interface{}{userId, role})
 	if err != nil {
 		return ANONYMOUS, ANONYMOUS, err
 	}
@@ -78,7 +78,7 @@ func (this userStorage) SetRole(userId int64, role Role) (Role, Role, error) {
 }
 
 func (this userStorage) SetExperimentalFeatures(userId int64, enable bool) (bool, bool, error) {
-	cols, err := this.updateReturningColumns(this.setExperimentalFeaturesModeQuery, ArrayMapper, true, []interface{}{userId, enable})
+	cols, err := this.UpdateReturningColumns(this.setExperimentalFeaturesModeQuery, ArrayMapper, true, []interface{}{userId, enable})
 	if err != nil {
 		return false, false, err
 	}

@@ -185,7 +185,7 @@ func (this imgStorage) GetMainForSpot(spotId int64) (Img, bool, error) {
 
 func (this imgStorage) InsertLocal(wwId int64, _type ImageType, source string, urlBase string, previewUrlBase string, datePublished time.Time) (Img, error) {
 	params := []interface{}{wwId, _type, source, datePublished}
-	vals, err := this.updateReturningColumns(this.insertLocalQuery, ArrayMapper, true, params)
+	vals, err := this.UpdateReturningColumns(this.insertLocalQuery, ArrayMapper, true, params)
 	if err != nil {
 		return Img{}, err
 	}
@@ -252,7 +252,7 @@ func (this imgStorage) SetDateAndLevel(id int64, date time.Time, level map[strin
 }
 
 func (this imgStorage) SetManualLevel(id int64, level int8) (map[string]int8, error) {
-	vals, err := this.updateReturningColumns(this.setManualLevelQuery, ArrayMapper, true, []interface{}{id, int(level)})
+	vals, err := this.UpdateReturningColumns(this.setManualLevelQuery, ArrayMapper, true, []interface{}{id, int(level)})
 	if err != nil {
 		return nil, err
 	}
@@ -266,7 +266,7 @@ func (this imgStorage) SetManualLevel(id int64, level int8) (map[string]int8, er
 }
 
 func (this imgStorage) ResetManualLevel(id int64) (map[string]int8, error) {
-	vals, err := this.updateReturningColumns(this.resetManualLevelQuery, IdMapper, true, id)
+	vals, err := this.UpdateReturningColumns(this.resetManualLevelQuery, IdMapper, true, id)
 	if err != nil {
 		return nil, err
 	}

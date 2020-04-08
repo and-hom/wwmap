@@ -47,6 +47,7 @@ type Cron struct {
 	BindTo       string        `yaml:"bind_to"`
 	ReadTimeout  time.Duration `yaml:"read_timeout"`
 	WriteTimeout time.Duration `yaml:"write_timeout"`
+	LogDir       string        `yaml:"log_dir"`
 }
 
 type WordpressSync struct {
