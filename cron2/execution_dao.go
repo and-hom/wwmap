@@ -9,19 +9,21 @@ import (
 
 type ExecutionDao struct {
 	dao.PostgresStorage
-	listQuery         string
-	insertQuery       string
-	updateStatusQuery string
-	deleteByJobQuery  string
+	listQuery                string
+	insertQuery              string
+	updateStatusQuery        string
+	deleteByJobQuery         string
+	markRunningAsOrphanQuery string
 }
 
 func NewExecutionPostgresStorage(postgres dao.PostgresStorage) ExecutionDao {
 	return ExecutionDao{
-		PostgresStorage:   postgres,
-		listQuery:         "SELECT id, job_id, start, \"end\", status FROM cron.execution WHERE \"end\">=$1 AND start<$2 OR \"end\" IS NULL ORDER BY start ASC",
-		insertQuery:       "INSERT INTO cron.execution(job_id, start, \"end\", status) VALUES ($1, $2, $3, $4) RETURNING id, job_id, start, COALESCE(\"end\", to_timestamp(0)), status",
-		updateStatusQuery: "UPDATE cron.execution SET \"end\" = $2, status = $3 WHERE id=$1",
-		deleteByJobQuery:  "DELETE FROM cron.execution WHERE job_id=$1",
+		PostgresStorage:          postgres,
+		listQuery:                "SELECT id, job_id, start, \"end\", status FROM cron.execution WHERE \"end\">=$1 AND start<$2 OR \"end\" IS NULL ORDER BY start ASC",
+		insertQuery:              "INSERT INTO cron.execution(job_id, start, \"end\", status) VALUES ($1, $2, $3, $4) RETURNING id, job_id, start, COALESCE(\"end\", to_timestamp(0)), status",
+		updateStatusQuery:        "UPDATE cron.execution SET \"end\" = $2, status = $3 WHERE id=$1",
+		deleteByJobQuery:         "DELETE FROM cron.execution WHERE job_id=$1",
+		markRunningAsOrphanQuery: "UPDATE cron.execution SET status=$2, \"end\"=$3 WHERE status=$1",
 	}
 }
 
@@ -68,7 +70,11 @@ func (this ExecutionDao) setStatus(id int64, status Status) error {
 }
 
 func (this ExecutionDao) removeByJob(jobId int64) error {
-	return this.PerformUpdatesWithinTxOptionally(nil, this.deleteByJobQuery, dao.IdMapper, jobId)
+	return this.PerformUpdates(this.deleteByJobQuery, dao.IdMapper, jobId)
+}
+
+func (this ExecutionDao) markRunningAsOrphan() error {
+	return this.PerformUpdates(this.markRunningAsOrphanQuery, dao.ArrayMapper, []interface{}{RUNNING, ORPHAN, time.Now()})
 }
 
 func scanExecution(rows *sql.Rows) (Execution, error) {

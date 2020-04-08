@@ -19,6 +19,7 @@
                         <li><svg><rect :fill="COLOR_RUNNING"/></svg>RUNNING</li>
                         <li><svg><rect :fill="COLOR_DONE"/></svg>DONE</li>
                         <li><svg><rect :fill="COLOR_FAIL"/></svg>FAIL</li>
+                        <li><svg><rect :fill="COLOR_ORPHAN"/></svg>ORPHAN</li>
                     </ul>
                 </div>
             </div>
@@ -59,11 +60,6 @@
     import {cronApiBase} from '../config'
 
     const moment = require('moment');
-
-    const COLOR_NEW = "#fffa96";
-    const COLOR_RUNNING = "#9698ff";
-    const COLOR_DONE = "#57ff00";
-    const COLOR_FAIL = "#ff8789";
 
     function mkF(t) {
         return function () {
@@ -136,6 +132,7 @@
                 COLOR_RUNNING: "#9698ff",
                 COLOR_DONE: "#57ff00",
                 COLOR_FAIL: "#ff8789",
+                COLOR_ORPHAN: "#afafaf",
 
                 chartEvents: {
                     'select': mkF(this),
@@ -159,6 +156,8 @@
                         return this.COLOR_DONE;
                     case 'FAIL':
                         return this.COLOR_FAIL;
+                    case 'ORPHAN':
+                        return this.COLOR_ORPHAN;
                 }
             },
             tooltipHtml: function (row) {

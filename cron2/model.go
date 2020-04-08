@@ -18,6 +18,7 @@ const (
 	RUNNING Status = "RUNNING"
 	DONE    Status = "DONE"
 	FAIL    Status = "FAIL"
+	ORPHAN  Status = "ORPHAN" // If app exited and execution is not under the monitoring
 )
 
 type Execution struct {

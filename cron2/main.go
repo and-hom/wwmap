@@ -10,6 +10,9 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/robfig/cron"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 )
 
@@ -61,6 +64,21 @@ func main() {
 	}
 
 	handler.Init()
+
+	go func() {
+		log.Println("Listening signals...")
+		c := make(chan os.Signal, 1) // we need to reserve to buffer size 1, so the notifier are not blocked
+		signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+		<-c
+
+		registry.cron.Stop()
+
+		if err := executionDao.markRunningAsOrphan(); err != nil {
+			log.Error("Can't mark running tasks as orphan! ", err)
+		}
+
+		os.Exit(0)
+	}()
 
 	log.Infof("Starting tiles server on %v+", configuration.BindTo)
 
