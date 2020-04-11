@@ -20,6 +20,7 @@ Environment=RACK_ENV=production
 OOMScoreAdjust=-1000
 
 ExecStart=/usr/bin/wwmap-cron
+KillMode=process
 TimeoutSec=300
 
 Restart=always
