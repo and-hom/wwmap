@@ -1,6 +1,6 @@
 <template>
     <page link="jobs.htm">
-        <create-job :job="jobForEdit" :okFn="editOk" :cancelFn="resetJobForEdit"/>
+        <create-job :job="jobForEdit" :commands="commands" :okFn="editOk" :cancelFn="resetJobForEdit"/>
         <div v-if="logs!=null" style="margin-left:10px; margin-top: 10px;">
             <h2>Логи</h2>
             <a href="#" v-on:click="logs=null">Назад к задачам</a>
@@ -17,6 +17,7 @@
                     <td width="150px">Cron-expr</td>
                     <td width="250px"></td>
                     <td>Команда</td>
+                    <td>Аргументы</td>
                     <td></td>
                 </tr>
                 </thead>
@@ -27,6 +28,7 @@
                     <td>{{job.expr}}</td>
                     <td><a href="#" v-on:click="showLogs(job.id)">Логи</a></td>
                     <td>{{job.command}}</td>
+                    <td>{{job.args}}</td>
                     <td>
                         <button v-on:click="jobForEdit={ ...job }" data-toggle="modal" data-target="#add-job">Правка
                         </button>
@@ -56,12 +58,14 @@
 
     export default {
         created: function () {
+            this.getCommands();
             this.refresh();
             this.resetJobForEdit();
         },
         data() {
             return {
                 jobs: [],
+                commands: [],
                 jobForEdit: {},
                 logs: null,
             }
@@ -70,6 +74,11 @@
             editOk: function () {
                 this.refresh();
                 this.resetJobForEdit();
+            },
+            getCommands: function() {
+                doGetJson(cronApiBase + "/commands", true).then(commands => {
+                    this.commands = commands;
+                })
             },
             refresh: function () {
                 doGetJson(cronApiBase + "/job", true).then(jobs => {
@@ -88,6 +97,7 @@
                     expr: "",
                     enabled: false,
                     command: "",
+                    args: "",
                 }
             },
             showLogs: function (jobId) {

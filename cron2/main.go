@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	log "github.com/Sirupsen/logrus"
+	"github.com/and-hom/wwmap/cron2/command"
 	"github.com/and-hom/wwmap/lib/blob"
 	"github.com/and-hom/wwmap/lib/config"
 	"github.com/and-hom/wwmap/lib/dao"
@@ -28,6 +29,7 @@ func main() {
 	storage := dao.NewPostgresStorage(fullConfiguration.Db)
 	jobDao := NewJobPostgresStorage(storage)
 	executionDao := NewExecutionPostgresStorage(storage)
+	commands := command.ScanForAvailableCommands()
 
 	logStorage := blob.BasicFsStorage{
 		BaseDir: configuration.LogDir,
@@ -39,6 +41,7 @@ func main() {
 		jobRegistry:  make(map[int64]cron.EntryID),
 		executionDao: executionDao,
 		logStorage:   logStorage,
+		commands:     commands,
 	}
 	jobs, err := jobDao.list()
 	if err != nil {
@@ -61,6 +64,8 @@ func main() {
 		version:      version,
 		enable:       registry.Register,
 		disable:      registry.Unregister,
+		commands:     commands,
+		commandKeys:  MapKeys(commands),
 	}
 
 	handler.Init()
@@ -104,6 +109,7 @@ type CronWithRegistry struct {
 	jobRegistry  map[int64]cron.EntryID
 	logStorage   blob.BlobStorage
 	executionDao ExecutionDao
+	commands     map[string]command.Command
 }
 
 func (this CronWithRegistry) Register(job Job) error {
@@ -111,9 +117,17 @@ func (this CronWithRegistry) Register(job Job) error {
 		log.Infof("Skip diabled job %d %s %s \"%s\"", job.Id, job.Title, job.Expr, job.Command)
 		return nil
 	}
+
+	c, commandFound := this.commands[job.Command]
+	if !commandFound {
+		log.Warnf("Skip job %d with missing command %s", job.Id, job.Command)
+		return nil
+	}
+
 	log.Infof("Register job %d %s %s \"%s\"", job.Id, job.Title, job.Expr, job.Command)
 	runner := Runner{
 		Job:          job,
+		Command:      c,
 		BlobStorage:  this.logStorage,
 		ExecutionDao: this.executionDao,
 	}
@@ -134,4 +148,12 @@ func (this CronWithRegistry) Unregister(jobId int64) error {
 	this.cron.Remove(entryId)
 	delete(this.jobRegistry, jobId)
 	return nil
+}
+
+func MapKeys(m map[string]command.Command) []string {
+	result := make([]string, 0, len(m))
+	for k, _ := range m {
+		result = append(result, k)
+	}
+	return result
 }

@@ -8,5 +8,7 @@ build:
 	go build -ldflags "-X main.version=$(DEB_VERSION)"
 
 override_dh_auto_install:
+	install -d $$(pwd)/debian/wwmap-cron/etc/wwmap/job.d/
 	install -D -m 0755 cron2 $$(pwd)/debian/wwmap-cron/usr/bin/wwmap-cron
 	install -D -m 0644 etc/wwmap-cron.systemd $$(pwd)/debian/wwmap-cron/lib/systemd/system/wwmap-cron.service
+	install -D -m 0755 etc/sample.job $$(pwd)/debian/wwmap-cron/etc/wwmap/job.d/sample.job

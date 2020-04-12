@@ -9,6 +9,7 @@ type Job struct {
 	Expr    string `json:"expr"`
 	Enabled bool   `json:"enabled"`
 	Command string `json:"command"`
+	Args    string `json:"args"`
 }
 
 type Status string

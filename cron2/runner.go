@@ -3,17 +3,17 @@ package main
 import (
 	"fmt"
 	log "github.com/Sirupsen/logrus"
+	"github.com/and-hom/wwmap/cron2/command"
 	"github.com/and-hom/wwmap/lib/blob"
 	"io"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
-	"syscall"
 )
 
 type Runner struct {
 	Job          Job
+	Command      command.Command
 	ExecutionDao ExecutionDao
 	BlobStorage  blob.BlobStorage
 }
@@ -27,41 +27,23 @@ func (this Runner) Run() {
 	jobId := fmt.Sprintf("%d", this.Job.Id)
 	logId := fmt.Sprintf("%d", execution.Id)
 
-	log.Infof("Run job %d execution %d: %s %s \"%s\"",
-		this.Job.Id, execution.Id, this.Job.Title, this.Job.Expr, this.Job.Command)
-	cmd := exec.Command("bash", "-c", this.Job.Command)
-	stdout := stdOut(cmd.StdoutPipe())
-	stderr := stdOut(cmd.StderrPipe())
+	log.Infof("Run job %d execution %d: %s %s %s \"%s\"",
+		this.Job.Id, execution.Id, this.Job.Title, this.Job.Expr, this.Job.Command, this.Job.Args)
+
+	cmd := this.Command.Create(this.Job.Args)
+	stdout, stderr := cmd.GetStreamsOrNils()
 
 	go this.copyStream(jobId, logId, "out", stdout)()
 	go this.copyStream(jobId, logId, "err", stderr)()
 
 	exitStatus := DONE
 
-	if err := cmd.Start(); err != nil {
-		log.Error(err)
+	if err := cmd.Execute(); err != nil {
+		log.Error("Execution %d exited: %v", execution.Id, err)
 		exitStatus = FAIL
 	}
 
-	if err := cmd.Wait(); err != nil {
-		log.Error(err)
-		exitStatus = FAIL
-	}
-
-	waitStatus, ok := cmd.ProcessState.Sys().(syscall.WaitStatus)
-	if ok && waitStatus.ExitStatus() > 0 {
-		log.Errorf("Execution %d exited with status %d", execution.Id, waitStatus.ExitStatus())
-		exitStatus = FAIL
-	}
 	this.updateStatus(execution, exitStatus)
-}
-
-func stdOut(pipe io.ReadCloser, err error) io.ReadCloser {
-	if err != nil {
-		log.Error("Can't get command output stream", err)
-		return nil
-	}
-	return pipe
 }
 
 func (this Runner) updateStatus(e Execution, s Status) {
@@ -76,6 +58,9 @@ func (this Runner) updateStatus(e Execution, s Status) {
 
 func (this Runner) copyStream(jobId string, logId string, qualifier string, stream io.ReadCloser) func() {
 	return func() {
+		if stream == nil {
+			return
+		}
 		id := filepath.Join(jobId, logId, qualifier)
 		if err := this.BlobStorage.Store(id, stream); err != nil {
 			if strings.HasSuffix(err.Error(), os.ErrClosed.Error()) {

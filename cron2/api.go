@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/and-hom/wwmap/cron2/command"
 	"github.com/and-hom/wwmap/lib/dao"
 	"github.com/and-hom/wwmap/lib/handler"
 	http2 "github.com/and-hom/wwmap/lib/http"
@@ -21,9 +22,14 @@ type CronHandler struct {
 	version      string
 	enable       func(Job) error
 	disable      func(int64) error
+	commands     map[string]command.Command
+	commandKeys  []string
 }
 
 func (this *CronHandler) Init() {
+	this.Register("/commands", handler.HandlerFunctions{
+		Get: this.ForRoles(this.Commands, dao.ADMIN),
+	})
 	this.Register("/job", handler.HandlerFunctions{
 		Get:  this.ForRoles(this.List, dao.ADMIN),
 		Put:  this.ForRoles(this.Upsert, dao.ADMIN),
@@ -42,6 +48,10 @@ func (this *CronHandler) Init() {
 
 func (this *CronHandler) ForRoles(payload handler.HandlerFunction, roles ...dao.Role) handler.HandlerFunction {
 	return handler.ForRoles(payload, this.userDao, roles...)
+}
+
+func (this *CronHandler) Commands(w http.ResponseWriter, req *http.Request) {
+	this.JsonAnswer(w, this.commands)
 }
 
 func (this *CronHandler) List(w http.ResponseWriter, req *http.Request) {
@@ -79,6 +89,11 @@ func (this *CronHandler) Upsert(w http.ResponseWriter, req *http.Request) {
 	body, err := handler.DecodeJsonBody(req, &job)
 	if err != nil {
 		http2.OnError500(w, err, "Can not parse json from request body: "+body)
+		return
+	}
+
+	if _, ok := this.commands[job.Command]; !ok {
+		http2.OnError(w, fmt.Errorf("Invalid command %s", job.Command), "Illegal job spec:", http.StatusBadRequest)
 		return
 	}
 
@@ -161,7 +176,7 @@ func (this *CronHandler) Logs(w http.ResponseWriter, req *http.Request) {
 	this.JsonAnswer(w, []string{stub})
 }
 
-func (this *CronHandler) Timeline(w http.ResponseWriter, req *http.Request) {
+func (this *CronHandler) Timeline(w http.ResponseWriter, _ *http.Request) {
 	jobs, err := this.jobDao.list()
 	if err != nil {
 		http2.OnError500(w, err, "Can't list jobs")

@@ -53,3 +53,12 @@ func StringSliceEqual(a, b []string) bool {
 
 	return true
 }
+
+func Contains(slice []string, el string) bool {
+	for i := 0; i < len(slice); i++ {
+		if slice[i] == el {
+			return true
+		}
+	}
+	return false
+}

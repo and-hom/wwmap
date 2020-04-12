@@ -13,7 +13,13 @@
                         <label for="task_title">Название</label><input id="task_title" v-model="job.title"/>
                         <label for="cron_expr">Cron expression</label><input id="cron_expr" v-model="job.expr"/>
                         <label for="enabled">Включен</label><input type="checkbox" id="enabled" v-model="job.enabled"/>
-                        <label for="command">Команда</label><input id="command" v-model="job.command"/>
+                        <label for="command">Команда</label>
+                        <select id="command" v-model="job.command">
+                            <option v-for="command in commands" v-bind:value="command">
+                                {{ command }}
+                            </option>
+                        </select>
+                        <label for="args">Аргументы</label><input id="args" v-model="job.args"/>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -53,8 +59,12 @@
     module.exports = {
         props: {
             job: {
-              type: Object,
-              required: true,
+                type: Object,
+                required: true,
+            },
+            commands: {
+                type: Array,
+                required: true,
             },
             okFn: {
                 type: Function,
@@ -66,8 +76,7 @@
             },
         },
         data: function () {
-            return {
-            }
+            return {}
         },
         methods: {
             save: function () {
@@ -76,7 +85,7 @@
                 });
             },
             cancel: function () {
-                if(this.cancelFn) {
+                if (this.cancelFn) {
                     this.cancelFn();
                 }
             },
