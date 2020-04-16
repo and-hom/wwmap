@@ -2,5 +2,5 @@
 
 #DEBHELPER#
 
-mkdir -p /var/lib/wwmap/cron
-chown wwmap:wwmap /var/lib/wwmap/cron
+mkdir -p /var/lib/wwmap/cron/logs
+chown -R wwmap:wwmap /var/lib/wwmap/cron

@@ -1,6 +1,10 @@
 <template>
     <page link="jobs.htm">
         <create-job :job="jobForEdit" :commands="commands" :okFn="editOk" :cancelFn="resetJobForEdit"/>
+        <ask id="run-job-failed" title="Не получилось запустить" :noBtn="false" :msg="cantRunMessage" :okFn="function(){
+            cantRunMessage=''
+        }"></ask>
+
         <div v-if="logs!=null" style="margin-left:10px; margin-top: 10px;">
             <h2>Логи</h2>
             <a href="#" v-on:click="logs=null">Назад к задачам</a>
@@ -12,13 +16,13 @@
             <table class="table">
                 <thead>
                 <tr>
-                    <td width="50px">Id</td>
-                    <td width="250px">Название</td>
-                    <td width="150px">Cron-expr</td>
-                    <td width="250px"></td>
-                    <td>Команда</td>
-                    <td>Аргументы</td>
-                    <td></td>
+                    <th width="50px">Id</th>
+                    <th width="250px">Название</th>
+                    <th width="150px">Cron-expr<a target="_blank" href="https://ru.wikipedia.org/wiki/Cron"><img src="img/question_16.png"></a></th>
+                    <th width="250px"></th>
+                    <th>Команда</th>
+                    <th>Аргументы</th>
+                    <th></th>
                 </tr>
                 </thead>
                 <tbody>
@@ -30,9 +34,18 @@
                     <td>{{job.command}}</td>
                     <td>{{job.args}}</td>
                     <td>
+                        <ask :id="'run-job-'+job.id" title="Запустить сейчас?" msg="Запустить задачу вне расписания прямо сейчас" :ok-fn="function() {
+                          runNow(job.id)
+                        }"></ask>
+                        <ask :id="'del-job-'+job.id" title="Удалить задачу?" msg="Вся история и логи будут также удалены. Если удаление всех связанных данных не требуется, лучше отредактировать задачу, сняв флаг enabled" :ok-fn="function() {
+                          remove(job.id)
+                        }"></ask>
+
+
+                        <button data-toggle="modal" :data-target="'#run-job-'+job.id">Запустить сейчас</button>
                         <button v-on:click="jobForEdit={ ...job }" data-toggle="modal" data-target="#add-job">Правка
                         </button>
-                        <button v-on:click="remove(job.id)">Удалить</button>
+                        <button data-toggle="modal" :data-target="'#del-job-'+job.id">Удалить</button>
                     </td>
                 </tr>
                 </tbody>
@@ -53,7 +66,7 @@
 </style>
 
 <script>
-    import {doDelete, doGetJson} from '../api'
+    import {doDelete, doGetJson, doPostJson, doPost} from '../api'
     import {cronApiBase} from '../config'
 
     export default {
@@ -68,6 +81,7 @@
                 commands: [],
                 jobForEdit: {},
                 logs: null,
+                cantRunMessage: "",
             }
         },
         methods: {
@@ -83,6 +97,19 @@
             refresh: function () {
                 doGetJson(cronApiBase + "/job", true).then(jobs => {
                     this.jobs = jobs;
+                })
+            },
+            runNow: function(id) {
+                let t = this;
+                doPost(cronApiBase + "/job/" + id + "/run", null, true).catch(err => {
+                    t.cantRunMessage = err;
+                    let dialog = $('#run-job-failed');
+                    dialog.on('hidden.bs.modal', e => {
+                        // state.closeCallback = function () {
+                        //
+                        // };
+                    });
+                    dialog.modal();
                 })
             },
             remove: function (id) {

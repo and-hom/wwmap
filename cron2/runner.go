@@ -16,9 +16,14 @@ type Runner struct {
 	Command      command.Command
 	ExecutionDao ExecutionDao
 	BlobStorage  blob.BlobStorage
+	OnComplete   func()
 }
 
 func (this Runner) Run() {
+	if this.OnComplete != nil {
+		defer this.OnComplete()
+	}
+
 	execution, err := this.ExecutionDao.insert(this.Job.Id)
 	if err != nil {
 		log.Error("Can't insert execution: ", err)
@@ -39,11 +44,15 @@ func (this Runner) Run() {
 	exitStatus := DONE
 
 	if err := cmd.Execute(); err != nil {
-		log.Error("Execution %d exited: %v", execution.Id, err)
+		log.Errorf("Execution %d exited: %v", execution.Id, err)
 		exitStatus = FAIL
 	}
 
 	this.updateStatus(execution, exitStatus)
+
+	if exitStatus == DONE {
+		log.Infof("Job %d (execution %d) was successfully ended", this.Job.Id, execution.Id)
+	}
 }
 
 func (this Runner) updateStatus(e Execution, s Status) {

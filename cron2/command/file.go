@@ -4,8 +4,11 @@ import (
 	"fmt"
 	"io"
 	"os/exec"
+	"regexp"
 	"syscall"
 )
+
+var SPACE_RE = regexp.MustCompile("\\s+")
 
 type FileCommand struct {
 	name     string
@@ -17,8 +20,9 @@ func (this FileCommand) String() string {
 }
 
 func (this FileCommand) Create(args string) CommandExecution {
+	splittedArgs := SPACE_RE.Split(args, -1)
 	return fileCommandExecution{
-		cmd: exec.Command(this.fullPath, args),
+		cmd: exec.Command(this.fullPath, splittedArgs...),
 	}
 }
 

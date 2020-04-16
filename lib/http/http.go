@@ -19,7 +19,10 @@ func SetJsonResponseHeaders(w http.ResponseWriter) {
 }
 
 func OnErrorWithCustomLogging(w http.ResponseWriter, err error, msg string, statusCode int, logF func(string)) {
-	errStr := fmt.Sprintf("%s: %v", msg, err)
+	errStr := msg
+	if err != nil {
+		errStr = fmt.Sprintf("%s: %v", msg, err)
+	}
 	logF(errStr)
 	http.Error(w, errStr, statusCode)
 }

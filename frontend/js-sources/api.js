@@ -32,6 +32,10 @@ export function doDeleteWithJsonResp(url, auth) {
 }
 
 export function doPostJson(url, value, auth) {
+    return doPost(url, value, auth).then(JSON.parse)
+}
+
+export function doPost(url, value, auth) {
     return new Promise((resolve, reject) => {
         var xhr = new XMLHttpRequest();
         xhr.open('POST', url, true);
@@ -43,7 +47,7 @@ export function doPostJson(url, value, auth) {
         xhr.onerror = () => reject(xhr.statusText);
 
         xhr.send(data);
-    }).then(JSON.parse)
+    })
 }
 
 function addAuth(xhr, auth) {

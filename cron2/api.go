@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/cron2/command"
 	"github.com/and-hom/wwmap/lib/dao"
 	"github.com/and-hom/wwmap/lib/handler"
@@ -22,6 +23,7 @@ type CronHandler struct {
 	version      string
 	enable       func(Job) error
 	disable      func(int64) error
+	run          func(Job) error
 	commands     map[string]command.Command
 	commandKeys  []string
 }
@@ -40,6 +42,9 @@ func (this *CronHandler) Init() {
 		Put:    this.ForRoles(this.Upsert, dao.ADMIN),
 		Post:   this.ForRoles(this.Upsert, dao.ADMIN),
 		Delete: this.ForRoles(this.Delete, dao.ADMIN),
+	})
+	this.Register("/job/{id}/run", handler.HandlerFunctions{
+		Post: this.ForRoles(this.Run, dao.ADMIN),
 	})
 	this.Register("/timeline", handler.HandlerFunctions{Get: this.ForRoles(this.Timeline, dao.ADMIN)})
 	this.Register("/logs/{id}", handler.HandlerFunctions{Get: this.ForRoles(this.Logs, dao.ADMIN)})
@@ -148,8 +153,7 @@ func (this *CronHandler) Delete(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if err := this.disable(id); err != nil {
-		http2.OnError500(w, err, fmt.Sprintf("Can't unregister job id=%d from cron", id))
-		return
+		log.Warnf("Can't unregister job id=%d from cron: %v", id, err)
 	}
 
 	if err := this.executionDao.removeByJob(id); err != nil {
@@ -214,6 +218,29 @@ func (this *CronHandler) Timeline(w http.ResponseWriter, _ *http.Request) {
 		}
 	}
 	this.JsonAnswer(w, data)
+}
+
+func (this *CronHandler) Run(w http.ResponseWriter, req *http.Request) {
+	pathParams := mux.Vars(req)
+
+	id, err := strconv.ParseInt(pathParams["id"], 10, 64)
+	if err != nil {
+		http2.OnError(w, err, "Can not parse id", http.StatusBadRequest)
+		return
+	}
+
+	job, found, err := this.jobDao.get(id)
+	if err != nil {
+		http2.OnError500(w, err, fmt.Sprintf("Failed to get job with id %d", id))
+		return
+	}
+	if !found {
+		http2.OnError(w, nil, fmt.Sprintf("Can't find job with id %d", id), http.StatusNotFound)
+	}
+
+	if err := this.run(job); err != nil {
+		http2.OnError500(w, err, "Can't run job")
+	}
 }
 
 func (this *CronHandler) Version(w http.ResponseWriter, req *http.Request) {

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/cron2/command"
 	"github.com/and-hom/wwmap/lib/blob"
@@ -37,11 +36,12 @@ func main() {
 	}
 
 	registry := CronWithRegistry{
-		cron:         cron.New(),
-		jobRegistry:  make(map[int64]cron.EntryID),
-		executionDao: executionDao,
-		logStorage:   logStorage,
-		commands:     commands,
+		cron:                     cron.New(),
+		jobRegistry:              make(map[int64]cron.EntryID),
+		manualRunningJobRegistry: make(map[int64]bool),
+		executionDao:             executionDao,
+		logStorage:               logStorage,
+		commands:                 commands,
 	}
 	jobs, err := jobDao.list()
 	if err != nil {
@@ -49,7 +49,7 @@ func main() {
 	}
 	for i := 0; i < len(jobs); i++ {
 		if err := registry.Register(jobs[i]); err != nil {
-			log.Fatalf("Can't add job %d: %v", jobs[i], err)
+			log.Errorf("Can't add job %d: %v", jobs[i].Id, err)
 		}
 	}
 	registry.cron.Start()
@@ -64,6 +64,7 @@ func main() {
 		version:      version,
 		enable:       registry.Register,
 		disable:      registry.Unregister,
+		run:          registry.RunNow,
 		commands:     commands,
 		commandKeys:  MapKeys(commands),
 	}
@@ -102,58 +103,4 @@ func main() {
 	if err != nil {
 		log.Fatalf("Can not start server: %v", err)
 	}
-}
-
-type CronWithRegistry struct {
-	cron         *cron.Cron
-	jobRegistry  map[int64]cron.EntryID
-	logStorage   blob.BlobStorage
-	executionDao ExecutionDao
-	commands     map[string]command.Command
-}
-
-func (this CronWithRegistry) Register(job Job) error {
-	if !job.Enabled {
-		log.Infof("Skip diabled job %d %s %s \"%s\"", job.Id, job.Title, job.Expr, job.Command)
-		return nil
-	}
-
-	c, commandFound := this.commands[job.Command]
-	if !commandFound {
-		log.Warnf("Skip job %d with missing command %s", job.Id, job.Command)
-		return nil
-	}
-
-	log.Infof("Register job %d %s %s \"%s\"", job.Id, job.Title, job.Expr, job.Command)
-	runner := Runner{
-		Job:          job,
-		Command:      c,
-		BlobStorage:  this.logStorage,
-		ExecutionDao: this.executionDao,
-	}
-	entryId, err := this.cron.AddFunc(job.Expr, runner.Run)
-	if err != nil {
-		return err
-	}
-
-	this.jobRegistry[job.Id] = entryId
-	return nil
-}
-
-func (this CronWithRegistry) Unregister(jobId int64) error {
-	entryId, ok := this.jobRegistry[jobId]
-	if !ok {
-		return fmt.Errorf("Job with id=%d is not registered in cron", jobId)
-	}
-	this.cron.Remove(entryId)
-	delete(this.jobRegistry, jobId)
-	return nil
-}
-
-func MapKeys(m map[string]command.Command) []string {
-	result := make([]string, 0, len(m))
-	for k, _ := range m {
-		result = append(result, k)
-	}
-	return result
 }

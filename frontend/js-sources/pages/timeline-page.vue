@@ -1,6 +1,8 @@
 <template>
-
     <page link="timeline.htm">
+        <ask id="orphan-info" title="Потерян контроль над задачей" :noBtn="false"
+             msg="Если сервис был перезапущен, задачи продолжают выполняться, но отследить их, а также смотреть их логи уже нельзя"></ask>
+
         <div style="margin-left:10px; margin-top: 10px; ">
             <h2>Таймлайн</h2>
             <div style="display: flex;">
@@ -15,11 +17,11 @@
                 </div>
                 <div style="display:inline-block">
                     <ul class="legend">
-                        <li><svg><rect :fill="COLOR_NEW"/></svg>NEW</li>
-                        <li><svg><rect :fill="COLOR_RUNNING"/></svg>RUNNING</li>
-                        <li><svg><rect :fill="COLOR_DONE"/></svg>DONE</li>
-                        <li><svg><rect :fill="COLOR_FAIL"/></svg>FAIL</li>
-                        <li><svg><rect :fill="COLOR_ORPHAN"/></svg>ORPHAN</li>
+                        <li><svg><rect :fill="COLOR_RUNNING"/></svg>Выполняется</li>
+                        <li><svg><rect :fill="COLOR_DONE"/></svg>Выполнено</li>
+                        <li><svg><rect :fill="COLOR_FAIL"/></svg>Ошибка</li>
+                        <li><svg><rect :fill="COLOR_ORPHAN"/></svg>Потерян контроль<a href="#" data-toggle="modal" data-target="#orphan-info"><img
+                                src="img/question_16.png"></a></li>
                     </ul>
                 </div>
             </div>
@@ -78,38 +80,17 @@
 
         },
         mounted: function () {
+            this.refresh();
             let t = this;
-            doGetJson(cronApiBase + "/timeline", true).then(timeline => {
-                let processed = timeline.map((row, i) => {
-                    return [
-                        row[0],
-                        row[1],
-                        t.toColor(row[1]),
-                        t.tooltipHtml(row),
-                        new Date(row[2] * 1000),
-                        new Date(row[3] * 1000),
+            this.timerID = setInterval(function() {
+                t.refresh();
+            }, 60 * 1000);
 
-                    ]
-                });
-                processed.unshift([{
-                    type: 'string',
-                }, {
-                    type: 'string',
-                }, {
-                    type: 'string',
-                    role: 'style'
-                }, {
-                    type: 'string',
-                    role: 'tooltip',
-                    p: {'html': true}
-                }, {
-                    type: 'date',
-                }, {
-                    type: 'date',
-                }]);
-
-                this.timeline = processed;
-            })
+        },
+        beforeDestroy: function () {
+            if (this.timerID) {
+                clearInterval(this.timerID)
+            }
         },
         updated: function () {
         },
@@ -136,10 +117,46 @@
 
                 chartEvents: {
                     'select': mkF(this),
-                }
+                },
+
+                timerID: null,
             }
         },
         methods: {
+            refresh: function() {
+                let t = this;
+                doGetJson(cronApiBase + "/timeline", true).then(timeline => {
+                    let processed = timeline.map((row, i) => {
+                        return [
+                            row[0],
+                            row[1],
+                            t.toColor(row[1]),
+                            t.tooltipHtml(row),
+                            new Date(row[2] * 1000),
+                            new Date(row[3] * 1000),
+
+                        ]
+                    });
+                    processed.unshift([{
+                        type: 'string',
+                    }, {
+                        type: 'string',
+                    }, {
+                        type: 'string',
+                        role: 'style'
+                    }, {
+                        type: 'string',
+                        role: 'tooltip',
+                        p: {'html': true}
+                    }, {
+                        type: 'date',
+                    }, {
+                        type: 'date',
+                    }]);
+
+                    this.timeline = processed;
+                })
+            },
             chartHeight: function () {
                 if (this.timeline.length == 0) {
                     return 200

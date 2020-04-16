@@ -15,8 +15,8 @@
                         <label for="enabled">Включен</label><input type="checkbox" id="enabled" v-model="job.enabled"/>
                         <label for="command">Команда</label>
                         <select id="command" v-model="job.command">
-                            <option v-for="command in commands" v-bind:value="command">
-                                {{ command }}
+                            <option v-for="(command_id, command) in commands" v-bind:value="command">
+                               {{command}}
                             </option>
                         </select>
                         <label for="args">Аргументы</label><input id="args" v-model="job.args"/>
@@ -63,7 +63,7 @@
                 required: true,
             },
             commands: {
-                type: Array,
+                type: Object,
                 required: true,
             },
             okFn: {
