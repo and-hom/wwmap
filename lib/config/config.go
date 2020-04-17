@@ -110,7 +110,7 @@ type Configuration struct {
 	MeteoToken               string               `yaml:"meteo-token"`
 }
 
-func (this *Configuration) ChangeLogLevel() {
+func (this *Configuration) ConfigureLogger() {
 	if this.LogLevel == "" {
 		return
 	}
@@ -119,6 +119,11 @@ func (this *Configuration) ChangeLogLevel() {
 		log.Fatalf("Can not parse log level %s: %v", this.LogLevel, err)
 	}
 	log.SetLevel(level)
+
+	customFormatter := new(log.TextFormatter)
+	customFormatter.TimestampFormat = "2006-01-02 15:04:05"
+	customFormatter.FullTimestamp = true
+	log.SetFormatter(customFormatter)
 }
 
 func loadConf(filename string) (Configuration, error) {
