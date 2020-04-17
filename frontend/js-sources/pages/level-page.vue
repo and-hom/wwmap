@@ -70,6 +70,15 @@
 
     const moment = require('moment');
 
+    const MIN_AREA_HEIGHT = 80;
+
+    Chart.Tooltip.positioners.first = function (elements, eventPosition) {
+        return {
+            x: elements[0]._view.x,
+            y: elements[0]._view.y,
+        };
+    };
+
     export default {
         data() {
             return {
@@ -106,10 +115,16 @@
                             max = l
                         }
                     }
-                    if (max - min < 120) {
-                        var border = (120 - max + min) / 2;
+                    if (!min) {
+                        min = 0;
+                    }
+                    if (!max) {
+                        max = MIN_AREA_HEIGHT;
+                    }
+                    if (max - min < MIN_AREA_HEIGHT) {
+                        var border = (MIN_AREA_HEIGHT - max + min) / 2;
+                        min = Math.max(0, min - border);
                         max += border;
-                        min -= border;
                     }
                     max = Math.round(max / 10) * 10;
                     min = Math.round(min / 10) * 10;
@@ -132,6 +147,8 @@
                                 tooltips: {
                                     mode: 'index',
                                     intersect: false,
+                                    filter: x => x.datasetIndex == 0,
+                                    position: 'first'
                                 },
                                 hover: {
                                     mode: 'nearest',
