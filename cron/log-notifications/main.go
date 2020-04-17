@@ -13,7 +13,7 @@ import (
 func main() {
 	log.Infof("Starting wwmap notification sender")
 	configuration := config.Load("")
-	configuration.ChangeLogLevel()
+	configuration.ConfigureLogger()
 	storage := dao.NewPostgresStorage(configuration.Db)
 
 	logDao := dao.NewChangesLogPostgresDao(storage)

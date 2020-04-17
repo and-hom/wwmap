@@ -49,7 +49,7 @@ override_dh_auto_install:
 	install -D -m 0755 notifier/notifier $$(pwd)/debian/wwmap-cron-modules/usr/bin/wwmap-notifier
 	dh_link /usr/bin/wwmap-notifier /etc/wwmap/job.d/notifier.job
 
-	install -D -m 0755 log-notifications/log-notifications $$(pwd)/debian/wwmap-cron/usr/bin/wwmap-log-notifications
+	install -D -m 0755 log-notifications/log-notifications $$(pwd)/debian/wwmap-cron-modules/usr/bin/wwmap-log-notifications
 	dh_link /usr/bin/wwmap-log-notifications /etc/wwmap/job.d/log-notifications.job
 
 	install -D -m 0755 backup/backup.sh $$(pwd)/debian/wwmap-cron-modules/usr/bin/wwmap-backup
