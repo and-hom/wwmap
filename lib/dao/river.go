@@ -71,7 +71,7 @@ func (this riverStorage) FindByTitlePart(tPart string, limit, offset int) ([]Riv
 }
 
 func (this riverStorage) Find(id int64) (River, error) {
-	r, found, err := this.doFindAndReturn(this.byIdQuery, riverMapperFull, id)
+	r, found, err := this.DoFindAndReturn(this.byIdQuery, riverMapperFull, id)
 	if err != nil {
 		return River{}, err
 	}
@@ -82,7 +82,7 @@ func (this riverStorage) Find(id int64) (River, error) {
 }
 
 func (this riverStorage) FindForImage(imgId int64) (River, error) {
-	r, found, err := this.doFindAndReturn(this.forImgQuery, riverMapperFull, imgId)
+	r, found, err := this.DoFindAndReturn(this.forImgQuery, riverMapperFull, imgId)
 	if err != nil {
 		return River{}, err
 	}
@@ -93,7 +93,7 @@ func (this riverStorage) FindForImage(imgId int64) (River, error) {
 }
 
 func (this riverStorage) FindForSpot(spotId int64) (River, error) {
-	r, found, err := this.doFindAndReturn(this.forSpotQuery, riverMapperFull, spotId)
+	r, found, err := this.DoFindAndReturn(this.forSpotQuery, riverMapperFull, spotId)
 	if err != nil {
 		return River{}, err
 	}
@@ -144,7 +144,7 @@ func (this riverStorage) SaveFull(rivers ...River) error {
 	for i, p := range rivers {
 		vars[i] = p
 	}
-	return this.performUpdates(this.updateFullQuery, func(entity interface{}) ([]interface{}, error) {
+	return this.PerformUpdates(this.updateFullQuery, func(entity interface{}) ([]interface{}, error) {
 		_river := entity.(River)
 		aliasesB, err := json.Marshal(_river.Aliases)
 		if err != nil {
@@ -163,7 +163,7 @@ func (this riverStorage) Save(rivers ...RiverTitle) error {
 	for i, p := range rivers {
 		vars[i] = p
 	}
-	return this.performUpdates(this.updateQuery, func(entity interface{}) ([]interface{}, error) {
+	return this.PerformUpdates(this.updateQuery, func(entity interface{}) ([]interface{}, error) {
 		_river := entity.(RiverTitle)
 		aliasesB, err := json.Marshal(_river.Aliases)
 		if err != nil {
@@ -178,7 +178,7 @@ func (this riverStorage) Save(rivers ...RiverTitle) error {
 }
 
 func (this riverStorage) listRiverFull(query string, queryParams ...interface{}) ([]River, error) {
-	found, err := this.doFindList(query, riverMapperFull, queryParams)
+	found, err := this.DoFindList(query, riverMapperFull, queryParams...)
 	if err != nil {
 		return []River{}, err
 	}
@@ -186,7 +186,7 @@ func (this riverStorage) listRiverFull(query string, queryParams ...interface{})
 }
 
 func (this riverStorage) listRiverTitles(query string, queryParams ...interface{}) ([]RiverTitle, error) {
-	result, err := this.doFindList(query,
+	result, err := this.DoFindList(query,
 		func(rows *sql.Rows) (RiverTitle, error) {
 			riverTitle := RiverTitle{}
 			boundsStr := sql.NullString{}
@@ -265,7 +265,7 @@ func point2rect(pgPoint geo.GeoPoint) [][]geo.Point {
 
 func (this riverStorage) Remove(id int64, tx interface{}) error {
 	log.Infof("Remove river %d", id)
-	return this.performUpdatesWithinTxOptionally(tx, this.deleteQuery, IdMapper, id)
+	return this.PerformUpdatesWithinTxOptionally(tx, this.deleteQuery, IdMapper, id)
 }
 
 func (this riverStorage) Props() PropertyManager {
@@ -273,7 +273,7 @@ func (this riverStorage) Props() PropertyManager {
 }
 
 func (this riverStorage) SetVisible(id int64, visible bool) error {
-	return this.performUpdates(this.setVisibleQuery, ArrayMapper, []interface{}{id, visible})
+	return this.PerformUpdates(this.setVisibleQuery, ArrayMapper, []interface{}{id, visible})
 }
 
 func riverMapperFull(rows *sql.Rows) (River, error) {
@@ -310,7 +310,7 @@ func riverMapperFull(rows *sql.Rows) (River, error) {
 func (this riverStorage) GetParentIds(riverIds []int64) (map[int64]RiverParentIds, error) {
 	result := make(map[int64]RiverParentIds)
 
-	_, err := this.doFindList(this.parentIds, func(rows *sql.Rows) (int, error) {
+	_, err := this.DoFindList(this.parentIds, func(rows *sql.Rows) (int, error) {
 		riverId := int64(0)
 		parentIds := RiverParentIds{}
 		err := rows.Scan(&riverId, &parentIds.RegionId, &parentIds.CountryId, &parentIds.RiverTitle)

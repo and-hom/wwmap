@@ -24,7 +24,7 @@ func (this waterWayOsmRefStorage) Insert(refs ...WaterWayOsmRef) error {
 		vars[i] = r
 	}
 
-	return this.performUpdates(this.insertQuery, func(entity interface{}) ([]interface{}, error) {
+	return this.PerformUpdates(this.insertQuery, func(entity interface{}) ([]interface{}, error) {
 		ref := entity.(WaterWayOsmRef)
 		pointBytes, err := json.Marshal(geo.NewPgGeoPoint(ref.CrossPoint))
 		if err != nil {

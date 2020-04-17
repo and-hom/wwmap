@@ -25,7 +25,7 @@ type levelSensorStorage struct {
 }
 
 func (this levelSensorStorage) List() ([]LevelSensor, error) {
-	lst, err := this.doFindList(this.listQuery, scanLevelSensor)
+	lst, err := this.DoFindList(this.listQuery, scanLevelSensor)
 	if err != nil {
 		return nil, err
 	}
@@ -33,7 +33,7 @@ func (this levelSensorStorage) List() ([]LevelSensor, error) {
 }
 
 func (this levelSensorStorage) Find(id string) (LevelSensor, error) {
-	p, found, err := this.doFindAndReturn(this.byIdQuery, scanLevelSensor, id)
+	p, found, err := this.DoFindAndReturn(this.byIdQuery, scanLevelSensor, id)
 	if err != nil {
 		return LevelSensor{}, err
 	}
@@ -48,11 +48,11 @@ func (this levelSensorStorage) SetGraduation(id string, graduation [LEVEL_GRADUA
 	for i := 0; i < LEVEL_GRADUATION; i++ {
 		params = append(params, graduation[i])
 	}
-	return this.performUpdates(this.setGraduationQuery, ArrayMapper, params)
+	return this.PerformUpdates(this.setGraduationQuery, ArrayMapper, params)
 }
 
 func (this levelSensorStorage) CreateIfMissing(id string) error {
-	return this.performUpdates(this.checkAndCreateIfMissing, IdMapper, id)
+	return this.PerformUpdates(this.checkAndCreateIfMissing, IdMapper, id)
 }
 
 func scanLevelSensor(rows *sql.Rows) (LevelSensor, error) {

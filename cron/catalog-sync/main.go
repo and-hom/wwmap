@@ -53,7 +53,7 @@ type App struct {
 
 func CreateApp() App {
 	configuration := config.Load("")
-	configuration.ChangeLogLevel()
+	configuration.ConfigureLogger()
 
 	pgStorage := dao.NewPostgresStorage(configuration.Db)
 	riverPassportPdfStorage := blob.BasicFsStorage{

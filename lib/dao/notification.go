@@ -31,7 +31,7 @@ func (this notificationStorage) Add(notifications ...Notification) error {
 		params[i] = notifications[i]
 	}
 
-	_, err := this.updateReturningId(this.insertQuery, func(entity interface{}) ([]interface{}, error) {
+	_, err := this.UpdateReturningId(this.insertQuery, func(entity interface{}) ([]interface{}, error) {
 		notification := entity.(Notification)
 		return []interface{}{notification.Title,
 			notification.Object.Id, notification.Object.Title, notification.Comment,
@@ -41,7 +41,7 @@ func (this notificationStorage) Add(notifications ...Notification) error {
 }
 
 func (this notificationStorage) ListUnreadRecipients(nowTime time.Time) ([]NotificationRecipientWithClassifier, error) {
-	rwcs, err := this.doFindList(this.unreadRecipientsQuery,
+	rwcs, err := this.DoFindList(this.unreadRecipientsQuery,
 		func(rows *sql.Rows) (NotificationRecipientWithClassifier, error) {
 			notification := NotificationRecipientWithClassifier{}
 			err := rows.Scan(&notification.Provider, &notification.Recipient, &notification.Classifier)
@@ -54,7 +54,7 @@ func (this notificationStorage) ListUnreadRecipients(nowTime time.Time) ([]Notif
 }
 
 func (this notificationStorage) ListUnreadByRecipient(rc NotificationRecipientWithClassifier, limit int) ([]Notification, error) {
-	notifications, err := this.doFindList(this.listUnreadQuery,
+	notifications, err := this.DoFindList(this.listUnreadQuery,
 		func(rows *sql.Rows) (Notification, error) {
 			notification := Notification{}
 			err := rows.Scan(&notification.Id, &notification.Title, &notification.Object.Id, &notification.Object.Title,
@@ -69,7 +69,7 @@ func (this notificationStorage) ListUnreadByRecipient(rc NotificationRecipientWi
 }
 
 func (this notificationStorage) MarkRead(ids []int64) error {
-	return this.performUpdates(this.markReadQuery,
+	return this.PerformUpdates(this.markReadQuery,
 		func(ids interface{}) ([]interface{}, error) {
 			return []interface{}{ids}, nil
 		}, pq.Array(ids))

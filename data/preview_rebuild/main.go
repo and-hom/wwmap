@@ -1,26 +1,26 @@
 package main
 
 import (
-	"github.com/and-hom/wwmap/lib/config"
-	"github.com/and-hom/wwmap/lib/blob"
-	log "github.com/Sirupsen/logrus"
-	"image"
 	"bytes"
-	"image/png"
-	"github.com/and-hom/wwmap/lib/util"
+	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/backend/handler"
+	"github.com/and-hom/wwmap/lib/blob"
+	"github.com/and-hom/wwmap/lib/config"
+	"github.com/and-hom/wwmap/lib/util"
 	"golang.org/x/image/draw"
+	"image"
+	"image/png"
 )
 
 func main() {
 	configuration := config.Load("")
-	configuration.ChangeLogLevel()
+	configuration.ConfigureLogger()
 
 	imgStorage := blob.BasicFsStorage{
-		BaseDir:configuration.ImgStorage.Full.Dir,
+		BaseDir: configuration.ImgStorage.Full.Dir,
 	}
 	imgPreviewStorage := blob.BasicFsStorage{
-		BaseDir:configuration.ImgStorage.Preview.Dir,
+		BaseDir: configuration.ImgStorage.Preview.Dir,
 	}
 	ids, err := imgStorage.ListIds()
 	if err != nil {

@@ -8,22 +8,24 @@ import (
 
 func NewChangesLogPostgresDao(postgresStorage PostgresStorage) ChangesLogDao {
 	return &changesLogStorage{
-		PostgresStorage: postgresStorage,
-		insertQuery:     queries.SqlQuery("changes-log", "insert"),
-		listQuery:       queries.SqlQuery("changes-log", "list"),
-		listAllQuery:    queries.SqlQuery("changes-log", "list-all"),
+		PostgresStorage:       postgresStorage,
+		insertQuery:           queries.SqlQuery("changes-log", "insert"),
+		listQuery:             queries.SqlQuery("changes-log", "list"),
+		listAllQuery:          queries.SqlQuery("changes-log", "list-all"),
+		listAllTimeRangeQuery: queries.SqlQuery("changes-log", "list-time-range"),
 	}
 }
 
 type changesLogStorage struct {
 	PostgresStorage
-	insertQuery  string
-	listQuery    string
-	listAllQuery string
+	insertQuery           string
+	listQuery             string
+	listAllQuery          string
+	listAllTimeRangeQuery string
 }
 
 func (this changesLogStorage) Insert(entry ChangesLogEntry) error {
-	_, err := this.updateReturningId(this.insertQuery, func(entity interface{}) ([]interface{}, error) {
+	_, err := this.UpdateReturningId(this.insertQuery, func(entity interface{}) ([]interface{}, error) {
 		_e := entity.(ChangesLogEntry)
 		return []interface{}{_e.ObjectType, _e.ObjectId, string(_e.AuthProvider),
 			_e.ExtId, _e.Login, string(_e.Type), _e.Description, time.Time(_e.Time)}, nil
@@ -39,8 +41,12 @@ func (this changesLogStorage) ListAll(limit int) ([]ChangesLogEntry, error) {
 	return this.list(this.listAllQuery, limit)
 }
 
+func (this changesLogStorage) ListAllTimeRange(fromInclude time.Time, toExclude time.Time, limit int) ([]ChangesLogEntry, error) {
+	return this.list(this.listAllTimeRangeQuery, fromInclude, toExclude, limit)
+}
+
 func (this changesLogStorage) list(query string, args ...interface{}) ([]ChangesLogEntry, error) {
-	lst, err := this.doFindList(query, func(rows *sql.Rows) (ChangesLogEntry, error) {
+	lst, err := this.DoFindList(query, func(rows *sql.Rows) (ChangesLogEntry, error) {
 		result := ChangesLogEntry{}
 		err := rows.Scan(&result.Id, &result.ObjectType, &result.ObjectId, &result.AuthProvider, &result.ExtId,
 			&result.Login, &result.Type, &result.Description, &result.Time)

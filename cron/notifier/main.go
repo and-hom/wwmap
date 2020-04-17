@@ -1,11 +1,11 @@
 package main
 
 import (
-	log "github.com/Sirupsen/logrus"
-	"github.com/and-hom/wwmap/lib/dao"
-	"github.com/and-hom/wwmap/lib/config"
-	"time"
 	"fmt"
+	log "github.com/Sirupsen/logrus"
+	"github.com/and-hom/wwmap/lib/config"
+	"github.com/and-hom/wwmap/lib/dao"
+	"time"
 )
 
 const MAX_MESSAGES int = 1000
@@ -13,13 +13,13 @@ const MAX_MESSAGES int = 1000
 func main() {
 	log.Infof("Starting wwmap notification sender")
 	configuration := config.Load("")
-	configuration.ChangeLogLevel()
+	configuration.ConfigureLogger()
 	storage := dao.NewPostgresStorage(configuration.Db)
 
 	notificator := Notificator{
-		Conf:configuration.Notifications,
-		NotificationDao:dao.NewNotificationPostgresDao(storage),
-		Providers:make(map[dao.NotificationProvider]NotificationProvider),
+		Conf:            configuration.Notifications,
+		NotificationDao: dao.NewNotificationPostgresDao(storage),
+		Providers:       make(map[dao.NotificationProvider]NotificationProvider),
 	}
 	notificator.DoSend()
 }
