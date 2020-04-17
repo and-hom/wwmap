@@ -13,7 +13,7 @@ type dbVersionStorage struct {
 }
 
 func (this dbVersionStorage) GetDbVersion() (int, error) {
-	ver, found, err := this.PostgresStorage.doFindAndReturn(this.dbVersionEquey, IntColumnMapper)
+	ver, found, err := this.PostgresStorage.DoFindAndReturn(this.dbVersionEquey, IntColumnMapper)
 	if err != nil {
 		return 0, err
 	}

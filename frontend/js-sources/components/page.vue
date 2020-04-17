@@ -125,6 +125,21 @@
                         ]
                     },
                     {
+                        id: "3",
+                        title: "Cron",
+                        allow: ['ADMIN'],
+                        sub: [
+                            {
+                                href: "jobs.htm",
+                                title: "Задачи",
+                            },
+                            {
+                                href: "timeline.htm",
+                                title: "Таймлайн",
+                            },
+                        ]
+                    },
+                    {
                         id: "1",
                         title: "Информация",
                         sub: [
@@ -173,7 +188,10 @@
                         return "nav-item active"
                     }
                     if (page.sub) {
-                        return "nav-item dropdown"
+                        let t = this
+                        return page.sub.filter(s => s.href == t.link).length == 0
+                            ? "nav-item dropdown"
+                            : "nav-item dropdown active";
                     }
                     return "nav-item"
                 },

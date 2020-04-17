@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"encoding/json"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/backend/passport"
@@ -9,8 +8,6 @@ import (
 	"github.com/and-hom/wwmap/lib/geo"
 	"github.com/and-hom/wwmap/lib/handler"
 	. "github.com/and-hom/wwmap/lib/http"
-	"golang.org/x/net/context"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -77,39 +74,7 @@ func (this *App) CreateMissingUser(r *http.Request, authProvider dao.AuthProvide
 }
 
 func (this *App) ForRoles(payload handler.HandlerFunction, roles ...dao.Role) handler.HandlerFunction {
-	if len(roles) == 0 {
-		return payload
-	}
-	return func(writer http.ResponseWriter, request *http.Request) {
-		r2, ok := this.CheckRoleAllowedAndMakeResponse(writer, request, roles...)
-		if ok {
-			payload(writer, r2)
-		}
-	}
-}
-
-func (this *App) CheckRoleAllowedAndMakeResponse(w http.ResponseWriter, r *http.Request, allowedRoles ...dao.Role) (*http.Request, bool) {
-	r2, allowed, err := this.CheckRoleAllowed(r, allowedRoles...)
-	if err != nil {
-		switch err.(type) {
-		default:
-			OnError500(w, err, "Can not check permissions")
-		case passport.UnauthorizedError:
-			OnError(w, err, "Unauthorized", http.StatusUnauthorized)
-		}
-		return r2, false
-	}
-	if !allowed {
-		msg := ""
-		if len(allowedRoles) == 1 {
-			msg = fmt.Sprintf("Sorry! You haven't role %s", allowedRoles[0])
-		} else {
-			msg = fmt.Sprintf("Sorry! You haven't any of following roles: %s", dao.Join(", ", allowedRoles...))
-		}
-		OnError(w, nil, msg, http.StatusUnauthorized)
-		return r2, false
-	}
-	return r2, true
+	return handler.ForRoles(payload, this.UserDao, roles...)
 }
 
 func (this *App) GetUserInfo(r *http.Request) (dao.AuthProvider, passport.UserInfo, error) {
@@ -120,30 +85,6 @@ func (this *App) GetUserInfo(r *http.Request) (dao.AuthProvider, passport.UserIn
 	}
 	userInfo, err := p.ResolveUserInfo(providerAndToken.Token)
 	return providerAndToken.AuthProvider, userInfo, err
-}
-
-const USER_REQUEST_VARIABLE = "user"
-
-func (this *App) CheckRoleAllowed(r *http.Request, allowedRoles ...dao.Role) (*http.Request, bool, error) {
-	sessionId := r.FormValue("session_id")
-	if sessionId == "" {
-		sessionId = r.Header.Get("Authorization")
-	}
-	if sessionId == "" {
-		return r, false, nil
-	}
-	user, err := this.UserDao.GetBySession(sessionId)
-	if err != nil {
-		return r, false, err
-	}
-	rWithUser := r.WithContext(context.WithValue(r.Context(), USER_REQUEST_VARIABLE, &user))
-
-	for i := 0; i < len(allowedRoles); i++ {
-		if allowedRoles[i] == user.Role {
-			return rWithUser, true, nil
-		}
-	}
-	return rWithUser, false, nil
 }
 
 func (this *App) collectReferer(r *http.Request) {
@@ -177,7 +118,7 @@ const USER_LOG_ENTRY_TYPE = "USER"
 
 func (this *App) LogUserEvent(r *http.Request, objType string, id int64, logType dao.ChangesLogEntryType, description string) {
 	go func() {
-		u := r.Context().Value(USER_REQUEST_VARIABLE)
+		u := r.Context().Value(handler.USER_REQUEST_VARIABLE)
 		if u != nil {
 			u := u.(*dao.User)
 
@@ -198,13 +139,4 @@ func (this *App) LogUserEvent(r *http.Request, objType string, id int64, logType
 			log.Error("User is null but authorized!")
 		}
 	}()
-}
-
-func decodeJsonBody(r *http.Request, obj interface{}) (string, error) {
-	bodyBytes, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		return "", err
-	}
-	err = json.Unmarshal(bodyBytes, obj)
-	return string(bodyBytes), err
 }

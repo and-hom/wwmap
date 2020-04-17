@@ -11,12 +11,15 @@ import AboutPage from './pages/about-page.vue'
 import DocsPage from './pages/docs-page.vue'
 import LevelPage from './pages/level-page.vue'
 import SitesPage from './pages/sites-page.vue'
+import JobsPage from './pages/jobs-page.vue'
+import TimelinePage from './pages/timeline-page.vue'
 
 import vSelect from 'vue-select'
 import VueGallery from 'vue-gallery';
 import FileUpload from 'vue-upload-component';
 import Datepicker from 'vuejs-datepicker';
 import {ImageRating} from 'vue-rate-it';
+import VueGoogleCharts from 'vue-google-charts'
 
 import upperFirst from 'lodash/upperFirst'
 import camelCase from 'lodash/camelCase'
@@ -95,6 +98,14 @@ export function initSites() {
     return init(SitesPage)
 }
 
+export function initJobs() {
+    return init(JobsPage)
+}
+
+export function initTimeline() {
+    return init(TimelinePage)
+}
+
 function init(page) {
     Vue.component('v-select', vSelect);
     Vue.component('gallery', VueGallery);
@@ -102,6 +113,7 @@ function init(page) {
     Vue.component('datepicker', Datepicker);
     Vue.component('image-rating', ImageRating);
     Vue.use(TabsPlugin);
+    Vue.use(VueGoogleCharts);
 
     Vue.filter('formatDateTimeStr', function (value) {
         if (value) {

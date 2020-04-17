@@ -26,7 +26,7 @@ type meteoPointStorage struct {
 }
 
 func (this meteoPointStorage) Insert(point MeteoPoint) (MeteoPoint, error) {
-	id, err := this.updateReturningId(this.insertQuery, func(entity interface{}) ([]interface{}, error) {
+	id, err := this.UpdateReturningId(this.insertQuery, func(entity interface{}) ([]interface{}, error) {
 		_e := entity.(MeteoPoint)
 		pointBytes, err := json.Marshal(geo.NewPgGeoPoint(_e.Point))
 		if err != nil {
@@ -42,7 +42,7 @@ func (this meteoPointStorage) Insert(point MeteoPoint) (MeteoPoint, error) {
 }
 
 func (this meteoPointStorage) List() ([]MeteoPoint, error) {
-	lst, err := this.doFindList(this.listQuery, meteoPointMapper)
+	lst, err := this.DoFindList(this.listQuery, meteoPointMapper)
 	if err != nil {
 		return []MeteoPoint{}, err
 	}
@@ -50,7 +50,7 @@ func (this meteoPointStorage) List() ([]MeteoPoint, error) {
 }
 
 func (this meteoPointStorage) Find(id int64) (MeteoPoint, error) {
-	p, found, err := this.doFindAndReturn(this.byIdQuery, meteoPointMapper, id)
+	p, found, err := this.DoFindAndReturn(this.byIdQuery, meteoPointMapper, id)
 	if err != nil {
 		return MeteoPoint{}, err
 	}

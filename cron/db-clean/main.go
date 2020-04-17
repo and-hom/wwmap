@@ -13,7 +13,7 @@ const LEVEL_NULLS_REMOVE_TIME_OFFSET time.Duration = -14 * 24 * time.Hour
 func main() {
 	log.Infof("Starting wwmap")
 	configuration := config.Load("")
-	configuration.ChangeLogLevel()
+	configuration.ConfigureLogger()
 
 	storage := NewPostgresStorage(configuration.Db)
 	refererDao := NewRefererPostgresDao(storage)

@@ -1,0 +1,5 @@
+#!/bin/sh
+
+# Any executable
+
+echo $@

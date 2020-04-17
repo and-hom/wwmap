@@ -121,7 +121,7 @@ func (this *UserInfoHandler) SetRole(w http.ResponseWriter, r *http.Request) {
 	}
 
 	roleStr := ""
-	body, err := decodeJsonBody(r, &roleStr)
+	body, err := DecodeJsonBody(r, &roleStr)
 	if err != nil {
 		OnError500(w, err, "Can not unmarshall role: "+body)
 		return
@@ -174,7 +174,7 @@ func (this *UserInfoHandler) SetExperimentalFeatures(w http.ResponseWriter, r *h
 	}
 
 	experimentalFeatures := false
-	body, err := decodeJsonBody(r, &experimentalFeatures)
+	body, err := DecodeJsonBody(r, &experimentalFeatures)
 	if err != nil {
 		OnError500(w, err, "Can not unmarshall request body: "+body)
 		return
@@ -204,7 +204,7 @@ func (this *UserInfoHandler) SetExperimentalFeatures(w http.ResponseWriter, r *h
 }
 
 func (this *UserInfoHandler) TestAuth(w http.ResponseWriter, r *http.Request) {
-	_, found, err := this.CheckRoleAllowed(r, dao.ADMIN)
+	_, found, err := CheckRoleAllowed(r, this.UserDao, dao.ADMIN)
 	if err != nil {
 		onPassportErr(err, w, "Can not do request to Yandex Passport")
 		return

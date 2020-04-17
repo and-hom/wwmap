@@ -25,7 +25,7 @@ type changesLogStorage struct {
 }
 
 func (this changesLogStorage) Insert(entry ChangesLogEntry) error {
-	_, err := this.updateReturningId(this.insertQuery, func(entity interface{}) ([]interface{}, error) {
+	_, err := this.UpdateReturningId(this.insertQuery, func(entity interface{}) ([]interface{}, error) {
 		_e := entity.(ChangesLogEntry)
 		return []interface{}{_e.ObjectType, _e.ObjectId, string(_e.AuthProvider),
 			_e.ExtId, _e.Login, string(_e.Type), _e.Description, time.Time(_e.Time)}, nil
@@ -46,7 +46,7 @@ func (this changesLogStorage) ListAllTimeRange(fromInclude time.Time, toExclude 
 }
 
 func (this changesLogStorage) list(query string, args ...interface{}) ([]ChangesLogEntry, error) {
-	lst, err := this.doFindList(query, func(rows *sql.Rows) (ChangesLogEntry, error) {
+	lst, err := this.DoFindList(query, func(rows *sql.Rows) (ChangesLogEntry, error) {
 		result := ChangesLogEntry{}
 		err := rows.Scan(&result.Id, &result.ObjectType, &result.ObjectId, &result.AuthProvider, &result.ExtId,
 			&result.Login, &result.Type, &result.Description, &result.Time)

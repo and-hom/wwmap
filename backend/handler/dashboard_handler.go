@@ -3,7 +3,7 @@ package handler
 import (
 	"fmt"
 	"github.com/and-hom/wwmap/lib/dao"
-	. "github.com/and-hom/wwmap/lib/handler"
+	"github.com/and-hom/wwmap/lib/handler"
 	. "github.com/and-hom/wwmap/lib/http"
 	"github.com/and-hom/wwmap/lib/util"
 	"net/http"
@@ -19,8 +19,8 @@ type DashboardHandler struct {
 }
 
 func (this *DashboardHandler) Init() {
-	this.Register("/dashboard/ref-sites", HandlerFunctions{Get: this.RefSites})
-	this.Register("/dashboard/levels", HandlerFunctions{Get: this.Levels})
+	this.Register("/dashboard/ref-sites", handler.HandlerFunctions{Get: this.RefSites})
+	this.Register("/dashboard/levels", handler.HandlerFunctions{Get: this.Levels})
 }
 
 func (this *DashboardHandler) RefSites(w http.ResponseWriter, req *http.Request) {

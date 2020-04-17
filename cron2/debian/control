@@ -1,0 +1,11 @@
+Source: wwmap-cron
+Maintainer: Andrey Khomyakov <and.hom@gmail.com>
+Build-Depends: debhelper (>= 8.0.0)
+Standards-Version: 3.9.3
+Section: misc
+
+Package: wwmap-cron
+Priority: extra
+Architecture: amd64
+Depends: ${shlibs:Depends}, ${misc:Depends}, wwmap-config
+Description: Cron.d with rest api, history and log rotation
