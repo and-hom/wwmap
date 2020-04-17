@@ -19,6 +19,11 @@ type Runner struct {
 	OnComplete   func()
 }
 
+const (
+	STD_OUT = "out"
+	STD_ERR = "err"
+)
+
 func (this Runner) Run() {
 	if this.OnComplete != nil {
 		defer this.OnComplete()
@@ -29,8 +34,6 @@ func (this Runner) Run() {
 		log.Error("Can't insert execution: ", err)
 		execution = Execution{Id: -1} // fake execution
 	}
-	jobId := fmt.Sprintf("%d", this.Job.Id)
-	logId := fmt.Sprintf("%d", execution.Id)
 
 	log.Infof("Run job %d execution %d: %s %s %s \"%s\"",
 		this.Job.Id, execution.Id, this.Job.Title, this.Job.Expr, this.Job.Command, this.Job.Args)
@@ -38,8 +41,8 @@ func (this Runner) Run() {
 	cmd := this.Command.Create(this.Job.Args)
 	stdout, stderr := cmd.GetStreamsOrNils()
 
-	go this.copyStream(jobId, logId, "out", stdout)()
-	go this.copyStream(jobId, logId, "err", stderr)()
+	go this.copyStream(execution, STD_OUT, stdout)()
+	go this.copyStream(execution, STD_ERR, stderr)()
 
 	exitStatus := DONE
 
@@ -65,12 +68,12 @@ func (this Runner) updateStatus(e Execution, s Status) {
 	}
 }
 
-func (this Runner) copyStream(jobId string, logId string, qualifier string, stream io.ReadCloser) func() {
+func (this Runner) copyStream(execution Execution, qualifier string, stream io.ReadCloser) func() {
 	return func() {
 		if stream == nil {
 			return
 		}
-		id := filepath.Join(jobId, logId, qualifier)
+		id := LogFileKey(execution, qualifier)
 		if err := this.BlobStorage.Store(id, stream); err != nil {
 			if strings.HasSuffix(err.Error(), os.ErrClosed.Error()) {
 				err = this.BlobStorage.Remove(id)
@@ -78,9 +81,13 @@ func (this Runner) copyStream(jobId string, logId string, qualifier string, stre
 					log.Debug("Can't delete broken log: ", err)
 				}
 			} else {
-				log.Errorf("Can't write %s logs for %s: %v", qualifier, logId, err)
+				log.Errorf("Can't write %s logs for %d: %v", qualifier, execution.Id, err)
 			}
 		}
 		defer stream.Close()
 	}
+}
+
+func LogFileKey(execution Execution, qualifier string) string {
+	return filepath.Join(fmt.Sprint(execution.JobId), fmt.Sprint(execution.Id), qualifier)
 }

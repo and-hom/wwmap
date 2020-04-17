@@ -19,8 +19,12 @@ export function sendRequest(url, _type, auth) {
     });
 }
 
+export function doGet(url, auth) {
+    return sendRequest(url, "GET", auth);
+}
+
 export function doGetJson(url, auth) {
-    return sendRequest(url, "GET", auth).then(JSON.parse);
+    return doGet(url, auth).then(JSON.parse);
 }
 
 export function doDelete(url, auth) {

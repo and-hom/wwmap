@@ -7,22 +7,54 @@
             <h2>Таймлайн</h2>
             <div style="display: flex;">
                 <div style="display:inline-block">
+                    <ul class="legend">
+                        <li>
+                            <svg>
+                                <rect :fill="COLOR_RUNNING"/>
+                            </svg>
+                            Выполняется
+                        </li>
+                        <li>
+                            <svg>
+                                <rect :fill="COLOR_DONE"/>
+                            </svg>
+                            Выполнено
+                        </li>
+                        <li>
+                            <svg>
+                                <rect :fill="COLOR_FAIL"/>
+                            </svg>
+                            Ошибка
+                        </li>
+                        <li>
+                            <svg>
+                                <rect :fill="COLOR_ORPHAN"/>
+                            </svg>
+                            Потерян контроль<a href="#" data-toggle="modal" data-target="#orphan-info"><img
+                                src="img/question_16.png"></a></li>
+                    </ul>
                     <GChart
                             :settings="{packages: ['timeline']}"
                             :data="timeline"
                             :options="chartOptions"
                             :createChart="(el, google) => new google.visualization.Timeline(el)"
+                            :events="chartEvents"
                             @ready="onChartReady"
                     />
                 </div>
                 <div style="display:inline-block">
-                    <ul class="legend">
-                        <li><svg><rect :fill="COLOR_RUNNING"/></svg>Выполняется</li>
-                        <li><svg><rect :fill="COLOR_DONE"/></svg>Выполнено</li>
-                        <li><svg><rect :fill="COLOR_FAIL"/></svg>Ошибка</li>
-                        <li><svg><rect :fill="COLOR_ORPHAN"/></svg>Потерян контроль<a href="#" data-toggle="modal" data-target="#orphan-info"><img
-                                src="img/question_16.png"></a></li>
-                    </ul>
+                    <div class="log" v-if="log.title">
+                        <div class="log-title">{{log.title}}</div>
+                        <div class="log-description">{{log.description}}</div>
+                        <b-tabs>
+                            <b-tab title="stderr" active>
+                                <div class="log-body">{{log.stderr}}</div>
+                            </b-tab>
+                            <b-tab title="stdout">
+                                <div class="log-body">{{log.stdout}}</div>
+                            </b-tab>
+                        </b-tabs>
+                    </div>
                 </div>
             </div>
         </div>
@@ -38,6 +70,7 @@
         margin: 7px;
         width: auto;
         height: auto;
+        display: inline;
     }
 
     .legend li svg {
@@ -54,26 +87,33 @@
     .google-visualization-tooltip {
         z-index: 1000;
     }
+
+    .log {
+        margin-left:15px;
+    }
+
+    .log-title {
+        font-weight: bold;
+    }
+
+    .log-description {
+        font-style: italic;
+    }
+
+    .log-body {
+        margin-top: 7px;
+        font-size: 80%;
+        background: #ffeedd;
+        white-space: pre;
+    }
 </style>
 
 
 <script>
-    import {doGetJson} from '../api'
+    import {doGetJson, doGet} from '../api'
     import {cronApiBase} from '../config'
 
     const moment = require('moment');
-
-    function mkF(t) {
-        return function () {
-            if (t.chart) {
-                let selection = t.chart.getSelection();
-                if (selection.length > 0) {
-                    let rowIdx = selection[0].row + 1;
-                    let html = t.timeline[rowIdx][3];
-                }
-            }
-        }
-    }
 
     export default {
         created: function () {
@@ -82,7 +122,7 @@
         mounted: function () {
             this.refresh();
             let t = this;
-            this.timerID = setInterval(function() {
+            this.timerID = setInterval(function () {
                 t.refresh();
             }, 60 * 1000);
 
@@ -105,7 +145,6 @@
                         showBarLabels: false,
                     },
                     tooltip: {
-                        // trigger: 'selection',
                         isHtml: true,
                     },
                 },
@@ -116,14 +155,40 @@
                 COLOR_ORPHAN: "#afafaf",
 
                 chartEvents: {
-                    'select': mkF(this),
+                    'select': () => {
+                        if (this.chart) {
+                            let t = this;
+                            let selection = this.chart.getSelection();
+                            if (selection.length > 0) {
+                                let rowIdx = selection[0].row + 1;
+                                let title = this.timeline[rowIdx][0];
+                                let status = this.timeline[rowIdx][1];
+                                let from = this.timeline[rowIdx][4];
+                                let to = this.timeline[rowIdx][5];
+                                let executionId = this.timeline[rowIdx][6];
+                                t.log = {
+                                    "title": `${title} - ${status}`,
+                                    "description": `${from} - ${to}`,
+                                    "stdout": "",
+                                    "stderr": "",
+                                };
+                                doGet(`${cronApiBase}/logs/${executionId}/out`, true).then(data => {
+                                    t.log.stdout = data
+                                }).catch(e => t.log.stdout = e);
+                                doGet(`${cronApiBase}/logs/${executionId}/err`, true).then(data => {
+                                    t.log.stderr = data
+                                }).catch(e => t.log.stderr = e);
+                            }
+                        }
+                    },
                 },
 
                 timerID: null,
+                log: this.noLog(),
             }
         },
         methods: {
-            refresh: function() {
+            refresh: function () {
                 let t = this;
                 doGetJson(cronApiBase + "/timeline", true).then(timeline => {
                     let processed = timeline.map((row, i) => {
@@ -134,6 +199,7 @@
                             t.tooltipHtml(row),
                             new Date(row[2] * 1000),
                             new Date(row[3] * 1000),
+                            row[4],
 
                         ]
                     });
@@ -152,6 +218,9 @@
                         type: 'date',
                     }, {
                         type: 'date',
+                    }, {
+                        type: 'number',
+                        role: 'hidden',
                     }]);
 
                     this.timeline = processed;
@@ -189,7 +258,6 @@
                         <ul class="google-visualization-tooltip-item-list">
                             <li class="google-visualization-tooltip-item">
                                 <span style="font-family:Arial;font-size:12px;color:${color};opacity:1;margin:0;font-style:none;text-decoration:none;font-weight:bold;">${row[1]}</span>
-<!--                                <div style="float: right; z-index: 1000000;"><button click="console.log('aaaa')">Логи</button></div>-->
                             </li>
                         </ul>
                         <div class="google-visualization-tooltip-separator"></div>
@@ -208,7 +276,16 @@
             },
             onChartReady: function (chart, google) {
                 this.chart = chart;
-            }
+            },
+
+            noLog: function () {
+                return {
+                    title: "",
+                    decription: "",
+                    stdout: "",
+                    stderr: "",
+                }
+            },
         }
     }
 </script>

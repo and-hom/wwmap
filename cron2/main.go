@@ -61,6 +61,7 @@ func main() {
 		jobDao:       jobDao,
 		executionDao: executionDao,
 		userDao:      dao.NewUserPostgresDao(storage),
+		logStorage:   logStorage,
 		version:      version,
 		enable:       registry.Register,
 		disable:      registry.Unregister,

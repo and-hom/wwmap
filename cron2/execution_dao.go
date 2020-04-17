@@ -9,6 +9,7 @@ import (
 
 type ExecutionDao struct {
 	dao.PostgresStorage
+	getQuery                 string
 	listQuery                string
 	insertQuery              string
 	updateStatusQuery        string
@@ -19,12 +20,24 @@ type ExecutionDao struct {
 func NewExecutionPostgresStorage(postgres dao.PostgresStorage) ExecutionDao {
 	return ExecutionDao{
 		PostgresStorage:          postgres,
+		getQuery:                 "SELECT id, job_id, start, \"end\", status FROM cron.execution WHERE id=$1",
 		listQuery:                "SELECT id, job_id, start, \"end\", status FROM cron.execution WHERE \"end\">=$1 AND start<$2 OR \"end\" IS NULL ORDER BY start ASC",
 		insertQuery:              "INSERT INTO cron.execution(job_id, start, \"end\", status) VALUES ($1, $2, $3, $4) RETURNING id, job_id, start, COALESCE(\"end\", to_timestamp(0)), status",
 		updateStatusQuery:        "UPDATE cron.execution SET \"end\" = $2, status = $3 WHERE id=$1",
 		deleteByJobQuery:         "DELETE FROM cron.execution WHERE job_id=$1",
 		markRunningAsOrphanQuery: "UPDATE cron.execution SET status=$2, \"end\"=$3 WHERE status=$1",
 	}
+}
+
+func (this ExecutionDao) get(id int64) (Execution, bool, error) {
+	p, found, err := this.DoFindAndReturn(this.getQuery, scanExecution, id)
+	if err != nil {
+		return Execution{}, false, err
+	}
+	if !found {
+		return Execution{}, false, nil
+	}
+	return p.(Execution), true, nil
 }
 
 func (this ExecutionDao) list(from time.Time, to time.Time) ([]Execution, error) {

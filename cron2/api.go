@@ -4,22 +4,27 @@ import (
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/cron2/command"
+	"github.com/and-hom/wwmap/lib/blob"
 	"github.com/and-hom/wwmap/lib/dao"
 	"github.com/and-hom/wwmap/lib/handler"
 	http2 "github.com/and-hom/wwmap/lib/http"
 	"github.com/gorilla/mux"
+	"io"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 )
 
 const TIMELINE_DURATION = 24 * time.Hour
+const MAX_LOG_SIZE = 20 * 1024 * 1024
 
 type CronHandler struct {
 	handler.Handler
 	jobDao       JobDao
 	executionDao ExecutionDao
 	userDao      dao.UserDao
+	logStorage   blob.BlobStorage
 	version      string
 	enable       func(Job) error
 	disable      func(int64) error
@@ -47,7 +52,7 @@ func (this *CronHandler) Init() {
 		Post: this.ForRoles(this.Run, dao.ADMIN),
 	})
 	this.Register("/timeline", handler.HandlerFunctions{Get: this.ForRoles(this.Timeline, dao.ADMIN)})
-	this.Register("/logs/{id}", handler.HandlerFunctions{Get: this.ForRoles(this.Logs, dao.ADMIN)})
+	this.Register("/logs/{id}/{qualifier}", handler.HandlerFunctions{Get: this.ForRoles(this.Logs, dao.ADMIN)})
 	this.Register("/version", handler.HandlerFunctions{Get: this.Version})
 }
 
@@ -176,8 +181,29 @@ func (this *CronHandler) Logs(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	stub := fmt.Sprintf("Logs for job %d", id)
-	this.JsonAnswer(w, []string{stub})
+	execution, found, err := this.executionDao.get(id)
+	if err != nil {
+		http2.OnError500(w, err, "Can not get execution with id "+pathParams["id"])
+		return
+	}
+	if !found {
+		http2.OnError(w, err, "Execution with id "+pathParams["id"]+" does not exist", http.StatusNotFound)
+		return
+	}
+
+	r, err := this.logStorage.Read(LogFileKey(execution, pathParams["qualifier"]))
+	if err != nil {
+		if os.IsNotExist(err) {
+			http2.OnError(w, err, "Can not find logs for execution with id "+pathParams["id"]+" qualifier "+pathParams["qualifier"], http.StatusNotFound)
+		} else {
+			http2.OnError500(w, err, "Can not read logs for execution with id "+pathParams["id"]+" qualifier "+pathParams["qualifier"])
+		}
+		return
+	}
+	defer r.Close()
+
+	w.Header().Add("Content-Type", "application/octet-stream")
+	io.CopyN(w, r, MAX_LOG_SIZE)
 }
 
 func (this *CronHandler) Timeline(w http.ResponseWriter, _ *http.Request) {
@@ -215,6 +241,7 @@ func (this *CronHandler) Timeline(w http.ResponseWriter, _ *http.Request) {
 			executions[i].Status,
 			tStart,
 			max(tStart+1, tEnd),
+			executions[i].Id,
 		}
 	}
 	this.JsonAnswer(w, data)
