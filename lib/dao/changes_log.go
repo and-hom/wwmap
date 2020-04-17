@@ -8,18 +8,20 @@ import (
 
 func NewChangesLogPostgresDao(postgresStorage PostgresStorage) ChangesLogDao {
 	return &changesLogStorage{
-		PostgresStorage: postgresStorage,
-		insertQuery:     queries.SqlQuery("changes-log", "insert"),
-		listQuery:       queries.SqlQuery("changes-log", "list"),
-		listAllQuery:    queries.SqlQuery("changes-log", "list-all"),
+		PostgresStorage:       postgresStorage,
+		insertQuery:           queries.SqlQuery("changes-log", "insert"),
+		listQuery:             queries.SqlQuery("changes-log", "list"),
+		listAllQuery:          queries.SqlQuery("changes-log", "list-all"),
+		listAllTimeRangeQuery: queries.SqlQuery("changes-log", "list-time-range"),
 	}
 }
 
 type changesLogStorage struct {
 	PostgresStorage
-	insertQuery  string
-	listQuery    string
-	listAllQuery string
+	insertQuery           string
+	listQuery             string
+	listAllQuery          string
+	listAllTimeRangeQuery string
 }
 
 func (this changesLogStorage) Insert(entry ChangesLogEntry) error {
@@ -37,6 +39,10 @@ func (this changesLogStorage) List(objectType string, objectId int64, limit int)
 
 func (this changesLogStorage) ListAll(limit int) ([]ChangesLogEntry, error) {
 	return this.list(this.listAllQuery, limit)
+}
+
+func (this changesLogStorage) ListAllTimeRange(fromInclude time.Time, toExclude time.Time, limit int) ([]ChangesLogEntry, error) {
+	return this.list(this.listAllTimeRangeQuery, fromInclude, toExclude, limit)
 }
 
 func (this changesLogStorage) list(query string, args ...interface{}) ([]ChangesLogEntry, error) {

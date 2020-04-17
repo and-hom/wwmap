@@ -171,6 +171,7 @@ type ChangesLogDao interface {
 	Insert(entry ChangesLogEntry) error
 	List(objectType string, objectId int64, limit int) ([]ChangesLogEntry, error)
 	ListAll(limit int) ([]ChangesLogEntry, error)
+	ListAllTimeRange(fromInclude time.Time, toExclude time.Time, limit int) ([]ChangesLogEntry, error)
 }
 
 type MeteoDao interface {

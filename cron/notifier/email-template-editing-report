@@ -1,0 +1,10 @@
+<strong>Исправлены, добавлены или удалены объекты</strong>
+<p>Подробнее здесь: <a href="https://wwmap.ru/log.htm">https://wwmap.ru/log.htm</a></p>
+<table style="width:800px; padding-left:30px;" border="0">
+{{range .}}
+    <tr>
+        <td align="left" style="width:50%">{{.Object.Title}}</td>
+        <td align="left" style="width:50%">{{.Comment}}</td>
+    </tr>
+ {{end}}
+</table>
