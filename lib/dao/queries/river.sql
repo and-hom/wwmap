@@ -53,6 +53,14 @@ SELECT river.id,region_id, region.country_id,river.title, region.title AS region
      INNER JOIN image ON wwr.id = image.white_water_rapid_id
 WHERE image.id=$1
 
+--@for-spot
+SELECT river.id,region_id, region.country_id,river.title, region.title AS region_title, fake AS region_fake,NULL,
+       river.aliases AS aliases, description, visible, river.props, ___spot-counters___
+FROM river
+         INNER JOIN region ON river.region_id=region.id
+         INNER JOIN white_water_rapid wwr ON river.id = wwr.river_id
+WHERE wwr.id=$1
+
 --@by-region
 SELECT river.id, region_id, region.country_id, river.title, region.title AS region_title, fake AS region_fake, NULL,
        river.aliases, river.props, river.visible

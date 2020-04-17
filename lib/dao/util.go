@@ -21,3 +21,19 @@ func nullDateToPtr(date pq.NullTime) *time.Time {
 		return nil
 	}
 }
+
+func zeroToPqDate(t time.Time) pq.NullTime {
+	if t == zeroDate {
+		return pq.NullTime{Valid: false}
+	} else {
+		return pq.NullTime{Valid: true, Time: t}
+	}
+}
+
+func nullPtrToPqDate(t *time.Time) pq.NullTime {
+	if t == nil {
+		return pq.NullTime{Valid: false}
+	} else {
+		return pq.NullTime{Valid: true, Time: *t}
+	}
+}

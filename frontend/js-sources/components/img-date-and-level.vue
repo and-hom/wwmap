@@ -3,7 +3,7 @@
         <datepicker format="yyyy-MM-dd"
                     :typeable="true"
                     placeholder="YYYY-MM-DD"
-                    v-model="date"
+                    :value="date"
                     @selected="function (d) {
                         dateSelected(spotId, imgId, d);
                     }" :clear-button="true"></datepicker>
@@ -21,7 +21,7 @@
         </div>
 
 
-        <div style="margin-top: 12px;" v-for="(value, sensorId) in levelData">
+        <div style="margin-top: 12px;" v-for="(value, sensorId) in level">
             <svg style="vertical-align: middle" width="40px" height="40px" viewBox="0 0 2 2" class="donut">
                 <title>{{getLevelTitle(value)}}</title>
                 <circle class="donut-ring" cx="1" cy="1" r="0.795774715" :fill="getBaseFillColor(value)"
@@ -43,7 +43,7 @@
                 Уровень задан вручную
             </span>
         </div>
-        <div class="wwmap-system-hint" style="width: 300px;" v-if="Object.keys(levelData).length == 0">
+        <div class="wwmap-system-hint" style="width: 300px;" v-if="Object.keys(level).length == 0">
             Нет показаний за выбранную дату. Автоматическая настройка уровня не сработает, но вы можете задать уровень воды вручную.
         </div>
     </div>
@@ -76,7 +76,7 @@
                 type: Number,
                 required: true,
             },
-            value: {
+            date: {
                 validator: prop => typeof prop === 'object' || prop === null,
                 required: true,
             },
@@ -88,22 +88,19 @@
         computed: {
             manualLevel: {
                 get: function () {
-                    let mLvl = this.levelData[0];
-                    return mLvl;
+                    return this.level[0];
                 },
                 set: function (mLvl) {
                     if (mLvl && mLvl>0) {
-                        setManualLevel(this.spotId, this.imgId, mLvl).then(levelData => this.levelData = levelData);
+                        setManualLevel(this.spotId, this.imgId, mLvl).then(level => this.level = level);
                     } else {
-                        resetManualLevel(this.spotId, this.imgId).then(levelData => this.levelData = levelData);
+                        resetManualLevel(this.spotId, this.imgId).then(level => this.level = level);
                     }
                 },
             }
         },
         data: function () {
             return {
-                date: this.value,
-                levelData: this.level,
                 sensorName: function (sensorId) {
                     return sensorsById[sensorId];
                 },
@@ -140,10 +137,10 @@
                     return this.getBaseColor(value)
                 },
                 dateSelected: function (spotId, imgId, d) {
-                    setImageDate(spotId, imgId, d).then(levelData => {
-                        this.levelData = levelData;
-                        this.$emit('input', d);
-                        this.$emit('level', levelData)
+                    setImageDate(spotId, imgId, d).then(level => {
+                        this.level = level;
+                        this.$emit('date', d);
+                        this.$emit('level', level)
                     })
                 }
             }

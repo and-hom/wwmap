@@ -15,7 +15,11 @@ import (
 	"github.com/and-hom/wwmap/lib/config"
 	"github.com/and-hom/wwmap/lib/dao"
 	"github.com/and-hom/wwmap/lib/notification"
+	"github.com/and-hom/wwmap/lib/util"
+	"github.com/rwcarlsen/goexif/exif"
+	"github.com/rwcarlsen/goexif/mknote"
 	"strings"
+	"time"
 )
 
 type App struct {
@@ -27,8 +31,11 @@ type App struct {
 	VoyageReportDao dao.VoyageReportDao
 	NotificationDao dao.NotificationDao
 	WwPassportDao   dao.WwPassportDao
-	Configuration   config.WordpressSync
-	Notifications   config.Notifications
+	LevelSensorDao  dao.LevelSensorDao
+	LevelDao        dao.LevelDao
+
+	Configuration config.WordpressSync
+	Notifications config.Notifications
 
 	ImgUrlBase        string
 	ImgUrlPreviewBase string
@@ -41,6 +48,7 @@ type App struct {
 	catalogConnectors []common.WithCatalogConnector
 
 	sourceOnly string
+	rateLimit  util.RateLimit
 }
 
 func CreateApp() App {
@@ -65,6 +73,8 @@ func CreateApp() App {
 		ImgDao:          dao.NewImgPostgresDao(pgStorage),
 		WwPassportDao:   dao.NewWWPassportPostgresDao(pgStorage),
 		NotificationDao: notificationDao,
+		LevelDao:        dao.NewLevelPostgresDao(pgStorage),
+		LevelSensorDao:  dao.NewLevelSensorPostgresDao(pgStorage),
 		Configuration:   configuration.Sync,
 		Notifications:   configuration.Notifications,
 		stat:            &ImportExportReport{},
@@ -93,6 +103,7 @@ func CreateApp() App {
 			NotificationDao:        notificationDao,
 			FallbackEmailRecipient: configuration.Notifications.FallbackEmailRecipient,
 		},
+		rateLimit: util.NewRateLimit(time.Second),
 	}
 }
 
@@ -153,6 +164,8 @@ func parseFlags(app App) (Stage, string, error) {
 }
 
 func main() {
+	exif.RegisterParsers(mknote.All...)
+
 	log.Infof("Starting wwmap")
 	app := CreateApp()
 

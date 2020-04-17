@@ -12,6 +12,8 @@ import (
 	. "github.com/and-hom/wwmap/lib/http"
 	"github.com/and-hom/wwmap/lib/util"
 	"github.com/gorilla/mux"
+	"github.com/rwcarlsen/goexif/exif"
+	"github.com/rwcarlsen/goexif/mknote"
 	"golang.org/x/image/draw"
 	"image"
 	_ "image/gif"
@@ -29,6 +31,8 @@ const (
 
 	BIG_IMG_MAX_HEIGHT = 1000
 	BIG_IMG_MAX_WIDTH  = 1500
+
+	MAX_EXIF_SIZE = 32000
 )
 
 type ImgHandler struct {
@@ -60,6 +64,8 @@ func (this *ImgHandler) Init() {
 	this.Register("/spot/{spotId}/preview", HandlerFunctions{Get: this.GetPreview,
 		Post:   this.ForRoles(this.SetPreview, dao.ADMIN, dao.EDITOR),
 		Delete: this.ForRoles(this.DropPreview, dao.ADMIN, dao.EDITOR)})
+
+	exif.RegisterParsers(mknote.All...)
 }
 
 func (this *ImgHandler) GetImages(w http.ResponseWriter, req *http.Request) {
@@ -103,7 +109,7 @@ func (this *ImgHandler) AddExternalImage(w http.ResponseWriter, req *http.Reques
 		return
 	}
 	if spotId <= 0 {
-		OnError(w, err, "Can not upload image for non existing spot", http.StatusBadRequest)
+		OnError(w, err, "Can not add image for non existing spot", http.StatusBadRequest)
 		return
 	}
 
@@ -142,12 +148,7 @@ func (this *ImgHandler) Upload(w http.ResponseWriter, req *http.Request) {
 		OnError(w, err, "Can not upload image for non existing spot", http.StatusBadRequest)
 		return
 	}
-
-	img, err := this.ImgDao.InsertLocal(spotId, getImgType(req), dao.IMG_SOURCE_WWMAP, this.ImgUrlBase, this.ImgUrlPreviewBase, time.Now())
-	if err != nil {
-		OnError500(w, err, "Can not insert")
-		return
-	}
+	imgType := getImgType(req)
 
 	err = req.ParseMultipartForm(128 * 1024 * 1024)
 	if err != nil {
@@ -161,9 +162,26 @@ func (this *ImgHandler) Upload(w http.ResponseWriter, req *http.Request) {
 	}
 	defer f.Close()
 
-	sourceImage, _, err := image.Decode(f)
+	var reader io.Reader = f
+	headCacher := util.CreateHeadCachingReader(f, MAX_EXIF_SIZE)
+	if imgType == dao.IMAGE_TYPE_IMAGE {
+		reader = headCacher
+	}
+
+	sourceImage, _, err := image.Decode(reader)
 	if err != nil {
 		OnError500(w, err, "Can not get decode image file")
+		return
+	}
+
+	var realDate *time.Time = nil
+	if imgType == dao.IMAGE_TYPE_IMAGE {
+		realDate = util.GetImageRealDate(bytes.NewReader(headCacher.GetCache().Bytes()))
+	}
+	level := this.getLevelsForDate(spotId, realDate)
+	img, err := this.ImgDao.InsertLocal(spotId, imgType, dao.IMG_SOURCE_WWMAP, time.Now(), realDate, level)
+	if err != nil {
+		OnError500(w, err, "Can not insert")
 		return
 	}
 
@@ -189,6 +207,20 @@ func (this *ImgHandler) Upload(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	this.LogUserEvent(req, IMAGE_LOG_ENTRY_TYPE, img.Id, dao.ENTRY_TYPE_CREATE, fmt.Sprintf("%s/%s", img.Source, img.RemoteId))
+}
+
+func (this *ImgHandler) getLevelsForDate(spotId int64, date *time.Time) map[string]int8 {
+	if date == nil {
+		return make(map[string]int8)
+	}
+	river, err := this.RiverDao.FindForSpot(spotId)
+	if err != nil {
+		logrus.Errorf("Can not select river for spot: id=%d", spotId)
+		return make(map[string]int8)
+	} else {
+		sensorIds := river.GetSensorIds()
+		return graduation.GetLevelBySensors(this.LevelSensorDao, this.LevelDao, sensorIds, *date, 1, -1)
+	}
 }
 
 func storageKey(img dao.Img) string {

@@ -16,6 +16,7 @@ type RiverDao interface {
 	IdEntity
 	Find(id int64) (River, error)
 	FindForImage(imgId int64) (River, error)
+	FindForSpot(spotId int64) (River, error)
 	ListRiversWithBounds(bbox Bbox, limit int, showUnpublished bool) ([]RiverTitle, error)
 	FindTitles(titles []string) ([]RiverTitle, error)
 	ListAll() ([]RiverTitle, error)
@@ -102,7 +103,7 @@ type VoyageReportDao interface {
 
 type ImgDao interface {
 	IdEntity
-	InsertLocal(wwId int64, _type ImageType, source string, urlBase string, previewUrlBase string, datePublished time.Time) (Img, error)
+	InsertLocal(wwId int64, _type ImageType, source string, datePublished time.Time, date *time.Time, level map[string]int8) (Img, error)
 	Upsert(img ...Img) ([]Img, error)
 	Find(id int64) (Img, bool, error)
 	List(wwId int64, limit int, _type ImageType, enabledOnly bool) ([]Img, error)

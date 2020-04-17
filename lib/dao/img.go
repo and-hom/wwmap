@@ -183,8 +183,16 @@ func (this imgStorage) GetMainForSpot(spotId int64) (Img, bool, error) {
 	return result.(Img), found, nil
 }
 
-func (this imgStorage) InsertLocal(wwId int64, _type ImageType, source string, urlBase string, previewUrlBase string, datePublished time.Time) (Img, error) {
-	params := []interface{}{wwId, _type, source, datePublished}
+func (this imgStorage) InsertLocal(wwId int64, _type ImageType, source string, datePublished time.Time,
+	date *time.Time, level map[string]int8) (Img, error) {
+
+	levelB, err := json.Marshal(level)
+	if err != nil {
+		return Img{}, err
+	}
+
+	nullableDate := nullPtrToPqDate(date)
+	params := []interface{}{wwId, _type, source, datePublished, nullableDate, nullableDate, string(levelB)}
 	vals, err := this.UpdateReturningColumns(this.insertLocalQuery, ArrayMapper, true, params)
 	if err != nil {
 		return Img{}, err
@@ -236,19 +244,12 @@ func (this imgStorage) DropMainForSpot(spotId int64) error {
 }
 
 func (this imgStorage) SetDateAndLevel(id int64, date time.Time, level map[string]int8) error {
-	var nullableDate pq.NullTime
-	if date == zeroDate {
-		nullableDate = pq.NullTime{Valid: false}
-	} else {
-		nullableDate = pq.NullTime{Time: date, Valid: true}
-	}
-
 	levelB, err := json.Marshal(level)
 	if err != nil {
 		return err
 	}
 
-	return this.PerformUpdates(this.setSetLevelAndDateQuery, ArrayMapper, []interface{}{id, nullableDate, string(levelB)})
+	return this.PerformUpdates(this.setSetLevelAndDateQuery, ArrayMapper, []interface{}{id, zeroToPqDate(date), string(levelB)})
 }
 
 func (this imgStorage) SetManualLevel(id int64, level int8) (map[string]int8, error) {

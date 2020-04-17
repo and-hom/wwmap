@@ -1,8 +1,12 @@
 package util
 
 import (
+	"github.com/Sirupsen/logrus"
+	"github.com/rwcarlsen/goexif/exif"
 	"image"
+	"io"
 	"math"
+	"time"
 )
 
 func PreviewRect(r image.Rectangle, areaWidth, areaHeight int) (image.Rectangle, bool) {
@@ -20,4 +24,18 @@ func PreviewRect(r image.Rectangle, areaWidth, areaHeight int) (image.Rectangle,
 	newImgHeight = int(k * float64(srcHeight))
 
 	return image.Rect(0, 0, newImgWidht, newImgHeight), kX > 1.0 && kY > 1.0
+}
+
+func GetImageRealDate(f io.Reader) *time.Time {
+	_exif, err := exif.Decode(f)
+	if err != nil {
+		logrus.Warn("Can't parse exif: ", err)
+		return nil
+	}
+	dateTime, err := _exif.DateTime()
+	if err != nil {
+		logrus.Warn("Can't get date from exif: ", err)
+		return nil
+	}
+	return &dateTime
 }

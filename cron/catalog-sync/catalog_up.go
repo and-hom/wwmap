@@ -1,12 +1,12 @@
 package main
 
 import (
-	"github.com/and-hom/wwmap/lib/dao"
+	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/cron/catalog-sync/common"
-	"fmt"
-	"time"
+	"github.com/and-hom/wwmap/lib/dao"
 	"strings"
+	"time"
 )
 
 const MAX_ATTACHED_IMGS = 5
@@ -36,8 +36,8 @@ type DummyHasProperties struct {
 	pageId int
 }
 
-func (this DummyHasProperties)Props() dao.PropertyManager {
-	return DummyPropertyManager{pageId:this.pageId}
+func (this DummyHasProperties) Props() dao.PropertyManager {
+	return DummyPropertyManager{pageId: this.pageId}
 }
 
 type DummyPropertyManager struct {
@@ -81,7 +81,7 @@ func (this *App) DoWriteCatalog() {
 }
 
 func (this *App) doWriteCatalog(catalogConnector *common.CatalogConnector) error {
-	fakeRegion := dao.Region{Id:0, Title:"-"}
+	fakeRegion := dao.Region{Id: 0, Title: "-"}
 	log.Info("Create missing ww passports")
 
 	countries, err := this.CountryDao.List()
@@ -89,7 +89,7 @@ func (this *App) doWriteCatalog(catalogConnector *common.CatalogConnector) error
 		log.Error("Can not list countries")
 		return err
 	}
-	_, rootPageLink, err := this.createBlankPageIfNotExists(catalogConnector, DummyHasProperties{pageId:this.Configuration.RootPageId}, 0, "", 0)
+	_, rootPageLink, err := this.createBlankPageIfNotExists(catalogConnector, DummyHasProperties{pageId: this.Configuration.RootPageId}, 0, "", 0)
 	if err != nil {
 		log.Error("Can not create blank root page if not exists")
 		return err
@@ -107,7 +107,7 @@ func (this *App) doWriteCatalog(catalogConnector *common.CatalogConnector) error
 
 		countryRivers, err := this.RiverDao.ListByCountryFull(country.Id)
 		if err != nil {
-			log.Errorf("Can not list rivers for country %d", country.Id)
+			log.Errorf("Can not list rivers for country %d: %v", country.Id, err)
 			return err
 		}
 
@@ -149,22 +149,22 @@ func (this *App) doWriteCatalog(catalogConnector *common.CatalogConnector) error
 					return err
 				}
 				if riverPageLink != "" {
-					riverLinks = append(riverLinks, common.LinkOnPage{Title:river.Title, Url:riverPageLink})
+					riverLinks = append(riverLinks, common.LinkOnPage{Title: river.Title, Url: riverPageLink})
 				}
 			}
 			err = (*catalogConnector).WriteRegionPage(common.RegionPageDto{
-				Id: regionPageId,
-				Region:region,
-				Country:country,
-				Links:riverLinks,
-				RootPageLink:rootPageLink,
-				CountryPageLink:countryPageLink,
+				Id:              regionPageId,
+				Region:          region,
+				Country:         country,
+				Links:           riverLinks,
+				RootPageLink:    rootPageLink,
+				CountryPageLink: countryPageLink,
 			})
 			if err != nil {
 				log.Errorf("Can not write region page %d", region.Id)
 				return err
 			}
-			countryRegionLinks = append(countryRegionLinks, common.LinkOnPage{Title:region.Title, Url:regionPageLink})
+			countryRegionLinks = append(countryRegionLinks, common.LinkOnPage{Title: region.Title, Url: regionPageLink})
 		}
 		for _, river := range countryRivers {
 			log.Infof("Upload river %s/%s", country.Title, river.Title)
@@ -174,16 +174,16 @@ func (this *App) doWriteCatalog(catalogConnector *common.CatalogConnector) error
 				return err
 			}
 			if riverPageLink != "" {
-				countryRiverLinks = append(countryRiverLinks, common.LinkOnPage{Title:river.Title, Url:riverPageLink})
+				countryRiverLinks = append(countryRiverLinks, common.LinkOnPage{Title: river.Title, Url: riverPageLink})
 			}
 		}
 
 		err = (*catalogConnector).WriteCountryPage(common.CountryPageDto{
-			Id:countryPageId,
-			Country:country,
-			RegionLinks:countryRegionLinks,
-			RiverLinks:countryRiverLinks,
-			RootPageLink:rootPageLink,
+			Id:           countryPageId,
+			Country:      country,
+			RegionLinks:  countryRegionLinks,
+			RiverLinks:   countryRiverLinks,
+			RootPageLink: rootPageLink,
 		})
 		if err != nil {
 			log.Errorf("Can not write country page %d", country.Id)
@@ -191,14 +191,14 @@ func (this *App) doWriteCatalog(catalogConnector *common.CatalogConnector) error
 		}
 
 		countryLinks = append(countryLinks, common.CountryLink{
-			LinkOnPage:  common.LinkOnPage{Title:country.Title, Url:countryPageLink},
-			Code: country.Code,
+			LinkOnPage: common.LinkOnPage{Title: country.Title, Url: countryPageLink},
+			Code:       country.Code,
 		})
 	}
 
 	err = (*catalogConnector).WriteRootPage(common.RootPageDto{
-		Id: this.Configuration.RootPageId,
-		Links:countryLinks,
+		Id:    this.Configuration.RootPageId,
+		Links: countryLinks,
 	})
 
 	if err != nil {
@@ -212,7 +212,7 @@ func (this *App) canExport(river dao.River) bool {
 }
 
 func (this *App) uploadRiver(catalogConnector *common.CatalogConnector, country dao.Country, region dao.Region, river dao.River,
-rootPageLink, countryPageLink, regionPageLink string, parentPageId int) (string, error) {
+	rootPageLink, countryPageLink, regionPageLink string, parentPageId int) (string, error) {
 	if !this.canExport(river) {
 		log.Infof("River %d %s can not be exported", river.Id, river.Title)
 		return "", nil
@@ -233,16 +233,16 @@ rootPageLink, countryPageLink, regionPageLink string, parentPageId int) (string,
 		return "", err
 	}
 	err = (*catalogConnector).WriteRiverPage(common.RiverPageDto{
-		Id:riverPageId,
-		River:river,
-		Region:region,
-		Country:country,
-		Links: spotLinks,
-		RootPageLink:rootPageLink,
-		CountryPageLink:countryPageLink,
-		RegionPageLink:regionPageLink,
-		MainImage:noImage(0),
-		Reports:reports,
+		Id:              riverPageId,
+		River:           river,
+		Region:          region,
+		Country:         country,
+		Links:           spotLinks,
+		RootPageLink:    rootPageLink,
+		CountryPageLink: countryPageLink,
+		RegionPageLink:  regionPageLink,
+		MainImage:       noImage(0),
+		Reports:         reports,
 	})
 
 	exportedPropName := dao.EXPORT_PROP_PREFIX + (*catalogConnector).SourceId()
@@ -272,8 +272,8 @@ func (this *App) reports(riverId int64) ([]common.VoyageReportLink, error) {
 	result := make([]common.VoyageReportLink, len(r))
 	for i := 0; i < len(r); i++ {
 		result[i] = common.VoyageReportLink{
-			LinkOnPage:common.LinkOnPage{Title:r[i].Title, Url:r[i].Url},
-			SourceLogo:this.ResourceBase + "/img/report_sources/" + strings.ToLower(r[i].Source) + ".png",
+			LinkOnPage: common.LinkOnPage{Title: r[i].Title, Url: r[i].Url},
+			SourceLogo: this.ResourceBase + "/img/report_sources/" + strings.ToLower(r[i].Source) + ".png",
 		}
 	}
 	return result, nil
@@ -300,7 +300,7 @@ func (this *App) createBlankPageIfNotExists(catalogConnector *common.CatalogConn
 		}
 	}
 	if link != "" && err == nil {
-		propsDao.Props().SetStringProperty(dao.PAGE_LINK_PROP_PREFIX + (*catalogConnector).SourceId(), id, link)
+		propsDao.Props().SetStringProperty(dao.PAGE_LINK_PROP_PREFIX+(*catalogConnector).SourceId(), id, link)
 	} else {
 		log.Warnf("Link for %s was not set", title)
 	}
@@ -347,7 +347,7 @@ func (this *App) writeSpots(catalogConnector *common.CatalogConnector, parentPag
 		}
 		imgs = append(imgs, schemas...)
 
-		for i:=0;i<len(imgs);i++ {
+		for i := 0; i < len(imgs); i++ {
 			this.processForWeb(&imgs[i])
 		}
 
@@ -357,19 +357,19 @@ func (this *App) writeSpots(catalogConnector *common.CatalogConnector, parentPag
 			return 0, "", []common.SpotLink{}, false, err
 		}
 		err = (*catalogConnector).WriteSpotPage(common.SpotPageDto{
-			Id:spotPageId,
-			Spot:spot,
-			River:river,
-			Region:region,
-			Country:country,
-			MainImage:mainImg,
-			Imgs:imgs,
-			Videos: videos,
+			Id:        spotPageId,
+			Spot:      spot,
+			River:     river,
+			Region:    region,
+			Country:   country,
+			MainImage: mainImg,
+			Imgs:      imgs,
+			Videos:    videos,
 
-			RootPageLink:rootPageLink,
-			CountryPageLink:countryPageLink,
-			RegionPageLink:regionPageLink,
-			RiverPageLink:riverPageLink,
+			RootPageLink:    rootPageLink,
+			CountryPageLink: countryPageLink,
+			RegionPageLink:  regionPageLink,
+			RiverPageLink:   riverPageLink,
 		})
 		if err != nil {
 			log.Errorf("Can not write spot page %d", spot.Id)
@@ -377,10 +377,10 @@ func (this *App) writeSpots(catalogConnector *common.CatalogConnector, parentPag
 		}
 		spotLinks = append(spotLinks, common.SpotLink{
 			LinkOnPage: common.LinkOnPage{
-				Title:spot.Title,
-				Url:spotPageLink,
+				Title: spot.Title,
+				Url:   spotPageLink,
 			},
-			Category:common.CategoryStr(spot),
+			Category: common.CategoryStr(spot),
 		})
 	}
 	return riverPageId, riverPageLink, spotLinks, true, nil
@@ -412,14 +412,14 @@ func (this *App) processForWeb(img *dao.Img) {
 }
 func noImage(spotId int64) dao.Img {
 	return dao.Img{
-		Id:0,
-		Source:dao.IMG_SOURCE_WWMAP,
-		Type:dao.IMAGE_TYPE_IMAGE,
-		MainImage:true,
-		Enabled:true,
-		WwId:spotId,
-		DatePublished:time.Now(),
-		PreviewUrl: MISSING_IMAGE,
-		Url: MISSING_IMAGE,
+		Id:            0,
+		Source:        dao.IMG_SOURCE_WWMAP,
+		Type:          dao.IMAGE_TYPE_IMAGE,
+		MainImage:     true,
+		Enabled:       true,
+		WwId:          spotId,
+		DatePublished: time.Now(),
+		PreviewUrl:    MISSING_IMAGE,
+		Url:           MISSING_IMAGE,
 	}
 }
