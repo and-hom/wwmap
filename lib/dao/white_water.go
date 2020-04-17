@@ -101,7 +101,7 @@ func (this whiteWaterStorage) Find(id int64) (WhiteWaterPointWithRiverTitle, boo
 }
 
 func (this whiteWaterStorage) FindFull(id int64) (WhiteWaterPointFull, error) {
-	result, found, err := this.doFindAndReturn(this.byIdFullQuery, func(rows *sql.Rows) (interface{}, error) {
+	result, found, err := this.DoFindAndReturn(this.byIdFullQuery, func(rows *sql.Rows) (interface{}, error) {
 		return scanWwPointFull(rows)
 	}, id)
 	if err != nil {
@@ -130,11 +130,11 @@ func (this whiteWaterStorage) UpdateWhiteWaterPointsFull(whiteWaterPoints ...Whi
 	for i, p := range whiteWaterPoints {
 		vars[i] = p
 	}
-	return this.performUpdates(this.updateFullQuery, WhiteWaterPointFullMapper, vars...)
+	return this.PerformUpdates(this.updateFullQuery, WhiteWaterPointFullMapper, vars...)
 }
 
 func (this whiteWaterStorage) UpdateWhiteWaterPointFull(whiteWaterPoint WhiteWaterPointFull, tx interface{}) error {
-	return this.performUpdatesWithinTxOptionally(tx, this.updateFullQuery, WhiteWaterPointFullMapper, whiteWaterPoint)
+	return this.PerformUpdatesWithinTxOptionally(tx, this.updateFullQuery, WhiteWaterPointFullMapper, whiteWaterPoint)
 }
 
 func WhiteWaterPointFullMapper(entity interface{}) ([]interface{}, error) {
@@ -185,7 +185,7 @@ func paramsFull(p interface{}) ([]interface{}, error) {
 }
 
 func (this whiteWaterStorage) list(query string, vars ...interface{}) ([]WhiteWaterPointWithRiverTitle, error) {
-	result, err := this.doFindList(query,
+	result, err := this.DoFindList(query,
 		func(rows *sql.Rows) (WhiteWaterPointWithRiverTitle, error) {
 
 			riverTitle := sql.NullString{}
@@ -209,7 +209,7 @@ func (this whiteWaterStorage) list(query string, vars ...interface{}) ([]WhiteWa
 }
 
 func (this whiteWaterStorage) listFull(query string, vars ...interface{}) ([]WhiteWaterPointFull, error) {
-	result, err := this.doFindList(query, scanWwPointFull, vars...)
+	result, err := this.DoFindList(query, scanWwPointFull, vars...)
 	if err != nil {
 		return []WhiteWaterPointFull{}, err
 	}
@@ -359,7 +359,7 @@ func (this whiteWaterStorage) update(query string, whiteWaterPoints ...WhiteWate
 	for i, p := range whiteWaterPoints {
 		vars[i] = p
 	}
-	return this.performUpdates(query,
+	return this.PerformUpdates(query,
 		func(entity interface{}) ([]interface{}, error) {
 			wwp := entity.(WhiteWaterPoint)
 			pathBytes, err := json.Marshal(wwp.Point.ToPg())
@@ -377,16 +377,16 @@ func (this whiteWaterStorage) update(query string, whiteWaterPoints ...WhiteWate
 
 func (this whiteWaterStorage) Remove(id int64, tx interface{}) error {
 	log.Infof("Remove spot %d", id)
-	return this.performUpdatesWithinTxOptionally(tx, this.deleteQuery, IdMapper, id)
+	return this.PerformUpdatesWithinTxOptionally(tx, this.deleteQuery, IdMapper, id)
 }
 
 func (this whiteWaterStorage) RemoveByRiver(id int64, tx interface{}) error {
 	log.Infof("Remove spots by river id", id)
-	return this.performUpdatesWithinTxOptionally(tx, this.deleteForRiverQuery, IdMapper, id)
+	return this.PerformUpdatesWithinTxOptionally(tx, this.deleteForRiverQuery, IdMapper, id)
 }
 
 func (this whiteWaterStorage) GetGeomCenterByRiver(riverId int64) (geo.Point, error) {
-	p, found, err := this.doFindAndReturn(this.geomCenterByRiverQuery, func(rows *sql.Rows) (interface{}, error) {
+	p, found, err := this.DoFindAndReturn(this.geomCenterByRiverQuery, func(rows *sql.Rows) (interface{}, error) {
 		pointString := ""
 		err := rows.Scan(&pointString)
 		if err != nil {
@@ -410,7 +410,7 @@ func (this whiteWaterStorage) GetGeomCenterByRiver(riverId int64) (geo.Point, er
 }
 
 func (this whiteWaterStorage) GetRiverBounds(riverId int64) (geo.Bbox, error) {
-	p, found, err := this.doFindAndReturn(this.riverBoundsQuery, func(rows *sql.Rows) (interface{}, error) {
+	p, found, err := this.DoFindAndReturn(this.riverBoundsQuery, func(rows *sql.Rows) (interface{}, error) {
 		pointString := ""
 		err := rows.Scan(&pointString)
 		if err != nil {
@@ -432,7 +432,7 @@ func (this whiteWaterStorage) Props() PropertyManager {
 }
 
 func (this whiteWaterStorage) AutoOrderingRiverIds() ([]int64, error) {
-	r, err := this.doFindList(this.autoOrderingRiverIdsQuery, func(rows *sql.Rows) (int64, error) {
+	r, err := this.DoFindList(this.autoOrderingRiverIdsQuery, func(rows *sql.Rows) (int64, error) {
 		id := int64(0)
 		err := rows.Scan(&id)
 		return id, err
@@ -456,7 +456,7 @@ func (this whiteWaterStorage) DistanceFromBeginning(riverId int64, path []geo.Po
 	if err != nil {
 		return result, err
 	}
-	pairs, err := this.doFindList(this.distanceFromBeginningQuery, func(rows *sql.Rows) (idDistPair, error) {
+	pairs, err := this.DoFindList(this.distanceFromBeginningQuery, func(rows *sql.Rows) (idDistPair, error) {
 		wwpId := int64(0)
 		dist := 0
 		err := rows.Scan(&wwpId, &dist)
@@ -477,13 +477,13 @@ func (this whiteWaterStorage) UpdateOrderIdx(idx map[int64]int) error {
 	for id, val := range idx {
 		params = append(params, []interface{}{id, val, now})
 	}
-	return this.performUpdates(this.updateOrderIdxQuery, ArrayMapper, params...)
+	return this.PerformUpdates(this.updateOrderIdxQuery, ArrayMapper, params...)
 }
 
 func (this whiteWaterStorage) GetParentIds(spotIds []int64) (map[int64]SpotParentIds, error) {
 	result := make(map[int64]SpotParentIds)
 
-	_, err := this.doFindList(this.parentIds, func(rows *sql.Rows) (int, error) {
+	_, err := this.DoFindList(this.parentIds, func(rows *sql.Rows) (int, error) {
 		spotId := int64(0)
 		parentIds := SpotParentIds{}
 		err := rows.Scan(&spotId, &parentIds.RiverId, &parentIds.RegionId, &parentIds.CountryId, &parentIds.SpotTitle, &parentIds.RiverTitle)

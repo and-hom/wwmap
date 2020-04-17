@@ -2,9 +2,9 @@ package blob
 
 import (
 	"io"
-	"path/filepath"
-	"os"
 	"io/ioutil"
+	"os"
+	"path/filepath"
 )
 
 type BlobStorage interface {
@@ -17,10 +17,15 @@ type BlobStorage interface {
 
 type BasicFsStorage struct {
 	BaseDir string
+	Mkdirs  bool
 }
 
 func (this BasicFsStorage) Store(id string, r io.Reader) error {
-	f, err := os.Create(this.path(id))
+	path := this.path(id)
+	if this.Mkdirs {
+		os.MkdirAll(filepath.Dir(path), os.ModeDir|0755)
+	}
+	f, err := os.Create(path)
 	if err != nil {
 		return err
 	}

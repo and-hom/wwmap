@@ -43,6 +43,13 @@ type TileCache struct {
 	Types        map[string][]string `yaml:"types"`
 }
 
+type Cron struct {
+	BindTo       string        `yaml:"bind_to"`
+	ReadTimeout  time.Duration `yaml:"read_timeout"`
+	WriteTimeout time.Duration `yaml:"write_timeout"`
+	LogDir       string        `yaml:"log_dir"`
+}
+
 type WordpressSync struct {
 	Login                   string        `yaml:"login"`
 	Password                string        `yaml:"password"`
@@ -94,6 +101,7 @@ type Configuration struct {
 	Api                      Api                  `yaml:"api"`
 	Content                  Content              `yaml:"content"`
 	TileCache                TileCache            `yaml:"tile-cache"`
+	Cron                     Cron                 `yaml:"cron"`
 	Sync                     WordpressSync        `yaml:"sync"`
 	ImgStorage               ImgStorage           `yaml:"img-storage"`
 	RiverPassportPdfStorage  BlobStorageParams    `yaml:"river-passport-pdf-storage"`
@@ -102,7 +110,7 @@ type Configuration struct {
 	MeteoToken               string               `yaml:"meteo-token"`
 }
 
-func (this *Configuration) ChangeLogLevel() {
+func (this *Configuration) ConfigureLogger() {
 	if this.LogLevel == "" {
 		return
 	}
@@ -111,6 +119,11 @@ func (this *Configuration) ChangeLogLevel() {
 		log.Fatalf("Can not parse log level %s: %v", this.LogLevel, err)
 	}
 	log.SetLevel(level)
+
+	customFormatter := new(log.TextFormatter)
+	customFormatter.TimestampFormat = "2006-01-02 15:04:05"
+	customFormatter.FullTimestamp = true
+	log.SetFormatter(customFormatter)
 }
 
 func loadConf(filename string) (Configuration, error) {
@@ -142,40 +155,24 @@ func Load(configLocationOverride string) Configuration {
 	if err != nil {
 		log.Fatal(err)
 	}
-	p1 := fmt.Sprintf("%s/.wwmap/config.yaml", currentUser.HomeDir)
-	log.Infof("Try to load config from %s", p1)
-	c1, err := loadConf(p1)
-	if err == nil {
-		return c1
+
+	paths := []string{
+		fmt.Sprintf("%s/.wwmap/config.yaml", currentUser.HomeDir),
+		"/etc/wwmap/config.yaml",
+		"/etc/wwmap.yaml",
+		"./config.yaml",
+		"../config.yaml",
 	}
 
-	p2 := "/etc/wwmap/config.yaml"
-	log.Infof("Try to load config from %s", p2)
-	c2, err := loadConf(p2)
-	if err == nil {
-		return c2
+	for _, p := range paths {
+		log.Infof("Try to load config from %s", p)
+		conf, err := loadConf(p)
+		if err == nil {
+			return conf
+		}
 	}
 
-	p3 := "/etc/wwmap.yaml"
-	log.Infof("Try to load config from %s", p3)
-	c3, err := loadConf(p3)
-	if err == nil {
-		return c3
-	}
-
-	p4 := "./config.yaml"
-	log.Infof("Try to load config from %s", p4)
-	c4, err := loadConf(p4)
-	if err == nil {
-		return c4
-	}
-
-	p5 := "../config.yaml"
-	log.Infof("Try to load config from %s", p4)
-	c5, err := loadConf(p5)
-	if err == nil {
-		return c5
-	}
+	log.Warn("No configuration file found - use empty config")
 
 	return Configuration{}
 }

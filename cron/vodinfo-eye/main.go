@@ -27,7 +27,7 @@ func main() {
 	log.Infof("Starting wwmap vodinfo import")
 	configuration := config.Load("")
 	configuration.LogLevel = "info"
-	configuration.ChangeLogLevel()
+	configuration.ConfigureLogger()
 	storage := dao.NewPostgresStorage(configuration.Db)
 	graduator, err := graduation.NewPercentileGladiator(0.1, 0.1)
 	if err != nil {

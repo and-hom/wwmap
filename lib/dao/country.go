@@ -1,15 +1,15 @@
 package dao
 
 import (
-	"github.com/and-hom/wwmap/lib/dao/queries"
 	"database/sql"
+	"github.com/and-hom/wwmap/lib/dao/queries"
 )
 
 func NewCountryPostgresDao(postgresStorage PostgresStorage) CountryDao {
 	return countryStorage{
 		PostgresStorage: postgresStorage,
-		PropsManager: PropertyManagerImpl{table:queries.SqlQuery("country", "table"), dao:&postgresStorage},
-		listQuery: queries.SqlQuery("country", "list"),
+		PropsManager:    PropertyManagerImpl{table: queries.SqlQuery("country", "table"), dao: &postgresStorage},
+		listQuery:       queries.SqlQuery("country", "list"),
 	}
 }
 
@@ -20,7 +20,7 @@ type countryStorage struct {
 }
 
 func (this countryStorage) List() ([]Country, error) {
-	lst, err := this.doFindList(this.listQuery, func(rows *sql.Rows) (Country, error) {
+	lst, err := this.DoFindList(this.listQuery, func(rows *sql.Rows) (Country, error) {
 		result := Country{}
 		err := rows.Scan(&result.Id, &result.Title, &result.Code)
 		return result, err
@@ -34,4 +34,3 @@ func (this countryStorage) List() ([]Country, error) {
 func (this countryStorage) Props() PropertyManager {
 	return this.PropsManager
 }
-

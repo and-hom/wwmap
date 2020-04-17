@@ -40,16 +40,31 @@ build-river-tracks-bind:
 build: pre-build build-notifier build-catalog-sync build-db-clean build-spot-sort build-meteo build-level build-river-tracks-bind
 
 override_dh_auto_install:
-	install -d $$(pwd)/debian/wwmap-cron/usr/share/wwmap/backup/
+	install -d $$(pwd)/debian/wwmap-cron-modules/usr/share/wwmap/backup/
+	install -d $$(pwd)/debian/wwmap-cron-modules/etc/wwmap/job.d/
 
-	install -D -m 0755 notifier/notifier $$(pwd)/debian/wwmap-cron/usr/bin/wwmap-notifier
-	install -D -m 0755 backup/backup.sh $$(pwd)/debian/wwmap-cron/usr/bin/wwmap-backup
-	install -D -m 0644 backup/tables.list $$(pwd)/debian/wwmap-cron/usr/share/wwmap/backup/tables.list
-	install -D -m 0755 catalog-sync/catalog-sync $$(pwd)/debian/wwmap-cron/usr/bin/wwmap-catalog-sync
-	install -D -m 0755 db-clean/db-clean $$(pwd)/debian/wwmap-cron/usr/bin/wwmap-db-clean
-	install -D -m 0755 spot-sort/spot-sort $$(pwd)/debian/wwmap-cron/usr/bin/wwmap-spot-sort
-	install -D -m 0755 meteo/meteo $$(pwd)/debian/wwmap-cron/usr/bin/wwmap-meteo
-	install -D -m 0755 vodinfo-eye/vodinfo-eye $$(pwd)/debian/wwmap-cron/usr/bin/wwmap-vodinfo-eye
-	install -D -m 0755 river-tracks-bind/river-tracks-bind $$(pwd)/debian/wwmap-cron/usr/bin/wwmap-river-tracks-bind
+	install -D -m 0755 notifier/notifier $$(pwd)/debian/wwmap-cron-modules/usr/bin/wwmap-notifier
+	dh_link /usr/bin/wwmap-notifier /etc/wwmap/job.d/notifier.job
 
-	install -D -m 0755 debian/wwmap-logrotate.d $$(pwd)/debian/wwmap-cron/etc/logrotate.d/wwmap-cron
+	install -D -m 0755 backup/backup.sh $$(pwd)/debian/wwmap-cron-modules/usr/bin/wwmap-backup
+	install -D -m 0644 backup/tables.list $$(pwd)/debian/wwmap-cron-modules/usr/share/wwmap/backup/tables.list
+	dh_link /usr/bin/wwmap-backup /etc/wwmap/job.d/backup.job
+
+	install -D -m 0755 catalog-sync/catalog-sync $$(pwd)/debian/wwmap-cron-modules/usr/bin/wwmap-catalog-sync
+	dh_link /usr/bin/wwmap-catalog-sync /etc/wwmap/job.d/catalog-sync.job
+
+	install -D -m 0755 db-clean/db-clean $$(pwd)/debian/wwmap-cron-modules/usr/bin/wwmap-db-clean
+	dh_link /usr/bin/wwmap-db-clean /etc/wwmap/job.d/db-clean.job
+
+	install -D -m 0755 spot-sort/spot-sort $$(pwd)/debian/wwmap-cron-modules/usr/bin/wwmap-spot-sort
+	dh_link /usr/bin/wwmap-spot-sort /etc/wwmap/job.d/spot-sort.job
+
+	install -D -m 0755 meteo/meteo $$(pwd)/debian/wwmap-cron-modules/usr/bin/wwmap-meteo
+	dh_link /usr/bin/wwmap-meteo /etc/wwmap/job.d/meteo.job
+
+	install -D -m 0755 vodinfo-eye/vodinfo-eye $$(pwd)/debian/wwmap-cron-modules/usr/bin/wwmap-vodinfo-eye
+	dh_link /usr/bin/wwmap-vodinfo-eye /etc/wwmap/job.d/vodinfo-eye.job
+
+	install -D -m 0755 river-tracks-bind/river-tracks-bind $$(pwd)/debian/wwmap-cron-modules/usr/bin/wwmap-river-tracks-bind
+	dh_link /usr/bin/wwmap-river-tracks-bind /etc/wwmap/job.d/river-tracks-bind.job
+

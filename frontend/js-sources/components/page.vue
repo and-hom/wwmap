@@ -125,6 +125,21 @@
                         ]
                     },
                     {
+                        id: "3",
+                        title: "Cron",
+                        allow: ['ADMIN'],
+                        sub: [
+                            {
+                                href: "jobs.htm",
+                                title: "Задачи",
+                            },
+                            {
+                                href: "timeline.htm",
+                                title: "Таймлайн",
+                            },
+                        ]
+                    },
+                    {
                         id: "1",
                         title: "Информация",
                         sub: [

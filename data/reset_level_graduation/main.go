@@ -10,7 +10,7 @@ import (
 func main() {
 	log.Infof("Starting wwmap vodinfo sensor data processing")
 	configuration := config.Load("")
-	configuration.ChangeLogLevel()
+	configuration.ConfigureLogger()
 
 	graduator, err := graduation.NewPercentileGladiator(0.1, 0.1)
 	if err != nil {

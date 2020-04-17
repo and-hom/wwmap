@@ -42,7 +42,7 @@ const QUEUE_SIZE = 1024
 
 func main() {
 	configuration := config.Load("")
-	configuration.ChangeLogLevel()
+	configuration.ConfigureLogger()
 
 	storage := dao.NewPostgresStorage(configuration.Db)
 	waterWayDao := dao.NewWaterWayPostgresDao(storage)

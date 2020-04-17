@@ -53,7 +53,7 @@ func getOrElse(val sql.NullInt64, _default int64) int64 {
 	}
 }
 
-func (this *PostgresStorage) doFindAndReturn(query string, callback interface{}, args ...interface{}) (interface{}, bool, error) {
+func (this *PostgresStorage) DoFindAndReturn(query string, callback interface{}, args ...interface{}) (interface{}, bool, error) {
 	rows, err := this.db.Query(query, args...)
 	if err != nil {
 		return nil, false, err
@@ -73,7 +73,7 @@ func (this *PostgresStorage) doFindAndReturn(query string, callback interface{},
 	return nil, false, nil
 }
 
-func (this *PostgresStorage) doFindList(query string, callback interface{}, args ...interface{}) (interface{}, error) {
+func (this *PostgresStorage) DoFindList(query string, callback interface{}, args ...interface{}) (interface{}, error) {
 	rows, err := this.db.Query(query, args...)
 	if err != nil {
 		return []interface{}{}, err
@@ -155,11 +155,11 @@ func (this *PostgresStorage) insertReturningId(query string, args ...interface{}
 	return lastId, nil
 }
 
-func (this *PostgresStorage) updateReturningId(query string,
+func (this *PostgresStorage) UpdateReturningId(query string,
 	mapper func(entity interface{}) ([]interface{}, error),
 	failOnEmptyResult bool, values ...interface{}) ([]int64, error) {
 
-	rows, err := this.updateReturningColumns(query, mapper, failOnEmptyResult, values...)
+	rows, err := this.UpdateReturningColumns(query, mapper, failOnEmptyResult, values...)
 	if err != nil {
 		return []int64{}, err
 	}
@@ -167,7 +167,7 @@ func (this *PostgresStorage) updateReturningId(query string,
 	return result, nil
 }
 
-func (this *PostgresStorage) updateReturningColumns(query string,
+func (this *PostgresStorage) UpdateReturningColumns(query string,
 	mapper func(entity interface{}) ([]interface{}, error),
 	failOnEmptyResult bool, values ...interface{}) ([][]interface{}, error) {
 	return this.updateReturningColumnsWithinTxOptionally(nil, query, mapper, failOnEmptyResult, values...)
@@ -257,7 +257,7 @@ func (this *PostgresStorage) updateReturningColumnsInternal(tx *sql.Tx, query st
 	return result, nil
 }
 
-func (this *PostgresStorage) performUpdates(query string, mapper func(entity interface{}) ([]interface{}, error), values ...interface{}) error {
+func (this *PostgresStorage) PerformUpdates(query string, mapper func(entity interface{}) ([]interface{}, error), values ...interface{}) error {
 	return this.WithinTx(func(tx interface{}) error {
 		txHolder := tx.(PgTxHolder)
 		return (&txHolder).performUpdates(query, mapper, values...)

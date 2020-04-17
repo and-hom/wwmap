@@ -1,11 +1,11 @@
-Source: wwmap-cron
+Source: wwmap-cron-modules
 Maintainer: Andrey Khomyakov <and.hom@gmail.com>
 Build-Depends: debhelper (>= 8.0.0)
 Standards-Version: 3.9.3
 Section: misc
 
-Package: wwmap-cron
+Package: wwmap-cron-modules
 Priority: extra
 Architecture: amd64
-Depends: ${shlibs:Depends}, ${misc:Depends}, wwmap-config, wkhtmltopdf, logrotate
+Depends: ${shlibs:Depends}, ${misc:Depends}, wwmap-config, wkhtmltopdf, logrotate, wwmap-cron
 Description: WWMap periodical tasks

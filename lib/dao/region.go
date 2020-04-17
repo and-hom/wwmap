@@ -1,20 +1,20 @@
 package dao
 
 import (
-	"github.com/and-hom/wwmap/lib/dao/queries"
 	"database/sql"
 	"fmt"
+	"github.com/and-hom/wwmap/lib/dao/queries"
 )
 
 func NewRegionPostgresDao(postgresStorage PostgresStorage) RegionDao {
 	return regionStorage{
-		PostgresStorage: postgresStorage,
-		PropsManager:PropertyManagerImpl{table:queries.SqlQuery("region", "table"), dao:&postgresStorage},
-		listQuery:queries.SqlQuery("region", "list-real"),
-		listAllWithCountryQuery:queries.SqlQuery("region", "list-all-with-country"),
-		getByIdQuery:queries.SqlQuery("region", "get-by-id"),
-		getFakeQuery:queries.SqlQuery("region", "get-fake"),
-		createFakeQuery:queries.SqlQuery("region", "create-fake"),
+		PostgresStorage:         postgresStorage,
+		PropsManager:            PropertyManagerImpl{table: queries.SqlQuery("region", "table"), dao: &postgresStorage},
+		listQuery:               queries.SqlQuery("region", "list-real"),
+		listAllWithCountryQuery: queries.SqlQuery("region", "list-all-with-country"),
+		getByIdQuery:            queries.SqlQuery("region", "get-by-id"),
+		getFakeQuery:            queries.SqlQuery("region", "get-fake"),
+		createFakeQuery:         queries.SqlQuery("region", "create-fake"),
 	}
 }
 
@@ -29,7 +29,7 @@ type regionStorage struct {
 }
 
 func (this regionStorage) List(countryId int64) ([]Region, error) {
-	lst, err := this.doFindList(this.listQuery, scanFunc, countryId)
+	lst, err := this.DoFindList(this.listQuery, scanFunc, countryId)
 	if err != nil {
 		return []Region{}, err
 	}
@@ -37,7 +37,7 @@ func (this regionStorage) List(countryId int64) ([]Region, error) {
 }
 
 func (this regionStorage) Get(id int64) (Region, error) {
-	result, found, err := this.doFindAndReturn(this.getByIdQuery, scanFuncI, id)
+	result, found, err := this.DoFindAndReturn(this.getByIdQuery, scanFuncI, id)
 	if err != nil {
 		return Region{}, err
 	}
@@ -48,7 +48,7 @@ func (this regionStorage) Get(id int64) (Region, error) {
 }
 
 func (this regionStorage) ListAllWithCountry() ([]RegionWithCountry, error) {
-	lst, err := this.doFindList(this.listAllWithCountryQuery, func(rows *sql.Rows) (RegionWithCountry, error) {
+	lst, err := this.DoFindList(this.listAllWithCountryQuery, func(rows *sql.Rows) (RegionWithCountry, error) {
 		result := RegionWithCountry{
 			Country: Country{},
 		}
@@ -66,7 +66,7 @@ func (this regionStorage) Props() PropertyManager {
 }
 
 func (this regionStorage) GetFake(countryId int64) (Region, bool, error) {
-	result, found, err := this.doFindAndReturn(this.getFakeQuery, scanFuncI, countryId)
+	result, found, err := this.DoFindAndReturn(this.getFakeQuery, scanFuncI, countryId)
 	if err != nil {
 		return Region{}, false, err
 	}
@@ -89,4 +89,3 @@ func scanFunc(rows *sql.Rows) (Region, error) {
 	err := rows.Scan(&result.Id, &result.CountryId, &result.Title, &result.Fake)
 	return result, err
 }
-

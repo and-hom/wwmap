@@ -10,7 +10,7 @@ import (
 func main() {
 	log.Infof("Starting wwmap meteo")
 	configuration := config.Load("")
-	configuration.ChangeLogLevel()
+	configuration.ConfigureLogger()
 	storage := dao.NewPostgresStorage(configuration.Db)
 
 	meteoDao := dao.NewMeteoPostgresDao(storage)

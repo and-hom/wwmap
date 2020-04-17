@@ -1,0 +1,5 @@
+wwmap-cron (1.0.0) unstable; urgency=medium
+
+  * Initial release. (Closes: #300)
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Tue, 07 Apr 2020 21:32:36 +0300

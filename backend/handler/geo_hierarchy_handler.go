@@ -330,7 +330,7 @@ func (this *GeoHierarchyHandler) GetRiver(w http.ResponseWriter, r *http.Request
 
 func (this *GeoHierarchyHandler) SaveRiver(w http.ResponseWriter, r *http.Request) {
 	river := RiverDto{}
-	body, err := decodeJsonBody(r, &river)
+	body, err := DecodeJsonBody(r, &river)
 	if err != nil {
 		OnError500(w, err, "Can not parse json from request body: "+body)
 		return
@@ -442,7 +442,7 @@ func (this *GeoHierarchyHandler) SetRiverVisible(w http.ResponseWriter, r *http.
 	}
 
 	visible := false
-	body, err := decodeJsonBody(r, &visible)
+	body, err := DecodeJsonBody(r, &visible)
 	if err != nil {
 		OnError(w, err, "Failed to parse request body: "+body, http.StatusBadRequest)
 		return
@@ -566,7 +566,7 @@ func (this *GeoHierarchyHandler) GetSpot(w http.ResponseWriter, r *http.Request)
 
 func (this *GeoHierarchyHandler) SaveSpot(w http.ResponseWriter, r *http.Request) {
 	spot := dao.WhiteWaterPointFull{}
-	body, err := decodeJsonBody(r, &spot)
+	body, err := DecodeJsonBody(r, &spot)
 	if err != nil {
 		OnError500(w, err, "Can not parse json from request body: "+body)
 		return
@@ -700,7 +700,7 @@ func (this *GeoHierarchyHandler) getRiverPassport(w http.ResponseWriter, req *ht
 
 func (this *GeoHierarchyHandler) RiverParentIds(w http.ResponseWriter, req *http.Request) {
 	riverIds := []int64{}
-	body, err := decodeJsonBody(req, &riverIds)
+	body, err := DecodeJsonBody(req, &riverIds)
 	if err != nil {
 		OnError500(w, err, "Can not parse json from request body: "+body)
 		return
@@ -716,7 +716,7 @@ func (this *GeoHierarchyHandler) RiverParentIds(w http.ResponseWriter, req *http
 
 func (this *GeoHierarchyHandler) SpotParentIds(w http.ResponseWriter, req *http.Request) {
 	spotIds := []int64{}
-	body, err := decodeJsonBody(req, &spotIds)
+	body, err := DecodeJsonBody(req, &spotIds)
 	if err != nil {
 		OnError500(w, err, "Can not parse json from request body: "+body)
 		return
@@ -732,7 +732,7 @@ func (this *GeoHierarchyHandler) SpotParentIds(w http.ResponseWriter, req *http.
 
 func (this *GeoHierarchyHandler) ImageParentIds(w http.ResponseWriter, req *http.Request) {
 	imgIds := []int64{}
-	body, err := decodeJsonBody(req, &imgIds)
+	body, err := DecodeJsonBody(req, &imgIds)
 	if err != nil {
 		OnError500(w, err, "Can not parse json from request body: "+body)
 		return
@@ -748,7 +748,7 @@ func (this *GeoHierarchyHandler) ImageParentIds(w http.ResponseWriter, req *http
 
 func (this *GeoHierarchyHandler) SaveSpotBatch(w http.ResponseWriter, r *http.Request) {
 	batch := SpotBatch{}
-	body, err := decodeJsonBody(r, &batch)
+	body, err := DecodeJsonBody(r, &batch)
 	if err != nil {
 		OnError500(w, err, "Can not parse json from request body: "+body)
 		return

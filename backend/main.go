@@ -22,7 +22,7 @@ func main() {
 	log.Infof("Starting wwmap")
 
 	configuration := config.Load("")
-	configuration.ChangeLogLevel()
+	configuration.ConfigureLogger()
 
 	storage := NewPostgresStorage(configuration.Db)
 

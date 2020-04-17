@@ -28,7 +28,7 @@ type levelStorage struct {
 }
 
 func (this levelStorage) Insert(entry Level) error {
-	_, err := this.updateReturningId(this.insertQuery, func(entity interface{}) ([]interface{}, error) {
+	_, err := this.UpdateReturningId(this.insertQuery, func(entity interface{}) ([]interface{}, error) {
 		_e := entity.(Level)
 		levelValue := sql.NullInt64{
 			Valid: _e.Level != NAN_LEVEL,
@@ -40,7 +40,7 @@ func (this levelStorage) Insert(entry Level) error {
 }
 
 func (this levelStorage) ListBySensorAndDate(fromDate time.Time, toDate time.Time) (map[string]map[string]Level, error) {
-	lst, err := this.doFindList(this.listQuery, scanLevel, fromDate, toDate)
+	lst, err := this.DoFindList(this.listQuery, scanLevel, fromDate, toDate)
 	if err != nil {
 		return nil, err
 	}
@@ -58,11 +58,11 @@ func (this levelStorage) ListBySensorAndDate(fromDate time.Time, toDate time.Tim
 }
 
 func (this levelStorage) RemoveNullsBefore(beforeDate JSONDate) error {
-	return this.performUpdates(this.removeNullsQuery, dateToUpdateParams, time.Time(beforeDate))
+	return this.PerformUpdates(this.removeNullsQuery, dateToUpdateParams, time.Time(beforeDate))
 }
 
 func (this levelStorage) GetDailyLevelBetweenDates(sensorId string, from time.Time, to time.Time) ([]Level, error) {
-	result, err := this.doFindList(this.latestNotNullForDateQuery, scanLevel, sensorId, from, to)
+	result, err := this.DoFindList(this.latestNotNullForDateQuery, scanLevel, sensorId, from, to)
 	if err != nil {
 		return []Level{}, err
 	}
@@ -70,7 +70,7 @@ func (this levelStorage) GetDailyLevelBetweenDates(sensorId string, from time.Ti
 }
 
 func (this levelStorage) ListForSensor(sensorId string) ([]Level, error) {
-	lst, err := this.doFindList(this.listBySensorQuery, scanLevel, sensorId)
+	lst, err := this.DoFindList(this.listBySensorQuery, scanLevel, sensorId)
 	if err != nil {
 		return []Level{}, err
 	}
