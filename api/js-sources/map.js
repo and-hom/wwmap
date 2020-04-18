@@ -1,7 +1,9 @@
 import {WWMapSearchProvider} from "./searchProvider";
 import {createLegend} from "./legend";
 import {show_map_at_and_highlight_river, highlight_river} from "./main";
-import {CACHED_TILES_TEMPLATE, GOOGLE_SAT_TILES, bingSatTiles, getLastPositionAndZoom, setLastPositionZoomType, getWwmapUserInfoForMapControls, isMobileBrowser} from './util';
+import {CACHED_TILES_TEMPLATE, GOOGLE_SAT_TILES, getLastPositionAndZoom, setLastPositionZoomType, getWwmapUserInfoForMapControls, isMobileBrowser} from './util';
+import {bingSatTiles} from './map-urls/bing'
+import {googleSatTiles} from './map-urls/google'
 import {apiBase} from "./config";
 import {createMeasurementToolControl} from "./router/control";
 import {WWMapMeasurementTool} from "./router/measurement";
@@ -18,7 +20,7 @@ export function WWMap(divId, bubbleTemplate, riverList, tutorialPopup, catalogLi
     this.catFilter = 1;
 
     addCachedLayer('osm#standard', 'OSM (O)', 'OpenStreetMap contributors, CC-BY-SA', 'osm');
-    addLayer('google#satellite', 'Спутник Google (G)', 'Изображения © DigitalGlobe,CNES / Airbus, 2018,Картографические данные © Google, 2018', GOOGLE_SAT_TILES);
+    addLayer('google#satellite', 'Спутник Google (G)', 'Изображения © DigitalGlobe,CNES / Airbus, 2018,Картографические данные © Google, 2018', googleSatTiles);
     addLayer('bing#satellite', 'Спутник Bing (B)', 'Изображения © Майкрософт (Microsoft), 2019', bingSatTiles);
     addCachedLayer('ggc#standard', 'Топографическая карта (T)', '', 'ggc', 0, 15);
     addCachedLayer('topomapper#genshtab', 'TopoMapper', 'TopoMapper.com', 'topo-mapper', 0, 13);

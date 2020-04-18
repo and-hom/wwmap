@@ -1,10 +1,13 @@
 package handler
 
 import (
+	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/lib/dao"
 	. "github.com/and-hom/wwmap/lib/handler"
 	. "github.com/and-hom/wwmap/lib/http"
+	"io/ioutil"
 	"net/http"
+	"regexp"
 	"strconv"
 )
 
@@ -22,6 +25,7 @@ func (this *SystemHandler) Init() {
 	this.Register("/version", HandlerFunctions{Get: this.Version})
 	this.Register("/db-version", HandlerFunctions{Get: this.DbVersion})
 	this.Register("/log", HandlerFunctions{Get: this.ForRoles(this.Log, dao.ADMIN)})
+	this.Register("/gav", HandlerFunctions{Get: this.Gav})
 }
 
 func (this *SystemHandler) Version(w http.ResponseWriter, req *http.Request) {
@@ -59,4 +63,42 @@ func (this *SystemHandler) Log(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	this.JsonAnswer(w, entries)
+}
+
+const DEFAULT_GAV = "865"
+
+var gav = ""
+var gavRe = regexp.MustCompile("https://khms\\d+.googleapis\\.com/kh\\?v=(\\d+)")
+
+func (this *SystemHandler) Gav(w http.ResponseWriter, req *http.Request) {
+	if gav != "" {
+		this.JsonAnswer(w, gav)
+		return
+	}
+
+	client := http.Client{}
+	resp, err := client.Get("https://maps.googleapis.com/maps/api/js")
+	if err != nil {
+		log.Error("Can't fetch googleapi script:", err)
+		this.JsonAnswer(w, DEFAULT_GAV)
+		return
+	}
+	defer resp.Body.Close()
+
+	bytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Error("Can't read googleapi script:", err)
+		this.JsonAnswer(w, DEFAULT_GAV)
+		return
+	}
+
+	found := gavRe.FindStringSubmatch(string(bytes))
+	if found != nil && len(found) > 1 {
+		gav = found[1]
+		log.Infof("Detected google api version is ", gav)
+		this.JsonAnswer(w, gav)
+	} else {
+		log.Error("Can't find googleapi version")
+		this.JsonAnswer(w, DEFAULT_GAV)
+	}
 }
