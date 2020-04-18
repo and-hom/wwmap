@@ -1,3 +1,12 @@
+wwmap-backend (0.0.55) unstable; urgency=medium
+
+  * #61 Get real image date from uploaded image and add level data automatically
+  * #272 Level graduation on the plot
+  * Configure logger timestamp
+  * Fix image data delete
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Fri, 17 Apr 2020 22:50:56 +0300
+
 wwmap-backend (0.0.54) unstable; urgency=medium
 
   * #274 Update image levels for all images for river on sensor list changed

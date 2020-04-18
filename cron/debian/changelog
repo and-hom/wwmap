@@ -1,3 +1,14 @@
+wwmap-cron-modules (0.0.30) unstable; urgency=medium
+
+  * #61 Set image date and level for automatically imported images from sources
+  * #172 Http timeout for vodinfo eye
+  * #297 Notify admins about objects (rivers, spots, images etc.) changed
+  * #300 Cron tasks management and logs on UI
+  * Fix huskytm image matching by url
+  * Add timeout for image data loading (huskytm)
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Fri, 17 Apr 2020 22:57:50 +0300
+
 wwmap-cron-modules (0.0.29) unstable; urgency=medium
 
   * #288 Skitalets.ru report importer for new design of site

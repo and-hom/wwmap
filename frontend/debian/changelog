@@ -1,3 +1,14 @@
+wwmap-frontend (0.0.61) unstable; urgency=medium
+
+  * #61 Fix screen refresh on image with date in exif uploaded
+  * #272 Level graduation on the water level plot
+  * #289 Breadcrumbs for region, river and spot
+  * #295 http2 enabled on nginx
+  * #300 Manage cron tasks and their's logs on UI
+  * #301 Highlight selected dropdown in top menu
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Fri, 17 Apr 2020 22:54:25 +0300
+
 wwmap-frontend (0.0.60) unstable; urgency=medium
 
   * #233 Switch to another spot on editor map click

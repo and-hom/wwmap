@@ -1,3 +1,9 @@
+wwmap-db (0.0.29) unstable; urgency=medium
+
+  * #300 Manage cron tasks and their's logs on UI
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Fri, 17 Apr 2020 23:01:08 +0300
+
 wwmap-db (0.0.28) unstable; urgency=medium
 
   * #265 Water level for spot
