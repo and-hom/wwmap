@@ -1,3 +1,9 @@
+wwmap-api (2.1.1) unstable; urgency=medium
+
+  * #302 Google api version up
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sat, 18 Apr 2020 11:28:19 +0300
+
 wwmap-api (2.1.0) unstable; urgency=medium
 
   * #250: map js api moved to separate package
