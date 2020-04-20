@@ -1,10 +1,11 @@
 package pdf
 
+//go:generate go-bindata -pkg $GOPACKAGE -o templates.go ./templates
+
 import (
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/cron/catalog-sync/common"
-	"github.com/and-hom/wwmap/cron/catalog-sync/pdf/templates"
 	"github.com/and-hom/wwmap/lib/blob"
 	"github.com/and-hom/wwmap/lib/dao"
 	"strings"
@@ -13,7 +14,7 @@ import (
 const SOURCE = "pdf"
 
 func GetCatalogConnector(pdfStorage, htmlStorage blob.BlobStorage, pageLinkTemplate string) (common.CatalogConnector, error) {
-	t, err := common.LoadTemplates(templates.MustAsset)
+	t, err := common.LoadTemplates(MustAsset)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +53,7 @@ func (this *PdfCatalogConnector) WriteSpotPage(page common.SpotPageDto) error {
 	return nil
 }
 func (this *PdfCatalogConnector) WriteRiverPage(page common.RiverPageDto) error {
-	b, err := this.templates.WriteRiver(RiverPageDto{RiverPageDto: page, Spots: this.spotBuf,})
+	b, err := this.templates.WriteRiver(RiverPageDto{RiverPageDto: page, Spots: this.spotBuf})
 	if err != nil {
 		log.Errorf("Can not process template", err)
 		return err

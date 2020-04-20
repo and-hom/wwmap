@@ -5,9 +5,9 @@
 DEB_VERSION = $(shell dpkg-parsechangelog --show-field Version)
 
 build:
-	cd ../lib/dao/queries; go-bindata -pkg queries .
-	cd ../cron/catalog-sync/huskytm/templates; go-bindata -pkg queries .
-	cd ../cron/catalog-sync/pdf/templates; go-bindata -pkg queries .
+	go install github.com/go-bindata/go-bindata
+	cd ../lib/; go generate -x ./...
+	cd ../cron/; go generate -x ./...
 	go build -ldflags "-X main.version=$(DEB_VERSION)"
 
 override_dh_auto_install:
