@@ -4,7 +4,7 @@
              msg="Если сервис был перезапущен, задачи продолжают выполняться, но отследить их, а также смотреть их логи уже нельзя"></ask>
 
         <div style="margin-left:10px; margin-top: 10px; ">
-            <h2>Таймлайн</h2>
+            <h2>Таймлайн и логи</h2>
             <div style="display: flex;">
                 <div style="display:inline-block">
                     <div style="display:inline-block;">
