@@ -7,32 +7,39 @@
             <h2>Таймлайн</h2>
             <div style="display: flex;">
                 <div style="display:inline-block">
-                    <ul class="legend">
-                        <li>
-                            <svg>
-                                <rect :fill="COLOR_RUNNING"/>
-                            </svg>
-                            Выполняется
-                        </li>
-                        <li>
-                            <svg>
-                                <rect :fill="COLOR_DONE"/>
-                            </svg>
-                            Выполнено
-                        </li>
-                        <li>
-                            <svg>
-                                <rect :fill="COLOR_FAIL"/>
-                            </svg>
-                            Ошибка
-                        </li>
-                        <li>
-                            <svg>
-                                <rect :fill="COLOR_ORPHAN"/>
-                            </svg>
-                            Потерян контроль<a href="#" data-toggle="modal" data-target="#orphan-info"><img
-                                src="img/question_16.png"></a></li>
-                    </ul>
+                    <div style="display:inline-block;">
+                        <ul class="legend">
+                            <li>
+                                <svg>
+                                    <rect :fill="COLOR_RUNNING"/>
+                                </svg>
+                                Выполняется
+                            </li>
+                            <li>
+                                <svg>
+                                    <rect :fill="COLOR_DONE"/>
+                                </svg>
+                                Выполнено
+                            </li>
+                            <li>
+                                <svg>
+                                    <rect :fill="COLOR_FAIL"/>
+                                </svg>
+                                Ошибка
+                            </li>
+                            <li>
+                                <svg>
+                                    <rect :fill="COLOR_ORPHAN"/>
+                                </svg>
+                                Потерян контроль<a href="#" data-toggle="modal" data-target="#orphan-info"><img
+                                    src="img/question_16.png"></a></li>
+                        </ul>
+                    </div>
+                    <div style="display: inline-block; margin-left: 15px; margin-right: 15px; float: right;">
+                        <vue-slider v-model="from"
+                                    v-bind="dateSliderOptions"
+                                    @drag-end="onTimeOffsetChanged()"/>
+                    </div>
                     <GChart
                             :settings="{packages: ['timeline']}"
                             :data="timeline"
@@ -110,10 +117,12 @@
 
 
 <script>
-    import {doGetJson, doGet} from '../api'
+    import {doGet, doGetJson} from '../api'
     import {cronApiBase} from '../config'
 
     const moment = require('moment');
+
+    const DEFAULT_OFFSET_HOURS = 24;
 
     export default {
         created: function () {
@@ -147,6 +156,10 @@
                     tooltip: {
                         isHtml: true,
                     },
+                    hAxis: {
+                        minValue: new Date(Date.now() - DEFAULT_OFFSET_HOURS * 3600 * 1000),
+                        maxValue: new Date(),
+                    }
                 },
                 COLOR_NEW: "#fffa96",
                 COLOR_RUNNING: "#9698ff",
@@ -183,14 +196,33 @@
                     },
                 },
 
+                from: DEFAULT_OFFSET_HOURS,
                 timerID: null,
                 log: this.noLog(),
+
+                dateSliderOptions: {
+                    dotSize: 14,
+                    width: 500,
+                    height: 4,
+                    min: 1,
+                    max: 72,
+                    adsorb: true,
+                    direction: 'rtl',
+                    interval: 1,
+                    tooltipFormatter: val => {
+                        if (val === 1) {
+                            return `Начиная с 1 часа назад`
+                        } else {
+                            return `Начиная с ${val} часов назад`
+                        }
+                    },
+                }
             }
         },
         methods: {
             refresh: function () {
                 let t = this;
-                doGetJson(cronApiBase + "/timeline", true).then(timeline => {
+                doGetJson(`${cronApiBase}/timeline?fromTimeOffset=${-t.from}`, true).then(timeline => {
                     let processed = timeline.map((row, _) => {
                         return [
                             row.title,
@@ -285,6 +317,13 @@
                     stdout: "",
                     stderr: "",
                 }
+            },
+            onTimeOffsetChanged: function () {
+                this.chartOptions.hAxis = {
+                    minValue: new Date(Date.now() - this.from * 3600 * 1000),
+                    maxValue: new Date(),
+                };
+                this.refresh();
             },
         }
     }

@@ -20,6 +20,8 @@ import FileUpload from 'vue-upload-component';
 import Datepicker from 'vuejs-datepicker';
 import {ImageRating} from 'vue-rate-it';
 import VueGoogleCharts from 'vue-google-charts'
+import VueSlider from 'vue-slider-component'
+import 'vue-slider-component/theme/default.css'
 
 import upperFirst from 'lodash/upperFirst'
 import camelCase from 'lodash/camelCase'
@@ -114,6 +116,7 @@ function init(page) {
     Vue.component('image-rating', ImageRating);
     Vue.use(TabsPlugin);
     Vue.use(VueGoogleCharts);
+    Vue.component('VueSlider', VueSlider);
 
     Vue.filter('formatDateTimeStr', function (value) {
         if (value) {

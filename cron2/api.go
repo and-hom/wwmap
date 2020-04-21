@@ -16,7 +16,7 @@ import (
 	"time"
 )
 
-const TIMELINE_DURATION = 24 * time.Hour
+const DEFAULT_TIMELINE_DURATION = 24 * time.Hour
 const MAX_LOG_SIZE = 20 * 1024 * 1024
 
 type CronHandler struct {
@@ -206,7 +206,22 @@ func (this *CronHandler) Logs(w http.ResponseWriter, req *http.Request) {
 	io.CopyN(w, r, MAX_LOG_SIZE)
 }
 
-func (this *CronHandler) Timeline(w http.ResponseWriter, _ *http.Request) {
+func (this *CronHandler) Timeline(w http.ResponseWriter, req *http.Request) {
+	fromTimeOffsetStr := req.FormValue("fromTimeOffset")
+	fromTimeOffset := -DEFAULT_TIMELINE_DURATION
+	if fromTimeOffsetStr != "" {
+		o, err := strconv.Atoi(fromTimeOffsetStr)
+		if err != nil {
+			http2.OnError(w, err, "Can't parse 'fromTimeOffset' int: "+fromTimeOffsetStr, http.StatusBadRequest)
+			return
+		}
+		if o > -1 || o < -72 {
+			http2.OnError(w, err, "Incorrect 'fromTimeOffset': "+fromTimeOffsetStr+". Should be betwen -72 and -1 hours", http.StatusBadRequest)
+			return
+		}
+		fromTimeOffset = time.Duration(o) * time.Hour
+	}
+
 	jobs, err := this.jobDao.list()
 	if err != nil {
 		http2.OnError500(w, err, "Can't list jobs")
@@ -218,7 +233,7 @@ func (this *CronHandler) Timeline(w http.ResponseWriter, _ *http.Request) {
 	}
 
 	now := time.Now()
-	executions, err := this.executionDao.list(now.Add(-TIMELINE_DURATION), now)
+	executions, err := this.executionDao.list(now.Add(fromTimeOffset), now)
 	if err != nil {
 		http2.OnError500(w, err, "Can't list executions")
 		return
