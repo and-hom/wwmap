@@ -224,7 +224,7 @@ func (this *CronHandler) Timeline(w http.ResponseWriter, _ *http.Request) {
 		return
 	}
 
-	data := make([][]interface{}, len(executions))
+	data := make([]Timeline, len(executions))
 
 	for i := 0; i < len(executions); i++ {
 		job := jobsById[executions[i].JobId]
@@ -236,12 +236,12 @@ func (this *CronHandler) Timeline(w http.ResponseWriter, _ *http.Request) {
 			tEnd = time.Time(*(executions[i].End)).Unix()
 		}
 
-		data[i] = []interface{}{
-			fmt.Sprintf("%d - %s", job.Id, job.Title),
-			executions[i].Status,
-			tStart,
-			max(tStart+1, tEnd),
-			executions[i].Id,
+		data[i] = Timeline{
+			Title:       fmt.Sprintf("%d - %s", job.Id, job.Title),
+			Status:      executions[i].Status,
+			Start:       tStart,
+			End:         max(tStart+1, tEnd),
+			ExecutionId: executions[i].Id,
 		}
 	}
 	this.JsonAnswer(w, data)

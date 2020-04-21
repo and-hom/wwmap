@@ -191,15 +191,15 @@
             refresh: function () {
                 let t = this;
                 doGetJson(cronApiBase + "/timeline", true).then(timeline => {
-                    let processed = timeline.map((row, i) => {
+                    let processed = timeline.map((row, _) => {
                         return [
-                            row[0],
-                            row[1],
-                            t.toColor(row[1]),
+                            row.title,
+                            row.status,
+                            t.toColor(row.status),
                             t.tooltipHtml(row),
-                            new Date(row[2] * 1000),
-                            new Date(row[3] * 1000),
-                            row[4],
+                            new Date(row.start * 1000),
+                            new Date(row.end * 1000),
+                            row.execution_id,
 
                         ]
                     });
@@ -247,9 +247,9 @@
                 }
             },
             tooltipHtml: function (row) {
-                let duration = moment.duration(1000 * (row[3] - row[2])).humanize();
-                let from = moment(1000 * row[2]).format('HH:mm:ss');
-                let to = moment(1000 * row[3]).format('HH:mm:ss');
+                let duration = moment.duration(1000 * (row.end - row.start)).humanize();
+                let from = moment(1000 * row.start).format('HH:mm:ss');
+                let to = moment(1000 * row.end).format('HH:mm:ss');
                 let color = 'black';
 
                 return `
@@ -257,13 +257,13 @@
                     <div class="google-visualization-tooltip" style="width: 212px; height: 137px;">
                         <ul class="google-visualization-tooltip-item-list">
                             <li class="google-visualization-tooltip-item">
-                                <span style="font-family:Arial;font-size:12px;color:${color};opacity:1;margin:0;font-style:none;text-decoration:none;font-weight:bold;">${row[1]}</span>
+                                <span style="font-family:Arial;font-size:12px;color:${color};opacity:1;margin:0;font-style:none;text-decoration:none;font-weight:bold;">${row.status}</span>
                             </li>
                         </ul>
                         <div class="google-visualization-tooltip-separator"></div>
                         <ul class="google-visualization-tooltip-action-list">
                             <li data-logicalname="action#" class="google-visualization-tooltip-action">
-                                <span style="font-family:Arial;font-size:12px;color:#000000;opacity:1;margin:0;font-style:none;text-decoration:none;font-weight:bold;">${row[0]}:</span>
+                                <span style="font-family:Arial;font-size:12px;color:#000000;opacity:1;margin:0;font-style:none;text-decoration:none;font-weight:bold;">${row.title}:</span>
                                 <span style="font-family:Arial;font-size:12px;color:#000000;opacity:1;margin:0;font-style:none;text-decoration:none;font-weight:none;"> ${from} - ${to}</span>
                             </li>
                             <li data-logicalname="action#" class="google-visualization-tooltip-action">

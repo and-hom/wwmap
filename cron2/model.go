@@ -29,3 +29,11 @@ type Execution struct {
 	End    *dao.JSONTime `json:"end"`
 	Status Status        `json:"status"`
 }
+
+type Timeline struct {
+	Title       string `json:"title"`
+	Status      Status `json:"status"`
+	Start       int64  `json:"start"`
+	End         int64  `json:"end"`
+	ExecutionId int64  `json:"execution_id"`
+}
