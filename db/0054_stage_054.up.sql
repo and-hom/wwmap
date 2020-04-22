@@ -1,0 +1,1 @@
+ALTER TABLE cron.execution ADD COLUMN manual BOOLEAN NOT NULL DEFAULT false;

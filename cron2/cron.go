@@ -35,6 +35,7 @@ func (this CronWithRegistry) Register(job Job) error {
 		Command:      c,
 		BlobStorage:  this.logStorage,
 		ExecutionDao: this.executionDao,
+		Manual:       false,
 	}
 	entryId, err := this.cron.AddFunc(job.Expr, runner.Run)
 	if err != nil {
@@ -84,6 +85,7 @@ func (this *CronWithRegistry) RunNow(job Job) error {
 			log.Infof("Completed manually started job %d", job.Id)
 			delete(this.manualRunningJobRegistry, job.Id)
 		},
+		Manual: true,
 	}
 
 	this.manualRunningJobRegistry[job.Id] = true

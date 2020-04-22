@@ -96,7 +96,7 @@
     }
 
     .log {
-        margin-left:15px;
+        margin-left: 15px;
     }
 
     .log-title {
@@ -286,11 +286,18 @@
 
                 return `
                 <div>
-                    <div class="google-visualization-tooltip" style="width: 212px; height: 137px;">
+                    <div class="google-visualization-tooltip" style="width: 212px;">
                         <ul class="google-visualization-tooltip-item-list">
                             <li class="google-visualization-tooltip-item">
-                                <span style="font-family:Arial;font-size:12px;color:${color};opacity:1;margin:0;font-style:none;text-decoration:none;font-weight:bold;">${row.status}</span>
+                                <span style="font-family:Arial;font-size:12px;color:${color};opacity:1;margin:0;text-decoration:none;font-weight:bold;">${row.status}</span>
                             </li>
+                            ` + (row.manual ?
+                    `
+                            <li class="google-visualization-tooltip-item" style="margin-top: -10px;">
+                                <span style="font-family:Arial;font-size:10px;color:red;opacity:1;margin:0;text-decoration:none;font-weight:bold;">Запуск вручную</span>
+                            </li>
+                            ` : '') +
+                    `
                         </ul>
                         <div class="google-visualization-tooltip-separator"></div>
                         <ul class="google-visualization-tooltip-action-list">

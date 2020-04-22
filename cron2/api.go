@@ -257,6 +257,7 @@ func (this *CronHandler) Timeline(w http.ResponseWriter, req *http.Request) {
 			Start:       tStart,
 			End:         max(tStart+1, tEnd),
 			ExecutionId: executions[i].Id,
+			Manual:      executions[i].Manual,
 		}
 	}
 	this.JsonAnswer(w, data)

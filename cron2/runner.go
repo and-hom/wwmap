@@ -17,6 +17,7 @@ type Runner struct {
 	ExecutionDao ExecutionDao
 	BlobStorage  blob.BlobStorage
 	OnComplete   func()
+	Manual       bool
 }
 
 const (
@@ -29,7 +30,7 @@ func (this Runner) Run() {
 		defer this.OnComplete()
 	}
 
-	execution, err := this.ExecutionDao.insert(this.Job.Id)
+	execution, err := this.ExecutionDao.insert(this.Job.Id, this.Manual)
 	if err != nil {
 		log.Error("Can't insert execution: ", err)
 		execution = Execution{Id: -1} // fake execution

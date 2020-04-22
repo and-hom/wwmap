@@ -28,6 +28,7 @@ type Execution struct {
 	Start  dao.JSONTime  `json:"start"`
 	End    *dao.JSONTime `json:"end"`
 	Status Status        `json:"status"`
+	Manual bool          `json:"manual"`
 }
 
 type Timeline struct {
@@ -36,4 +37,5 @@ type Timeline struct {
 	Start       int64  `json:"start"`
 	End         int64  `json:"end"`
 	ExecutionId int64  `json:"execution_id"`
+	Manual      bool   `json:"manual"`
 }
