@@ -3,11 +3,16 @@
 * **api** - js api to add whitewater objects to yandex map (see INTEGRATION_ru.md)
 * **backend** - map backend provides river and whitewater information from database
 * **config** - package installs common configuration file of project
-* **cron** - crontab file and utilities called periodically:
-    * **notifier** - sends reports to email
+* **cron** - utilites for periodical execution:
+    * **backup** - script for database backup
     * **catalog-sync** - synchronize database with remote reports and catalogs
-    * **backup** - performs backups to yandex disk
-    * **spot-sort** - spot ordering tool. Calculates order index for each spot relying on the rivar track(s)
+    * **db-clean** - tool for cleaning old data from db
+    * **log-notifications** - creates notification when objects (rivers, spots, etc.) were changed
+    * **meteo** - tool for weather data fetch in configured points
+    * **notifier** - sends reports to email
+    * **spot-sort** - __inactive__ ~~spot ordering tool. Calculates order index for each spot relying on the rivar track(s)~~
+    * **vodinfo-eye** - tool for water level data fetching from gis.vodinfo.ru
+* **cron2** - gocron-based scheduler daemon with rest api (for web ui)    
 * **data** - utilities for OSM xml parsing
 * **db** - database migrations package
 * **frontend** - wwmap site and backoffice frontend
