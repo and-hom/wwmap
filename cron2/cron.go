@@ -12,13 +12,14 @@ import (
 type CronWithRegistry struct {
 	cron                     *cron.Cron
 	jobRegistry              map[int64]cron.EntryID
+	unregisteredReasons      map[int64]string
 	manualRunningJobRegistry map[int64]bool
 	logStorage               blob.BlobStorage
 	executionDao             dao.ExecutionDao
 	commands                 map[string]command.Command
 }
 
-func (this CronWithRegistry) Register(job dao.Job) error {
+func (this *CronWithRegistry) Register(job dao.Job) error {
 	if !job.Enabled {
 		log.Infof("Skip diabled job %d %s %s \"%s\"", job.Id, job.Title, job.Expr, job.Command)
 		return nil
@@ -26,6 +27,7 @@ func (this CronWithRegistry) Register(job dao.Job) error {
 
 	c, commandFound := this.commands[job.Command]
 	if !commandFound {
+		this.unregisteredReasons[job.Id] = "Command not found"
 		log.Warnf("Skip job %d with missing command %s", job.Id, job.Command)
 		return nil
 	}
@@ -40,6 +42,7 @@ func (this CronWithRegistry) Register(job dao.Job) error {
 	}
 	entryId, err := this.cron.AddFunc(job.Expr, runner.Run)
 	if err != nil {
+		this.unregisteredReasons[job.Id] = err.Error()
 		return err
 	}
 
@@ -47,7 +50,7 @@ func (this CronWithRegistry) Register(job dao.Job) error {
 	return nil
 }
 
-func (this CronWithRegistry) Unregister(jobId int64) error {
+func (this *CronWithRegistry) Unregister(jobId int64) error {
 	entryId, ok := this.jobRegistry[jobId]
 	if !ok {
 		return fmt.Errorf("Job with id=%d is not registered in cron", jobId)

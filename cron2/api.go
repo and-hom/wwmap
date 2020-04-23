@@ -26,6 +26,7 @@ type CronHandler struct {
 	executionDao cronDao.ExecutionDao
 	userDao      dao.UserDao
 	logStorage   blob.BlobStorage
+	registry     CronWithRegistry
 	version      string
 	enable       func(cronDao.Job) error
 	disable      func(int64) error
@@ -71,7 +72,14 @@ func (this *CronHandler) List(w http.ResponseWriter, req *http.Request) {
 		http2.OnError500(w, err, "Can't list jobs")
 		return
 	}
-	this.JsonAnswer(w, jobs)
+
+	out := make([]JobDto, len(jobs))
+	for i := 0; i < len(jobs); i++ {
+		_, registered := this.registry.jobRegistry[jobs[i].Id]
+		unregisteredReason, _ := this.registry.unregisteredReasons[jobs[i].Id]
+		out[i] = JobDto{jobs[i], registered, unregisteredReason}
+	}
+	this.JsonAnswer(w, out)
 }
 
 func (this *CronHandler) Get(w http.ResponseWriter, req *http.Request) {

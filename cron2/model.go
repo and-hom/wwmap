@@ -10,3 +10,9 @@ type Timeline struct {
 	ExecutionId int64      `json:"execution_id"`
 	Manual      bool       `json:"manual"`
 }
+
+type JobDto struct {
+	dao.Job
+	Registered         bool   `json:"registered"`
+	UnregisteredReason string `json:"unregistered_reason,omitempty"`
+}

@@ -45,6 +45,7 @@ func main() {
 	registry := CronWithRegistry{
 		cron:                     cron.New(),
 		jobRegistry:              make(map[int64]cron.EntryID),
+		unregisteredReasons:      make(map[int64]string),
 		manualRunningJobRegistry: make(map[int64]bool),
 		executionDao:             executionDao,
 		logStorage:               logStorage,
@@ -69,6 +70,7 @@ func main() {
 		executionDao: executionDao,
 		userDao:      dao.NewUserPostgresDao(storage),
 		logStorage:   logStorage,
+		registry:     registry,
 		version:      version,
 		enable:       registry.Register,
 		disable:      registry.Unregister,

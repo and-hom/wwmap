@@ -27,7 +27,7 @@
                 </thead>
                 <tbody>
                 <tr v-for="job in jobs" :class="rowClass(job)">
-                    <td>{{job.id}}</td>
+                    <td class="wwmap_tooltip">{{job.id}}<span v-if="!job.registered && job.enabled" class="wwmap_tooltiptext">Не зарегистрирован: {{job.unregistered_reason}}</span></td>
                     <td>{{job.title}}</td>
                     <td>{{job.expr}}</td>
                     <td><a href="#" v-on:click="showLogs(job.id)">Логи</a></td>
@@ -55,7 +55,7 @@
 </template>
 
 <style type="text/css">
-    .job-enabled {
+    .job-normal {
 
     }
 
@@ -63,10 +63,32 @@
         color: gray;
         text-decoration: line-through;
     }
+
+    .job-unregistered td:first-child {
+        color: #ff6622;
+        text-decoration: line-through;
+    }
+
+    .wwmap_tooltip .wwmap_tooltiptext {
+        visibility: hidden;
+        background-color: black;
+        color: #fff;
+        text-align: center;
+        border-radius: 6px;
+        padding: 5px 7px;
+
+        /* Position the wwmap_tooltip */
+        position: absolute;
+        z-index: 1;
+    }
+
+    .wwmap_tooltip:hover .wwmap_tooltiptext {
+        visibility: visible;
+    }
 </style>
 
 <script>
-    import {doDelete, doGetJson, doPostJson, doPost} from '../api'
+    import {doDelete, doGetJson, doPost} from '../api'
     import {cronApiBase} from '../config'
 
     export default {
@@ -89,7 +111,7 @@
                 this.refresh();
                 this.resetJobForEdit();
             },
-            getCommands: function() {
+            getCommands: function () {
                 doGetJson(cronApiBase + "/commands", true).then(commands => {
                     this.commands = commands;
                 })
@@ -99,7 +121,7 @@
                     this.jobs = jobs;
                 })
             },
-            runNow: function(id) {
+            runNow: function (id) {
                 let t = this;
                 doPost(cronApiBase + "/job/" + id + "/run", null, true).catch(err => {
                     t.cantRunMessage = err;
@@ -116,7 +138,7 @@
                 doDelete(cronApiBase + "/job/" + id, true).then(this.refresh)
             },
             rowClass: function (job) {
-                return job.enabled ? 'job-enabled' : 'job-disabled'
+                return job.enabled ? (job.registered ? 'job-normal' : 'job-unregistered') : 'job-disabled';
             },
             resetJobForEdit: function () {
                 this.jobForEdit = {
