@@ -5,12 +5,7 @@
             cantRunMessage=''
         }"></ask>
 
-        <div v-if="logs!=null" style="margin-left:10px; margin-top: 10px;">
-            <h2>Логи</h2>
-            <a href="#" v-on:click="logs=null">Назад к задачам</a>
-            <div v-for="log in logs">{{log}}</div>
-        </div>
-        <div v-else style="margin-left:10px; margin-top: 10px;">
+        <div style="margin-left:10px; margin-top: 10px;">
             <h2 style="display: inline;">Задачи</h2>
             <button data-toggle="modal" data-target="#add-job" style="margin-left:30px;">+</button>
             <table class="table">
@@ -19,7 +14,6 @@
                     <th width="50px">Id</th>
                     <th width="250px">Название</th>
                     <th width="150px">Cron-expr<a target="_blank" href="https://ru.wikipedia.org/wiki/Cron"><img src="img/question_16.png"></a></th>
-                    <th width="250px"></th>
                     <th>Команда</th>
                     <th>Аргументы</th>
                     <th></th>
@@ -30,7 +24,6 @@
                     <td class="wwmap_tooltip">{{job.id}}<span v-if="!job.registered && job.enabled" class="wwmap_tooltiptext">Не зарегистрирован: {{job.unregistered_reason}}</span></td>
                     <td>{{job.title}}</td>
                     <td>{{job.expr}}</td>
-                    <td><a href="#" v-on:click="showLogs(job.id)">Логи</a></td>
                     <td>{{job.command}}</td>
                     <td>{{job.args}}</td>
                     <td>
@@ -102,7 +95,6 @@
                 jobs: [],
                 commands: [],
                 jobForEdit: {},
-                logs: null,
                 cantRunMessage: "",
             }
         },
@@ -149,11 +141,6 @@
                     args: "",
                 }
             },
-            showLogs: function (jobId) {
-                doGetJson(cronApiBase + "/logs/" + jobId, true).then(logs => {
-                    this.logs = logs;
-                })
-            }
         }
     }
 </script>
