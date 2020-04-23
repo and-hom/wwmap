@@ -6,7 +6,7 @@ import (
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/lib/config"
-	"io"
+	"github.com/and-hom/wwmap/lib/util"
 	"reflect"
 )
 
@@ -218,7 +218,7 @@ func (this *PostgresStorage) updateReturningColumnsInternal(tx *sql.Tx, query st
 	if err != nil {
 		return [][]interface{}{}, err
 	}
-	defer deferCloser(stmt)
+	defer util.DeferCloser(stmt)
 
 	result := make([][]interface{}, 0, len(values))
 	for _, value := range values {
@@ -248,7 +248,7 @@ func (this *PostgresStorage) updateReturningColumnsInternal(tx *sql.Tx, query st
 		} else if failOnEmptyResult {
 			return [][]interface{}{}, fmt.Errorf("Value is not inserted: %v+\n %s", args, query)
 		}
-		deferCloser(rows)
+		util.DeferCloser(rows)
 	}
 	if failOnEmptyResult && len(result) != len(values) {
 		return [][]interface{}{}, fmt.Errorf("Some values are not inserted. Values len is %d and result len is %d: %v+\n %s",
@@ -262,11 +262,4 @@ func (this *PostgresStorage) PerformUpdates(query string, mapper func(entity int
 		txHolder := tx.(PgTxHolder)
 		return (&txHolder).performUpdates(query, mapper, values...)
 	})
-}
-
-func deferCloser(closer io.Closer) {
-	err := closer.Close()
-	if err != nil {
-		log.Error("Can't close: ", err)
-	}
 }

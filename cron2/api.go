@@ -4,6 +4,7 @@ import (
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/cron2/command"
+	cronDao "github.com/and-hom/wwmap/cron2/dao"
 	"github.com/and-hom/wwmap/lib/blob"
 	"github.com/and-hom/wwmap/lib/dao"
 	"github.com/and-hom/wwmap/lib/handler"
@@ -21,14 +22,14 @@ const MAX_LOG_SIZE = 20 * 1024 * 1024
 
 type CronHandler struct {
 	handler.Handler
-	jobDao       JobDao
-	executionDao ExecutionDao
+	jobDao       cronDao.JobDao
+	executionDao cronDao.ExecutionDao
 	userDao      dao.UserDao
 	logStorage   blob.BlobStorage
 	version      string
-	enable       func(Job) error
+	enable       func(cronDao.Job) error
 	disable      func(int64) error
-	run          func(Job) error
+	run          func(cronDao.Job) error
 	commands     map[string]command.Command
 	commandKeys  []string
 }
@@ -65,7 +66,7 @@ func (this *CronHandler) Commands(w http.ResponseWriter, req *http.Request) {
 }
 
 func (this *CronHandler) List(w http.ResponseWriter, req *http.Request) {
-	jobs, err := this.jobDao.list()
+	jobs, err := this.jobDao.List()
 	if err != nil {
 		http2.OnError500(w, err, "Can't list jobs")
 		return
@@ -82,7 +83,7 @@ func (this *CronHandler) Get(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	jobs, found, err := this.jobDao.get(id)
+	jobs, found, err := this.jobDao.Get(id)
 	if err != nil {
 		http2.OnError500(w, err, fmt.Sprintf("Can't get job with id %d", id))
 		return
@@ -95,7 +96,7 @@ func (this *CronHandler) Get(w http.ResponseWriter, req *http.Request) {
 }
 
 func (this *CronHandler) Upsert(w http.ResponseWriter, req *http.Request) {
-	job := Job{}
+	job := cronDao.Job{}
 	body, err := handler.DecodeJsonBody(req, &job)
 	if err != nil {
 		http2.OnError500(w, err, "Can not parse json from request body: "+body)
@@ -109,7 +110,7 @@ func (this *CronHandler) Upsert(w http.ResponseWriter, req *http.Request) {
 
 	if job.Id > 0 {
 		var enabledStateChanged bool
-		enabledStateChanged, err = this.jobDao.update(job)
+		enabledStateChanged, err = this.jobDao.Update(job)
 		if err != nil {
 			http2.OnError500(w, err, "Can't update")
 			return
@@ -118,7 +119,7 @@ func (this *CronHandler) Upsert(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 	} else {
-		id, err := this.jobDao.insert(job)
+		id, err := this.jobDao.Insert(job)
 		if err != nil {
 			http2.OnError500(w, err, "Can't insert")
 			return
@@ -131,7 +132,7 @@ func (this *CronHandler) Upsert(w http.ResponseWriter, req *http.Request) {
 	this.JsonAnswer(w, true)
 }
 
-func (this *CronHandler) changeJobState(enabledStateChanged bool, job Job, w http.ResponseWriter) bool {
+func (this *CronHandler) changeJobState(enabledStateChanged bool, job cronDao.Job, w http.ResponseWriter) bool {
 	if enabledStateChanged {
 		if job.Enabled {
 			if err := this.enable(job); err != nil {
@@ -161,12 +162,12 @@ func (this *CronHandler) Delete(w http.ResponseWriter, req *http.Request) {
 		log.Warnf("Can't unregister job id=%d from cron: %v", id, err)
 	}
 
-	if err := this.executionDao.removeByJob(id); err != nil {
+	if err := this.executionDao.RemoveByJob(id); err != nil {
 		http2.OnError500(w, err, fmt.Sprintf("Can't delete executions for job with id %d", id))
 		return
 	}
 
-	if err := this.jobDao.remove(id); err != nil {
+	if err := this.jobDao.Remove(id); err != nil {
 		http2.OnError500(w, err, fmt.Sprintf("Can't delete job with id %d", id))
 		return
 	}
@@ -181,7 +182,7 @@ func (this *CronHandler) Logs(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	execution, found, err := this.executionDao.get(id)
+	execution, found, err := this.executionDao.Get(id)
 	if err != nil {
 		http2.OnError500(w, err, "Can not get execution with id "+pathParams["id"])
 		return
@@ -222,18 +223,18 @@ func (this *CronHandler) Timeline(w http.ResponseWriter, req *http.Request) {
 		fromTimeOffset = time.Duration(o) * time.Hour
 	}
 
-	jobs, err := this.jobDao.list()
+	jobs, err := this.jobDao.List()
 	if err != nil {
 		http2.OnError500(w, err, "Can't list jobs")
 		return
 	}
-	jobsById := make(map[int64]Job)
+	jobsById := make(map[int64]cronDao.Job)
 	for i := 0; i < len(jobs); i++ {
 		jobsById[jobs[i].Id] = jobs[i]
 	}
 
 	now := time.Now()
-	executions, err := this.executionDao.list(now.Add(fromTimeOffset), now)
+	executions, err := this.executionDao.List(now.Add(fromTimeOffset), now)
 	if err != nil {
 		http2.OnError500(w, err, "Can't list executions")
 		return
@@ -272,7 +273,7 @@ func (this *CronHandler) Run(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	job, found, err := this.jobDao.get(id)
+	job, found, err := this.jobDao.Get(id)
 	if err != nil {
 		http2.OnError500(w, err, fmt.Sprintf("Failed to get job with id %d", id))
 		return

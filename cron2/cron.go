@@ -4,6 +4,7 @@ import (
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/cron2/command"
+	"github.com/and-hom/wwmap/cron2/dao"
 	"github.com/and-hom/wwmap/lib/blob"
 	"github.com/robfig/cron"
 )
@@ -13,11 +14,11 @@ type CronWithRegistry struct {
 	jobRegistry              map[int64]cron.EntryID
 	manualRunningJobRegistry map[int64]bool
 	logStorage               blob.BlobStorage
-	executionDao             ExecutionDao
+	executionDao             dao.ExecutionDao
 	commands                 map[string]command.Command
 }
 
-func (this CronWithRegistry) Register(job Job) error {
+func (this CronWithRegistry) Register(job dao.Job) error {
 	if !job.Enabled {
 		log.Infof("Skip diabled job %d %s %s \"%s\"", job.Id, job.Title, job.Expr, job.Command)
 		return nil
@@ -64,7 +65,7 @@ func MapKeys(m map[string]command.Command) []string {
 	return result
 }
 
-func (this *CronWithRegistry) RunNow(job Job) error {
+func (this *CronWithRegistry) RunNow(job dao.Job) error {
 	if _, runnigNow := this.manualRunningJobRegistry[job.Id]; runnigNow {
 		return fmt.Errorf("Job %d was started manually and is running just now", job.Id)
 	}

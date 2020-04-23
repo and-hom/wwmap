@@ -1,4 +1,4 @@
-package main
+package dao
 
 import (
 	"database/sql"
@@ -25,7 +25,7 @@ func NewJobPostgresStorage(postgres dao.PostgresStorage) JobDao {
 	}
 }
 
-func (this JobDao) get(id int64) (Job, bool, error) {
+func (this JobDao) Get(id int64) (Job, bool, error) {
 	p, found, err := this.DoFindAndReturn(this.getQuery, scanJob, id)
 	if err != nil {
 		return Job{}, false, err
@@ -36,7 +36,7 @@ func (this JobDao) get(id int64) (Job, bool, error) {
 	return p.(Job), true, nil
 }
 
-func (this JobDao) list() ([]Job, error) {
+func (this JobDao) List() ([]Job, error) {
 	lst, err := this.DoFindList(this.listQuery, scanJob)
 	if err != nil {
 		return []Job{}, err
@@ -44,11 +44,11 @@ func (this JobDao) list() ([]Job, error) {
 	return lst.([]Job), nil
 }
 
-func (this JobDao) remove(id int64) error {
+func (this JobDao) Remove(id int64) error {
 	return this.PerformUpdatesWithinTxOptionally(nil, this.deleteQuery, dao.IdMapper, id)
 }
 
-func (this JobDao) insert(job Job) (int64, error) {
+func (this JobDao) Insert(job Job) (int64, error) {
 	id, err := this.UpdateReturningId(this.insertQuery, func(entity interface{}) ([]interface{}, error) {
 		_e := entity.(Job)
 		return []interface{}{_e.Title, _e.Expr, _e.Enabled, _e.Command, _e.Args}, nil
@@ -59,7 +59,7 @@ func (this JobDao) insert(job Job) (int64, error) {
 	return id[0], err
 }
 
-func (this JobDao) update(job Job) (bool, error) {
+func (this JobDao) Update(job Job) (bool, error) {
 	result, err := this.UpdateReturningColumns(this.updateQuery, func(entity interface{}) ([]interface{}, error) {
 		_e := entity.(Job)
 		return []interface{}{_e.Id, _e.Title, _e.Expr, _e.Enabled, _e.Command, _e.Args}, nil

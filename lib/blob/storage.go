@@ -1,10 +1,12 @@
 package blob
 
 import (
+	"errors"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 type BlobStorage interface {
@@ -47,21 +49,58 @@ func (this BasicFsStorage) Length(id string) (int64, error) {
 }
 
 func (this BasicFsStorage) Remove(id string) error {
-	return os.Remove(this.path(id))
+	p := strings.Split(id, string(os.PathSeparator))
+	if len(p) == 0 {
+		return errors.New("Empty path: " + id)
+	}
+
+	if err := os.Remove(this.path(id)); err != nil {
+		return err
+	}
+
+	for i := len(p) - 1; i > 0; i-- {
+		path := this.path(p[:i]...)
+		contents, err := ioutil.ReadDir(path)
+		if err != nil {
+			return err
+		}
+		if len(contents) > 0 {
+			return nil
+		}
+		if err := os.Remove(path); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (this BasicFsStorage) ListIds() ([]string, error) {
-	infos, err := ioutil.ReadDir(this.BaseDir)
+	return this.findFiles(this.BaseDir, "")
+}
+
+func (this BasicFsStorage) findFiles(dir string, baseName string) ([]string, error) {
+	infos, err := ioutil.ReadDir(dir)
 	if err != nil {
 		return []string{}, err
 	}
 	result := make([]string, 0, len(infos))
 	for i := 0; i < len(infos); i++ {
-		result = append(result, infos[i].Name())
+		if infos[i].IsDir() {
+			subEntries, err := this.findFiles(
+				filepath.Join(dir, infos[i].Name()),
+				filepath.Join(baseName, infos[i].Name()))
+
+			if err != nil {
+				return []string{}, err
+			}
+			result = append(result, subEntries...)
+		} else {
+			result = append(result, filepath.Join(baseName, infos[i].Name()))
+		}
 	}
 	return result, nil
 }
 
-func (this BasicFsStorage) path(id string) string {
-	return filepath.Join(this.BaseDir, id)
+func (this BasicFsStorage) path(id ...string) string {
+	return filepath.Join(this.BaseDir, filepath.Join(id...))
 }

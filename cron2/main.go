@@ -3,6 +3,7 @@ package main
 import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/cron2/command"
+	cronDao "github.com/and-hom/wwmap/cron2/dao"
 	"github.com/and-hom/wwmap/lib/blob"
 	"github.com/and-hom/wwmap/lib/config"
 	"github.com/and-hom/wwmap/lib/dao"
@@ -26,13 +27,19 @@ func main() {
 	configuration := fullConfiguration.Cron
 
 	storage := dao.NewPostgresStorage(fullConfiguration.Db)
-	jobDao := NewJobPostgresStorage(storage)
-	executionDao := NewExecutionPostgresStorage(storage)
-	commands := command.ScanForAvailableCommands()
+	jobDao := cronDao.NewJobPostgresStorage(storage)
+	executionDao := cronDao.NewExecutionPostgresStorage(storage)
 
 	logStorage := blob.BasicFsStorage{
 		BaseDir: configuration.LogDir,
 		Mkdirs:  true,
+	}
+
+	commands := command.ScanForAvailableCommands()
+
+	commands["cron-clean"] = command.CleanerCommand{
+		ExecutionDao: executionDao,
+		LogStorage:   logStorage,
 	}
 
 	registry := CronWithRegistry{
@@ -43,7 +50,7 @@ func main() {
 		logStorage:               logStorage,
 		commands:                 commands,
 	}
-	jobs, err := jobDao.list()
+	jobs, err := jobDao.List()
 	if err != nil {
 		log.Fatal("Can't list jobs: ", err)
 	}
@@ -80,7 +87,7 @@ func main() {
 
 		registry.cron.Stop()
 
-		if err := executionDao.markRunningAsOrphan(); err != nil {
+		if err := executionDao.MarkRunningAsOrphan(); err != nil {
 			log.Error("Can't mark running tasks as orphan! ", err)
 		}
 
