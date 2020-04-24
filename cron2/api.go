@@ -143,14 +143,16 @@ func (this *CronHandler) Upsert(w http.ResponseWriter, req *http.Request) {
 
 func (this *CronHandler) changeJobState(enabledStateChanged bool, job cronDao.Job, w http.ResponseWriter) bool {
 	if enabledStateChanged {
+		_, registered := this.registry.jobRegistry[job.Id]
+		if registered {
+			if err := this.disable(job.Id); err != nil {
+				http2.OnError500(w, err, "Can't unregister job from cron!")
+				return true
+			}
+		}
 		if job.Enabled {
 			if err := this.enable(job); err != nil {
 				http2.OnError500(w, err, "Can't register job in cron!")
-				return true
-			}
-		} else {
-			if err := this.disable(job.Id); err != nil {
-				http2.OnError500(w, err, "Can't unregister job from cron!")
 				return true
 			}
 		}

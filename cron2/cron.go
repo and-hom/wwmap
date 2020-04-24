@@ -60,6 +60,7 @@ func (this *CronWithRegistry) Register(job dao.Job) error {
 }
 
 func (this *CronWithRegistry) Unregister(jobId int64) error {
+	log.Infof("Unregister job %d", jobId)
 	entryId, ok := this.jobRegistry[jobId]
 	if !ok {
 		return fmt.Errorf("Job with id=%d is not registered in cron", jobId)

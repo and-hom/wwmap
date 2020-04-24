@@ -18,10 +18,11 @@ func NewJobPostgresStorage(postgres dao.PostgresStorage) JobDao {
 	return JobDao{
 		PostgresStorage: postgres,
 		insertQuery:     "INSERT INTO cron.job(title, expr, enabled, critical, command, args) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id",
-		updateQuery:     "UPDATE cron.job SET title=$2, expr=$3, enabled=$4, critical=$5, command=$6, args=$7 WHERE id=$1 RETURNING enabled<>(SELECT enabled FROM cron.job WHERE id=$1)",
-		listQuery:       "SELECT id, title, expr, enabled, critical, command, args FROM cron.job ORDER BY id DESC",
-		getQuery:        "SELECT id, title, expr, enabled, critical, command, args FROM cron.job WHERE id=$1",
-		deleteQuery:     "DELETE FROM cron.job WHERE id=$1",
+		updateQuery: "UPDATE cron.job SET title=$2, expr=$3, enabled=$4, critical=$5, command=$6, args=$7 WHERE id=$1 " +
+			"RETURNING enabled<>(SELECT enabled FROM cron.job WHERE id=$1) OR expr<>(SELECT expr FROM cron.job WHERE id=$1)",
+		listQuery:   "SELECT id, title, expr, enabled, critical, command, args FROM cron.job ORDER BY id DESC",
+		getQuery:    "SELECT id, title, expr, enabled, critical, command, args FROM cron.job WHERE id=$1",
+		deleteQuery: "DELETE FROM cron.job WHERE id=$1",
 	}
 }
 
