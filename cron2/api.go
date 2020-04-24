@@ -245,14 +245,17 @@ func (this *CronHandler) Timeline(w http.ResponseWriter, req *http.Request) {
 	}
 
 	now := time.Now()
-	executions, err := this.executionDao.List(now.Add(fromTimeOffset), now)
+	executions, err := this.executionDao.ListSorted(now.Add(fromTimeOffset), now)
 	if err != nil {
 		http2.OnError500(w, err, "Can't list executions")
 		return
 	}
 
-	data := make([]Timeline, len(executions))
+	data := make([]Timeline, 0, len(executions))
 
+	squashDeltaSec := int64(-20 * fromTimeOffset.Hours())
+
+	var previous *Timeline = nil
 	for i := 0; i < len(executions); i++ {
 		job := jobsById[executions[i].JobId]
 
@@ -263,13 +266,27 @@ func (this *CronHandler) Timeline(w http.ResponseWriter, req *http.Request) {
 			tEnd = time.Time(*(executions[i].End)).Unix()
 		}
 
-		data[i] = Timeline{
-			Title:       fmt.Sprintf("%d - %s", job.Id, job.Title),
-			Status:      executions[i].Status,
-			Start:       tStart,
-			End:         max(tStart+1, tEnd),
-			ExecutionId: executions[i].Id,
-			Manual:      executions[i].Manual,
+		if previous != nil &&
+			previous.jobId == job.Id &&
+			previous.Status == executions[i].Status &&
+			(tStart-previous.lastElStart) < squashDeltaSec {
+			previous.lastElStart = tStart
+			previous.End = max(tStart+1, tEnd)
+			previous.SquashedCount += 1
+			previous.ExecutionId = executions[i].Id
+		} else {
+			data = append(data, Timeline{
+				jobId:         job.Id,
+				Title:         fmt.Sprintf("%d - %s", job.Id, job.Title),
+				Status:        executions[i].Status,
+				Start:         tStart,
+				lastElStart:   tStart,
+				End:           max(tStart+1, tEnd),
+				ExecutionId:   executions[i].Id,
+				Manual:        executions[i].Manual,
+				SquashedCount: 1,
+			})
+			previous = &(data[len(data)-1])
 		}
 	}
 	this.JsonAnswer(w, data)

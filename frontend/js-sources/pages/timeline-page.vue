@@ -289,7 +289,7 @@
                     <div class="google-visualization-tooltip" style="width: 212px;">
                         <ul class="google-visualization-tooltip-item-list">
                             <li class="google-visualization-tooltip-item">
-                                <span style="font-family:Arial;font-size:12px;color:${color};opacity:1;margin:0;text-decoration:none;font-weight:bold;">${row.status}</span>
+                                <span style="font-family:Arial;font-size:12px;color:${color};opacity:1;margin:0;text-decoration:none;font-weight:bold;">${row.status + (row.squashed_count>1 ? ` [ x${row.squashed_count} ]` : '')}</span>
                             </li>
                             ` + (row.manual ?
                     `

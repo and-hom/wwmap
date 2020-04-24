@@ -10,7 +10,7 @@ import (
 type ExecutionDao struct {
 	dao.PostgresStorage
 	getQuery                 string
-	listQuery                string
+	listSortedQuery          string
 	insertQuery              string
 	updateStatusQuery        string
 	deleteByJobQuery         string
@@ -22,7 +22,7 @@ func NewExecutionPostgresStorage(postgres dao.PostgresStorage) ExecutionDao {
 	return ExecutionDao{
 		PostgresStorage:          postgres,
 		getQuery:                 "SELECT id, job_id, start, \"end\", status, manual FROM cron.execution WHERE id=$1",
-		listQuery:                "SELECT id, job_id, start, \"end\", status, manual FROM cron.execution WHERE \"end\">=$1 AND start<$2 OR \"end\" IS NULL ORDER BY start ASC",
+		listSortedQuery:          "SELECT id, job_id, start, \"end\", status, manual FROM cron.execution WHERE \"end\">=$1 AND start<$2 OR \"end\" IS NULL ORDER BY job_id ASC, start ASC",
 		insertQuery:              "INSERT INTO cron.execution(job_id, start, \"end\", status, manual) VALUES ($1, $2, $3, $4, $5) RETURNING id, job_id, start, COALESCE(\"end\", to_timestamp(0)), status, manual",
 		updateStatusQuery:        "UPDATE cron.execution SET \"end\" = $2, status = $3 WHERE id=$1",
 		deleteByJobQuery:         "DELETE FROM cron.execution WHERE job_id=$1",
@@ -42,8 +42,8 @@ func (this ExecutionDao) Get(id int64) (Execution, bool, error) {
 	return p.(Execution), true, nil
 }
 
-func (this ExecutionDao) List(from time.Time, to time.Time) ([]Execution, error) {
-	lst, err := this.DoFindList(this.listQuery, scanExecution, from, to)
+func (this ExecutionDao) ListSorted(from time.Time, to time.Time) ([]Execution, error) {
+	lst, err := this.DoFindList(this.listSortedQuery, scanExecution, from, to)
 	if err != nil {
 		return []Execution{}, err
 	}
