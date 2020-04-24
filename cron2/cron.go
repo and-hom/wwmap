@@ -14,6 +14,7 @@ type CronWithRegistry struct {
 	jobRegistry              map[int64]cron.EntryID
 	unregisteredReasons      map[int64]string
 	manualRunningJobRegistry map[int64]bool
+	failedJobs               map[int64]string
 	logStorage               blob.BlobStorage
 	executionDao             dao.ExecutionDao
 	commands                 map[string]command.Command
@@ -39,6 +40,14 @@ func (this *CronWithRegistry) Register(job dao.Job) error {
 		BlobStorage:  this.logStorage,
 		ExecutionDao: this.executionDao,
 		Manual:       false,
+		OnOk: func() {
+			delete(this.failedJobs, job.Id)
+		},
+		OnFail: func(errText string) {
+			if job.Critical {
+				this.failedJobs[job.Id] = errText
+			}
+		},
 	}
 	entryId, err := this.cron.AddFunc(job.Expr, runner.Run)
 	if err != nil {
@@ -90,6 +99,9 @@ func (this *CronWithRegistry) RunNow(job dao.Job) error {
 			delete(this.manualRunningJobRegistry, job.Id)
 		},
 		Manual: true,
+		OnOk: func() {
+			delete(this.failedJobs, job.Id)
+		},
 	}
 
 	this.manualRunningJobRegistry[job.Id] = true

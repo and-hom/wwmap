@@ -17,10 +17,10 @@ type JobDao struct {
 func NewJobPostgresStorage(postgres dao.PostgresStorage) JobDao {
 	return JobDao{
 		PostgresStorage: postgres,
-		insertQuery:     "INSERT INTO cron.job(title, expr, enabled, command, args) VALUES ($1,$2,$3,$4,$5) RETURNING id",
-		updateQuery:     "UPDATE cron.job SET title=$2, expr=$3, enabled=$4, command=$5, args=$6 WHERE id=$1 RETURNING enabled<>(SELECT enabled FROM cron.job WHERE id=$1)",
-		listQuery:       "SELECT id, title, expr, enabled, command, args FROM cron.job ORDER BY id DESC",
-		getQuery:        "SELECT id, title, expr, enabled, command, args FROM cron.job WHERE id=$1",
+		insertQuery:     "INSERT INTO cron.job(title, expr, enabled, critical, command, args) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id",
+		updateQuery:     "UPDATE cron.job SET title=$2, expr=$3, enabled=$4, critical=$5, command=$6, args=$7 WHERE id=$1 RETURNING enabled<>(SELECT enabled FROM cron.job WHERE id=$1)",
+		listQuery:       "SELECT id, title, expr, enabled, critical, command, args FROM cron.job ORDER BY id DESC",
+		getQuery:        "SELECT id, title, expr, enabled, critical, command, args FROM cron.job WHERE id=$1",
 		deleteQuery:     "DELETE FROM cron.job WHERE id=$1",
 	}
 }
@@ -51,7 +51,7 @@ func (this JobDao) Remove(id int64) error {
 func (this JobDao) Insert(job Job) (int64, error) {
 	id, err := this.UpdateReturningId(this.insertQuery, func(entity interface{}) ([]interface{}, error) {
 		_e := entity.(Job)
-		return []interface{}{_e.Title, _e.Expr, _e.Enabled, _e.Command, _e.Args}, nil
+		return []interface{}{_e.Title, _e.Expr, _e.Enabled, _e.Critical, _e.Command, _e.Args}, nil
 	}, true, job)
 	if err != nil {
 		return 0, err
@@ -62,7 +62,7 @@ func (this JobDao) Insert(job Job) (int64, error) {
 func (this JobDao) Update(job Job) (bool, error) {
 	result, err := this.UpdateReturningColumns(this.updateQuery, func(entity interface{}) ([]interface{}, error) {
 		_e := entity.(Job)
-		return []interface{}{_e.Id, _e.Title, _e.Expr, _e.Enabled, _e.Command, _e.Args}, nil
+		return []interface{}{_e.Id, _e.Title, _e.Expr, _e.Enabled, _e.Critical, _e.Command, _e.Args}, nil
 	}, true, job)
 	if err != nil {
 		return false, err
@@ -72,6 +72,6 @@ func (this JobDao) Update(job Job) (bool, error) {
 
 func scanJob(rows *sql.Rows) (Job, error) {
 	result := Job{}
-	err := rows.Scan(&result.Id, &result.Title, &result.Expr, &result.Enabled, &result.Command, &result.Args)
+	err := rows.Scan(&result.Id, &result.Title, &result.Expr, &result.Enabled, &result.Critical, &result.Command, &result.Args)
 	return result, err
 }

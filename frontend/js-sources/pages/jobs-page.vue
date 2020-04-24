@@ -14,6 +14,7 @@
                     <th width="50px">Id</th>
                     <th width="250px">Название</th>
                     <th width="150px">Cron-expr<a target="_blank" href="https://ru.wikipedia.org/wiki/Cron"><img src="img/question_16.png"></a></th>
+                    <th>Флаги</th>
                     <th>Команда</th>
                     <th>Аргументы</th>
                     <th></th>
@@ -24,6 +25,11 @@
                     <td class="wwmap_tooltip">{{job.id}}<span v-if="!job.registered && job.enabled" class="wwmap_tooltiptext">Не зарегистрирован: {{job.unregistered_reason}}</span></td>
                     <td>{{job.title}}</td>
                     <td>{{job.expr}}</td>
+                    <td>
+                        <div v-if="job.critical">Критически важный!</div>
+                        <div v-if="!job.enabled" style="color:gray;">Отключен</div>
+                        <div v-if="job.enabled && !job.registered" style="color:red;">Ошибка регистрации</div>
+                    </td>
                     <td>{{job.command}}</td>
                     <td>{{job.args}}</td>
                     <td>
@@ -54,7 +60,6 @@
 
     .job-disabled {
         color: gray;
-        text-decoration: line-through;
     }
 
     .job-unregistered td:first-child {
@@ -137,6 +142,7 @@
                     title: "",
                     expr: "",
                     enabled: false,
+                    critical: false,
                     command: "",
                     args: "",
                 }

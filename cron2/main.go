@@ -47,6 +47,7 @@ func main() {
 		jobRegistry:              make(map[int64]cron.EntryID),
 		unregisteredReasons:      make(map[int64]string),
 		manualRunningJobRegistry: make(map[int64]bool),
+		failedJobs:               make(map[int64]string),
 		executionDao:             executionDao,
 		logStorage:               logStorage,
 		commands:                 commands,

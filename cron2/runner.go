@@ -18,6 +18,8 @@ type Runner struct {
 	ExecutionDao dao.ExecutionDao
 	BlobStorage  blob.BlobStorage
 	OnComplete   func()
+	OnOk         func()
+	OnFail       func(string)
 	Manual       bool
 }
 
@@ -47,9 +49,11 @@ func (this Runner) Run() {
 	go this.copyStream(execution, STD_ERR, stderr)()
 
 	exitStatus := dao.DONE
+	msg := ""
 
 	if err := cmd.Execute(); err != nil {
-		log.Errorf("Execution %d exited: %v", execution.Id, err)
+		msg = fmt.Sprintf("Execution %d exited: %v", execution.Id, err)
+		log.Errorf(msg)
 		exitStatus = dao.FAIL
 	}
 
@@ -57,6 +61,13 @@ func (this Runner) Run() {
 
 	if exitStatus == dao.DONE {
 		log.Infof("Job %d (execution %d) was successfully ended", this.Job.Id, execution.Id)
+		if this.OnOk != nil {
+			this.OnOk()
+		}
+	} else {
+		if this.OnFail != nil {
+			this.OnFail(msg)
+		}
 	}
 }
 

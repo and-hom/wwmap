@@ -56,6 +56,7 @@ func (this *CronHandler) Init() {
 	this.Register("/timeline", handler.HandlerFunctions{Get: this.ForRoles(this.Timeline, dao.ADMIN)})
 	this.Register("/logs/{id}/{qualifier}", handler.HandlerFunctions{Get: this.ForRoles(this.Logs, dao.ADMIN)})
 	this.Register("/version", handler.HandlerFunctions{Get: this.Version})
+	this.Register("/health", handler.HandlerFunctions{Get: this.Health})
 }
 
 func (this *CronHandler) ForRoles(payload handler.HandlerFunction, roles ...dao.Role) handler.HandlerFunction {
@@ -297,6 +298,15 @@ func (this *CronHandler) Run(w http.ResponseWriter, req *http.Request) {
 
 func (this *CronHandler) Version(w http.ResponseWriter, req *http.Request) {
 	this.JsonAnswer(w, this.version)
+}
+
+func (this *CronHandler) Health(w http.ResponseWriter, req *http.Request) {
+	if len(this.registry.failedJobs) > 0 {
+		http.Error(w, "Some critical jobs failed", http.StatusInternalServerError)
+		this.JsonAnswer(w, this.registry.failedJobs)
+	} else {
+		this.JsonAnswer(w, "ok")
+	}
 }
 
 func max(a int64, b int64) int64 {
