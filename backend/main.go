@@ -42,6 +42,7 @@ func main() {
 	levelDao := NewLevelPostgresDao(storage)
 	levelSensorDao := NewLevelSensorPostgresDao(storage)
 	dbVersionDao := NewDbVersionPostgresDao(storage)
+	transferDao := NewTransferPostgresDao(storage)
 
 	clusterMaker := clustering.NewClusterMaker(configuration.ClusterizationParams)
 
@@ -98,6 +99,7 @@ func main() {
 			ResourceBase:             configuration.Content.ResourceBase,
 			RiverPassportPdfUrlBase:  configuration.RiverPassportPdfStorage.UrlBase,
 			RiverPassportHtmlUrlBase: configuration.RiverPassportHtmlStorage.UrlBase,
+			TransferDao:              transferDao,
 		},
 		&handler.WhiteWaterHandler{App: app, ResourceBase: configuration.Content.ResourceBase, ClusterMaker: clusterMaker},
 		&handler.ReportHandler{app},
@@ -106,6 +108,7 @@ func main() {
 			App:                      app,
 			LevelDao:                 levelDao,
 			LevelSensorDao:           levelSensorDao,
+			TransferDao:              transferDao,
 			ImgStorage:               imgStorage,
 			PreviewImgStorage:        imgPreviewStorage,
 			RiverPassportHtmlStorage: riverPassportHtmlStorage,
@@ -125,6 +128,7 @@ func main() {
 		},
 		handler.CreateSystemHandler(&app, dbVersionDao, version),
 		&handler.MeteoHandler{app},
+		&handler.TransferHandler{app, transferDao},
 	}
 
 	for _, h := range _handlers {

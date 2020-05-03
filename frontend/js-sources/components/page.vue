@@ -3,7 +3,9 @@
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
             <ul class="navbar-nav mr-auto">
                 <li :class="itemClass(page)" v-if="showMenuItem(page)" v-for="page in pages">
-                    <a v-if="page.sub==null" class="nav-link" :href="pageLink(page.href)">{{pageTitle(page)}}</a>
+                    <a v-if="page.sub==null"
+                       :style="page.href=='map.htm' ? 'font-size: x-large; padding-top: 1px; padding-bottom: 1px;' : ''"
+                       class="nav-link" :href="pageLink(page.href)">{{pageTitle(page)}}</a>
                     <a v-else class="nav-link dropdown-toggle" :id="page.id" role="button" data-toggle="dropdown"
                        aria-haspopup="true" aria-expanded="false">{{page.title}}</a>
                     <div v-if="page.sub" class="dropdown-menu" :aria-labelledby="page.id">
@@ -92,6 +94,16 @@
                         href: "editor.htm",
                         title: "Каталог",
                         allow: ['USER', 'ANONYMOUS'],
+                    },
+                    {
+                        id: "2",
+                        title: "Разное",
+                        sub: [
+                            {
+                                href: "transfer.htm",
+                                title: "Заброски",
+                            },
+                        ]
                     },
                     {
                         href: "map.htm",

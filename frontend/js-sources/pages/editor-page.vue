@@ -34,6 +34,7 @@
                             <river-page v-if="rivereditorstate.visible"
                                         v-bind:initial-river="rivereditorstate.river"
                                         v-bind:reports="rivereditorstate.reports"
+                                        v-bind:transfers="rivereditorstate.transfers"
                                         v-bind:country="rivereditorstate.country"
                                         v-bind:region="rivereditorstate.region"
                                         v:sensors="sensors"/>

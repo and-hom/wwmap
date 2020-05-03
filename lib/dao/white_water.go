@@ -432,11 +432,7 @@ func (this whiteWaterStorage) Props() PropertyManager {
 }
 
 func (this whiteWaterStorage) AutoOrderingRiverIds() ([]int64, error) {
-	r, err := this.DoFindList(this.autoOrderingRiverIdsQuery, func(rows *sql.Rows) (int64, error) {
-		id := int64(0)
-		err := rows.Scan(&id)
-		return id, err
-	})
+	r, err := this.DoFindList(this.autoOrderingRiverIdsQuery, Int64ColumnMapper)
 	if err != nil {
 		return []int64{}, err
 	}

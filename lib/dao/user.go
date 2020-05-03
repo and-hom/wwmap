@@ -127,7 +127,9 @@ func userMapper(rows *sql.Rows) (User, error) {
 		user.SessionId = sessionId.String
 	}
 
-	err = json.Unmarshal([]byte(infoStr), &user.Info)
+	if err := json.Unmarshal([]byte(infoStr), &user.Info); err != nil {
+		return user, err
+	}
 	user.AuthProvider = AuthProvider(authProvider)
 
 	return user, err

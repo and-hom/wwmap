@@ -70,12 +70,45 @@
                     <li v-for="report in reports"><a target="_blank" :href="report.url">{{report.title}}</a></li>
                 </ul>
             </dd>
+            <dt>Заброски:
+            </dt>
+            <dd>
+                <ul>
+                    <li v-for="transfer in transfers" class="transfer-row">
+                        <div>
+                            <span class="transfer-title">{{transfer.title}}</span>
+                            <ul class="ti-tags">
+                                <li v-for="station in transfer.stations" class="ti-tag">
+                                    <div class="ti-content">
+                                        <div class="ti-tag-center"><span class="">{{station}}</span></div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="raw-text-content">{{transfer.description}}</div>
+                    </li>
+                </ul>
+            </dd>
         </dl>
     </div>
 </template>
 
 <style type="text/css">
+    .transfer-row {
+        border-bottom: 1px solid #dee2e6;
+        padding-bottom: 7px;
+        margin-bottom: 15px;
+    }
 
+    .transfer-row .transfer-title {
+        font-size: x-large;
+        margin-right: 15px;
+        text-decoration: underline;
+    }
+
+    .transfer-row .ti-tags {
+        display: inline-block;
+    }
 </style>
 
 <script>
@@ -90,7 +123,7 @@
     require("jquery.cookie");
 
     module.exports = {
-        props: ['river', 'reports', 'country', 'region'],
+        props: ['river', 'reports', 'transfers', 'country', 'region'],
         components: {
             FileUpload: FileUpload
         },

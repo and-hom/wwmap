@@ -6,16 +6,30 @@
         <img src="http://gis.vodinfo.ru/informer/draw/v2_{{this}}_400_250_30_ffffff_110_8_7_H_none.png" style="margin-bottom:20px; margin-right:20px;"/>
         {{/each}}
         {{/if}}
+        {{#if transfers.length }}
+        <h3>Заброски</h3>
+        <div style="vertical-align: bottom" class="wwmap-report-list">
+                {{#each transfers}}
+                <h5 style="display: inline-block; margin-right: 15px; margin-bottom: 0px;"><a target="_blank" href="transfer.htm#{{id}}">{{title}}</a></h5>
+                <ul style="display: inline-block; margin-bottom: 0;" class="wwmap-tags">
+                {{#each stations}}
+                    <li style="margin-bottom: 0;" class="wwmap-tag">{{this}}</li>
+                {{/each}}
+                </ul>
+                <div style="margin-bottom:12px; font-size:80%;color:grey;white-space: pre;max-height: 100px;overflow: hidden;background-image: linear-gradient(to bottom, black 75px, transparent 100%);-webkit-background-clip: text;-webkit-text-fill-color: transparent;">{{description}}</div>
+                {{/each}}
+        </div>
+        {{/if}}
         <h3>Отчёты</h3>
         <div class="wwmap-report-list">
-            <ul>
                 {{#each reports}}
                 <h4>{{source}}</h4>
+                <ul>
                 {{#each reports}}
                 <li><a target="_blank" href="{{url}}" title="{{title}}"><img src="{{source_logo_url}}"/>&nbsp;{{#if year>1}}<strong>{{year}}&nbsp;</strong>{{/if}}{{title}}</a></li>
                 {{/each}}
+                </ul>
                 {{/each}}
-            </ul>
         </div>
     </div>
     <div style="margin-bottom: 20px;">

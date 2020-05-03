@@ -24,6 +24,7 @@ type GeoHierarchyHandler struct {
 	App
 	LevelDao                 dao.LevelDao
 	LevelSensorDao           dao.LevelSensorDao
+	TransferDao              dao.TransferDao
 	ImgStorage               blob.BlobStorage
 	PreviewImgStorage        blob.BlobStorage
 	RiverPassportPdfStorage  blob.BlobStorage
@@ -85,6 +86,7 @@ type RiverDto struct {
 	Description string                 `json:"description,omitempty"`
 	Visible     bool                   `json:"visible"`
 	Props       map[string]interface{} `json:"props"`
+	Transfers   []int64                `json:"transfers,omitempty"`
 }
 
 func (this *GeoHierarchyHandler) ListCountries(w http.ResponseWriter, r *http.Request) {
@@ -391,6 +393,8 @@ func (this *GeoHierarchyHandler) SaveRiver(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	this.TransferDao.SetLinksForRiver(id, river.Transfers)
+
 	this.writeRiver(id, w)
 	this.LogUserEvent(r, RIVER_LOG_ENTRY_TYPE, id, logEntryType, riverForDb.Title)
 }
@@ -516,6 +520,12 @@ func (this *GeoHierarchyHandler) writeRiver(riverId int64, w http.ResponseWriter
 		return
 	}
 
+	transfers, err := this.TransferDao.GetIdsForRiver(riverId)
+	if err != nil {
+		OnError500(w, err, fmt.Sprintf("Can not get transfers for river %d", riverId))
+		return
+	}
+
 	riverWithRegion := RiverDto{
 		Id:          river.Id,
 		Title:       river.Title,
@@ -524,6 +534,7 @@ func (this *GeoHierarchyHandler) writeRiver(riverId int64, w http.ResponseWriter
 		Description: river.Description,
 		Visible:     river.Visible,
 		Props:       river.Props,
+		Transfers:   transfers,
 	}
 	this.JsonAnswer(w, riverWithRegion)
 }

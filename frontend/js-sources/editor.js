@@ -45,6 +45,10 @@ export function getReports(riverId) {
     return doGetJson(backendApiBase + "/river/" + riverId + "/reports")
 }
 
+export function getTransfers(riverId) {
+    return doGetJson(backendApiBase + "/transfer/river/" + riverId)
+}
+
 export function getSpots(riverId) {
     return doGetJson(backendApiBase + "/river/" + riverId + "/spots")
 }
@@ -71,6 +75,10 @@ export function removeSpot(id) {
 
 export function getAllRegions() {
     return doGetJson(backendApiBase + "/region")
+}
+
+export function getAllTransfers() {
+    return doGetJson(backendApiBase + "/transfer")
 }
 
 

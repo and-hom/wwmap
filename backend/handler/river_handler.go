@@ -22,6 +22,7 @@ import (
 
 type RiverHandler struct {
 	App
+	TransferDao              dao.TransferDao
 	ResourceBase             string
 	RiverPassportPdfUrlBase  string
 	RiverPassportHtmlUrlBase string
@@ -69,6 +70,7 @@ type RiverPageDto struct {
 	Region       dao.Region             `json:"region"`
 	Description  string                 `json:"description"`
 	Reports      []VoyageReportListDto  `json:"reports"`
+	Transfers    []dao.Transfer         `json:"transfers"`
 	Imgs         []ImgWithSpot          `json:"imgs"`
 	Videos       []ImgWithSpot          `json:"videos"`
 	PdfUrl       string                 `json:"pdf"`
@@ -139,6 +141,12 @@ func (this *RiverHandler) GetRiverCard(w http.ResponseWriter, req *http.Request)
 		}
 	}
 
+	transfers, err := this.TransferDao.ByRiver(riverId)
+	if err != nil {
+		OnError500(w, err, fmt.Sprintf("Can not list transfers for river %d", riverId))
+		return
+	}
+
 	riverCats := dao.CalculateClusterCategory(river.Spots)
 	dto := RiverPageDto{
 		IdTitle:      river.IdTitle,
@@ -146,6 +154,7 @@ func (this *RiverHandler) GetRiverCard(w http.ResponseWriter, req *http.Request)
 		Description:  river.Description,
 		Props:        river.Props,
 		Reports:      reportsList,
+		Transfers:    transfers,
 		Imgs:         imgs,
 		Videos:       videos,
 		PdfUrl:       this.getRiverPassportUrl(&river, this.RiverPassportPdfUrlBase),
