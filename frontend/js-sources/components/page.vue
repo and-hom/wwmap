@@ -98,6 +98,7 @@
                     {
                         id: "2",
                         title: "Разное",
+                        allow: ['EDITOR', 'ADMIN'],
                         sub: [
                             {
                                 href: "transfer.htm",
