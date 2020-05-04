@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"github.com/and-hom/wwmap/lib/dao/queries"
+	"github.com/and-hom/wwmap/lib/util"
 	"sort"
 )
 
@@ -58,7 +59,7 @@ func (this transferStorage) ListFull() ([]TransferFull, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer deferCloser(rows)
+	defer util.DeferCloser(rows)
 
 	byId := make(map[int64]TransferFull)
 

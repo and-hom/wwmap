@@ -1,6 +1,5 @@
 <template>
     <page link="transfer.htm">
-        <a href="#" v-scroll-to="'#row169899'">Scroll to #element</a>
         <div v-if="canEdit">
             <create-transfer :transfer="transferForEdit" :stations="stations" :okFn="editOk"
                              :cancelFn="resetTransferForEdit"/>
@@ -119,7 +118,6 @@
                         let id = `row${t.selected}`;
                         let elt = document.getElementById(id);
                         if (elt) {
-                            console.log("Scroll to active")
                             VueScrollTo.scrollTo(`#row${t.selected}`, 1000, {});
                         } else {
                             console.log("Can't scroll to active")
