@@ -98,8 +98,18 @@
             hasRole(ROLE_ADMIN, ROLE_EDITOR).then(canEdit => this.canEdit = canEdit);
 
             getRiverBounds(this.river.id).then(bounds => {
-                this.bounds = bounds;
                 this.center = [(bounds[0][0] + bounds[1][0]) / 2, (bounds[0][1] + bounds[1][1]) / 2];
+
+                const minBoundsHalfSizeDegrees = 0.01;
+                if (Math.abs(bounds[0][0] - bounds[1][0]) < 2 * minBoundsHalfSizeDegrees && Math.abs(bounds[0][1] - bounds[1][1]) < 2 * minBoundsHalfSizeDegrees) {
+                    this.bounds = [
+                        [this.center[0] - minBoundsHalfSizeDegrees, this.center[1] - minBoundsHalfSizeDegrees],
+                        [this.center[0] + minBoundsHalfSizeDegrees, this.center[1] + minBoundsHalfSizeDegrees],
+                    ];
+                } else {
+                    this.bounds = bounds;
+                }
+
 
                 let hideMap = emptyBounds(this.bounds);
                 if (this.map && hideMap) {
@@ -172,6 +182,9 @@
                     }
                     return "osm#standard"
                 },
+                setDefaultMap: function(type) {
+                    $.cookie("default_editor_map", type, {path: '/'})
+                },
                 showMap: function () {
                     if (emptyBounds(this.bounds)) {
                         return;
@@ -189,6 +202,9 @@
                                 bounds: t.bounds,
                                 type: mapType,
                                 controls: ["zoomControl"]
+                            });
+                            map.events.add('typechange', function () {
+                                t.setDefaultMap(map.getType());
                             });
                             map.controls.add(
                                 new ymaps.control.TypeSelector([
