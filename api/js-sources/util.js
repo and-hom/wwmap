@@ -15,7 +15,7 @@ export const THUNDERFOREST_LANDSCAPE_TILES = 'http://a.tile.thunderforest.com/la
 
 
 export function defaultPosition() {
-    return [78, 46];
+    return [57, 55];
 }
 
 export function getLastPosition() {
