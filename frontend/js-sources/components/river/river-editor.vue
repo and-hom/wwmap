@@ -30,6 +30,16 @@
                     </dd>
                 </dl>
             </b-tab>
+            <b-tab title="Заброски">
+                <div style="margin-top: 10px; margin-bottom: 20px;">
+                    <a target="_blank" href="./transfer.htm">Редактор забросок</a>
+                </div>
+                <v-select multiple
+                          v-model="river.transfers"
+                          :options="allTransfers"
+                          :reduce="transfer => transfer.id"
+                          label="title"/>
+            </b-tab>
             <b-tab title="Системные параметры">
                 <span class="wwmap-system-hint" style="padding-top: 10px;">Тут собраны настройки разных системных вещей для этой реки</span>
                 <props :p="river.props">
@@ -140,23 +150,20 @@
     import {store} from '../../app-state'
     import {
         addMeteoPoint,
-        emptyBounds,
         getAllRegions,
+        getAllTransfers,
         getMeteoPoints,
-        getRiverBounds,
         nvlReturningId,
         saveRiver,
         setActiveEntityUrlHash,
-        setRiverVisible,
     } from '../../editor'
     import {backendApiBase} from '../../config'
-    import {addMapLayers, registerMapSwitchLayersHotkeys} from '../../map-common';
 
     var $ = require("jquery");
     require("jquery.cookie");
 
     module.exports = {
-        props: ['river', 'reports', 'country', 'region'],
+        props: ['river', 'reports', 'transfers', 'country', 'region'],
         components: {
             FileUpload: FileUpload
         },
@@ -194,31 +201,17 @@
                     }
                 });
             });
+
+            getAllTransfers().then(transfers => this.allTransfers = transfers);
             this.selectedSensors = this.river.props.vodinfo_sensors;
         },
         mounted: function () {
             let t = this;
             hasRole(ROLE_ADMIN, ROLE_EDITOR).then(canEdit => this.canEdit = canEdit);
 
-            getRiverBounds(this.river.id).then(bounds => {
-                this.bounds = bounds;
-                this.center = [(bounds[0][0] + bounds[1][0]) / 2, (bounds[0][1] + bounds[1][1]) / 2];
-
-                let hideMap = emptyBounds(this.bounds);
-                if (this.map && hideMap) {
-                    this.map.destroy();
-                    this.map = null;
-                } else if (this.map) {
-                    this.objectManager.setUrlTemplate(backendApiBase + '/ymaps-tile-ww?bbox=%b&zoom=%z&river=' + this.river.id);
-                    this.map.setBounds(this.bounds);
-                } else if (!this.map && !hideMap) {
-                    this.showMap();
-                }
-
-                getMeteoPoints().then(points => {
-                    t.meteoPoints = points;
-                    t.meteoPoint = t.getMeteoPointById(t.river.props.meteo_point);
-                });
+            getMeteoPoints().then(points => {
+                t.meteoPoints = points;
+                t.meteoPoint = t.getMeteoPointById(t.river.props.meteo_point);
             });
         },
         data: function () {
@@ -262,8 +255,6 @@
                         } else if (this.prevCountryId > 0 && this.prevCountryId != updated.region.country_id) {
                             store.dispatch('reloadCountrySubentities', this.prevCountryId);
                         }
-
-                        this.reloadMap();
 
                         this.pageMode = 'view';
 
@@ -343,62 +334,6 @@
                         getMeteoPoints().then(meteoPoints => this.meteoPoints = meteoPoints)
                     });
                 },
-                getDefaultMap: function () {
-                    let defaultMap = $.cookie("default_editor_map");
-                    if (defaultMap && ymaps.mapType.storage.get(defaultMap)) {
-                        return defaultMap
-                    }
-                    return "osm#standard"
-                },
-                showMap: function () {
-                    if (emptyBounds(this.bounds)) {
-                        return;
-                    }
-                    let t = this;
-                    ymaps.ready(function () {
-                        ymaps.modules.require(['overlay.BiPlacemark'], function (BiPlacemarkOverlay) {
-                            if (ymaps.overlay.storage.get("BiPlacemrakOverlay") == null) {
-                                ymaps.overlay.storage.add("BiPlacemrakOverlay", BiPlacemarkOverlay);
-                            }
-                            addMapLayers();
-
-                            let mapType = t.getDefaultMap();
-                            let map = new ymaps.Map("map", {
-                                bounds: t.bounds,
-                                type: mapType,
-                                controls: ["zoomControl"]
-                            });
-                            map.controls.add(
-                                new ymaps.control.TypeSelector([
-                                        'osm#standard',
-                                        'ggc#standard',
-                                        'topomapper#genshtab',
-                                        'marshruty.ru#genshtab',
-                                        'yandex#satellite',
-                                        'google#satellite',
-                                        'bing#satellite',
-                                    ]
-                                )
-                            );
-                            registerMapSwitchLayersHotkeys(map);
-                            var objectManager = new ymaps.RemoteObjectManager(backendApiBase + '/ymaps-tile-ww?bbox=%b&zoom=%z&river=' + t.river.id, {
-                                clusterHasBalloon: false,
-                                geoObjectOpenBalloonOnClick: false,
-                                geoObjectStrokeWidth: 3,
-                                splitRequests: true
-                            });
-                            map.geoObjects.add(objectManager);
-                            t.map = map;
-                            t.objectManager = objectManager;
-                        });
-                    });
-                },
-                reloadMap: function () {
-                    if (this.map) {
-                        this.map.destroy();
-                    }
-                    this.showMap();
-                },
 
                 gpxJustUploaded: false,
                 gpxUrl: function (transliterate) {
@@ -407,6 +342,8 @@
                 csvUrl: function (transliterate) {
                     return `${backendApiBase}/downloads/river/${this.river.id}/csv?tr=${transliterate}`;
                 },
+
+                allTransfers: [],
             }
         },
         methods: {

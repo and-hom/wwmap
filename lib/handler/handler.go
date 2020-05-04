@@ -107,6 +107,15 @@ func (this *Handler) JsonStr(f interface{}, _default string) string {
 	return string(bytes)
 }
 
+func (this *Handler) JsonAnswerF(w http.ResponseWriter, f func() (interface{}, error), errStr string) {
+	payload, err := f()
+	if err != nil {
+		OnError500(w, err, errStr)
+	} else {
+		this.JsonAnswer(w, payload)
+	}
+}
+
 func (this *Handler) JsonAnswer(w http.ResponseWriter, f interface{}) {
 	bytes, err := json.Marshal(f)
 	if err != nil {

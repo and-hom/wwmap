@@ -30,6 +30,11 @@ func (this Bbox) MarshalJSON() ([]byte, error) {
 	return buffer.Bytes(), nil
 }
 
+func (this *Bbox) UnmarshalJSON(data []byte) error {
+	// not required now
+	return nil
+}
+
 func (this Bbox) String() string {
 	buffer := bytes.NewBufferString("[[")
 	buffer.WriteString(fmt.Sprint(this.Y1))

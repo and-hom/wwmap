@@ -70,12 +70,45 @@
                     <li v-for="report in reports"><a target="_blank" :href="report.url">{{report.title}}</a></li>
                 </ul>
             </dd>
+            <dt>Заброски:
+            </dt>
+            <dd>
+                <ul>
+                    <li v-for="transfer in transfers" class="transfer-row">
+                        <div>
+                            <span class="transfer-title">{{transfer.title}}</span>
+                            <ul class="ti-tags">
+                                <li v-for="station in transfer.stations" class="ti-tag">
+                                    <div class="ti-content">
+                                        <div class="ti-tag-center"><span class="">{{station}}</span></div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="raw-text-content">{{transfer.description}}</div>
+                    </li>
+                </ul>
+            </dd>
         </dl>
     </div>
 </template>
 
 <style type="text/css">
+    .transfer-row {
+        border-bottom: 1px solid #dee2e6;
+        padding-bottom: 7px;
+        margin-bottom: 15px;
+    }
 
+    .transfer-row .transfer-title {
+        font-size: x-large;
+        margin-right: 15px;
+        text-decoration: underline;
+    }
+
+    .transfer-row .ti-tags {
+        display: inline-block;
+    }
 </style>
 
 <script>
@@ -90,7 +123,7 @@
     require("jquery.cookie");
 
     module.exports = {
-        props: ['river', 'reports', 'country', 'region'],
+        props: ['river', 'reports', 'transfers', 'country', 'region'],
         components: {
             FileUpload: FileUpload
         },
@@ -98,8 +131,18 @@
             hasRole(ROLE_ADMIN, ROLE_EDITOR).then(canEdit => this.canEdit = canEdit);
 
             getRiverBounds(this.river.id).then(bounds => {
-                this.bounds = bounds;
                 this.center = [(bounds[0][0] + bounds[1][0]) / 2, (bounds[0][1] + bounds[1][1]) / 2];
+
+                const minBoundsHalfSizeDegrees = 0.01;
+                if (Math.abs(bounds[0][0] - bounds[1][0]) < 2 * minBoundsHalfSizeDegrees && Math.abs(bounds[0][1] - bounds[1][1]) < 2 * minBoundsHalfSizeDegrees) {
+                    this.bounds = [
+                        [this.center[0] - minBoundsHalfSizeDegrees, this.center[1] - minBoundsHalfSizeDegrees],
+                        [this.center[0] + minBoundsHalfSizeDegrees, this.center[1] + minBoundsHalfSizeDegrees],
+                    ];
+                } else {
+                    this.bounds = bounds;
+                }
+
 
                 let hideMap = emptyBounds(this.bounds);
                 if (this.map && hideMap) {
@@ -172,6 +215,9 @@
                     }
                     return "osm#standard"
                 },
+                setDefaultMap: function(type) {
+                    $.cookie("default_editor_map", type, {path: '/'})
+                },
                 showMap: function () {
                     if (emptyBounds(this.bounds)) {
                         return;
@@ -189,6 +235,9 @@
                                 bounds: t.bounds,
                                 type: mapType,
                                 controls: ["zoomControl"]
+                            });
+                            map.events.add('typechange', function () {
+                                t.setDefaultMap(map.getType());
                             });
                             map.controls.add(
                                 new ymaps.control.TypeSelector([

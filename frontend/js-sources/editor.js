@@ -45,6 +45,10 @@ export function getReports(riverId) {
     return doGetJson(backendApiBase + "/river/" + riverId + "/reports")
 }
 
+export function getTransfers(riverId) {
+    return doGetJson(backendApiBase + "/transfer/river/" + riverId)
+}
+
 export function getSpots(riverId) {
     return doGetJson(backendApiBase + "/river/" + riverId + "/spots")
 }
@@ -73,6 +77,10 @@ export function getAllRegions() {
     return doGetJson(backendApiBase + "/region")
 }
 
+export function getAllTransfers() {
+    return doGetJson(backendApiBase + "/transfer")
+}
+
 
 export function getRiver(riverId) {
     return doGetJson(backendApiBase + "/river/" + riverId)
@@ -95,7 +103,7 @@ export function getRiverBounds(riverId) {
 }
 
 export function emptyBounds(bounds) {
-    return bounds[0][0] == bounds[1][0] || bounds[0][1] == bounds[1][1];
+    return bounds==null || bounds[0][0] == bounds[1][0] || bounds[0][1] == bounds[1][1];
 }
 
 export function saveRiver(river) {

@@ -517,3 +517,21 @@ func min(x, y int) int {
 	}
 	return y
 }
+
+type Transfer struct {
+	IdTitle
+	Stations    []string `json:"stations"`
+	Description string   `json:"description"`
+}
+
+type TransferFull struct {
+	Transfer
+	Rivers []TransferToRiver `json:"rivers"`
+}
+
+type TransferToRiver struct {
+	IdTitle
+	RegionId  int64 `json:"region_id"`
+	CountryId int64 `json:"country_id"`
+	Bounds    *Bbox `json:"bounds,omitempty"`
+}

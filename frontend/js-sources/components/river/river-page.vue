@@ -38,6 +38,7 @@
         <river-viewer v-if="pageMode=='view'"
                       :river="river"
                       :reports="reports"
+                      :transfers="transfers"
                       :country="country"
                       :region="region"/>
 
@@ -45,6 +46,7 @@
                       ref="editor"
                       :river="river"
                       :reports="reports"
+                      :transfers="transfers"
                       :country="country"
                       :region="region"
                       v:sensors="sensors"/>
@@ -65,7 +67,7 @@
     import {getRiver, getRiverBounds, nvlReturningId, removeRiver, setActiveEntityUrlHash} from '../../editor';
 
     module.exports = {
-        props: ['initialRiver', 'reports', 'country', 'region'],
+        props: ['initialRiver', 'reports', 'transfers', 'country', 'region'],
         computed: {
             pageMode: {
                 get: function () {

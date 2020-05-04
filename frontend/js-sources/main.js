@@ -13,6 +13,7 @@ import LevelPage from './pages/level-page.vue'
 import SitesPage from './pages/sites-page.vue'
 import JobsPage from './pages/jobs-page.vue'
 import TimelinePage from './pages/timeline-page.vue'
+import TransferPage from './pages/transfer-page.vue'
 
 import vSelect from 'vue-select'
 import VueGallery from 'vue-gallery';
@@ -20,6 +21,8 @@ import FileUpload from 'vue-upload-component';
 import Datepicker from 'vuejs-datepicker';
 import {ImageRating} from 'vue-rate-it';
 import VueGoogleCharts from 'vue-google-charts'
+import VueTagsInput from '@johmun/vue-tags-input';
+
 import VueSlider from 'vue-slider-component'
 import 'vue-slider-component/theme/default.css'
 
@@ -57,6 +60,8 @@ const moment = require('moment');
 require("bootstrap");
 
 require('babel-polyfill');
+
+const VueScrollTo = require('vue-scrollto');
 
 export var app;
 
@@ -108,6 +113,10 @@ export function initTimeline() {
     return init(TimelinePage)
 }
 
+export function initTransfer() {
+    return init(TransferPage)
+}
+
 function init(page) {
     Vue.component('v-select', vSelect);
     Vue.component('gallery', VueGallery);
@@ -116,6 +125,8 @@ function init(page) {
     Vue.component('image-rating', ImageRating);
     Vue.use(TabsPlugin);
     Vue.use(VueGoogleCharts);
+    Vue.use(VueTagsInput);
+    Vue.use(VueScrollTo);
     Vue.component('VueSlider', VueSlider);
 
     Vue.filter('formatDateTimeStr', function (value) {

@@ -12,6 +12,7 @@ import {
     getRiversByRegion,
     getSpot,
     getSpots,
+    getTransfers,
     nvlReturningId,
     REGION_ACTIVE_ENTITY_LEVEL,
     RIVER_ACTIVE_ENTITY_LEVEL,
@@ -233,16 +234,19 @@ export const store = new Vuex.Store({
         showRiverPage(state, payload) {
             hideAllEditorPanes(state);
 
-            getRiver(payload.riverId).then(river => {
-                state.rivereditorstate.river = river;
-                state.rivereditorstate.pageMode = 'view';
-                state.rivereditorstate.country = payload.country;
-                state.rivereditorstate.region = payload.region;
-                state.rivereditorstate.visible = true;
-                getReports(payload.riverId).then(reports => {
-                    state.rivereditorstate.reports = reports;
+            Promise.all([getRiver(payload.riverId), getReports(payload.riverId), getTransfers(payload.riverId)])
+                .then(riverData => {
+                    let river = riverData[0];
+                    state.rivereditorstate.river = river;
+                    state.rivereditorstate.pageMode = 'view';
+                    state.rivereditorstate.country = payload.country;
+                    state.rivereditorstate.region = payload.region;
+
+                    state.rivereditorstate.reports = riverData[1];
+                    state.rivereditorstate.transfers = riverData[2];
+
+                    state.rivereditorstate.visible = true;
                 });
-            });
         },
         showSpotPage(state, payload) {
             hideAllEditorPanes(state);
@@ -280,6 +284,8 @@ export const store = new Vuex.Store({
             };
             state.rivereditorstate.country = payload.country;
             state.rivereditorstate.region = payload.region;
+            state.rivereditorstate.reports = [];
+            state.rivereditorstate.transfers = [];
         },
 
         showCountrySubentities(state, payload) {

@@ -146,8 +146,8 @@ func (this *UserInfoHandler) SetRole(w http.ResponseWriter, r *http.Request) {
 
 	user := dao.User{}
 	for i := 0; i < len(users); i++ {
-		if users[i].Id == userId && users[i].AuthProvider == dao.YANDEX {
-			this.sendChangeRoleMessage(users[i].AuthProvider, users[i].Id, users[i].Info, oldRole, newRole)
+		if users[i].Id == userId {
+			this.sendChangeRoleMessage(users[i].Id, users[i].Info, users[i].AuthProvider, oldRole, newRole)
 		}
 		if users[i].Id == userId {
 			user = users[i]
@@ -193,8 +193,8 @@ func (this *UserInfoHandler) SetExperimentalFeatures(w http.ResponseWriter, r *h
 	}
 
 	for i := 0; i < len(users); i++ {
-		if users[i].Id == userId && users[i].AuthProvider == dao.YANDEX {
-			this.sendChangeExperimentalModeMessage(users[i].AuthProvider, users[i].Id, users[i].Info, oldExperimentalMode, newExperimentalMode)
+		if users[i].Id == userId {
+			this.sendChangeExperimentalModeMessage(users[i].AuthProvider, users[i].Id, users[i].Info, newExperimentalMode)
 		}
 	}
 
@@ -253,11 +253,16 @@ func (this *UserInfoHandler) GetVkToken(w http.ResponseWriter, r *http.Request) 
 	this.JsonAnswer(w, answer)
 }
 
-func (this *UserInfoHandler) sendChangeRoleMessage(authProvider dao.AuthProvider, userId int64, info dao.UserInfo, oldRole dao.Role, newRole dao.Role) {
+func (this *UserInfoHandler) sendChangeRoleMessage(userId int64, info dao.UserInfo, authProvider dao.AuthProvider, oldRole dao.Role, newRole dao.Role) {
+	recipient := notification.GetRecipient(authProvider, info)
+	if recipient == nil {
+		return
+	}
+
 	err := this.NotificationDao.Add(dao.Notification{
 		Object:     dao.IdTitle{Id: userId, Title: info.Login},
 		Comment:    fmt.Sprintf("%s => %s", oldRole, newRole),
-		Recipient:  dao.NotificationRecipient{Provider: dao.NOTIFICATION_PROVIDER_EMAIL, Recipient: notification.YandexEmail(info.Login)},
+		Recipient:  *recipient,
 		Classifier: "user-roles",
 		SendBefore: time.Now(), // send as soon as possible
 	})
@@ -266,7 +271,12 @@ func (this *UserInfoHandler) sendChangeRoleMessage(authProvider dao.AuthProvider
 	}
 }
 
-func (this *UserInfoHandler) sendChangeExperimentalModeMessage(authProvider dao.AuthProvider, userId int64, info dao.UserInfo, old bool, new bool) {
+func (this *UserInfoHandler) sendChangeExperimentalModeMessage(authProvider dao.AuthProvider, userId int64, info dao.UserInfo, new bool) {
+	recipient := notification.GetRecipient(authProvider, info)
+	if recipient == nil {
+		return
+	}
+
 	comment := ""
 	if new {
 		comment = "включены"
@@ -276,7 +286,7 @@ func (this *UserInfoHandler) sendChangeExperimentalModeMessage(authProvider dao.
 	err := this.NotificationDao.Add(dao.Notification{
 		Object:     dao.IdTitle{Id: userId, Title: info.Login},
 		Comment:    comment,
-		Recipient:  dao.NotificationRecipient{Provider: dao.NOTIFICATION_PROVIDER_EMAIL, Recipient: notification.YandexEmail(info.Login)},
+		Recipient:  *recipient,
 		Classifier: "user-experimental-features",
 		SendBefore: time.Now(), // send as soon as possible
 	})
@@ -296,15 +306,26 @@ func (this *UserInfoHandler) sendWelcomeMessages(authProvider dao.AuthProvider, 
 		log.Errorf("Can't create new user notification for admin: %v", err)
 	}
 
-	if authProvider == dao.YANDEX || authProvider == dao.GOOGLE {
-		if err := this.NotificationDao.Add(dao.Notification{
-			IdTitle:    dao.IdTitle{Title: string(authProvider)},
-			Object:     dao.IdTitle{Id: id, Title: string(info.Login)},
-			Recipient:  dao.NotificationRecipient{Provider: dao.NOTIFICATION_PROVIDER_EMAIL, Recipient: notification.YandexEmail(info.Login)},
-			Classifier: "user-welcome",
-			SendBefore: time.Now(), // send as soon as possible
-		}); err != nil {
-			log.Errorf("Can't create welcome notification for user: %v", err)
-		}
+	recipient := notification.GetRecipient(authProvider, Convert(info))
+	if recipient == nil {
+		return
+	}
+
+	if err := this.NotificationDao.Add(dao.Notification{
+		IdTitle:    dao.IdTitle{Title: string(authProvider)},
+		Object:     dao.IdTitle{Id: id, Title: string(info.Login)},
+		Recipient:  *recipient,
+		Classifier: "user-welcome",
+		SendBefore: time.Now(), // send as soon as possible
+	}); err != nil {
+		log.Errorf("Can't create welcome notification for user: %v", err)
+	}
+}
+
+func Convert(info passport.UserInfo) dao.UserInfo {
+	return dao.UserInfo{
+		Login:     info.Login,
+		FirstName: info.FirstName,
+		LastName:  info.LastName,
 	}
 }

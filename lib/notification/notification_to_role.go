@@ -49,14 +49,29 @@ func (this *NotificationHelper) NotificationToRole(notification dao.Notification
 	}
 	notifications := make([]dao.Notification, 0, len(users))
 	for i := 0; i < len(users); i++ {
-		if users[i].AuthProvider == dao.YANDEX {
+		r := GetRecipient(users[i].AuthProvider, users[i].Info)
+		if r != nil {
 			newNotification := notification
-			newNotification.Recipient = dao.NotificationRecipient{
-				Provider:  dao.NOTIFICATION_PROVIDER_EMAIL,
-				Recipient: YandexEmail(users[i].Info.Login),
-			}
+			newNotification.Recipient = *r
 			notifications = append(notifications, newNotification)
 		}
 	}
 	return notifications, nil
+}
+
+func GetRecipient(authProvider dao.AuthProvider, info dao.UserInfo) *dao.NotificationRecipient {
+	switch authProvider {
+	case dao.YANDEX:
+		return &dao.NotificationRecipient{
+			Provider:  dao.NOTIFICATION_PROVIDER_EMAIL,
+			Recipient: YandexEmail(info.Login),
+		}
+	case dao.GOOGLE:
+		return &dao.NotificationRecipient{
+			Provider:  dao.NOTIFICATION_PROVIDER_EMAIL,
+			Recipient: info.Login,
+		}
+	default:
+		return nil
+	}
 }
