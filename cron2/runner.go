@@ -4,6 +4,7 @@ import (
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/cron2/command"
+	"github.com/and-hom/wwmap/cron2/dao"
 	"github.com/and-hom/wwmap/lib/blob"
 	"io"
 	"os"
@@ -12,11 +13,14 @@ import (
 )
 
 type Runner struct {
-	Job          Job
+	Job          dao.Job
 	Command      command.Command
-	ExecutionDao ExecutionDao
+	ExecutionDao dao.ExecutionDao
 	BlobStorage  blob.BlobStorage
 	OnComplete   func()
+	OnOk         func()
+	OnFail       func(string)
+	Manual       bool
 }
 
 const (
@@ -29,10 +33,10 @@ func (this Runner) Run() {
 		defer this.OnComplete()
 	}
 
-	execution, err := this.ExecutionDao.insert(this.Job.Id)
+	execution, err := this.ExecutionDao.Insert(this.Job.Id, this.Manual)
 	if err != nil {
 		log.Error("Can't insert execution: ", err)
-		execution = Execution{Id: -1} // fake execution
+		execution = dao.Execution{Id: -1} // fake execution
 	}
 
 	log.Infof("Run job %d execution %d: %s %s %s \"%s\"",
@@ -44,31 +48,40 @@ func (this Runner) Run() {
 	go this.copyStream(execution, STD_OUT, stdout)()
 	go this.copyStream(execution, STD_ERR, stderr)()
 
-	exitStatus := DONE
+	exitStatus := dao.DONE
+	msg := ""
 
 	if err := cmd.Execute(); err != nil {
-		log.Errorf("Execution %d exited: %v", execution.Id, err)
-		exitStatus = FAIL
+		msg = fmt.Sprintf("Execution %d exited: %v", execution.Id, err)
+		log.Errorf(msg)
+		exitStatus = dao.FAIL
 	}
 
 	this.updateStatus(execution, exitStatus)
 
-	if exitStatus == DONE {
+	if exitStatus == dao.DONE {
 		log.Infof("Job %d (execution %d) was successfully ended", this.Job.Id, execution.Id)
+		if this.OnOk != nil {
+			this.OnOk()
+		}
+	} else {
+		if this.OnFail != nil {
+			this.OnFail(msg)
+		}
 	}
 }
 
-func (this Runner) updateStatus(e Execution, s Status) {
+func (this Runner) updateStatus(e dao.Execution, s dao.Status) {
 	if e.Id < 0 {
 		log.Error("Try to change status of fake execution - nothing to do")
 		return
 	}
-	if err := this.ExecutionDao.setStatus(e.Id, s); err != nil {
+	if err := this.ExecutionDao.SetStatus(e.Id, s); err != nil {
 		log.Errorf("Can't set status for execution %d: %v", e.Id, err)
 	}
 }
 
-func (this Runner) copyStream(execution Execution, qualifier string, stream io.ReadCloser) func() {
+func (this Runner) copyStream(execution dao.Execution, qualifier string, stream io.ReadCloser) func() {
 	return func() {
 		if stream == nil {
 			return
@@ -88,6 +101,6 @@ func (this Runner) copyStream(execution Execution, qualifier string, stream io.R
 	}
 }
 
-func LogFileKey(execution Execution, qualifier string) string {
+func LogFileKey(execution dao.Execution, qualifier string) string {
 	return filepath.Join(fmt.Sprint(execution.JobId), fmt.Sprint(execution.Id), qualifier)
 }

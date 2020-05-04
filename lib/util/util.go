@@ -95,3 +95,10 @@ func (t *headCachingReader) Read(p []byte) (n int, err error) {
 func (t *headCachingReader) GetCache() *bytes.Buffer {
 	return t.buf
 }
+
+func DeferCloser(closer io.Closer) {
+	err := closer.Close()
+	if err != nil {
+		logrus.Error("Can't close: ", err)
+	}
+}

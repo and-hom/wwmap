@@ -13,6 +13,7 @@
                         <label for="task_title">Название</label><input id="task_title" v-model="job.title"/>
                         <label for="cron_expr">Cron expression</label><input id="cron_expr" v-model="job.expr"/>
                         <label for="enabled">Включен</label><input type="checkbox" id="enabled" v-model="job.enabled"/>
+                        <label for="critical">Критически важный</label><input type="checkbox" id="critical" v-model="job.critical"/>
                         <label for="command">Команда</label>
                         <select id="command" v-model="job.command">
                             <option v-for="(command_id, command) in commands" v-bind:value="command">

@@ -23,6 +23,8 @@ import {ImageRating} from 'vue-rate-it';
 import VueGoogleCharts from 'vue-google-charts'
 import VueTagsInput from '@johmun/vue-tags-input';
 
+import VueSlider from 'vue-slider-component'
+import 'vue-slider-component/theme/default.css'
 
 import upperFirst from 'lodash/upperFirst'
 import camelCase from 'lodash/camelCase'
@@ -125,6 +127,7 @@ function init(page) {
     Vue.use(VueGoogleCharts);
     Vue.use(VueTagsInput);
     Vue.use(VueScrollTo);
+    Vue.component('VueSlider', VueSlider);
 
     Vue.filter('formatDateTimeStr', function (value) {
         if (value) {

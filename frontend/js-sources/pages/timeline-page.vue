@@ -4,35 +4,42 @@
              msg="Если сервис был перезапущен, задачи продолжают выполняться, но отследить их, а также смотреть их логи уже нельзя"></ask>
 
         <div style="margin-left:10px; margin-top: 10px; ">
-            <h2>Таймлайн</h2>
+            <h2>Таймлайн и логи</h2>
             <div style="display: flex;">
                 <div style="display:inline-block">
-                    <ul class="legend">
-                        <li>
-                            <svg>
-                                <rect :fill="COLOR_RUNNING"/>
-                            </svg>
-                            Выполняется
-                        </li>
-                        <li>
-                            <svg>
-                                <rect :fill="COLOR_DONE"/>
-                            </svg>
-                            Выполнено
-                        </li>
-                        <li>
-                            <svg>
-                                <rect :fill="COLOR_FAIL"/>
-                            </svg>
-                            Ошибка
-                        </li>
-                        <li>
-                            <svg>
-                                <rect :fill="COLOR_ORPHAN"/>
-                            </svg>
-                            Потерян контроль<a href="#" data-toggle="modal" data-target="#orphan-info"><img
-                                src="img/question_16.png"></a></li>
-                    </ul>
+                    <div style="display:inline-block;">
+                        <ul class="legend">
+                            <li>
+                                <svg>
+                                    <rect :fill="COLOR_RUNNING"/>
+                                </svg>
+                                Выполняется
+                            </li>
+                            <li>
+                                <svg>
+                                    <rect :fill="COLOR_DONE"/>
+                                </svg>
+                                Выполнено
+                            </li>
+                            <li>
+                                <svg>
+                                    <rect :fill="COLOR_FAIL"/>
+                                </svg>
+                                Ошибка
+                            </li>
+                            <li>
+                                <svg>
+                                    <rect :fill="COLOR_ORPHAN"/>
+                                </svg>
+                                Потерян контроль<a href="#" data-toggle="modal" data-target="#orphan-info"><img
+                                    src="img/question_16.png"></a></li>
+                        </ul>
+                    </div>
+                    <div style="display: inline-block; margin-left: 15px; margin-right: 15px; float: right;">
+                        <vue-slider v-model="from"
+                                    v-bind="dateSliderOptions"
+                                    @drag-end="onTimeOffsetChanged()"/>
+                    </div>
                     <GChart
                             :settings="{packages: ['timeline']}"
                             :data="timeline"
@@ -89,7 +96,7 @@
     }
 
     .log {
-        margin-left:15px;
+        margin-left: 15px;
     }
 
     .log-title {
@@ -110,10 +117,12 @@
 
 
 <script>
-    import {doGetJson, doGet} from '../api'
+    import {doGet, doGetJson} from '../api'
     import {cronApiBase} from '../config'
 
     const moment = require('moment');
+
+    const DEFAULT_OFFSET_HOURS = 24;
 
     export default {
         created: function () {
@@ -147,6 +156,10 @@
                     tooltip: {
                         isHtml: true,
                     },
+                    hAxis: {
+                        minValue: new Date(Date.now() - DEFAULT_OFFSET_HOURS * 3600 * 1000),
+                        maxValue: new Date(),
+                    }
                 },
                 COLOR_NEW: "#fffa96",
                 COLOR_RUNNING: "#9698ff",
@@ -183,23 +196,42 @@
                     },
                 },
 
+                from: DEFAULT_OFFSET_HOURS,
                 timerID: null,
                 log: this.noLog(),
+
+                dateSliderOptions: {
+                    dotSize: 14,
+                    width: 500,
+                    height: 4,
+                    min: 1,
+                    max: 72,
+                    adsorb: true,
+                    direction: 'rtl',
+                    interval: 1,
+                    tooltipFormatter: val => {
+                        if (val === 1) {
+                            return `Начиная с 1 часа назад`
+                        } else {
+                            return `Начиная с ${val} часов назад`
+                        }
+                    },
+                }
             }
         },
         methods: {
             refresh: function () {
                 let t = this;
-                doGetJson(cronApiBase + "/timeline", true).then(timeline => {
-                    let processed = timeline.map((row, i) => {
+                doGetJson(`${cronApiBase}/timeline?fromTimeOffset=${-t.from}`, true).then(timeline => {
+                    let processed = timeline.map((row, _) => {
                         return [
-                            row[0],
-                            row[1],
-                            t.toColor(row[1]),
+                            row.title,
+                            row.status,
+                            t.toColor(row.status),
                             t.tooltipHtml(row),
-                            new Date(row[2] * 1000),
-                            new Date(row[3] * 1000),
-                            row[4],
+                            new Date(row.start * 1000),
+                            new Date(row.end * 1000),
+                            row.execution_id,
 
                         ]
                     });
@@ -247,23 +279,30 @@
                 }
             },
             tooltipHtml: function (row) {
-                let duration = moment.duration(1000 * (row[3] - row[2])).humanize();
-                let from = moment(1000 * row[2]).format('HH:mm:ss');
-                let to = moment(1000 * row[3]).format('HH:mm:ss');
+                let duration = moment.duration(1000 * (row.end - row.start)).humanize();
+                let from = moment(1000 * row.start).format('HH:mm:ss');
+                let to = moment(1000 * row.end).format('HH:mm:ss');
                 let color = 'black';
 
                 return `
                 <div>
-                    <div class="google-visualization-tooltip" style="width: 212px; height: 137px;">
+                    <div class="google-visualization-tooltip" style="width: 212px;">
                         <ul class="google-visualization-tooltip-item-list">
                             <li class="google-visualization-tooltip-item">
-                                <span style="font-family:Arial;font-size:12px;color:${color};opacity:1;margin:0;font-style:none;text-decoration:none;font-weight:bold;">${row[1]}</span>
+                                <span style="font-family:Arial;font-size:12px;color:${color};opacity:1;margin:0;text-decoration:none;font-weight:bold;">${row.status + (row.squashed_count>1 ? ` [ x${row.squashed_count} ]` : '')}</span>
                             </li>
+                            ` + (row.manual ?
+                    `
+                            <li class="google-visualization-tooltip-item" style="margin-top: -10px;">
+                                <span style="font-family:Arial;font-size:10px;color:red;opacity:1;margin:0;text-decoration:none;font-weight:bold;">Запуск вручную</span>
+                            </li>
+                            ` : '') +
+                    `
                         </ul>
                         <div class="google-visualization-tooltip-separator"></div>
                         <ul class="google-visualization-tooltip-action-list">
                             <li data-logicalname="action#" class="google-visualization-tooltip-action">
-                                <span style="font-family:Arial;font-size:12px;color:#000000;opacity:1;margin:0;font-style:none;text-decoration:none;font-weight:bold;">${row[0]}:</span>
+                                <span style="font-family:Arial;font-size:12px;color:#000000;opacity:1;margin:0;font-style:none;text-decoration:none;font-weight:bold;">${row.title}:</span>
                                 <span style="font-family:Arial;font-size:12px;color:#000000;opacity:1;margin:0;font-style:none;text-decoration:none;font-weight:none;"> ${from} - ${to}</span>
                             </li>
                             <li data-logicalname="action#" class="google-visualization-tooltip-action">
@@ -285,6 +324,13 @@
                     stdout: "",
                     stderr: "",
                 }
+            },
+            onTimeOffsetChanged: function () {
+                this.chartOptions.hAxis = {
+                    minValue: new Date(Date.now() - this.from * 3600 * 1000),
+                    maxValue: new Date(),
+                };
+                this.refresh();
             },
         }
     }
