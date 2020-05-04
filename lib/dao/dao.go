@@ -203,3 +203,14 @@ type LevelDao interface {
 type DbVersionDao interface {
 	GetDbVersion() (int, error)
 }
+
+type TransferDao interface {
+	List() ([]Transfer, error)
+	ByRiver(riverId int64) ([]Transfer, error)
+	ListFull() ([]TransferFull, error)
+	Insert(transfer TransferFull) (int64, error)
+	Update(transfer TransferFull) error
+	Remove(id int64) error
+	SetLinksForRiver(riverId int64, transfers []int64) error
+	GetIdsForRiver(int64) ([]int64, error)
+}

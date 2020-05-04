@@ -66,7 +66,7 @@
 </style>
 
 <script>
-    import {doDelete, doGetJson, doPostJson, doPost} from '../api'
+    import {doDelete, doGetJson, doPost} from '../api'
     import {cronApiBase} from '../config'
 
     export default {

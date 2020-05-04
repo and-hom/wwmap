@@ -33,3 +33,22 @@
 ul {
     list-style-type: none;
 }
+
+.ti-tags {
+    list-style-type: none;
+    padding: 0;
+}
+
+.ti-tag {
+    background-color: #5C6BC0;
+    color: #fff;
+    border-radius: 2px;
+    display: inline-block;
+    padding: 3px 5px;
+    margin: 2px;
+    font-size: .85em;
+}
+
+.raw-text-content {
+    white-space: pre;
+}

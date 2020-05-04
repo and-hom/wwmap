@@ -30,6 +30,16 @@
                     </dd>
                 </dl>
             </b-tab>
+            <b-tab title="Заброски">
+                <div style="margin-top: 10px; margin-bottom: 20px;">
+                    <a target="_blank" href="./transfer.htm">Редактор забросок</a>
+                </div>
+                <v-select multiple
+                          v-model="river.transfers"
+                          :options="allTransfers"
+                          :reduce="transfer => transfer.id"
+                          label="title"/>
+            </b-tab>
             <b-tab title="Системные параметры">
                 <span class="wwmap-system-hint" style="padding-top: 10px;">Тут собраны настройки разных системных вещей для этой реки</span>
                 <props :p="river.props">
@@ -141,6 +151,7 @@
     import {
         addMeteoPoint,
         getAllRegions,
+        getAllTransfers,
         getMeteoPoints,
         nvlReturningId,
         saveRiver,
@@ -152,7 +163,7 @@
     require("jquery.cookie");
 
     module.exports = {
-        props: ['river', 'reports', 'country', 'region'],
+        props: ['river', 'reports', 'transfers', 'country', 'region'],
         components: {
             FileUpload: FileUpload
         },
@@ -190,6 +201,8 @@
                     }
                 });
             });
+
+            getAllTransfers().then(transfers => this.allTransfers = transfers);
             this.selectedSensors = this.river.props.vodinfo_sensors;
         },
         mounted: function () {
@@ -329,6 +342,8 @@
                 csvUrl: function (transliterate) {
                     return `${backendApiBase}/downloads/river/${this.river.id}/csv?tr=${transliterate}`;
                 },
+
+                allTransfers: [],
             }
         },
         methods: {

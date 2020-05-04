@@ -254,3 +254,18 @@
     column-count: 2;
     width: 300px;
 }
+
+.wwmap-tags {
+    list-style-type: none;
+    padding: 0;
+}
+
+.wwmap-tag {
+    background-color: #5C6BC0;
+    color: #fff;
+    border-radius: 2px;
+    display: inline-block;
+    padding: 3px 5px;
+    margin: 2px;
+    font-size: .85em;
+}

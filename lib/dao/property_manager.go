@@ -51,7 +51,7 @@ func (this PropertyManagerImpl) SetBoolProperty(name string, id int64, value boo
 }
 
 func (this PropertyManagerImpl) GetStringProperty(name string, id int64) (string, error) {
-	i, found, err := this.getProperty(name, "varchar", StrincColumnMapper, id)
+	i, found, err := this.getProperty(name, "varchar", StringColumnMapper, id)
 	if err != nil {
 		return "", err
 	}
