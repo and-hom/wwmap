@@ -18,8 +18,14 @@
         </nav>
         <slot></slot>
         <footer class="footer">
-            <div class="container wwmap-footer">
-                <span v-if="showTechInfo"><span>Версия бэкенда:&nbsp;{{backVersion}}</span><span>Версия фронтенда:&nbsp;{{frontVersion}}</span><span>Версия базы:&nbsp;{{dbVersion}}</span></span><span>Контакт для связи:&nbsp;<a
+            <div class="wwmap-footer">
+                <span v-if="showTechInfo">
+                    <span>Версия бэкенда:&nbsp;{{backVersion}}</span>
+                    <span>Версия фронтенда:&nbsp;{{frontVersion}}</span>
+                    <span>Версия t-cache:&nbsp;{{tCacheVersion}}</span>
+                    <span>Версия cron:&nbsp;{{cronVersion}}</span>
+                    <span>Версия базы:&nbsp;{{dbVersion}}</span>
+                </span><span>Контакт для связи:&nbsp;<a
                     href="mailto:info@wwmap.ru">info@wwmap.ru</a></span>
             </div>
         </footer>
@@ -54,6 +60,7 @@
         padding-right: 15px;
         padding-left: 15px;
         margin-left: 0;
+        margin-right: 0;
     }
 
     .wwmap-footer span {
@@ -63,7 +70,7 @@
 
 <script>
     import {frontendVersion} from '../config'
-    import {getBackendVersion, getDbVersion} from '../api'
+    import {getBackendVersion, getTCacheVersion, getCronVersion, getDbVersion} from '../api'
     import {getRoles, ROLE_ADMIN, ROLE_EDITOR} from '../auth'
 
 
@@ -72,6 +79,8 @@
         created: function () {
             getDbVersion().then(version => this.dbVersion = version);
             getBackendVersion().then(version => this.backVersion = version);
+            getTCacheVersion().then(version => this.tCacheVersion = version);
+            getCronVersion().then(version => this.cronVersion = version);
             let x = getRoles();
             x.then(roles => {
                 this.roles = roles;
@@ -216,7 +225,9 @@
                 },
                 backVersion: '–',
                 dbVersion: '–',
-                frontVersion: frontendVersion
+                frontVersion: frontendVersion,
+                tCacheVersion: '–',
+                cronVersion: '–',
             }
         },
     }

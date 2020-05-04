@@ -1,4 +1,4 @@
-import {backendApiBase} from './config'
+import {backendApiBase, tCacheApiBase, cronApiBase} from './config'
 import {getWwmapSessionId} from './auth'
 
 export function sendRequest(url, _type, auth) {
@@ -75,6 +75,14 @@ function onLoad(xhr, resolve, reject) {
 
 export function getBackendVersion() {
     return doGetJson(backendApiBase + "/version")
+}
+
+export function getTCacheVersion() {
+    return doGetJson(tCacheApiBase + "/version")
+}
+
+export function getCronVersion() {
+    return doGetJson(cronApiBase + "/version")
 }
 
 export function getDbVersion() {
