@@ -1,3 +1,10 @@
+wwmap-api (2.1.2) unstable; urgency=medium
+
+  * #315 Change default map location
+  * #12 Transfers catalog
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Mon, 04 May 2020 12:54:41 +0300
+
 wwmap-api (2.1.1) unstable; urgency=medium
 
   * #302 Google api version up

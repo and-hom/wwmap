@@ -1,3 +1,9 @@
+wwmap-cron-modules (0.0.31) unstable; urgency=medium
+
+  * #303 Use go generate instead of direct call of go-bindata from debian/rules
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Mon, 04 May 2020 12:57:22 +0300
+
 wwmap-cron-modules (0.0.30) unstable; urgency=medium
 
   * #61 Set image date and level for automatically imported images from sources

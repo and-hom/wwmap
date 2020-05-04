@@ -1,3 +1,21 @@
+wwmap-frontend (0.0.62) unstable; urgency=medium
+
+  * Remove map api from river editor page: unused
+  * #12 Temporary disabled "misc" menu for regular users
+  * #12 Transfers catalog
+  * #267 Fix river bounds on map in editor + change default editor map on type changed on river page
+  * #300 Squash neighbour executions if they are too close in current timeline resolution
+  * #300 Mark some jobs as critical and make alert by monitoring
+  * #300 Reomve log links from jobs tab
+  * #300 Show unregistered job reasons on UI
+  * #300 Manual job start label
+  * #300 Timeline page header changed
+  * #300 User can change timeline offset hours from -1 to -72
+  * #300 Json response for timeline api
+  * #302 Fix google api version (simple increment) for editor
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Mon, 04 May 2020 13:01:32 +0300
+
 wwmap-frontend (0.0.61) unstable; urgency=medium
 
   * #61 Fix screen refresh on image with date in exif uploaded

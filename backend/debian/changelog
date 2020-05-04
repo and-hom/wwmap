@@ -1,3 +1,11 @@
+wwmap-backend (0.0.57) unstable; urgency=medium
+
+  * #12 Transfers catalog
+  * #221 - send mail to all mail recipients, not only yndx
+  * #303 Use go generate instead of direct call of go-bindata from debian/rules
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Mon, 04 May 2020 12:55:59 +0300
+
 wwmap-backend (0.0.56) unstable; urgency=medium
 
   * #302 Google api version up

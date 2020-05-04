@@ -1,3 +1,16 @@
+wwmap-cron (1.0.1) unstable; urgency=medium
+
+  * #300 Squash neighbour executions if they are too close in current timeline resolution
+  * #300 Re-register job on cron expr changed
+  * #300 Mark some jobs as critical and make alert by monitoring
+  * #300 Show unregistered job reasons on UI
+  * #300 Clean old cron executions info
+  * #300 Manual job start label
+  * #300 User can change timeline offset hours from -1 to -72
+  * #300 Json response for timeline api
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Mon, 04 May 2020 12:57:47 +0300
+
 wwmap-cron (1.0.0) unstable; urgency=medium
 
   * Initial release. (Closes: #300)

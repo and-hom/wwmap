@@ -1,3 +1,12 @@
+wwmap-db (0.0.30) unstable; urgency=medium
+
+  * #12 Transfers catalog
+  * #300 Mark some jobs as critical and make alert by monitoring
+  * #300 Clean old cron executions info
+  * #300 Manual job start label
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Mon, 04 May 2020 13:00:00 +0300
+
 wwmap-db (0.0.29) unstable; urgency=medium
 
   * #300 Manage cron tasks and their's logs on UI
