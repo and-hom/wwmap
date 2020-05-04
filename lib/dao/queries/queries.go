@@ -1,5 +1,7 @@
 package queries
 
+//go:generate go-bindata -pkg $GOPACKAGE -o bindata.go ./
+
 import (
 	"bytes"
 	log "github.com/Sirupsen/logrus"
@@ -29,7 +31,7 @@ func read(r []byte, result *map[string]string) {
 			if key == "" {
 				log.Fatalf("Should use --@query-name construction before query: %s", line)
 			}
-			if contents.Len()>0 {
+			if contents.Len() > 0 {
 				contents.WriteString(" ")
 			}
 			contents.WriteString(line)
@@ -70,7 +72,7 @@ func sqlQuery(file string, name string, walkedIdsStack []string) string {
 		log.Fatalf("Can not get sql query for key %s in file %s", name, file)
 	}
 	query = strings.Replace(query, "\n", "", -1)
-	log.Debug("\"" +query+"\"")
+	log.Debug("\"" + query + "\"")
 	return subQueryReplacer.ReplaceAllStringFunc(query, func(src string) string {
 		queryId := subQueryReplacer.FindStringSubmatch(src)[1]
 		for i := 0; i < len(walkedIdsStack); i++ {

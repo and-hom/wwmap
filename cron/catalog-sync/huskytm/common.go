@@ -1,11 +1,13 @@
 package huskytm
 
+//go:generate go-bindata -pkg $GOPACKAGE -o templates.go ./templates
+
 import (
-	log "github.com/Sirupsen/logrus"
-	"strconv"
-	"net/http"
-	"fmt"
 	"errors"
+	"fmt"
+	log "github.com/Sirupsen/logrus"
+	"net/http"
+	"strconv"
 )
 
 const SOURCE string = "huskytm"
@@ -13,7 +15,6 @@ const API_BASE string = "https://huskytm.ru/wp-json/wp/v2"
 const CUSTOM_FIELDS_API_BASE string = "https://huskytm.ru/wp-json/acf/v3"
 const TIME_FORMAT string = "2006-01-02T15:04:05"
 const TOTAL_PAGES_HEADER = "X-WP-TotalPages"
-
 
 func emptyMap() map[string]interface{} {
 	return make(map[string]interface{})

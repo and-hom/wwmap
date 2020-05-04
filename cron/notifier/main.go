@@ -1,5 +1,7 @@
 package main
 
+//go:generate go-bindata -pkg $GOPACKAGE -o templates.go ./templates
+
 import (
 	"fmt"
 	log "github.com/Sirupsen/logrus"

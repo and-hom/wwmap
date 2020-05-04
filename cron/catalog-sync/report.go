@@ -1,9 +1,10 @@
 package main
 
+//go:generate go-bindata -pkg $GOPACKAGE -o bindata.go ./email-template
+
 import (
 	"bytes"
 	log "github.com/Sirupsen/logrus"
-	"github.com/and-hom/wwmap/cron/catalog-sync/bindata"
 	"github.com/and-hom/wwmap/cron/catalog-sync/common"
 	"github.com/and-hom/wwmap/cron/vodinfo-eye/graduation"
 	"github.com/and-hom/wwmap/lib/dao"
@@ -222,7 +223,7 @@ func (this *App) Fatalf(err error, pattern string, args ...interface{}) {
 }
 
 func (this *App) Report(err error) {
-	tmpl, err := template.New("report-email").Parse(string(bindata.MustAsset("email-template")))
+	tmpl, err := template.New("report-email").Parse(string(MustAsset("email-template")))
 	if err != nil {
 		log.Fatal("Can not compile email template:\t", err)
 	}

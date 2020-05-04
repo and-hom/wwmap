@@ -5,7 +5,6 @@ import (
 	log "github.com/Sirupsen/logrus"
 	wp "github.com/and-hom/go-wordpress"
 	"github.com/and-hom/wwmap/cron/catalog-sync/common"
-	templates "github.com/and-hom/wwmap/cron/catalog-sync/huskytm/templates"
 	"github.com/and-hom/wwmap/lib/dao"
 	"github.com/and-hom/wwmap/lib/util"
 	"net/http"
@@ -26,7 +25,7 @@ func GetCatalogConnector(login, password string, minDeltaBetweenRequests time.Du
 	if r.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("Connection failed. Code: %d Body: %s", r.StatusCode, string(b))
 	}
-	t, err := common.LoadTemplates(templates.MustAsset)
+	t, err := common.LoadTemplates(MustAsset)
 	if err != nil {
 		return nil, err
 	}

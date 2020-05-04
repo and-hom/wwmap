@@ -1,9 +1,10 @@
 package main
 
+//go:generate go-bindata -pkg $GOPACKAGE -o pattern-data.go ./pattern
+
 import (
 	"bytes"
 	log "github.com/Sirupsen/logrus"
-	"github.com/and-hom/wwmap/cron/vodinfo-eye/pattern"
 	_ "golang.org/x/image/bmp"
 	"image"
 	"math"
@@ -21,14 +22,14 @@ func NewPatternMatcher() (PatternMatcher, error) {
 	re := regexp.MustCompile("^(-?\\d+)\\.\\w{3}$")
 
 	patterns := make(map[int]image.Image)
-	for _, name := range pattern.AssetNames() {
+	for _, name := range AssetNames() {
 		if matches := re.FindStringSubmatch(name); matches != nil {
 			id, err := strconv.Atoi(matches[1])
 			if err != nil {
 				log.Errorf("Failed to parse pattern id %s %v", matches[1], err)
 				continue
 			}
-			patternImageBytes := pattern.MustAsset(matches[0])
+			patternImageBytes := MustAsset(matches[0])
 			pImg, _, err := image.Decode(bytes.NewReader(patternImageBytes))
 			if err != nil {
 				log.Errorf("Failed to load pattern image %s %v", matches[1], err)
@@ -59,7 +60,7 @@ func (this *patternMatcher) Match(src image.Image, xLimit int) map[int]int {
 		pH := patternBounds.Dy()
 		for y := 0; y < (src.Bounds().Dy() - pH + 1); y++ {
 			for x := 0; x < (xLimit - pW + 1); x++ {
-				if (this.matches(pNum, src, x, y)) {
+				if this.matches(pNum, src, x, y) {
 					result[pNum] = y
 				}
 			}
