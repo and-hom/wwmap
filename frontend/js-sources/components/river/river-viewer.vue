@@ -100,11 +100,11 @@
             getRiverBounds(this.river.id).then(bounds => {
                 this.center = [(bounds[0][0] + bounds[1][0]) / 2, (bounds[0][1] + bounds[1][1]) / 2];
 
-                const minDelta = 0.01;
-                if (Math.abs(bounds[0][0] - bounds[1][0]) < 2 * minDelta && Math.abs(bounds[0][1] - bounds[1][1]) < 2 * minDelta) {
+                const minBoundsHalfSizeDegrees = 0.01;
+                if (Math.abs(bounds[0][0] - bounds[1][0]) < 2 * minBoundsHalfSizeDegrees && Math.abs(bounds[0][1] - bounds[1][1]) < 2 * minBoundsHalfSizeDegrees) {
                     this.bounds = [
-                        [this.center[0] - minDelta, this.center[1] - minDelta],
-                        [this.center[0] + minDelta, this.center[1] + minDelta],
+                        [this.center[0] - minBoundsHalfSizeDegrees, this.center[1] - minBoundsHalfSizeDegrees],
+                        [this.center[0] + minBoundsHalfSizeDegrees, this.center[1] + minBoundsHalfSizeDegrees],
                     ];
                 } else {
                     this.bounds = bounds;
