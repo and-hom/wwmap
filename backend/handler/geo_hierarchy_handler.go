@@ -34,6 +34,8 @@ type GeoHierarchyHandler struct {
 
 func (this *GeoHierarchyHandler) Init() {
 	this.Register("/country", HandlerFunctions{Get: this.ListCountries})
+	this.Register("/country/{countryId}", HandlerFunctions{Get: this.GetCountry})
+	this.Register("/country/code/{code}", HandlerFunctions{Get: this.GetCountryByCode})
 	this.Register("/country/{countryId}/region", HandlerFunctions{Get: this.ListRegions})
 	this.Register("/country/{countryId}/region/{regionId}/river", HandlerFunctions{Get: this.ListRegionRivers})
 	this.Register("/country/{countryId}/river", HandlerFunctions{Get: this.ListCountryRivers})
@@ -113,6 +115,26 @@ func (this *GeoHierarchyHandler) ListCountries(w http.ResponseWriter, r *http.Re
 	JsonAnswer(w, countries)
 }
 
+func (this *GeoHierarchyHandler) GetCountry(w http.ResponseWriter, r *http.Request) {
+	pathParams := mux.Vars(r)
+	countryId, err := strconv.ParseInt(pathParams["countryId"], 10, 64)
+	if err != nil {
+		OnError(w, err, "Can not parse id", http.StatusBadRequest)
+		return
+	}
+	this.JsonAnswerFWith404(w, func() (interface{}, bool, error) {
+		return this.CountryDao.Get(countryId)
+	}, "Can't select country with id %d", countryId)
+}
+
+func (this *GeoHierarchyHandler) GetCountryByCode(w http.ResponseWriter, r *http.Request) {
+	pathParams := mux.Vars(r)
+	code := pathParams["code"]
+	this.JsonAnswerFWith404(w, func() (interface{}, bool, error) {
+		return this.CountryDao.GetByCode(code)
+	}, "Can't select country with code %s", code)
+}
+
 func (this *GeoHierarchyHandler) ListRegions(w http.ResponseWriter, r *http.Request) {
 	pathParams := mux.Vars(r)
 	countryId, err := strconv.ParseInt(pathParams["countryId"], 10, 64)
@@ -140,13 +162,13 @@ func (this *GeoHierarchyHandler) ListAllRegions(w http.ResponseWriter, r *http.R
 
 func (this *GeoHierarchyHandler) GetRegion(w http.ResponseWriter, r *http.Request) {
 	pathParams := mux.Vars(r)
-	riverId, err := strconv.ParseInt(pathParams["regionId"], 10, 64)
+	countryId, err := strconv.ParseInt(pathParams["regionId"], 10, 64)
 	if err != nil {
 		OnError(w, err, "Can not parse id", http.StatusBadRequest)
 		return
 	}
 
-	this.writeRegion(riverId, w)
+	this.writeRegion(countryId, w)
 }
 
 func (this *GeoHierarchyHandler) SaveRegion(w http.ResponseWriter, r *http.Request) {

@@ -8,6 +8,7 @@ import {
     setLastPositionZoomType,
     isMobileBrowser,
     createCampsUrlPart,
+    createCountryUrlPart,
 } from './util';
 import {bingSatTiles} from './map-urls/bing'
 import {googleSatTiles} from './map-urls/google'
@@ -27,6 +28,7 @@ export function WWMap(divId, bubbleTemplate, riverList, tutorialPopup, catalogLi
     this.catFilter = 1;
     this.showUnpublished = false;
     this.showCamps = true;
+    this.countryId = true;
 
     this.onBoundsChange = null;
 
@@ -87,7 +89,8 @@ WWMap.prototype.createHelpBtn = function () {
 WWMap.prototype.createObjectsUrlTemplate = function () {
     let unpublishedUrlPart = createUnpublishedUrlPart(this.showUnpublished);
     let campsPart = createCampsUrlPart(this.showCamps);
-    return `${apiBase}/ymaps-tile-ww?bbox=%b&zoom=%z&link_type=${this.catalogLinkType}${unpublishedUrlPart}${campsPart}`;
+    let countryPart = createCountryUrlPart(this.countryId)
+    return `${apiBase}/ymaps-tile-ww?bbox=%b&zoom=%z&link_type=${this.catalogLinkType}${unpublishedUrlPart}${campsPart}${countryPart}`;
 };
 
 WWMap.prototype.setShowUnpublished = function (showUnpublished) {
@@ -104,19 +107,25 @@ WWMap.prototype.setShowCamps = function (showCamps) {
     this.objectManager.reloadData();
 };
 
-WWMap.prototype.init = function () {
-    var positionAndZoom = getLastPositionAndZoom();
+WWMap.prototype.init = function (opts) {
+    this.countryId = opts ? opts.countryId : null;
+    let defaultPositionValue = opts ? opts.defaultCenter : defaultPosition();
+    let useHash = opts ? opts.useHash : true;
+    let options = opts ? opts.mapOptions : {};
 
-    var yMap;
+    let positionAndZoom = getLastPositionAndZoom(countryId, useHash, defaultPositionValue);
+
+    let yMap;
     try {
         yMap = new ymaps.Map(this.divId, {
             center: positionAndZoom.position,
             zoom: positionAndZoom.zoom,
             controls: ["zoomControl", "fullscreenControl"],
             type: positionAndZoom.type
-        });
+        }, options);
     } catch (err) {
-        setLastPositionZoomType(defaultPosition(), defaultZoom(), defaultMapType());
+        setLastPositionZoomType(defaultPositionValue,
+            defaultZoom(), defaultMapType(), useHash, countryId);
         throw err
     }
     this.yMap = yMap;
@@ -183,7 +192,7 @@ WWMap.prototype.init = function () {
     this.yMap.events.add('boundschange', function (e) {
         let center = t.yMap.getCenter();
         let zoom = t.yMap.getZoom();
-        setLastPositionZoomType(center, zoom, t.yMap.getType());
+        setLastPositionZoomType(center, zoom, t.yMap.getType(), useHash, countryId);
         t.loadRivers(e.get("newBounds"))
         if (t.onBoundsChange) {
             t.onBoundsChange(center, zoom)
@@ -191,10 +200,10 @@ WWMap.prototype.init = function () {
     });
 
     this.yMap.events.add('typechange', function (e) {
-        setLastPositionZoomType(t.yMap.getCenter(), t.yMap.getZoom(), t.yMap.getType())
+        setLastPositionZoomType(t.yMap.getCenter(), t.yMap.getZoom(), t.yMap.getType(), useHash, countryId)
     });
 
-    var objectManager = new ymaps.RemoteObjectManager(this.createObjectsUrlTemplate(), {
+    let objectManager = new ymaps.RemoteObjectManager(this.createObjectsUrlTemplate(), {
         clusterHasBalloon: false,
         geoObjectOpenBalloonOnClick: false,
         geoObjectBalloonContentLayout: ymaps.templateLayoutFactory.createClass(this.bubbleTemplate),

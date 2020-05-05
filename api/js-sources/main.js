@@ -7,9 +7,10 @@ import {loadFragment} from "./template-data";
 import {initPresets} from './placemark-preset';
 import {initLayoutFilters} from "./layout-template-filter";
 
-import './style/map.css';
-import './contrib/lightbox.min.css';
-import './contrib/lightbox.min';
+import './style/map.css'
+import './contrib/lightbox.min.css'
+import './contrib/lightbox.min'
+import {doGet} from "./api";
 import {regiterTemplate7Helpers} from "./template7-helpers";
 
 require('./tube');
@@ -98,6 +99,122 @@ export function initWWMap(mapId, riversListId, options) {
         } catch (e) {
             reject(e);
         }
+    });
+}
+
+export function initWWMapRegional(mapId, countryCode, riversListId, options) {
+    let optDefined = typeof options == 'object';
+
+    let catalogLinkType = optDefined ? options.catalogLinkType : null;
+    let riversTemplateData = optDefined ? options.riversTemplateData : null;
+    userInfoFunction = optDefined ? options.userInfoFunction : null;
+
+    if (catalogLinkType && CATALOG_LINK_TYPES.indexOf(catalogLinkType) <= -1) {
+        throw "Unknown catalog link type. Available are: " + CATALOG_LINK_TYPES
+    }
+
+    // initialize popup windows
+    reportPopup = new WWMapPopup('report_popup', 'report_popup_template', {
+        submitUrl: apiBase + "/report",
+        okMsg: "Запрос отправлен. Я прочитаю его по мере наличия свободного времени",
+        failMsg: "Что-то пошло не так...",
+        // To prevent contents lost
+        closeOnEscape: false,
+        closeOnMouseClickOutside: false
+    });
+    tutorialPopup = new WWMapPopup('info_popup', 'info_popup_template');
+
+    // riverList
+    if (riversListId) {
+        riverList = new RiverList(riversListId, 'rivers_template', riversTemplateData)
+    }
+
+    // init and show map
+    ymaps.ready(function () {
+        loadFragment('bubble_template').then(bubbleContent => {
+            wwMap = new WWMap(mapId, bubbleContent, riverList, tutorialPopup, catalogLinkType);
+            ymaps.modules.require(['overlay.BiPlacemark'], function (BiPlacemarkOverlay) {
+                ymaps.overlay.storage.add("BiPlacemrakOverlay", BiPlacemarkOverlay);
+                ymaps.borders.load("001").then(function (countries) {
+                    let restrictMapArea = null;
+                    let geoObject = null;
+                    let center = null;
+                    let dMax = 1.0;
+                    for (let i = 0; i < countries.features.length; i++) {
+                        if (countries.features[i].properties && countries.features[i].properties.iso3166 != countryCode) {
+                            continue
+                        }
+
+                        try {
+                            let regionCoords = countries.features[i].geometry.coordinates[0];
+                            geoObject = new ymaps.Polygon([
+                                [
+                                    [-80, 179],
+                                    [80, 179],
+                                    [80, 0],
+                                    [80, -179],
+                                    [-80, -179],
+                                    [-80, 0],
+                                    [-80, 179]
+                                ],
+                                regionCoords,
+                            ], {}, {
+                                fill: true,
+                                fillOpacity: 1,
+                                fillColor: '#ffffff',
+                            });
+
+                            restrictMapArea = [[90, 180], [-90, -180]];
+                            for (let i = 0; i < regionCoords.length; i++) {
+                                let point = regionCoords[i];
+                                if (restrictMapArea[0][0] > point[0]) {
+                                    restrictMapArea[0][0] = point[0];
+                                }
+                                if (restrictMapArea[1][0] < point[0]) {
+                                    restrictMapArea[1][0] = point[0];
+                                }
+                                if (restrictMapArea[0][1] > point[1]) {
+                                    restrictMapArea[0][1] = point[1];
+                                }
+                                if (restrictMapArea[1][1] < point[1]) {
+                                    restrictMapArea[1][1] = point[1];
+                                }
+                            }
+
+                            let dx = Math.abs(restrictMapArea[0][0] - restrictMapArea[1][0])
+                            let dy = Math.abs(restrictMapArea[0][1] - restrictMapArea[1][1])
+                            dMax = 0.9 * Math.max(dx, dy)
+
+                            let centerX = (restrictMapArea[0][0] + restrictMapArea[1][0]) / 2
+                            let centerY = (restrictMapArea[0][1] + restrictMapArea[1][1]) / 2
+
+                            center = [centerX, centerY]
+                            restrictMapArea = [[centerX - dMax, centerY - dMax], [centerX + dMax, centerY + dMax]];
+                        } catch (e) {
+                            console.error(e)
+                        }
+                    }
+                    let mapOptions = restrictMapArea ? {
+                        restrictMapArea: restrictMapArea,
+                        minZoom: Math.max(Math.floor(Math.log(180 / dMax) / Math.log(2)), 1),
+                    } : {};
+
+                    doGet(`${apiBase}/country/code/${countryCode}`).then(resp => {
+                        return JSON.parse(resp)
+                    }).then(country => {
+                        wwMap.init({
+                            countryId: country.id,
+                            defaultCenter: center,
+                            useHash: false,
+                            mapOptions: mapOptions,
+                        })
+                        if (geoObject) {
+                            wwMap.yMap.geoObjects.add(geoObject);
+                        }
+                    })
+                });
+            });
+        });
     });
 }
 

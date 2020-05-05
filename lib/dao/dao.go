@@ -118,6 +118,8 @@ type ImgDao interface {
 
 type TileDao interface {
 	ListRiversWithBounds(bbox Bbox, imgLimit int, showUnpublished bool) ([]RiverWithSpots, error)
+	ListRiversInRegionWithBounds(bbox Bbox, regionId int64, imgLimit int, showUnpublished bool) ([]RiverWithSpots, error)
+	ListRiversInCountryWithBounds(bbox Bbox, countryId int64, imgLimit int, showUnpublished bool) ([]RiverWithSpots, error)
 	GetRiverById(riverId int64, imgLimit int) (RiverWithSpots, bool, error)
 	GetRiver(riverId int64, imgLimit int) (RiverWithSpotsExt, error)
 }
@@ -144,6 +146,8 @@ type HasProperties interface {
 type CountryDao interface {
 	HasProperties
 	List() ([]Country, error)
+	Get(id int64) (Country, bool, error)
+	GetByCode(code string) (Country, bool, error)
 }
 
 type RegionDao interface {

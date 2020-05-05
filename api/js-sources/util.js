@@ -19,25 +19,27 @@ export function defaultPosition() {
     return [57, 55];
 }
 
-export function getLastPosition() {
-    let lastPos = $.cookie(LAST_POS_COOKIE_NAME);
+export function getLastPosition(descriminator, defaultPositionValue) {
+    let lastPos = $.cookie(descriminator ? LAST_POS_COOKIE_NAME + descriminator : LAST_POS_COOKIE_NAME);
     if (lastPos) {
         return JSON.parse(lastPos)
+    } else if (defaultPositionValue) {
+        return defaultPositionValue
     } else {
         return defaultPosition()
     }
 }
 
-export function setLastPosition(pos) {
-    $.cookie(LAST_POS_COOKIE_NAME, JSON.stringify(pos), {path: '/'})
+export function setLastPosition(pos, descriminator) {
+    $.cookie(descriminator ? LAST_POS_COOKIE_NAME + descriminator : LAST_POS_COOKIE_NAME, JSON.stringify(pos), {path: '/'})
 }
 
 export function defaultZoom() {
     return 3;
 }
 
-export function getLastZoom() {
-    let lastZoom = $.cookie(LAST_ZOOM_COOKIE_NAME);
+export function getLastZoom(descriminator) {
+    let lastZoom = $.cookie(descriminator ? LAST_ZOOM_COOKIE_NAME + descriminator : LAST_ZOOM_COOKIE_NAME);
     if (lastZoom) {
         return JSON.parse(lastZoom)
     } else {
@@ -45,23 +47,25 @@ export function getLastZoom() {
     }
 }
 
-export function setLastZoom(z) {
-    $.cookie(LAST_ZOOM_COOKIE_NAME, JSON.stringify(z), {path: '/'})
+export function setLastZoom(z, descriminator) {
+    $.cookie(descriminator ? LAST_ZOOM_COOKIE_NAME + descriminator : LAST_ZOOM_COOKIE_NAME, JSON.stringify(z), {path: '/'})
 }
 
-export function setLastPositionZoomType(pos, z, type) {
-    setLastPosition(pos);
-    setLastZoom(z);
-    setLastMapType(type);
-    window.location.hash = pos[0] + ',' + pos[1] + ',' + z + ',' + type.replace('#','-')
+export function setLastPositionZoomType(pos, z, type, useHash, descriminator) {
+    setLastPosition(pos, descriminator);
+    setLastZoom(z, descriminator);
+    setLastMapType(type, descriminator);
+    if (useHash) {
+        window.location.hash = pos[0] + ',' + pos[1] + ',' + z + ',' + type.replace('#', '-')
+    }
 }
 
-export function getLastPositionAndZoom() {
+export function getLastPositionAndZoom(descriminator, useHash, defaultPositionValue) {
     var position;
     var zoom;
     var type;
     var hash = window.location.hash;
-    if (hash) {
+    if (hash && useHash) {
         hash = hash.substr(1);
         var params = hash.split(',');
         if (params.length >= 2) {
@@ -79,13 +83,13 @@ export function getLastPositionAndZoom() {
     }
 
     if (!position) {
-        position = getLastPosition()
+        position = getLastPosition(descriminator, defaultPositionValue)
     }
     if (!zoom) {
-        zoom = getLastZoom()
+        zoom = getLastZoom(descriminator)
     }
     if (!type) {
-        type = getLastMapType();
+        type = getLastMapType(descriminator);
     }
 
     return {
@@ -99,8 +103,8 @@ export function defaultMapType() {
     return "osm#standard";
 }
 
-export function getLastMapType() {
-    let lastMapType = $.cookie(LAST_MAP_TYPE_COOKIE_NAME);
+export function getLastMapType(descriminator) {
+    let lastMapType = $.cookie(descriminator ? LAST_MAP_TYPE_COOKIE_NAME + descriminator : LAST_MAP_TYPE_COOKIE_NAME);
     if (lastMapType) {
         let lastMapTypeStr = JSON.parse(lastMapType);
         if (ymaps.mapType.storage.get(lastMapTypeStr)) {
@@ -110,8 +114,8 @@ export function getLastMapType() {
     return defaultMapType()
 }
 
-export function setLastMapType(z) {
-    $.cookie(LAST_MAP_TYPE_COOKIE_NAME, JSON.stringify(z), {path: '/'})
+export function setLastMapType(z, descriminator) {
+    $.cookie(descriminator ? LAST_MAP_TYPE_COOKIE_NAME + descriminator : LAST_MAP_TYPE_COOKIE_NAME, JSON.stringify(z), {path: '/'})
 }
 
 export function initMailtoLinks() {
@@ -166,10 +170,19 @@ export function createUnpublishedUrlPart(showUnpublished, first) {
     }
     return '';
 }
+
 export function createCampsUrlPart(showCamps, first) {
     if (showCamps) {
         let firstChar = first ? '?' : '&';
         return `${firstChar}show_camps=${showCamps}`;
+    }
+    return '';
+}
+
+export function createCountryUrlPart(countryId, first) {
+    if (countryId) {
+        let firstChar = first ? '?' : '&';
+        return `${firstChar}country=${countryId}`;
     }
     return '';
 }
