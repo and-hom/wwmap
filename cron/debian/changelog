@@ -1,3 +1,9 @@
+wwmap-cron-modules (0.0.32) unstable; urgency=medium
+
+  * #303 Fix bindata prefix 
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Tue, 05 May 2020 11:00:47 +0300
+
 wwmap-cron-modules (0.0.31) unstable; urgency=medium
 
   * #303 Use go generate instead of direct call of go-bindata from debian/rules
