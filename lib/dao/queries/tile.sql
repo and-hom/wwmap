@@ -7,6 +7,21 @@ WITH river_ids AS (
 WITH river_ids AS (SELECT $3::bigint AS id)
     ___select-rivers-internal___
 
+--@inside-bounds-by-region-id
+WITH river_ids AS (
+    SELECT DISTINCT river_id AS id FROM white_water_rapid
+        INNER JOIN river ON white_water_rapid.river_id = river.id
+    WHERE point && ST_MakeEnvelope($3,$4,$5,$6) AND region_id=$7)
+    ___select-rivers-internal___
+
+--@inside-bounds-by-country-id
+WITH river_ids AS (
+    SELECT DISTINCT river_id AS id FROM white_water_rapid
+        INNER JOIN river ON white_water_rapid.river_id = river.id
+        INNER JOIN region ON river.region_id = region.id
+    WHERE point && ST_MakeEnvelope($3,$4,$5,$6) AND country_id=$7)
+    ___select-rivers-internal___
+
 --@select-rivers-internal
 SELECT (river).id, (river).title, CASE (region).fake WHEN TRUE THEN 0 ELSE (region).id END, (region).country_id,
         (white_water_rapid).id, (white_water_rapid).title, (white_water_rapid).short_description,

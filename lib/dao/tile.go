@@ -11,18 +11,22 @@ import (
 
 func NewTilePostgresDao(postgresStorage PostgresStorage) TileDao {
 	return &tileStorage{
-		PostgresStorage:   postgresStorage,
-		insideBoundsQuery: queries.SqlQuery("tile", "inside-bounds"),
-		byIdQuery:         queries.SqlQuery("tile", "spots-by-river-id"),
-		singleRiverQuery:  queries.SqlQuery("tile", "by-id"),
+		PostgresStorage:             postgresStorage,
+		insideBoundsQuery:           queries.SqlQuery("tile", "inside-bounds"),
+		insideBoundsForRegionQuery:  queries.SqlQuery("tile", "inside-bounds-by-region-id"),
+		insideBoundsForCountryQuery: queries.SqlQuery("tile", "inside-bounds-by-country-id"),
+		byIdQuery:                   queries.SqlQuery("tile", "spots-by-river-id"),
+		singleRiverQuery:            queries.SqlQuery("tile", "by-id"),
 	}
 }
 
 type tileStorage struct {
 	PostgresStorage
-	insideBoundsQuery string
-	byIdQuery         string
-	singleRiverQuery  string
+	insideBoundsQuery           string
+	insideBoundsForRegionQuery  string
+	insideBoundsForCountryQuery string
+	byIdQuery                   string
+	singleRiverQuery            string
 }
 
 func (this *tileStorage) GetRiver(riverId int64, imgLimit int) (RiverWithSpotsExt, error) {
@@ -116,6 +120,26 @@ func (this *tileStorage) GetRiverById(riverId int64, imgLimit int) (RiverWithSpo
 		return RiverWithSpots{}, false, nil
 	}
 	return rivers[0], true, nil
+}
+
+func (this *tileStorage) ListRiversInRegionWithBounds(bbox geo.Bbox, regionId int64, imgLimit int, showUnpublished bool) ([]RiverWithSpots, error) {
+	rows, err := this.db.Query(this.insideBoundsForRegionQuery, imgLimit, showUnpublished, bbox.Y1, bbox.X1, bbox.Y2, bbox.X2, regionId)
+	if err != nil {
+		return []RiverWithSpots{}, err
+	}
+	defer rows.Close()
+
+	return this.listRivers(rows)
+}
+
+func (this *tileStorage) ListRiversInCountryWithBounds(bbox geo.Bbox, countryId int64, imgLimit int, showUnpublished bool) ([]RiverWithSpots, error) {
+	rows, err := this.db.Query(this.insideBoundsForCountryQuery, imgLimit, showUnpublished, bbox.Y1, bbox.X1, bbox.Y2, bbox.X2, countryId)
+	if err != nil {
+		return []RiverWithSpots{}, err
+	}
+	defer rows.Close()
+
+	return this.listRivers(rows)
 }
 
 func (this *tileStorage) ListRiversWithBounds(bbox geo.Bbox, imgLimit int, showUnpublished bool) ([]RiverWithSpots, error) {

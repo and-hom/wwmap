@@ -68,6 +68,26 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 		}
 	}
 
+	regionIdStr := req.FormValue("region")
+	regionId := int64(0)
+	if regionIdStr != "" {
+		regionId, err = strconv.ParseInt(regionIdStr, 10, 64)
+		if err != nil {
+			OnError500(w, err, fmt.Sprintf("Can not parse region id %s", skipIdStr))
+			return
+		}
+	}
+
+	countryIdStr := req.FormValue("country")
+	countryId := int64(0)
+	if countryIdStr != "" {
+		countryId, err = strconv.ParseInt(countryIdStr, 10, 64)
+		if err != nil {
+			OnError500(w, err, fmt.Sprintf("Can not parse country id %s", skipIdStr))
+			return
+		}
+	}
+
 	sessionId := req.FormValue("session_id")
 	allowed := false
 	if sessionId != "" {
@@ -127,6 +147,34 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 
 		features = ymaps.WhiteWaterPointsToYmapsNoCluster([]dao.RiverWithSpots{river},
 			this.ResourceBase, skip, this.processForWeb, getLinkMaker(req.FormValue("link_type")))
+	} else if regionId != 0 {
+		rivers, err := this.TileDao.ListRiversInRegionWithBounds(bbox, regionId, PREVIEWS_COUNT, allowed)
+		if err != nil {
+			OnError500(w, err, fmt.Sprintf("Can not read whitewater points for river id %d", riverId))
+			return
+		}
+
+		features, err = ymaps.WhiteWaterPointsToYmaps(this.ClusterMaker, rivers, bbox, zoom,
+			this.ResourceBase, skip, this.processForWeb, getLinkMaker(req.FormValue("link_type")),
+			[]dao.WaterWay{})
+		if err != nil {
+			OnError500(w, err, fmt.Sprintf("Can not cluster: %s", bbox.String()))
+			return
+		}
+	} else if countryId != 0 {
+		rivers, err := this.TileDao.ListRiversInCountryWithBounds(bbox, countryId, PREVIEWS_COUNT, allowed)
+		if err != nil {
+			OnError500(w, err, fmt.Sprintf("Can not read whitewater points for river id %d", riverId))
+			return
+		}
+
+		features, err = ymaps.WhiteWaterPointsToYmaps(this.ClusterMaker, rivers, bbox, zoom,
+			this.ResourceBase, skip, this.processForWeb, getLinkMaker(req.FormValue("link_type")),
+			[]dao.WaterWay{})
+		if err != nil {
+			OnError500(w, err, fmt.Sprintf("Can not cluster: %s", bbox.String()))
+			return
+		}
 	} else {
 		rivers, err := this.TileDao.ListRiversWithBounds(bbox, PREVIEWS_COUNT, allowed)
 		if err != nil {

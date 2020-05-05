@@ -116,6 +116,17 @@ func (this *Handler) JsonAnswerF(w http.ResponseWriter, f func() (interface{}, e
 	}
 }
 
+func (this *Handler) JsonAnswerFWith404(w http.ResponseWriter, f func() (interface{}, bool, error), errStr string, errParams ...interface{}) {
+	payload, found, err := f()
+	if err != nil {
+		OnError500(w, err, fmt.Sprintf(errStr, errParams))
+	} else if !found {
+		OnError(w, nil, fmt.Sprintf(errStr, errParams), http.StatusNotFound)
+	} else {
+		this.JsonAnswer(w, payload)
+	}
+}
+
 func (this *Handler) JsonAnswer(w http.ResponseWriter, f interface{}) {
 	bytes, err := json.Marshal(f)
 	if err != nil {

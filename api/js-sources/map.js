@@ -1,7 +1,7 @@
 import {WWMapSearchProvider} from "./searchProvider";
 import {createLegend} from "./legend";
-import {show_map_at_and_highlight_river, highlight_river} from "./main";
-import {CACHED_TILES_TEMPLATE, GOOGLE_SAT_TILES, getLastPositionAndZoom, setLastPositionZoomType, getWwmapUserInfoForMapControls, isMobileBrowser} from './util';
+import {highlight_river} from "./main";
+import {CACHED_TILES_TEMPLATE, getLastPositionAndZoom, setLastPositionZoomType, isMobileBrowser, defaultPosition} from './util';
 import {bingSatTiles} from './map-urls/bing'
 import {googleSatTiles} from './map-urls/google'
 import {apiBase} from "./config";
@@ -71,19 +71,25 @@ WWMap.prototype.createHelpBtn = function () {
     return helpButton
 };
 
-WWMap.prototype.init = function () {
-    var positionAndZoom = getLastPositionAndZoom();
+WWMap.prototype.init = function (opts) {
+    let countryId = opts ? opts.countryId : null;
+    let defaultPositionValue = opts ? opts.defaultCenter : defaultPosition();
+    let useHash = opts ? opts.useHash : true;
+    let options = opts ? opts.mapOptions : {};
 
-    var yMap;
+    let positionAndZoom = getLastPositionAndZoom(countryId, useHash, defaultPositionValue);
+
+    let yMap;
     try {
         yMap = new ymaps.Map(this.divId, {
             center: positionAndZoom.position,
             zoom: positionAndZoom.zoom,
             controls: ["zoomControl", "fullscreenControl"],
             type: positionAndZoom.type
-        });
+        }, options);
     } catch (err) {
-        setLastPositionZoomType(defaultPosition(), defaultZoom(), defaultMapType());
+        setLastPositionZoomType(defaultPositionValue,
+            defaultZoom(), defaultMapType(), useHash, countryId);
         throw err
     }
     this.yMap = yMap;
@@ -148,15 +154,19 @@ WWMap.prototype.init = function () {
     });
 
     this.yMap.events.add('boundschange', function (e) {
-        setLastPositionZoomType(t.yMap.getCenter(), t.yMap.getZoom(), t.yMap.getType());
+        setLastPositionZoomType(t.yMap.getCenter(), t.yMap.getZoom(), t.yMap.getType(), useHash, countryId);
         t.loadRivers(e.get("newBounds"))
     });
 
     this.yMap.events.add('typechange', function (e) {
-        setLastPositionZoomType(t.yMap.getCenter(), t.yMap.getZoom(), t.yMap.getType())
+        setLastPositionZoomType(t.yMap.getCenter(), t.yMap.getZoom(), t.yMap.getType(), useHash, countryId)
     });
 
-    var objectManager = new ymaps.RemoteObjectManager(apiBase + '/ymaps-tile-ww?bbox=%b&zoom=%z&link_type=' + this.catalogLinkType, {
+    let objectManagerUrl = `${apiBase}/ymaps-tile-ww?bbox=%b&zoom=%z&link_type=${this.catalogLinkType}`;
+    if (countryId) {
+        objectManagerUrl += `&country=${countryId}`
+    }
+    var objectManager = new ymaps.RemoteObjectManager(objectManagerUrl, {
         clusterHasBalloon: false,
         geoObjectOpenBalloonOnClick: false,
         geoObjectBalloonContentLayout: ymaps.templateLayoutFactory.createClass(this.bubbleTemplate),
