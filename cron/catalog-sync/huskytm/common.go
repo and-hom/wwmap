@@ -1,6 +1,6 @@
 package huskytm
 
-//go:generate go-bindata -pkg $GOPACKAGE -o templates.go ./templates
+//go:generate go-bindata -pkg $GOPACKAGE -o templates.go -prefix templates/ ./templates
 
 import (
 	"errors"

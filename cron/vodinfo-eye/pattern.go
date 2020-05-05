@@ -1,6 +1,6 @@
 package main
 
-//go:generate go-bindata -pkg $GOPACKAGE -o pattern-data.go ./pattern
+//go:generate go-bindata -pkg $GOPACKAGE -o pattern-data.go -prefix pattern/ ./pattern
 
 import (
 	"bytes"
@@ -39,6 +39,10 @@ func NewPatternMatcher() (PatternMatcher, error) {
 
 			log.Infof("Pattern %d loaded", id)
 		}
+	}
+
+	if len(patterns) == 0 {
+		log.Fatalf("No Y-Axis label patterns loaded!")
 	}
 
 	return &patternMatcher{
