@@ -1,8 +1,9 @@
 import {apiBase} from "./config";
 
-export function WWMapSearchProvider(mousemoved, click) {
+export function WWMapSearchProvider(mousemoved, click, countryId) {
     this.mousemoved = mousemoved;
     this.click = click;
+    this.countryId = countryId;
 }
 
 WWMapSearchProvider.prototype.geocode = function (request, options) {
@@ -15,7 +16,7 @@ WWMapSearchProvider.prototype.geocode = function (request, options) {
 
     let t = this;
     var xhr = new XMLHttpRequest();
-    xhr.open("POST", apiBase + "/search", true);
+    xhr.open("POST", apiBase + "/search" + (this.countryId ? `?country=${this.countryId}` : ''), true);
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.send(request);
     xhr.onload = function (e) {

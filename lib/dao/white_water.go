@@ -84,9 +84,9 @@ func (this whiteWaterStorage) ListByRiverAndTitle(riverId int64, title string) (
 
 var eYoRepl = regexp.MustCompile(`(?i)ё`)
 
-func (this whiteWaterStorage) FindByTitlePart(tPart string, limit, offset int) ([]WhiteWaterPointWithRiverTitle, error) {
+func (this whiteWaterStorage) FindByTitlePart(tPart string, regionId int64, countryId int64, limit, offset int) ([]WhiteWaterPointWithRiverTitle, error) {
 	tPart = eYoRepl.ReplaceAllLiteralString(tPart, "е")
-	return this.list(this.findByTitlePartQuery, pq.Array(strings.Fields(tPart)), limit, offset)
+	return this.list(this.findByTitlePartQuery, pq.Array(strings.Fields(tPart)), regionId, countryId, limit, offset)
 }
 
 func (this whiteWaterStorage) Find(id int64) (WhiteWaterPointWithRiverTitle, bool, error) {

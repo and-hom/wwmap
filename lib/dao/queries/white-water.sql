@@ -66,9 +66,14 @@ SELECT ___select-columns___
 FROM ___table___
     INNER JOIN final_rank_query ON ___table___.id=final_rank_query.id AND own_rank>0
     LEFT OUTER JOIN river ON ___table___.river_id=river.id
+    INNER JOIN region ON river.region_id = region.id
     WHERE river.visible=TRUE
+      AND CASE
+              WHEN $2 = 0 THEN $3 = 0 OR region.country_id = $3
+              ELSE region.id = $2
+        END
     ORDER BY river_rank*10 + own_rank DESC
-LIMIT $2 OFFSET $3
+LIMIT $4 OFFSET $5
 
 --@by-river-full
 SELECT ___select-columns-full___

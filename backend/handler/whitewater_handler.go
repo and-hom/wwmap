@@ -53,7 +53,7 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 	if onlyIdStr != "" {
 		onlyId, err = strconv.ParseInt(onlyIdStr, 10, 64)
 		if err != nil {
-			OnError500(w, err, fmt.Sprintf("Can not parse only id %s", skipIdStr))
+			OnError500(w, err, fmt.Sprintf("Can not parse only id %s", onlyIdStr))
 			return
 		}
 	}
@@ -63,7 +63,7 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 	if riverIdStr != "" {
 		riverId, err = strconv.ParseInt(riverIdStr, 10, 64)
 		if err != nil {
-			OnError500(w, err, fmt.Sprintf("Can not parse river id %s", skipIdStr))
+			OnError500(w, err, fmt.Sprintf("Can not parse river id %s", riverIdStr))
 			return
 		}
 	}
@@ -73,7 +73,7 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 	if regionIdStr != "" {
 		regionId, err = strconv.ParseInt(regionIdStr, 10, 64)
 		if err != nil {
-			OnError500(w, err, fmt.Sprintf("Can not parse region id %s", skipIdStr))
+			OnError500(w, err, fmt.Sprintf("Can not parse region id %s", regionIdStr))
 			return
 		}
 	}
@@ -83,7 +83,7 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 	if countryIdStr != "" {
 		countryId, err = strconv.ParseInt(countryIdStr, 10, 64)
 		if err != nil {
-			OnError500(w, err, fmt.Sprintf("Can not parse country id %s", skipIdStr))
+			OnError500(w, err, fmt.Sprintf("Can not parse country id %s", countryIdStr))
 			return
 		}
 	}
@@ -261,19 +261,39 @@ func getLinkMaker(linkType string) ymaps.LinkMaker {
 	}
 }
 
-func (this *WhiteWaterHandler) search(w http.ResponseWriter, r *http.Request) {
-	requestBody, err := ioutil.ReadAll(r.Body)
+func (this *WhiteWaterHandler) search(w http.ResponseWriter, req *http.Request) {
+	requestBody, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		OnError500(w, err, "Can not read body")
 		return
 	}
 
-	spots, err := this.WhiteWaterDao.FindByTitlePart(string(requestBody), 30, 0)
+	regionIdStr := req.FormValue("region")
+	regionId := int64(0)
+	if regionIdStr != "" {
+		regionId, err = strconv.ParseInt(regionIdStr, 10, 64)
+		if err != nil {
+			OnError500(w, err, fmt.Sprintf("Can not parse region id %s", regionId))
+			return
+		}
+	}
+
+	countryIdStr := req.FormValue("country")
+	countryId := int64(0)
+	if countryIdStr != "" {
+		countryId, err = strconv.ParseInt(countryIdStr, 10, 64)
+		if err != nil {
+			OnError500(w, err, fmt.Sprintf("Can not parse country id %s", countryId))
+			return
+		}
+	}
+
+	spots, err := this.WhiteWaterDao.FindByTitlePart(string(requestBody), regionId, countryId, 30, 0)
 	if err != nil {
 		OnError500(w, err, "Can not select spots")
 		return
 	}
-	rivers, err := this.RiverDao.FindByTitlePart(string(requestBody), 30, 0)
+	rivers, err := this.RiverDao.FindByTitlePart(string(requestBody), regionId, countryId, 30, 0)
 	if err != nil {
 		OnError500(w, err, "Can not select rivers")
 		return

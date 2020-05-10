@@ -116,20 +116,36 @@ DELETE FROM river WHERE id=$1
 UPDATE river SET visible=$2 WHERE id=$1
 
 --@by-title-part
-WITH
-  alias_query AS (SELECT id, jsonb_array_elements_text(aliases) AS alias FROM ___table___),
-  visible_rivers_query AS (SELECT ___table___.id, title, alias_query.alias AS alias FROM ___table___ LEFT OUTER JOIN alias_query ON ___table___.id=alias_query.id WHERE visible=TRUE)
-SELECT river.id, region_id, region.country_id, river.title, region.title AS region_title, fake AS region_fake,
-       ST_AsGeoJSON(ST_Extent(white_water_rapid.point)), river.aliases, river.props, visible
-    FROM ___table___
-        INNER JOIN white_water_rapid ON river.id=white_water_rapid.river_id
-        INNER JOIN region ON river.region_id=region.id
-WHERE ___table___.id=ANY(
-    SELECT DISTINCT id FROM visible_rivers_query
-    WHERE  title ilike '%'||$1||'%' OR alias ilike '%'||$2||'%'
-    )
+WITH alias_query AS (SELECT id, jsonb_array_elements_text(aliases) AS alias FROM river),
+     visible_rivers_query AS (SELECT river.id, title, alias_query.alias AS alias
+                              FROM river
+                                       LEFT OUTER JOIN alias_query ON river.id = alias_query.id
+                              WHERE visible = TRUE)
+SELECT river.id,
+       region_id,
+       region.country_id,
+       river.title,
+       region.title AS region_title,
+       fake         AS region_fake,
+       ST_AsGeoJSON(ST_Extent(white_water_rapid.point)),
+       river.aliases,
+       river.props,
+       visible
+FROM river
+         INNER JOIN white_water_rapid ON river.id = white_water_rapid.river_id
+         INNER JOIN region ON river.region_id = region.id
+         INNER JOIN (
+    SELECT DISTINCT id
+    FROM visible_rivers_query
+    WHERE title ilike '%' || $1 || '%'
+       OR alias ilike '%' || $2 || '%'
+) by_alias ON by_alias.id = river.id
+WHERE CASE
+          WHEN $3 = 0 THEN $4 = 0 OR region.country_id = $4
+          ELSE region.id = $3
+          END
 GROUP BY river.id, region_id, region.country_id, region.title, region.fake
-LIMIT $3 OFFSET $4
+LIMIT $5 OFFSET $6;
 
 --@parent-ids
 SELECT ___table___.id AS river_id, CASE WHEN region.fake THEN 0 ELSE region.id END AS region_id, region.country_id AS country_id,

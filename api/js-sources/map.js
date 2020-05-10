@@ -215,7 +215,7 @@ WWMap.prototype.init = function (opts) {
                 if (t.measurementTool && t.measurementTool.canEditPath()) {
                     t.measurementTool.multiPath.pushEmptySegment();
                 }
-            }),
+            }, countryId),
             placeholderContent: 'Река или порог'
         }
     });
