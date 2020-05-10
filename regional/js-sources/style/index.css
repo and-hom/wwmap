@@ -1,0 +1,21 @@
+.sidenav a {
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.main-container {
+    padding-left: 50px;
+}
+
+.river-menu li>a {
+    font-weight: normal;
+    font-size: 90%;
+}
+.report-cell a {
+    overflow: auto;
+    overflow-wrap: break-word;
+}
+
+iframe {
+    margin: 20px;
+}

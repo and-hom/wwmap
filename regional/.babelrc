@@ -1,0 +1,42 @@
+{
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "targets": {
+          "ie": "11"
+        },
+        "useBuiltIns": "entry",
+        "corejs": "2.6.10"
+      }
+    ]
+  ],
+  "plugins": [
+    "@babel/transform-async-to-generator",
+    "@babel/transform-arrow-functions",
+    "@babel/transform-modules-commonjs"
+  ],
+  "env": {
+    "development": {
+      "plugins": [
+        "@babel/transform-async-to-generator",
+        "@babel/transform-arrow-functions",
+        "@babel/transform-modules-commonjs"
+      ]
+    },
+    "test": {
+      "plugins": [
+        "@babel/transform-async-to-generator",
+        "@babel/transform-arrow-functions",
+        "@babel/transform-modules-commonjs"
+      ]
+    },
+    "production": {
+      "plugins": [
+        "@babel/transform-async-to-generator",
+        "@babel/transform-arrow-functions",
+        "@babel/transform-modules-commonjs"
+      ]
+    }
+  }
+}
