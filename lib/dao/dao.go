@@ -29,7 +29,7 @@ type RiverDao interface {
 	SaveFull(river ...River) error
 	Save(river ...RiverTitle) error
 	SetVisible(id int64, visible bool) error
-	FindByTitlePart(tPart string, limit, offset int, showUnpublished bool) ([]RiverTitle, error)
+	FindByTitlePart(tPart string, regionId int64, countryId int64, limit, offset int, showUnpublished bool) ([]RiverTitle, error)
 	GetParentIds(riverIds []int64) (map[int64]RiverParentIds, error)
 	CountByRegion(regionId int64) (int, error)
 }
@@ -54,7 +54,7 @@ type WhiteWaterDao interface {
 	AutoOrderingRiverIds() ([]int64, error)
 	DistanceFromBeginning(riverId int64, path []Point) (map[int64]int, error)
 	UpdateOrderIdx(idx map[int64]int) error
-	FindByTitlePart(tPart string, limit, offset int, showUnpublished bool) ([]WhiteWaterPointWithRiverTitle, error)
+	FindByTitlePart(tPart string, regionId int64, countryId int64, limit, offset int, showUnpublished bool) ([]WhiteWaterPointWithRiverTitle, error)
 	GetParentIds(spotIds []int64) (map[int64]SpotParentIds, error)
 }
 

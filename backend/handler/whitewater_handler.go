@@ -284,8 +284,8 @@ func getLinkMaker(linkType string) ymaps.LinkMaker {
 	}
 }
 
-func (this *WhiteWaterHandler) search(w http.ResponseWriter, r *http.Request) {
-	requestBody, err := ioutil.ReadAll(r.Body)
+func (this *WhiteWaterHandler) search(w http.ResponseWriter, req *http.Request) {
+	requestBody, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		OnError500(w, err, "Can not read body")
 		return
@@ -293,12 +293,32 @@ func (this *WhiteWaterHandler) search(w http.ResponseWriter, r *http.Request) {
 
 	showUnpublished := ShowUnpublished(r, this.UserDao)
 
-	spots, err := this.WhiteWaterDao.FindByTitlePart(string(requestBody), 30, 0, showUnpublished)
+	regionIdStr := req.FormValue("region")
+	regionId := int64(0)
+	if regionIdStr != "" {
+		regionId, err = strconv.ParseInt(regionIdStr, 10, 64)
+		if err != nil {
+			OnError500(w, err, fmt.Sprintf("Can not parse region id %s", regionId))
+			return
+		}
+	}
+
+	countryIdStr := req.FormValue("country")
+	countryId := int64(0)
+	if countryIdStr != "" {
+		countryId, err = strconv.ParseInt(countryIdStr, 10, 64)
+		if err != nil {
+			OnError500(w, err, fmt.Sprintf("Can not parse country id %s", countryId))
+			return
+		}
+	}
+
+	spots, err := this.WhiteWaterDao.FindByTitlePart(string(requestBody), regionId, countryId, 30, 0, showUnpublished)
 	if err != nil {
 		OnError500(w, err, "Can not select spots")
 		return
 	}
-	rivers, err := this.RiverDao.FindByTitlePart(string(requestBody), 30, 0, showUnpublished)
+	rivers, err := this.RiverDao.FindByTitlePart(string(requestBody), regionId, countryId, 30, 0, showUnpublished)
 	if err != nil {
 		OnError500(w, err, "Can not select rivers")
 		return

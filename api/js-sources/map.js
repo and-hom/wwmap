@@ -264,7 +264,7 @@ WWMap.prototype.init = function (opts) {
         if (t.measurementTool && t.measurementTool.canEditPath()) {
             t.measurementTool.multiPath.pushEmptySegment();
         }
-    });
+    }, countryId);
 
     let searchControl = new ymaps.control.SearchControl({
         options: {
