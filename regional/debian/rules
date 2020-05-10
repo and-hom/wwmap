@@ -1,0 +1,22 @@
+#!/usr/bin/make -f
+%:
+	dh $@
+
+DEB_VERSION = $(shell dpkg-parsechangelog --show-field Version)
+
+build:
+	npm i
+	npm run build -- --env.APP_ENV=production --env.VERSION=$(DEB_VERSION)
+	rm js/*.js.map
+
+override_dh_auto_install:
+	install -d $$(pwd)/debian/wwmap-regional/var/lib/wwmap/regional/img
+	install -d $$(pwd)/debian/wwmap-regional/var/lib/wwmap/regional/js
+	install -d $$(pwd)/debian/wwmap-regional/var/lib/wwmap/regional/css
+
+	install -D -m 0644 *.htm $$(pwd)/debian/wwmap-regional/var/lib/wwmap/regional/
+	install -D -m 0644 robots.txt $$(pwd)/debian/wwmap-regional/var/lib/wwmap/regional/
+	install -D -m 0644 favicon.ico $$(pwd)/debian/wwmap-regional/var/lib/wwmap/regional/
+	install -D -m 0644 js/* $$(pwd)/debian/wwmap-regional/var/lib/wwmap/regional/js/
+
+	install -D -m 0644 nginx.conf $$(pwd)/debian/wwmap-regional/etc/nginx/sites-available/wwmap-regional
