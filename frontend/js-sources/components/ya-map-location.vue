@@ -130,6 +130,26 @@
                 },
                 doUpdate: function () {
                     if (this.map) {
+
+                        // if added only one mid point to the end
+                        let pStart = this.spot.point[0];
+                        if (Array.isArray(pStart) && this.spot.point.length > 2) {
+                            let pEnd = this.spot.point[this.spot.point.length - 1];
+                            let midPointsCount = this.midPoints ? this.midPoints.length : 0;
+
+                            if (this.label && this.label.geometry.getCoordinates() == pStart
+                                && this.endLabel && this.endLabel.geometry.getCoordinates() == pEnd
+                                && midPointsCount == this.spot.point.length - 3) {
+
+                                if (!this.midPoints) {
+                                    this.midPoints = []
+                                }
+                                this.addMidPoint(midPointsCount + 1, p => this.midPoints.push(p))
+                                this.contour.geometry.setCoordinates(this.spot.point)
+                                return
+                            }
+                        }
+
                         this.map.setCenter(this.pCenter());
 
                         this.map.geoObjects.remove(this.label);
@@ -261,36 +281,7 @@
                         if (this.spot.point.length > 2) {
                             let midPoints = [];
                             for (let i = 1; i < this.spot.point.length - 1; i++) {
-                                let pos = i;
-                                let properties = {
-                                    hintContent: "" + i,
-                                    iconContent: "" + i,
-                                };
-
-                                if (this.editable) {
-                                    properties.balloonContent = "<button class='del" + i + "'>Удалить точку</button>"
-                                }
-
-                                let midPoint = new ymaps.GeoObject({
-                                    geometry: {
-                                        type: "Point",
-                                        coordinates: this.getP(i),
-                                    },
-                                    properties: properties
-                                }, {
-                                    preset: 'islands#lightBlueStretchyIcon',
-                                    balloonContentLayout: component.createMidPointPopupLayout(pos - 1),
-                                    draggable: this.editable,
-                                    zIndex: 10000000 + i,
-                                    zIndexHover: 10000000 + i,
-                                    zIndexActive: 10000000 + i,
-                                });
-                                midPoint.events.add('dragend', function () {
-                                    component.setP(pos, midPoint.geometry.getCoordinates());
-                                    component.refreshContour();
-                                });
-                                midPoints.push(midPoint);
-                                this.map.geoObjects.add(midPoint);
+                                component.addMidPoint(i, p => midPoints.push(p));
                             }
                             this.midPoints = midPoints;
                         } else {
@@ -303,6 +294,38 @@
 
                     this.map.geoObjects.add(label);
                     this.label = label;
+                },
+                addMidPoint: function (pos, addGeoObjectF) {
+                    let component = this;
+                    let properties = {
+                        hintContent: "" + pos,
+                        iconContent: "" + pos,
+                    };
+
+                    if (this.editable) {
+                        properties.balloonContent = "<button class='del" + pos + "'>Удалить точку</button>"
+                    }
+
+                    let midPoint = new ymaps.GeoObject({
+                        geometry: {
+                            type: "Point",
+                            coordinates: this.getP(pos),
+                        },
+                        properties: properties
+                    }, {
+                        preset: 'islands#lightBlueStretchyIcon',
+                        balloonContentLayout: component.createMidPointPopupLayout(pos - 1),
+                        draggable: this.editable,
+                        zIndex: 10000000 + pos,
+                        zIndexHover: 10000000 + pos,
+                        zIndexActive: 10000000 + pos,
+                    });
+                    midPoint.events.add('dragend', function () {
+                        component.setP(pos, midPoint.geometry.getCoordinates());
+                        component.refreshContour();
+                    });
+                    addGeoObjectF(midPoint);
+                    this.map.geoObjects.add(midPoint);
                 },
                 createMidPointPopupLayout: function (pos) {
                     var component = this;

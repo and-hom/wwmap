@@ -4,8 +4,8 @@
             <button type="button" v-if="showMap" class="btn btn-info"
                     v-on:click="showMap=false" style="margin-right: 5px;">Редактировать координаты</button>
             <div style="padding-top:4px; display: inline-block; font-size: smaller;">
-                <strong>Широта:</strong>&nbsp;{{getPoints()[0][0] }}&nbsp;&nbsp;<strong>Долгота:</strong>&nbsp;{{
-                getPoints()[0][1] }}
+                <strong>Широта:</strong>&nbsp;{{points[0][0] }}&nbsp;&nbsp;<strong>Долгота:</strong>&nbsp;{{
+                points[0][1] }}
             </div>
         </div>
         <ya-map-location
@@ -33,14 +33,14 @@
             </button>
             <button type="button" v-if="!showMap" class="btn btn-info" v-on:click="showMap=true">Карта</button>
         </div>
-        <div v-if="getPoints().length>1" class="wwmap-system-hint">Добавления/удаление точек протяжённого порога тут пока не сделано. Пользуйтесь редактором порога, выбрав его в дереве слева и нажав "Редактирование"</div>
-        <div v-for="(point, index) in getPoints()">
-            <div v-if="getPoints().length > 1 && index == 0" style="font-weight: bold">Начало:</div>
+        <div v-if="points.length>1" class="wwmap-system-hint">Добавления/удаление точек протяжённого порога тут пока не сделано. Пользуйтесь редактором порога, выбрав его в дереве слева и нажав "Редактирование"</div>
+        <div v-for="(point, index) in points">
+            <div v-if="points.length > 1 && index == 0" style="font-weight: bold">Начало:</div>
             <div v-else style="height: 10px;">&nbsp;</div>
-            <div v-if="getPoints().length > 1 && index == getPoints().length - 1"
+            <div v-if="points.length > 1 && index == points.length - 1"
                  style="font-weight: bold; margin-top: 12px;">Конец:
             </div>
-            <lat-lon-input v-bind:point="point" :mode="mode"/>
+            <lat-lon-input v-bind:value="point" :mode="mode" v-on:input="setPoint($event, index)"/>
             <div v-if="index==0" style="height: 20px; display: block"></div>
         </div>
     </div>
@@ -86,10 +86,9 @@
                 default: true
             },
         },
-        data: function () {
-            return {
-                showMap: this.showMapByDefault,
-                getPoints: function () {
+        computed: {
+            points: {
+                get: function () {
                     if (Array.isArray(this.spot.point[0])) {
                         return this.spot.point;
                     } else if (this.spot.point) {
@@ -98,10 +97,28 @@
                         return [];
                     }
                 },
+            }
+        },
+        data: function () {
+            return {
+                showMap: this.showMapByDefault,
                 mode: 'raw',
                 divStyle: 'width: ' + this.width + '; height: ' + this.height + ';overflow: scroll; overflow-x: hidden; margin-top: 20px; margin-bottom: 15px;',
             }
-        }
+        },
+        methods: {
+            setPoint: function (p, index) {
+                if (index >= 0 && index < this.points.length) {
+                    if (Array.isArray(this.spot.point[0])) {
+                        this.spot.point[index] = p
+                    } else {
+                        this.spot.point = p;
+                    }
+                } else {
+                    console.error(`Can't set point at index ${index} for array ${this.spot.point}`)
+                }
+            },
+        },
     }
 
 </script>

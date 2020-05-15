@@ -172,6 +172,7 @@
     } from '../../editor'
     import {store} from '../../app-state';
     import {hasRole, ROLE_ADMIN, ROLE_EDITOR} from '../../auth';
+    const NEW_POINT_POSITION_KOEFF = 0.04;
 
     module.exports = {
         props: ['spot', 'country', 'region', 'images', 'schemas', 'videos'],
@@ -331,7 +332,7 @@
                     let l = this.spot.point.length;
                     let p1 = this.spot.point[l - 2];
                     let p2 = this.spot.point[l - 1];
-                    let p = [(p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2];
+                    let p = [p1[0] + (p2[0] - p1[0]) * NEW_POINT_POSITION_KOEFF, p1[1] + (p2[1] - p1[1]) * NEW_POINT_POSITION_KOEFF];
                     this.spot.point.splice(l - 1, 0, p);
                 }
             },
