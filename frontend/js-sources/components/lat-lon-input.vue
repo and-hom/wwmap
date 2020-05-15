@@ -41,7 +41,7 @@
 
     module.exports = {
         props: {
-            point: {
+            value: {
                 type: Array,
                 required: true,
             },
@@ -76,6 +76,7 @@
         },
         data: function () {
             return {
+                point: [...this.value],
                 uniqueId: uuidv4(),
                 showMap: this.showMapByDefault,
 
@@ -89,9 +90,11 @@
 
                     latInput.change(function (evt) {
                         t.point[0] = norm(t.latMarshaller.unmarshal(latInput.val()), -75, 75);
+                        t.$emit('input', t.point)
                     });
                     lonInput.change(function (evt) {
                         t.point[1] = norm(t.lonMarshaller.unmarshal(lonInput.val()), -180, 180);
+                        t.$emit('input', t.point)
                     });
 
                     Inputmask.remove(latInput);
