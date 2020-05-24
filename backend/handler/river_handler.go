@@ -252,6 +252,7 @@ func (this *RiverHandler) GetVisibleRiversLight(w http.ResponseWriter, req *http
 			continue
 		}
 		maxCat := 0
+		hasNonCategoryOrImpassables := false
 		bounds := geo.Bbox{
 			X1: 360.0,
 			Y1: 360.0,
@@ -260,12 +261,15 @@ func (this *RiverHandler) GetVisibleRiversLight(w http.ResponseWriter, req *http
 		}
 		for j := 0; j < len(river.Spots); j++ {
 			cat := river.Spots[j].Category.Category
+			if cat <= 0 {
+				hasNonCategoryOrImpassables = true
+			}
 			if maxCat < cat {
 				maxCat = cat
 			}
 			bounds.AddPointOrLine(river.Spots[j].Point)
 		}
-		if maxCat < catFilter {
+		if maxCat < catFilter && !hasNonCategoryOrImpassables {
 			continue
 		}
 
