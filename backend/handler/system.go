@@ -95,7 +95,7 @@ func (this *SystemHandler) Gav(w http.ResponseWriter, req *http.Request) {
 	found := gavRe.FindStringSubmatch(string(bytes))
 	if found != nil && len(found) > 1 {
 		gav = found[1]
-		log.Infof("Detected google api version is ", gav)
+		log.Info("Detected google api version is ", gav)
 		this.JsonAnswer(w, gav)
 	} else {
 		log.Error("Can't find googleapi version")
