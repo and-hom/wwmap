@@ -118,9 +118,7 @@
     import {emptyBounds, getRiverBounds, setRiverVisible,} from '../../editor'
     import {backendApiBase} from '../../config'
     import {addMapLayers, registerMapSwitchLayersHotkeys} from '../../map-common';
-
-    var $ = require("jquery");
-    require("jquery.cookie");
+    import {createMapParamsStorage} from '../../map-settings'
 
     module.exports = {
         props: ['river', 'reports', 'transfers', 'country', 'region'],
@@ -180,6 +178,7 @@
             return {
                 map: null,
                 canEdit: false,
+                mapParamsStorage: createMapParamsStorage(),
 
                 setVisible: function (visible) {
                     setRiverVisible(this.river.id, visible).then(river => {
@@ -207,17 +206,6 @@
                         return "http://gis.vodinfo.ru/informer/draw/v2_" + s + "_300_200_30_ffffff_110_8_7_H_none.png";
                     });
                 },
-
-                getDefaultMap: function () {
-                    let defaultMap = $.cookie("default_editor_map");
-                    if (defaultMap && ymaps.mapType.storage.get(defaultMap)) {
-                        return defaultMap
-                    }
-                    return "osm#standard"
-                },
-                setDefaultMap: function(type) {
-                    $.cookie("default_editor_map", type, {path: '/'})
-                },
                 showMap: function () {
                     if (emptyBounds(this.bounds)) {
                         return;
@@ -230,14 +218,17 @@
                             }
                             addMapLayers();
 
-                            let mapType = t.getDefaultMap();
+                            let mapParams = t.mapParamsStorage.getLastPositionZoomType();
                             let map = new ymaps.Map("map", {
                                 bounds: t.bounds,
-                                type: mapType,
+                                type: mapParams.type,
                                 controls: ["zoomControl"]
                             });
                             map.events.add('typechange', function () {
-                                t.setDefaultMap(map.getType());
+                                t.mapParamsStorage.setLastPositionZoomType(map.getCenter(), map.getZoom(), map.getType())
+                            });
+                            map.events.add('boundschange', function () {
+                                t.mapParamsStorage.setLastPositionZoomType(map.getCenter(), map.getZoom(), map.getType())
                             });
                             map.controls.add(
                                 new ymaps.control.TypeSelector([

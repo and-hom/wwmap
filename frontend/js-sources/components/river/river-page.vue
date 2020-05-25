@@ -27,7 +27,8 @@
                 <button type="button" class="btn btn-secondary" v-if="pageMode != 'view'"
                         v-on:click="cancelEditing()">Отменить
                 </button>
-                <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#del-river" v-if="river.id>0">Удалить
+                <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#del-river"
+                        v-if="river.id>0">Удалить
                 </button>
             </div>
             <div class="btn-group mr-2">
@@ -52,12 +53,12 @@
                       v:sensors="sensors"/>
 
         <river-batch-editor v-if="pageMode=='batch-edit'"
-                      ref="batchEditor"
-                      :river="river"
-                      :reports="reports"
-                      :country="country"
-                      :region="region"
-                      v:sensors="sensors"/>
+                            ref="batchEditor"
+                            :river="river"
+                            :reports="reports"
+                            :country="country"
+                            :region="region"
+                            v:sensors="sensors"/>
     </div>
 </template>
 
@@ -65,6 +66,12 @@
     import {store} from '../../app-state';
     import {hasRole, ROLE_ADMIN, ROLE_EDITOR} from '../../auth';
     import {getRiver, getRiverBounds, nvlReturningId, removeRiver, setActiveEntityUrlHash} from '../../editor';
+    import {
+        LAST_MAP_TYPE_COOKIE_NAME, LAST_POS_COOKIE_NAME, LAST_ZOOM_COOKIE_NAME,
+        DEFAULT_MAP_TYPE, DEFAULT_POSITION, DEFAULT_ZOOM,
+        MapParams, MapParamsStorage,
+        EditorHashMapParamsStorage, CookieMapParamsStorage, DefaultMapParamsStorage
+    } from '../../map-settings'
 
     module.exports = {
         props: ['initialRiver', 'reports', 'transfers', 'country', 'region'],
@@ -91,7 +98,13 @@
                 river: null,
                 previousRiverId: this.initialRiver.id,
                 canEdit: false,
-                center: [41, 41],
+                riverLocationStorage: new DefaultMapParamsStorage(new MapParams(DEFAULT_POSITION, DEFAULT_ZOOM, DEFAULT_MAP_TYPE)),
+                mapParamsStorage: new MapParamsStorage(
+                    new EditorHashMapParamsStorage(),
+                    new CookieMapParamsStorage(LAST_POS_COOKIE_NAME, LAST_ZOOM_COOKIE_NAME, LAST_MAP_TYPE_COOKIE_NAME),
+                    this.riverLocationStorage,
+                    new DefaultMapParamsStorage(new MapParams(DEFAULT_POSITION, DEFAULT_ZOOM, DEFAULT_MAP_TYPE))
+                ),
                 bounds: [[-1, -1], [1, 1]]
             }
         },
@@ -102,7 +115,11 @@
                     this.river = this.initialRiver;
                     getRiverBounds(this.river.id).then(bounds => {
                         this.bounds = bounds;
-                        this.center = [(bounds[0][0] + bounds[1][0]) / 2, (bounds[0][1] + bounds[1][1]) / 2];
+                        let center = [(bounds[0][0] + bounds[1][0]) / 2, (bounds[0][1] + bounds[1][1]) / 2];
+                        this.riverLocationStorage.setLastPositionZoomType(
+                            center[0] == 0 && center[1]==0 ? null : center,
+                            DEFAULT_ZOOM,
+                            DEFAULT_MAP_TYPE)
                     })
                 }
             },
@@ -122,7 +139,7 @@
                         river: this.river,
                         order_index: "0",
                         automatic_ordering: true,
-                        point: this.center,
+                        point: this.mapParamsStorage.getLastPositionZoomType().position,
                         aliases: [],
                         props: {},
                     },
@@ -138,7 +155,7 @@
                     err => this.showError("не могу удалить: " + err))
             },
             cancelEditing: function () {
-                this.pageMode='view';
+                this.pageMode = 'view';
                 if (this.river && this.river.id > 0) {
                     this.reload();
                 } else {
