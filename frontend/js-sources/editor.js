@@ -1,7 +1,7 @@
 import {doDelete, doDeleteWithJsonResp, doGetJson, doPostJson} from './api';
 import {backendApiBase} from './config'
-import {HASH_DELIMITER} from "./map-settings";
-import {HashTool} from "./hash-tool";
+import {HashTool} from 'wwmap-js-commons/hash-tool'
+import {HASH_DELIMITER} from 'wwmap-js-commons/map-settings'
 
 const hashTool = new HashTool(HASH_DELIMITER, '');
 

@@ -5,7 +5,8 @@
   "main": "webpack.config.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack"
+    "build": "webpack",
+    "preinstall": "cd ../lib-js && npm install"
   },
   "author": "",
   "license": "ISC",
@@ -40,7 +41,8 @@
     "vue-slider-component": "^3.1.2",
     "vue-upload-component": "^2.8.20",
     "vuejs-datepicker": "^1.6.2",
-    "vuex": "^3.1.2"
+    "vuex": "^3.1.2",
+    "wwmap-js-commons": "../lib-js"
   },
   "devDependencies": {
     "@babel/core": "^7.6.4",

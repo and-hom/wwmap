@@ -103,9 +103,10 @@ export function CookieMapParamsStorage(posCookieName, zoomCookieName, mapTypeCoo
 }
 
 function getFromCookie(cookieName, defaultValOrFunc) {
-    let value = $.cookie(cookieName);
+    let valueStr = $.cookie(cookieName);
+    let value = parseSafe(valueStr)
     if (value) {
-        return JSON.parse(value)
+        return value;
     } else if (defaultValOrFunc && typeof defaultValOrFunc === "function") {
         return defaultValOrFunc()
     } else {
@@ -113,8 +114,17 @@ function getFromCookie(cookieName, defaultValOrFunc) {
     }
 }
 
+function parseSafe(value) {
+    try {
+        return JSON.parse(value)
+    } catch (e) {
+        console.error(e)
+        return null
+    }
+}
+
 function setToCookie(cookieName, value) {
-    $.cookie(cookieName, value, {path: '/'})
+    $.cookie(cookieName, JSON.stringify(value), {path: '/'})
 }
 
 CookieMapParamsStorage.prototype.setLastPositionZoomType = function (pos, z, type) {

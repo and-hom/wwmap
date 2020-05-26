@@ -71,7 +71,7 @@
         DEFAULT_MAP_TYPE, DEFAULT_POSITION, DEFAULT_ZOOM,
         MapParams, MapParamsStorage,
         EditorHashMapParamsStorage, CookieMapParamsStorage, DefaultMapParamsStorage
-    } from '../../map-settings'
+    } from 'wwmap-js-commons/map-settings'
 
     module.exports = {
         props: ['initialRiver', 'reports', 'transfers', 'country', 'region'],

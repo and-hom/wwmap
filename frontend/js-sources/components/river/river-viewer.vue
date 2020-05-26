@@ -118,7 +118,7 @@
     import {emptyBounds, getRiverBounds, setRiverVisible,} from '../../editor'
     import {backendApiBase} from '../../config'
     import {addMapLayers, registerMapSwitchLayersHotkeys} from '../../map-common';
-    import {createMapParamsStorage} from '../../map-settings'
+    import {createMapParamsStorage} from 'wwmap-js-commons/map-settings'
 
     module.exports = {
         props: ['river', 'reports', 'transfers', 'country', 'region'],

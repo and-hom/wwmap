@@ -3,7 +3,7 @@
 </template>
 
 <script>
-    import {createMapParamsStorage} from "../map-settings";
+    import {createMapParamsStorage} from 'wwmap-js-commons/map-settings'
 
     const uuidv4 = require('uuid/v4');
     import {addMapLayers} from '../map-common'
