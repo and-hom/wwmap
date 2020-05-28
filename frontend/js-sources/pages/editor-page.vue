@@ -44,7 +44,8 @@
                                        v-bind:initial-spot="spoteditorstate.spot"
                                        v-bind:country="spoteditorstate.country"
                                        v-bind:region="spoteditorstate.region"
-                                       v-bind:river="spoteditorstate.river"/>
+                                       v-bind:river="spoteditorstate.river"
+                                       :zoom="spoteditorstate.zoom"/>
                         </div>
                     </div>
                 </div>

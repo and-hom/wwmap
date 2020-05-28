@@ -15,7 +15,7 @@
             spot: Object,
             zoom: {
                 type: Number,
-                default: 12
+                default: 15
             },
             width: {
                 type: String,
@@ -116,11 +116,12 @@
                         }));
                     }
 
+                    component.mapParamsStorage.setLastPositionZoomType(myMap.getCenter(), myMap.getZoom(), myMap.getType())
                     myMap.events.add('typechange', function (e) {
-                        t.mapParamsStorage.setLastPositionZoomType(myMap.getCenter(), myMap.getZoom(), myMap.getType())
+                        component.mapParamsStorage.setLastPositionZoomType(myMap.getCenter(), myMap.getZoom(), myMap.getType())
                     });
                     myMap.events.add('boundschange', function (e) {
-                        t.mapParamsStorage.setLastPositionZoomType(myMap.getCenter(), myMap.getZoom(), myMap.getType())
+                        component.mapParamsStorage.setLastPositionZoomType(myMap.getCenter(), myMap.getZoom(), myMap.getType())
                     });
 
                     component.map = myMap;

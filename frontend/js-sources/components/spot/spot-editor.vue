@@ -79,6 +79,7 @@
                     <div class="col-10">
                         <ya-map-location-and-coords ref="locationEdit"
                                                     v-bind:spot="spot"
+                                                    :zoom="zoom"
                                                     width="100%"
                                                     height="400px"
                                                     :editable="true"
@@ -175,7 +176,7 @@
     const NEW_POINT_POSITION_KOEFF = 0.04;
 
     module.exports = {
-        props: ['spot', 'country', 'region', 'images', 'schemas', 'videos'],
+        props: ['spot', 'country', 'region', 'images', 'schemas', 'videos', 'zoom'],
 
         mounted: function () {
             hasRole(ROLE_ADMIN, ROLE_EDITOR).then(canEdit => this.canEdit = canEdit);

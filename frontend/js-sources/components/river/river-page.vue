@@ -65,13 +65,8 @@
 <script>
     import {store} from '../../app-state';
     import {hasRole, ROLE_ADMIN, ROLE_EDITOR} from '../../auth';
-    import {getRiver, getRiverBounds, nvlReturningId, removeRiver, setActiveEntityUrlHash} from '../../editor';
-    import {
-        LAST_MAP_TYPE_COOKIE_NAME, LAST_POS_COOKIE_NAME, LAST_ZOOM_COOKIE_NAME,
-        DEFAULT_MAP_TYPE, DEFAULT_POSITION, DEFAULT_ZOOM,
-        MapParams, MapParamsStorage,
-        EditorHashMapParamsStorage, CookieMapParamsStorage, DefaultMapParamsStorage
-    } from 'wwmap-js-commons/map-settings'
+    import {getRiver, nvlReturningId, removeRiver, setActiveEntityUrlHash} from '../../editor';
+    import {createMapParamsStorage} from 'wwmap-js-commons/map-settings'
 
     module.exports = {
         props: ['initialRiver', 'reports', 'transfers', 'country', 'region'],
@@ -98,14 +93,7 @@
                 river: null,
                 previousRiverId: this.initialRiver.id,
                 canEdit: false,
-                riverLocationStorage: new DefaultMapParamsStorage(new MapParams(DEFAULT_POSITION, DEFAULT_ZOOM, DEFAULT_MAP_TYPE)),
-                mapParamsStorage: new MapParamsStorage(
-                    new EditorHashMapParamsStorage(),
-                    new CookieMapParamsStorage(LAST_POS_COOKIE_NAME, LAST_ZOOM_COOKIE_NAME, LAST_MAP_TYPE_COOKIE_NAME),
-                    this.riverLocationStorage,
-                    new DefaultMapParamsStorage(new MapParams(DEFAULT_POSITION, DEFAULT_ZOOM, DEFAULT_MAP_TYPE))
-                ),
-                bounds: [[-1, -1], [1, 1]]
+                mapParamsStorage: createMapParamsStorage(),
             }
         },
         methods: {
@@ -113,14 +101,6 @@
                 if (this.shouldReInit()) {
                     this.previousRiverId = this.initialRiver.id;
                     this.river = this.initialRiver;
-                    getRiverBounds(this.river.id).then(bounds => {
-                        this.bounds = bounds;
-                        let center = [(bounds[0][0] + bounds[1][0]) / 2, (bounds[0][1] + bounds[1][1]) / 2];
-                        this.riverLocationStorage.setLastPositionZoomType(
-                            center[0] == 0 && center[1]==0 ? null : center,
-                            DEFAULT_ZOOM,
-                            DEFAULT_MAP_TYPE)
-                    })
                 }
             },
             shouldReInit: function () {
@@ -131,6 +111,7 @@
                 store.commit("setRiverEditorVisible", false);
                 store.commit("setSpotEditorVisible", false);
 
+                let lastPositionZoomType = this.mapParamsStorage.getLastPositionZoomType();
                 store.commit("setSpotEditorState", {
                     visible: true,
                     editMode: true,
@@ -139,13 +120,14 @@
                         river: this.river,
                         order_index: "0",
                         automatic_ordering: true,
-                        point: this.mapParamsStorage.getLastPositionZoomType().position,
+                        point: lastPositionZoomType.position,
                         aliases: [],
                         props: {},
                     },
                     country: this.country,
                     region: this.region,
                     river: this.river,
+                    zoom: lastPositionZoomType.zoom,
                 });
             },
             remove: function () {

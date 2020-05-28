@@ -94,7 +94,7 @@ export function getRiverBounds(riverId) {
     return doGetJson(backendApiBase + "/river/" + riverId + "/bounds")
         .catch(err => {
             console.log(err)
-            return [[0, 0], [0, 0]]
+            return null
         });
 }
 
