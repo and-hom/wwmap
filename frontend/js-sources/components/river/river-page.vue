@@ -28,9 +28,7 @@
                       :country="country"
                       :region="region"
                       v:sensors="sensors">
-            <button type="button" class="btn btn-secondary" v-if="pageMode != 'view'"
-                    v-on:click="cancelEditing()">Отменить
-            </button>
+            <button type="button" class="btn btn-secondary" v-on:click="cancelEditing()">Отменить</button>
             <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#del-river" v-if="river.id>0">Удалить
             </button>
         </river-editor>
@@ -42,9 +40,7 @@
                       :country="country"
                       :region="region"
                       v:sensors="sensors">
-            <button type="button" class="btn btn-secondary" v-if="pageMode != 'view'"
-                    v-on:click="cancelEditing()">Отменить
-            </button>
+            <button type="button" class="btn btn-secondary" v-on:click="cancelEditing()">Отменить</button>
             <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#del-river" v-if="river.id>0">Удалить
             </button>
         </river-batch-editor>

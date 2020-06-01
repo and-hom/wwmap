@@ -1,6 +1,6 @@
 <template>
     <div>
-        <btn-bar logObjectType="RIVER" :logObjectId="river.id">
+        <btn-bar ref="btnBar" logObjectType="RIVER" :logObjectId="river.id">
             <button type="button" class="btn btn-success"
                     v-on:click="save()">Сохранить
             </button>
@@ -229,6 +229,7 @@
                 prevCountryId: this.river.region.country_id,
                 map: null,
                 center: [0, 0],
+                operationInProgress: false,
 
                 canEdit: false,
                 save: function () {
@@ -236,6 +237,8 @@
                         this.showError("Нельзя сохранять реку без названия");
                         return
                     }
+
+                    this.$refs.btnBar.disable()
                     saveRiver(this.river).then(updated => {
                         this.meteoPoint = this.getMeteoPointById(this.river.props.meteo_point);
                         this.selectedSensors = this.river.props.vodinfo_sensors;
@@ -270,6 +273,10 @@
 
                     }, _ => {
                         this.showError("Не удалось сохранить реку. Возможно, недостаточно прав");
+                    }).finally(() => {
+                        if (this.$refs.btnBar) {
+                            this.$refs.btnBar.enable()
+                        }
                     });
                 },
 
