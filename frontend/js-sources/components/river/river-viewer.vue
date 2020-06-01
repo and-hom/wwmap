@@ -1,5 +1,8 @@
 <template>
     <div>
+        <btn-bar v-if="canEdit" logObjectType="RIVER" :logObjectId="river.id">
+            <slot></slot>
+        </btn-bar>
         <breadcrumbs :country="country" :region="region"/>
         <h1>{{ river.title }}</h1>
         <div style="float:right;">

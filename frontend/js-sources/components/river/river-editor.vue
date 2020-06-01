@@ -1,104 +1,86 @@
 <template>
-    <div class="spot-editor-panel" style="padding-top:15px;">
-        <b-tabs>
-            <b-tab title="Главное" active>
-                <label for="river_title" style="font-weight:bold; margin-top:5px">Название:</label>
-                <input v-model.trim="river.title" style="display:block;" id="river_title"/>
-                <dl style="margin-top:10px;">
-                    <dt v-if="river.region.id>0">Регион:</dt>
-                    <dd v-if="river.region.id>0">
-                        <select v-model="river.region.id">
-                            <option v-for="region in regions" v-bind:value="region.id">{{region.title}}</option>
-                        </select>
-                    </dd>
-                    <dt>Описание:</dt>
-                    <dd>
+    <div>
+        <btn-bar logObjectType="RIVER" :logObjectId="river.id">
+            <button type="button" class="btn btn-success"
+                    v-on:click="save()">Сохранить
+            </button>
+            <slot></slot>
+        </btn-bar>
+        <div class="spot-editor-panel" style="padding-top:15px;">
+            <b-tabs>
+                <b-tab title="Главное" active>
+                    <label for="river_title" style="font-weight:bold; margin-top:5px">Название:</label>
+                    <input v-model.trim="river.title" style="display:block;" id="river_title"/>
+                    <dl style="margin-top:10px;">
+                        <dt v-if="river.region.id>0">Регион:</dt>
+                        <dd v-if="river.region.id>0">
+                            <select v-model="river.region.id">
+                                <option v-for="region in regions" v-bind:value="region.id">{{region.title}}</option>
+                            </select>
+                        </dd>
+                        <dt>Описание:</dt>
+                        <dd>
                                     <textarea v-bind:text-content="river.aliases"
                                               rows="10" cols="120"
                                               style="resize: none; margin-left:40px;"
                                               v-model="river.description"></textarea>
-                    </dd>
-                    <dt>Другие варианты названия для автоматического поиска отчётов:</dt>
-                    <dd>
-                        <div class="wwmap-system-hint" style="margin-bottom: 7px;">Каждое альтернативное название на
-                            новой строке
-                        </div>
-                        <textarea v-bind:text-content="river.aliases"
-                                  v-on:input="river.aliases = parseAliases($event.target.value)"
-                                  rows="10" cols="120"
-                                  style="resize: none; margin-left:40px;">{{ river.aliases.join('\n') }}</textarea>
-                    </dd>
-                </dl>
-            </b-tab>
-            <b-tab title="Заброски">
-                <div style="margin-top: 10px; margin-bottom: 20px;">
-                    <a target="_blank" href="./transfer.htm">Редактор забросок</a>
-                </div>
-                <v-select multiple
-                          v-model="river.transfers"
-                          :options="allTransfers"
-                          :reduce="transfer => transfer.id"
-                          label="title"/>
-            </b-tab>
-            <b-tab title="Системные параметры">
-                <span class="wwmap-system-hint" style="padding-top: 10px;">Тут собраны настройки разных системных вещей для этой реки</span>
-                <props :p="river.props">
-                    <template slot="before">
-                        <div class="row">
-                            <div class="col-3">
-                                <strong>Подложка общей карты реки при экспорте</strong>
+                        </dd>
+                        <dt>Другие варианты названия для автоматического поиска отчётов:</dt>
+                        <dd>
+                            <div class="wwmap-system-hint" style="margin-bottom: 7px;">Каждое альтернативное название на
+                                новой строке
                             </div>
-                            <div class="col-9">
-                                <select v-model="river.props.river_export_map_type">
-                                    <option :value="null">По-умолчанию</option>
-                                    <option value="google#satellite">Спутник Google</option>
-                                    <option value="yandex#satellite">Спутник Яндекс</option>
-                                    <option value="osm#standard">OSM</option>
-                                    <option value="ggc#standard">Топографичсекая карта</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-3">
-                                <strong>Гидропост <a href="http://gis.vodinfo.ru/informer/">gis.vodinfo.ru/informer</a></strong>
-                            </div>
-                            <div class="col-9">
-                                <ul id="sensors">
-                                    <li v-for="sensor in selectedSensors">
-                                        {{ sensor }} - {{ sensorsById[sensor] }}
-                                        <button v-on:click.stop="removeSensor(sensor)">[x]</button>
-                                    </li>
-                                </ul>
-                                <v-select v-model="activeSensor" label="title" :options="sensors"
-                                          @input="onSelectSensor">
-                                    <template slot="no-options">
-                                        Начните печатать название гидропоста
-                                    </template>
-                                    <template slot="option" slot-scope="option">
-                                        {{ option.id }}&nbsp;&dash;&nbsp;{{ option.title }}
-                                    </template>
-                                    <template slot="selected-option" slot-scope="option">
-                                        {{ option.id }}&nbsp;&dash;&nbsp;{{ option.title }}
-                                    </template>
-                                </v-select>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-3">
-                                <strong>Точка отслеживания погоды</strong>
-                                <div class="wwmap-system-hint">Сейчас используется только для формирования ссылки на
-                                    прогноз погоды.
+                            <textarea v-bind:text-content="river.aliases"
+                                      v-on:input="river.aliases = parseAliases($event.target.value)"
+                                      rows="10" cols="120"
+                                      style="resize: none; margin-left:40px;">{{ river.aliases.join('\n') }}</textarea>
+                        </dd>
+                    </dl>
+                </b-tab>
+                <b-tab title="Заброски">
+                    <div style="margin-top: 10px; margin-bottom: 20px;">
+                        <a target="_blank" href="./transfer.htm">Редактор забросок</a>
+                    </div>
+                    <v-select multiple
+                              v-model="river.transfers"
+                              :options="allTransfers"
+                              :reduce="transfer => transfer.id"
+                              label="title"/>
+                </b-tab>
+                <b-tab title="Системные параметры">
+                    <span class="wwmap-system-hint" style="padding-top: 10px;">Тут собраны настройки разных системных вещей для этой реки</span>
+                    <props :p="river.props">
+                        <template slot="before">
+                            <div class="row">
+                                <div class="col-3">
+                                    <strong>Подложка общей карты реки при экспорте</strong>
+                                </div>
+                                <div class="col-9">
+                                    <select v-model="river.props.river_export_map_type">
+                                        <option :value="null">По-умолчанию</option>
+                                        <option value="google#satellite">Спутник Google</option>
+                                        <option value="yandex#satellite">Спутник Яндекс</option>
+                                        <option value="osm#standard">OSM</option>
+                                        <option value="ggc#standard">Топографичсекая карта</option>
+                                    </select>
                                 </div>
                             </div>
-                            <div class="col-9">
-                                <div v-if="meteoPointSelectMode">
-                                    <div class="wwmap-system-hint">Выберите из списка или
-                                        <button v-on:click.stop="addMeteoPoint">создайте</button>
-                                    </div>
-                                    <v-select v-model="meteoPoint" label="title" :options="meteoPoints"
-                                              @input="onSelectMeteoPoint">
+                            <div class="row">
+                                <div class="col-3">
+                                    <strong>Гидропост <a
+                                            href="http://gis.vodinfo.ru/informer/">gis.vodinfo.ru/informer</a></strong>
+                                </div>
+                                <div class="col-9">
+                                    <ul id="sensors">
+                                        <li v-for="sensor in selectedSensors">
+                                            {{ sensor }} - {{ sensorsById[sensor] }}
+                                            <button v-on:click.stop="removeSensor(sensor)">[x]</button>
+                                        </li>
+                                    </ul>
+                                    <v-select v-model="activeSensor" label="title" :options="sensors"
+                                              @input="onSelectSensor">
                                         <template slot="no-options">
-                                            Начните печатать название точки
+                                            Начните печатать название гидропоста
                                         </template>
                                         <template slot="option" slot-scope="option">
                                             {{ option.id }}&nbsp;&dash;&nbsp;{{ option.title }}
@@ -108,35 +90,62 @@
                                         </template>
                                     </v-select>
                                 </div>
-                                <div v-else>
-                                    <div style="padding-top:15px;">
-                                        <ya-map-location v-bind:spot="meteoPoint" width="100%" height="600px"
-                                                         :editable="true" :ya-search="true"/>
+                            </div>
+                            <div class="row">
+                                <div class="col-3">
+                                    <strong>Точка отслеживания погоды</strong>
+                                    <div class="wwmap-system-hint">Сейчас используется только для формирования ссылки на
+                                        прогноз погоды.
                                     </div>
-                                    <label style="padding-right: 10px;"
-                                           for="meteo_point_title_input"><strong>Название:</strong></label><input
-                                        id="meteo_point_title_input" type="text" v-model="meteoPoint.title"
-                                        style="margin-top: 10px; width: 80%;"/>
-                                    <div class="btn-toolbar" style="padding-top:15px;">
-                                        <div class="btn-group mr-2" role="group">
-                                            <button type="button" class="btn btn-success"
-                                                    v-on:click.stop="onAddMeteoPoint" :disabled="!meteoPoint.title">
-                                                Добавить
-                                            </button>
-                                            <button type="button" class="btn btn-cancel"
-                                                    v-on:click.stop="onCancelAddMeteoPoint">Отмена
-                                            </button>
+                                </div>
+                                <div class="col-9">
+                                    <div v-if="meteoPointSelectMode">
+                                        <div class="wwmap-system-hint">Выберите из списка или
+                                            <button v-on:click.stop="addMeteoPoint">создайте</button>
+                                        </div>
+                                        <v-select v-model="meteoPoint" label="title" :options="meteoPoints"
+                                                  @input="onSelectMeteoPoint">
+                                            <template slot="no-options">
+                                                Начните печатать название точки
+                                            </template>
+                                            <template slot="option" slot-scope="option">
+                                                {{ option.id }}&nbsp;&dash;&nbsp;{{ option.title }}
+                                            </template>
+                                            <template slot="selected-option" slot-scope="option">
+                                                {{ option.id }}&nbsp;&dash;&nbsp;{{ option.title }}
+                                            </template>
+                                        </v-select>
+                                    </div>
+                                    <div v-else>
+                                        <div style="padding-top:15px;">
+                                            <ya-map-location v-bind:spot="meteoPoint" width="100%" height="600px"
+                                                             :editable="true" :ya-search="true"/>
+                                        </div>
+                                        <label style="padding-right: 10px;"
+                                               for="meteo_point_title_input"><strong>Название:</strong></label><input
+                                            id="meteo_point_title_input" type="text" v-model="meteoPoint.title"
+                                            style="margin-top: 10px; width: 80%;"/>
+                                        <div class="btn-toolbar" style="padding-top:15px;">
+                                            <div class="btn-group mr-2" role="group">
+                                                <button type="button" class="btn btn-success"
+                                                        v-on:click.stop="onAddMeteoPoint" :disabled="!meteoPoint.title">
+                                                    Добавить
+                                                </button>
+                                                <button type="button" class="btn btn-cancel"
+                                                        v-on:click.stop="onCancelAddMeteoPoint">Отмена
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <hr/>
-                        <h2>Для отдельных порогов:</h2>
-                    </template>
-                </props>
-            </b-tab>
-        </b-tabs>
+                            <hr/>
+                            <h2>Для отдельных порогов:</h2>
+                        </template>
+                    </props>
+                </b-tab>
+            </b-tabs>
+        </div>
     </div>
 </template>
 <style type="text/css">
@@ -219,6 +228,7 @@
                 prevRegionId: nvlReturningId(this.river.region.id),
                 prevCountryId: this.river.region.country_id,
                 map: null,
+                center: [0, 0],
 
                 canEdit: false,
                 save: function () {
