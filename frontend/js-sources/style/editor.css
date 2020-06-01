@@ -6,15 +6,12 @@
     width: 100%;
 }
 
-.menu-item a {
-    float: right;
-    padding-left: 10px;
-}
-
 .menu-item .title-link {
     float: none;
     width: 100%;
     margin-bottom: 5px;
+    text-align: left;
+    padding-left: 20px;
 }
 
 .menu-item ul {
