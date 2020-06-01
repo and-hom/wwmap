@@ -41,7 +41,11 @@ func (this *DownloadsHandler) Download(w http.ResponseWriter, req *http.Request,
 		return
 	}
 
-	transliterate := req.FormValue("tr") != ""
+	trStr := req.FormValue("tr")
+	transliterate, err := strconv.ParseBool(trStr)
+	if err != nil {
+		transliterate = trStr != ""
+	}
 
 	whitewaterPoints, err := this.WhiteWaterDao.ListByRiver(id)
 	if err != nil {
