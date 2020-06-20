@@ -5,60 +5,45 @@
              msg="Совсем удалить? Все пороги будут также удалены! Да, совсем! Восстановить будет никак нельзя!"
              :ok-fn="function() { remove(); }"></ask>
 
-        <div v-if="canEdit" class="btn-toolbar justify-content-between">
-            <div class="btn-group mr-2" role="group">
-                <button v-if="river.id && pageMode == 'view'" type="button" class="btn btn-primary"
-                        v-on:click="add_spot()">Добавить препятствие
-                </button>
-                <button type="button" class="btn btn-info" v-if="pageMode == 'view'"
-                        v-on:click="pageMode='edit'; hideError();">
-                    Редактирование
-                </button>
-                <button type="button" class="btn btn-success" v-if="river.id && pageMode == 'view'"
-                        v-on:click="pageMode='batch-edit'; hideError();">
-                    Пакетное редактирование и загрузка GPX
-                </button>
-                <button type="button" class="btn btn-success" v-if="pageMode == 'edit'"
-                        v-on:click="$refs.editor.save()">Сохранить
-                </button>
-                <button type="button" class="btn btn-success" v-if="pageMode == 'batch-edit'"
-                        v-on:click="$refs.batchEditor.saveSpotsBatch()">Сохранить
-                </button>
-                <button type="button" class="btn btn-secondary" v-if="pageMode != 'view'"
-                        v-on:click="cancelEditing()">Отменить
-                </button>
-                <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#del-river"
-                        v-if="river.id>0">Удалить
-                </button>
-            </div>
-            <div class="btn-group mr-2">
-                <log-dropdown object-type="RIVER" :object-id="river.id"/>
-            </div>
-        </div>
-
         <river-viewer v-if="pageMode=='view'"
                       :river="river"
                       :reports="reports"
                       :transfers="transfers"
                       :country="country"
-                      :region="region"/>
+                      :region="region">
+            <button type="button" class="btn btn-primary" v-on:click="add_spot()">Добавить препятствие</button>
+            <button type="button" class="btn btn-info"
+                    v-on:click="pageMode='edit'; hideError();">Редактирование</button>
+            <button type="button" class="btn btn-success"
+                    v-on:click="pageMode='batch-edit'; hideError();">Пакетное редактирование и загрузка GPX</button>
+            <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#del-river" v-if="river.id>0">Удалить
+            </button>
+        </river-viewer>
 
-        <river-editor v-if="pageMode=='edit'"
+        <river-editor v-if="canEdit && pageMode=='edit'"
                       ref="editor"
                       :river="river"
                       :reports="reports"
                       :transfers="transfers"
                       :country="country"
                       :region="region"
-                      v:sensors="sensors"/>
+                      v:sensors="sensors">
+            <button type="button" class="btn btn-secondary" v-on:click="cancelEditing()">Отменить</button>
+            <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#del-river" v-if="river.id>0">Удалить
+            </button>
+        </river-editor>
 
-        <river-batch-editor v-if="pageMode=='batch-edit'"
-                            ref="batchEditor"
-                            :river="river"
-                            :reports="reports"
-                            :country="country"
-                            :region="region"
-                            v:sensors="sensors"/>
+        <river-batch-editor v-if="canEdit && pageMode=='batch-edit'"
+                      ref="batchEditor"
+                      :river="river"
+                      :reports="reports"
+                      :country="country"
+                      :region="region"
+                      v:sensors="sensors">
+            <button type="button" class="btn btn-secondary" v-on:click="cancelEditing()">Отменить</button>
+            <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#del-river" v-if="river.id>0">Удалить
+            </button>
+        </river-batch-editor>
     </div>
 </template>
 
