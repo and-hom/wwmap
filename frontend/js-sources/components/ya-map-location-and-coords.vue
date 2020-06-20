@@ -51,8 +51,7 @@
         props: {
             spot: Object,
             zoom: {
-                type: Number,
-                default: 12
+                type: Number
             },
             width: {
                 type: String,

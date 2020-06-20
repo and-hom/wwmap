@@ -1,24 +1,28 @@
-import {doGetJson, doPostJson, doDelete, doDeleteWithJsonResp} from './api';
+import {doDelete, doDeleteWithJsonResp, doGetJson, doPostJson} from './api';
 import {backendApiBase} from './config'
+import {HashTool} from 'wwmap-js-commons/hash-tool'
+import {HASH_DELIMITER} from 'wwmap-js-commons/map-settings'
+
+const hashTool = new HashTool(HASH_DELIMITER, '');
 
 export const all_categories = [
-    {id:"-1", title:"Непроход."},
-    {id:"0", title:"Неизестно"},
-    {id:"1", title:"1"},
-    {id:"2", title:"2"},
-    {id:"3", title:"3"},
-    {id:"4", title:"4"},
-    {id:"4a", title:"   4a"},
-    {id:"4b", title:"   4b"},
-    {id:"4c", title:"   4c"},
-    {id:"5", title:"5"},
-    {id:"5a", title:"   5a"},
-    {id:"5b", title:"   5b"},
-    {id:"5c", title:"   5c"},
-    {id:"6", title:"6"},
-    {id:"6a", title:"   6a"},
-    {id:"6b", title:"   6b"},
-    {id:"6c", title:"   6c"},
+    {id: "-1", title: "Непроход."},
+    {id: "0", title: "Неизестно"},
+    {id: "1", title: "1"},
+    {id: "2", title: "2"},
+    {id: "3", title: "3"},
+    {id: "4", title: "4"},
+    {id: "4a", title: "   4a"},
+    {id: "4b", title: "   4b"},
+    {id: "4c", title: "   4c"},
+    {id: "5", title: "5"},
+    {id: "5a", title: "   5a"},
+    {id: "5b", title: "   5b"},
+    {id: "5c", title: "   5c"},
+    {id: "6", title: "6"},
+    {id: "6a", title: "   6a"},
+    {id: "6b", title: "   6b"},
+    {id: "6c", title: "   6c"},
 ];
 
 export function getCountries() {
@@ -86,24 +90,16 @@ export function getRiver(riverId) {
     return doGetJson(backendApiBase + "/river/" + riverId)
 }
 
-export function getRiverCenter(riverId) {
-    var center = doGetJson(backendApiBase + "/river/" + riverId + "/center");
-    if (center==null) {
-        return [0,0]
-    }
-    return center
-}
-
 export function getRiverBounds(riverId) {
-    var bounds = doGetJson(backendApiBase + "/river/" + riverId + "/bounds");
-    if (bounds==null) {
-        return [[0,0],[0,0]]
-    }
-    return bounds
+    return doGetJson(backendApiBase + "/river/" + riverId + "/bounds")
+        .catch(err => {
+            console.log(err)
+            return null
+        });
 }
 
 export function emptyBounds(bounds) {
-    return bounds==null || bounds[0][0] == bounds[1][0] || bounds[0][1] == bounds[1][1];
+    return bounds == null || bounds[0][0] == bounds[1][0] || bounds[0][1] == bounds[1][1];
 }
 
 export function saveRiver(river) {
@@ -136,7 +132,7 @@ export function setManualLevel(spotId, id, l) {
 }
 
 export function resetManualLevel(spotId, id, l) {
-    return doDeleteWithJsonResp(backendApiBase + "/spot/" + spotId + "/img/" + id + "/manual-level",true)
+    return doDeleteWithJsonResp(backendApiBase + "/spot/" + spotId + "/img/" + id + "/manual-level", true)
 }
 
 export function setImageDate(spotId, id, date) {
@@ -183,31 +179,30 @@ export function addMeteoPoint(p) {
 }
 
 export function isActive(countryId, regionId, riverId, spotId) {
-    hash = window.location.hash;
-    if (!hash) {
+    let hash = hashTool.getHashAtPos(0)
+    if (hash == null) {
         return false
     }
-    hash = hash.substr(1);
-    var params = hash.split(',');
+    let params = hash.split(',');
 
     if (spotId && riverId && countryId) {
         return params.length >= 4
-            && parseInt(params[0])==countryId
-            && parseInt(params[1])==regionIdNvl(regionId)
-            && parseInt(params[2])==riverId
-            && parseInt(params[3])==spotId
+            && parseInt(params[0]) == countryId
+            && parseInt(params[1]) == regionIdNvl(regionId)
+            && parseInt(params[2]) == riverId
+            && parseInt(params[3]) == spotId
     } else if (countryId && riverId) {
         return params.length >= 3
-            && parseInt(params[0])==countryId
-            && parseInt(params[1])==regionIdNvl(regionId)
-            && parseInt(params[2])==riverId
+            && parseInt(params[0]) == countryId
+            && parseInt(params[1]) == regionIdNvl(regionId)
+            && parseInt(params[2]) == riverId
     } else if (countryId && regionId) {
         return params.length >= 4
-            && parseInt(params[0])==countryId
-            && parseInt(params[1])==regionId
+            && parseInt(params[0]) == countryId
+            && parseInt(params[1]) == regionId
     } else if (countryId) {
         return params.length >= 4
-            && parseInt(params[0])==countryId
+            && parseInt(params[0]) == countryId
     }
     return false
 }
@@ -228,15 +223,14 @@ export function nvlReturningId(region) {
     }
 }
 
-export const COUNTRY_ACTIVE_ENTITY_LEVEL=1;
-export const REGION_ACTIVE_ENTITY_LEVEL=2;
-export const RIVER_ACTIVE_ENTITY_LEVEL=3;
-export const SPOT_ACTIVE_ENTITY_LEVEL=4;
+export const COUNTRY_ACTIVE_ENTITY_LEVEL = 1;
+export const REGION_ACTIVE_ENTITY_LEVEL = 2;
+export const RIVER_ACTIVE_ENTITY_LEVEL = 3;
+export const SPOT_ACTIVE_ENTITY_LEVEL = 4;
 
 export function getActiveEntityLevel() {
-    var hash = window.location.hash
+    let hash = hashTool.getHashAtPos(0)
     if (hash) {
-        hash = hash.substr(1)
         var params = hash.split(',')
         return params.length
     }
@@ -244,20 +238,19 @@ export function getActiveEntityLevel() {
 }
 
 export function isActiveEntity(countryId, regionId, riverId, spotId) {
-    var hash = window.location.hash
+    let hash = hashTool.getHashAtPos(0)
     if (hash) {
-        hash = hash.substr(1)
         var params = hash.split(',')
-        if(!isEq(arguments, params, COUNTRY_ACTIVE_ENTITY_LEVEL)) {
+        if (!isEq(arguments, params, COUNTRY_ACTIVE_ENTITY_LEVEL)) {
             return false
         }
-        if(regionId && !isEq(arguments, params, REGION_ACTIVE_ENTITY_LEVEL)) {
+        if (regionId && !isEq(arguments, params, REGION_ACTIVE_ENTITY_LEVEL)) {
             return false
         }
         if (riverId && !isEq(arguments, params, RIVER_ACTIVE_ENTITY_LEVEL)) {
             return false
         }
-        if (spotId &&  !isEq(arguments, params, SPOT_ACTIVE_ENTITY_LEVEL)) {
+        if (spotId && !isEq(arguments, params, SPOT_ACTIVE_ENTITY_LEVEL)) {
             return false
         }
         return true
@@ -266,9 +259,8 @@ export function isActiveEntity(countryId, regionId, riverId, spotId) {
 }
 
 export function getActiveId(level) {
-    var hash = window.location.hash
+    let hash = hashTool.getHashAtPos(0)
     if (hash) {
-        hash = hash.substr(1)
         var params = hash.split(',')
         var pos = level - 1
         return getFromEntityHash(params, pos)
@@ -292,7 +284,7 @@ export function getFromEntityHash(params, pos) {
 }
 
 export function setActiveEntityUrlHash(countryId, regionId, riverId, spotId) {
-    window.location.hash = createActiveEntityHash(countryId, regionId, riverId, spotId)
+    hashTool.setHashAtPos(0, createActiveEntityHash(countryId, regionId, riverId, spotId))
 }
 
 export function createActiveEntityHash(countryId, regionId, riverId, spotId) {
@@ -309,7 +301,7 @@ export function createActiveEntityHash(countryId, regionId, riverId, spotId) {
     if (riverId) {
         hash += "," + riverId
     } else {
-          return hash
+        return hash
     }
 
     if (spotId) {

@@ -32,6 +32,7 @@
                      :images="images"
                      :schemas="schemas"
                      :videos="videos"
+                     :zoom="zoom"
 
                      v-on:images="images = $event"
                      v-on:schemas="schemas = $event"
@@ -54,7 +55,7 @@
     import {getImages, getSpot, nvlReturningId, removeSpot, setActiveEntityUrlHash} from '../../editor';
 
     module.exports = {
-        props: ['initialSpot', 'country', 'region', 'river'],
+        props: ['initialSpot', 'country', 'region', 'river', 'zoom'],
         computed: {
             editMode: {
                 get: function () {
@@ -78,8 +79,6 @@
                 spot: null,
                 previousSpotId: this.initialSpot.id,
                 canEdit: false,
-                center: [41, 41],
-                bounds: [[-1, -1], [1, 1]],
 
                 images: [],
                 schemas: [],

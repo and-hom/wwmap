@@ -3,6 +3,8 @@
 </template>
 
 <script>
+    import {createMapParamsStorage} from 'wwmap-js-commons/map-settings'
+
     const uuidv4 = require('uuid/v4');
     import {addMapLayers} from '../map-common'
     import {backendApiBase} from '../config'
@@ -13,7 +15,7 @@
             spot: Object,
             zoom: {
                 type: Number,
-                default: 12
+                default: 15
             },
             width: {
                 type: String,
@@ -68,18 +70,23 @@
                     }
 
                     let myMap;
+                    let mapType = this.defaultMap;
+                    if (!mapType) {
+                        let lastPositionZoomType = component.mapParamsStorage.getLastPositionZoomType();
+                        mapType = lastPositionZoomType.type
+                    }
                     if (Array.isArray(component.spot.point[0])) {
                         myMap = new ymaps.Map(component.uniqueId, {
                             bounds: component.pBounds(),
                             controls: ["zoomControl"],
-                            type: component.getDefaultMap(),
+                            type: mapType,
                         });
                     } else {
                         myMap = new ymaps.Map(component.uniqueId, {
                             center: component.pCenter(),
                             zoom: component.zoom,
                             controls: ["zoomControl"],
-                            type: component.getDefaultMap(),
+                            type: mapType,
                         });
                     }
                     myMap.controls.add(
@@ -109,8 +116,12 @@
                         }));
                     }
 
+                    component.mapParamsStorage.setLastPositionZoomType(myMap.getCenter(), myMap.getZoom(), myMap.getType())
                     myMap.events.add('typechange', function (e) {
-                        component.setDefaultMap(myMap.getType());
+                        component.mapParamsStorage.setLastPositionZoomType(myMap.getCenter(), myMap.getZoom(), myMap.getType())
+                    });
+                    myMap.events.add('boundschange', function (e) {
+                        component.mapParamsStorage.setLastPositionZoomType(myMap.getCenter(), myMap.getZoom(), myMap.getType())
                     });
 
                     component.map = myMap;
@@ -125,6 +136,7 @@
         },
         data: function () {
             return {
+                mapParamsStorage: createMapParamsStorage(),
                 mapDivStyle: function () {
                     return 'width: ' + this.width + '; height: ' + this.height + ';'
                 },
@@ -421,17 +433,6 @@
                     result[0][1] = result[0][1] - margin * dy;
                     result[1][1] = result[1][1] + margin * dy;
                     return result
-                },
-                getDefaultMap: function () {
-                    if (this.defaultMap) {
-                        return this.defaultMap
-                    }
-
-                    let defaultMap = $.cookie("default_editor_map");
-                    if (defaultMap && ymaps.mapType.storage.get(defaultMap)) {
-                        return defaultMap
-                    }
-                    return "osm#standard"
                 },
                 setDefaultMap: function(type) {
                     $.cookie("default_editor_map", type, {path: '/'})

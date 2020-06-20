@@ -50,7 +50,8 @@
 <script>
     import {store} from '../../app-state';
     import {hasRole, ROLE_ADMIN, ROLE_EDITOR} from '../../auth';
-    import {getRiver, getRiverBounds, nvlReturningId, removeRiver, setActiveEntityUrlHash} from '../../editor';
+    import {getRiver, nvlReturningId, removeRiver, setActiveEntityUrlHash} from '../../editor';
+    import {createMapParamsStorage} from 'wwmap-js-commons/map-settings'
 
     module.exports = {
         props: ['initialRiver', 'reports', 'transfers', 'country', 'region'],
@@ -77,8 +78,7 @@
                 river: null,
                 previousRiverId: this.initialRiver.id,
                 canEdit: false,
-                center: [41, 41],
-                bounds: [[-1, -1], [1, 1]]
+                mapParamsStorage: createMapParamsStorage(),
             }
         },
         methods: {
@@ -86,10 +86,6 @@
                 if (this.shouldReInit()) {
                     this.previousRiverId = this.initialRiver.id;
                     this.river = this.initialRiver;
-                    getRiverBounds(this.river.id).then(bounds => {
-                        this.bounds = bounds;
-                        this.center = [(bounds[0][0] + bounds[1][0]) / 2, (bounds[0][1] + bounds[1][1]) / 2];
-                    })
                 }
             },
             shouldReInit: function () {
@@ -100,6 +96,7 @@
                 store.commit("setRiverEditorVisible", false);
                 store.commit("setSpotEditorVisible", false);
 
+                let lastPositionZoomType = this.mapParamsStorage.getLastPositionZoomType();
                 store.commit("setSpotEditorState", {
                     visible: true,
                     editMode: true,
@@ -108,13 +105,14 @@
                         river: this.river,
                         order_index: "0",
                         automatic_ordering: true,
-                        point: this.center,
+                        point: lastPositionZoomType.position,
                         aliases: [],
                         props: {},
                     },
                     country: this.country,
                     region: this.region,
                     river: this.river,
+                    zoom: lastPositionZoomType.zoom,
                 });
             },
             remove: function () {
@@ -124,7 +122,7 @@
                     err => this.showError("не могу удалить: " + err))
             },
             cancelEditing: function () {
-                this.pageMode='view';
+                this.pageMode = 'view';
                 if (this.river && this.river.id > 0) {
                     this.reload();
                 } else {

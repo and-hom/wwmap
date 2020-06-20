@@ -118,12 +118,18 @@
     import FileUpload from 'vue-upload-component';
     import {getWwmapSessionId, hasRole, ROLE_ADMIN, ROLE_EDITOR} from '../../auth'
     import {getRiverFromTree, navigateToSpot, store} from '../../app-state'
-    import {emptyBounds, getRiverBounds, setRiverVisible,} from '../../editor'
+    import {getRiverBounds, setRiverVisible,} from '../../editor'
     import {backendApiBase} from '../../config'
     import {addMapLayers, registerMapSwitchLayersHotkeys} from '../../map-common';
+    import {createMapParamsStorage} from 'wwmap-js-commons/map-settings'
 
-    var $ = require("jquery");
-    require("jquery.cookie");
+    function expandIfTooSmall(b) {
+        let minDelta = 0.01;
+        if ((b[0][0] - b[1][0]) > 2 * minDelta || (b[0][1] - b[1][1]) > 2 * minDelta) {
+            return b
+        }
+        return [[b[0][0] - minDelta, b[0][1] - minDelta], [b[1][0] + minDelta, b[1][1] + minDelta]]
+    }
 
     module.exports = {
         props: ['river', 'reports', 'transfers', 'country', 'region'],
@@ -134,20 +140,9 @@
             hasRole(ROLE_ADMIN, ROLE_EDITOR).then(canEdit => this.canEdit = canEdit);
 
             getRiverBounds(this.river.id).then(bounds => {
-                this.center = [(bounds[0][0] + bounds[1][0]) / 2, (bounds[0][1] + bounds[1][1]) / 2];
+                this.bounds = bounds;
 
-                const minBoundsHalfSizeDegrees = 0.01;
-                if (Math.abs(bounds[0][0] - bounds[1][0]) < 2 * minBoundsHalfSizeDegrees && Math.abs(bounds[0][1] - bounds[1][1]) < 2 * minBoundsHalfSizeDegrees) {
-                    this.bounds = [
-                        [this.center[0] - minBoundsHalfSizeDegrees, this.center[1] - minBoundsHalfSizeDegrees],
-                        [this.center[0] + minBoundsHalfSizeDegrees, this.center[1] + minBoundsHalfSizeDegrees],
-                    ];
-                } else {
-                    this.bounds = bounds;
-                }
-
-
-                let hideMap = emptyBounds(this.bounds);
+                let hideMap = this.bounds == null;
                 if (this.map && hideMap) {
                     this.map.destroy();
                     this.map = null;
@@ -183,6 +178,8 @@
             return {
                 map: null,
                 canEdit: false,
+                mapParamsStorage: createMapParamsStorage(),
+                bounds: null,
 
                 setVisible: function (visible) {
                     setRiverVisible(this.river.id, visible).then(river => {
@@ -210,19 +207,8 @@
                         return "http://gis.vodinfo.ru/informer/draw/v2_" + s + "_300_200_30_ffffff_110_8_7_H_none.png";
                     });
                 },
-
-                getDefaultMap: function () {
-                    let defaultMap = $.cookie("default_editor_map");
-                    if (defaultMap && ymaps.mapType.storage.get(defaultMap)) {
-                        return defaultMap
-                    }
-                    return "osm#standard"
-                },
-                setDefaultMap: function(type) {
-                    $.cookie("default_editor_map", type, {path: '/'})
-                },
                 showMap: function () {
-                    if (emptyBounds(this.bounds)) {
+                    if (this.bounds == null) {
                         return;
                     }
                     let t = this;
@@ -233,14 +219,19 @@
                             }
                             addMapLayers();
 
-                            let mapType = t.getDefaultMap();
+                            let mapParams = t.mapParamsStorage.getLastPositionZoomType();
                             let map = new ymaps.Map("map", {
-                                bounds: t.bounds,
-                                type: mapType,
+                                bounds: expandIfTooSmall(t.bounds),
+                                type: mapParams.type,
                                 controls: ["zoomControl"]
                             });
+
+                            t.mapParamsStorage.setLastPositionZoomType(map.getCenter(), map.getZoom(), map.getType())
                             map.events.add('typechange', function () {
-                                t.setDefaultMap(map.getType());
+                                t.mapParamsStorage.setLastPositionZoomType(map.getCenter(), map.getZoom(), map.getType())
+                            });
+                            map.events.add('boundschange', function () {
+                                t.mapParamsStorage.setLastPositionZoomType(map.getCenter(), map.getZoom(), map.getType())
                             });
                             map.controls.add(
                                 new ymaps.control.TypeSelector([

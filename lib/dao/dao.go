@@ -47,8 +47,8 @@ type WhiteWaterDao interface {
 	ListByRiver(riverId int64) ([]WhiteWaterPointWithRiverTitle, error)
 	ListByRiverFull(riverId int64) ([]WhiteWaterPointFull, error)
 	ListByRiverAndTitle(riverId int64, title string) ([]WhiteWaterPointWithRiverTitle, error)
-	GetGeomCenterByRiver(riverId int64) (Point, error)
-	GetRiverBounds(riverId int64) (Bbox, error)
+	GetGeomCenterByRiver(riverId int64) (*Point, error)
+	GetRiverBounds(riverId int64) (*Bbox, error)
 	RemoveByRiver(id int64, tx interface{}) error
 	AutoOrderingRiverIds() ([]int64, error)
 	DistanceFromBeginning(riverId int64, path []Point) (map[int64]int, error)

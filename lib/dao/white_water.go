@@ -385,7 +385,7 @@ func (this whiteWaterStorage) RemoveByRiver(id int64, tx interface{}) error {
 	return this.PerformUpdatesWithinTxOptionally(tx, this.deleteForRiverQuery, IdMapper, id)
 }
 
-func (this whiteWaterStorage) GetGeomCenterByRiver(riverId int64) (geo.Point, error) {
+func (this whiteWaterStorage) GetGeomCenterByRiver(riverId int64) (*geo.Point, error) {
 	p, found, err := this.DoFindAndReturn(this.geomCenterByRiverQuery, func(rows *sql.Rows) (interface{}, error) {
 		pointString := ""
 		err := rows.Scan(&pointString)
@@ -396,35 +396,37 @@ func (this whiteWaterStorage) GetGeomCenterByRiver(riverId int64) (geo.Point, er
 		err = json.Unmarshal([]byte(pointString), &pgPoint)
 		if err != nil {
 			log.Errorf("Can not parse centroid point %s for river %d: %v", pointString, riverId, err)
-			return geo.Point{}, err
+			return nil, err
 		}
-		return pgPoint.Coordinates.Flip(), nil
+		coords := pgPoint.Coordinates.Flip()
+		return &coords, nil
 	}, riverId)
 	if err != nil {
-		return geo.Point{}, err
+		return nil, err
 	}
 	if !found {
-		return geo.Point{0, 0}, nil
+		return nil, nil
 	}
-	return p.(geo.Point), nil
+	return p.(*geo.Point), nil
 }
 
-func (this whiteWaterStorage) GetRiverBounds(riverId int64) (geo.Bbox, error) {
+func (this whiteWaterStorage) GetRiverBounds(riverId int64) (*geo.Bbox, error) {
 	p, found, err := this.DoFindAndReturn(this.riverBoundsQuery, func(rows *sql.Rows) (interface{}, error) {
 		pointString := ""
 		err := rows.Scan(&pointString)
 		if err != nil {
-			return geo.Bbox{}, err
+			return nil, err
 		}
-		return ParseBounds(pointString)
+		bounds, err := ParseBounds(pointString)
+		return &bounds, err
 	}, riverId)
 	if err != nil {
-		return geo.Bbox{}, err
+		return nil, err
 	}
 	if !found {
-		return geo.Bbox{0, 0, 0, 0}, nil
+		return nil, nil
 	}
-	return p.(geo.Bbox), nil
+	return p.(*geo.Bbox), nil
 }
 
 func (this whiteWaterStorage) Props() PropertyManager {
