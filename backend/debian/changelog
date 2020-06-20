@@ -1,3 +1,12 @@
+wwmap-backend (0.0.58) unstable; urgency=medium
+
+  * log msg fix
+  * #327 Use correct location and zoom for newly created spots and rivers
+  * #328 Show rivers with non-categorized spots and impassables only in visible river list
+  * #335 Fix transliterate flag
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sat, 20 Jun 2020 22:42:39 +0300
+
 wwmap-backend (0.0.57) unstable; urgency=medium
 
   * #12 Transfers catalog

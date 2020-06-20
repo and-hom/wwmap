@@ -1,3 +1,13 @@
+wwmap-frontend (0.0.64) unstable; urgency=medium
+
+  * #326 Lock save button for river and spot on save pressed
+  * #327 Create common javascript module with tools. Move hash tool and map-settings tool to this common module
+  * #327 Use correct location and zoom for newly created spots and rivers
+  * #337 Align objects tree
+  * jquery upgrade
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sat, 20 Jun 2020 22:47:30 +0300
+
 wwmap-frontend (0.0.63) unstable; urgency=medium
 
   * #319 nginx config warn fix
