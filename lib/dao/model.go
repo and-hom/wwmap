@@ -479,14 +479,16 @@ const CATEGORY_DEFINITING_POINTS_COUNT int = 3
 const MAX_CATEGORY = 6
 
 type RiverCategoryMetrics struct {
-	Max int
-	Avg int
+	Max           int
+	Avg           int
+	HasImpassible bool
 }
 
 func CalculateClusterCategory(points []Spot) RiverCategoryMetrics {
 	cntByCat := make(map[int]int)
 	categorizedPointsCount := 0
 	maxCategory := 0
+	hasImpassible := false
 	for i := 0; i < len(points); i++ {
 		currentCat := points[i].Category.Category
 		cntByCat[currentCat] += 1
@@ -495,6 +497,9 @@ func CalculateClusterCategory(points []Spot) RiverCategoryMetrics {
 		}
 		if currentCat > maxCategory {
 			maxCategory = currentCat
+		}
+		if currentCat == model.IMPASSABLE {
+			hasImpassible = true
 		}
 	}
 
@@ -506,8 +511,9 @@ func CalculateClusterCategory(points []Spot) RiverCategoryMetrics {
 		avgCategory = i
 	}
 	return RiverCategoryMetrics{
-		Max: maxCategory,
-		Avg: avgCategory,
+		Max:           maxCategory,
+		Avg:           avgCategory,
+		HasImpassible: hasImpassible,
 	}
 }
 

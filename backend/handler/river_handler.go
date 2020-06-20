@@ -67,19 +67,20 @@ type RiverListLightDto struct {
 
 type RiverPageDto struct {
 	dao.IdTitle
-	Region       dao.Region             `json:"region"`
-	Description  string                 `json:"description"`
-	Reports      []VoyageReportListDto  `json:"reports"`
-	Transfers    []dao.Transfer         `json:"transfers"`
-	Imgs         []ImgWithSpot          `json:"imgs"`
-	Videos       []ImgWithSpot          `json:"videos"`
-	PdfUrl       string                 `json:"pdf"`
-	HtmlUrl      string                 `json:"html"`
-	Props        map[string]interface{} `json:"props"`
-	MaxCategory  model.SportCategory    `json:"max_category"`
-	AvgCategory  model.SportCategory    `json:"avg_category"` // min category of 3 hardest spots
-	WeatherPoint *geo.Point             `json:"weather_point"`
-	SearchQuery  string                 `json:"search_query"`
+	Region        dao.Region             `json:"region"`
+	Description   string                 `json:"description"`
+	Reports       []VoyageReportListDto  `json:"reports"`
+	Transfers     []dao.Transfer         `json:"transfers"`
+	Imgs          []ImgWithSpot          `json:"imgs"`
+	Videos        []ImgWithSpot          `json:"videos"`
+	PdfUrl        string                 `json:"pdf"`
+	HtmlUrl       string                 `json:"html"`
+	Props         map[string]interface{} `json:"props"`
+	MaxCategory   model.SportCategory    `json:"max_category"`
+	AvgCategory   model.SportCategory    `json:"avg_category"` // min category of 3 hardest spots
+	HasImpassible bool                   `json:"has_impassible"`
+	WeatherPoint  *geo.Point             `json:"weather_point"`
+	SearchQuery   string                 `json:"search_query"`
 }
 
 type ImgWithSpot struct {
@@ -149,19 +150,20 @@ func (this *RiverHandler) GetRiverCard(w http.ResponseWriter, req *http.Request)
 
 	riverCats := dao.CalculateClusterCategory(river.Spots)
 	dto := RiverPageDto{
-		IdTitle:      river.IdTitle,
-		Region:       river.Region,
-		Description:  river.Description,
-		Props:        river.Props,
-		Reports:      reportsList,
-		Transfers:    transfers,
-		Imgs:         imgs,
-		Videos:       videos,
-		PdfUrl:       this.getRiverPassportUrl(&river, this.RiverPassportPdfUrlBase),
-		HtmlUrl:      this.getRiverPassportUrl(&river, this.RiverPassportHtmlUrlBase),
-		MaxCategory:  model.SportCategory{Category: riverCats.Max},
-		AvgCategory:  model.SportCategory{Category: riverCats.Avg},
-		WeatherPoint: weatherPoint,
+		IdTitle:       river.IdTitle,
+		Region:        river.Region,
+		Description:   river.Description,
+		Props:         river.Props,
+		Reports:       reportsList,
+		Transfers:     transfers,
+		Imgs:          imgs,
+		Videos:        videos,
+		PdfUrl:        this.getRiverPassportUrl(&river, this.RiverPassportPdfUrlBase),
+		HtmlUrl:       this.getRiverPassportUrl(&river, this.RiverPassportHtmlUrlBase),
+		MaxCategory:   model.SportCategory{Category: riverCats.Max},
+		AvgCategory:   model.SportCategory{Category: riverCats.Avg},
+		HasImpassible: riverCats.HasImpassible,
+		WeatherPoint:  weatherPoint,
 		SearchQuery: strings.Join([]string{
 			url.QueryEscape("река"),
 			url.QueryEscape(river.Title),
@@ -252,6 +254,7 @@ func (this *RiverHandler) GetVisibleRiversLight(w http.ResponseWriter, req *http
 			continue
 		}
 		maxCat := 0
+		hasNonCategoryOrImpassables := false
 		bounds := geo.Bbox{
 			X1: 360.0,
 			Y1: 360.0,
@@ -260,12 +263,15 @@ func (this *RiverHandler) GetVisibleRiversLight(w http.ResponseWriter, req *http
 		}
 		for j := 0; j < len(river.Spots); j++ {
 			cat := river.Spots[j].Category.Category
+			if cat <= 0 {
+				hasNonCategoryOrImpassables = true
+			}
 			if maxCat < cat {
 				maxCat = cat
 			}
 			bounds.AddPointOrLine(river.Spots[j].Point)
 		}
-		if maxCat < catFilter {
+		if maxCat < catFilter && !hasNonCategoryOrImpassables {
 			continue
 		}
 
