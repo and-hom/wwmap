@@ -1,5 +1,8 @@
 <template>
     <div class="spot-display">
+        <btn-bar v-if="canEdit" logObjectType="SPOT" :logObjectId="spot.id">
+            <slot></slot>
+        </btn-bar>
         <breadcrumbs :country="country" :region="region" :river="river"/>
         <h1>{{ spot.title }}</h1>
         <div style="float:right; width:400px; margin-left: 20px;">

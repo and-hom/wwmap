@@ -7,25 +7,6 @@
              msg='Иногда река в месте порога изгибается. Чтобы контур вокруг порога повторял этот изгиб, нужно добавить несколько опорных точек в середине. Они не несут смысловой нагрузки и нужны только для отрисовки'
              :ok-fn="function() {}"></ask>
 
-        <div v-if="canEdit" class="btn-toolbar justify-content-between">
-            <div class="btn-group mr-2" role="group" aria-label="First group">
-                <button type="button" class="btn btn-info" v-if="!editMode" v-on:click="editMode=true; hideError();">
-                    Редактирование
-                </button>
-                <button type="button" class="btn btn-success" v-if="editMode" v-on:click="$refs.editor.save()">
-                    Сохранить
-                </button>
-                <button type="button" class="btn btn-secondary" v-if="editMode" v-on:click="cancelEditing()">Отменить
-                </button>
-                <button type="button" class="btn btn-danger" v-if="spot.id>0" data-toggle="modal"
-                        data-target="#del-spot">Удалить
-                </button>
-            </div>
-            <div class="btn-group mr-2">
-                <log-dropdown object-type="SPOT" :object-id="spot.id"/>
-            </div>
-        </div>
-
         <spot-viewer v-if="!editMode"
                      :spot="spot"
                      :country="country"
@@ -34,7 +15,14 @@
                      :schemas="schemas"
                      :videos="videos"
 
-                     v-on:spotClick="navigateToSpot($event, false)"/>
+                     v-on:spotClick="navigateToSpot($event, false)">
+            <button type="button" class="btn btn-info" v-if="!editMode" v-on:click="editMode=true; hideError();">
+                Редактирование
+            </button>
+            <button type="button" class="btn btn-danger" v-if="spot.id>0" data-toggle="modal"
+                    data-target="#del-spot">Удалить
+            </button>
+        </spot-viewer>
 
         <spot-editor v-if="editMode"
                      ref="editor"
@@ -50,7 +38,13 @@
                      v-on:videos="videos = $event"
                      v-on:spot="spot = $event"
 
-                     v-on:spotClick="navigateToSpot($event, true)"/>
+                     v-on:spotClick="navigateToSpot($event, true)">
+            <button type="button" class="btn btn-secondary" v-if="editMode" v-on:click="cancelEditing()">Отменить
+            </button>
+            <button type="button" class="btn btn-danger" v-if="spot.id>0" data-toggle="modal"
+                    data-target="#del-spot">Удалить
+            </button>
+        </spot-editor>
     </div>
 </template>
 
