@@ -10,7 +10,6 @@ Requires=postgresql.service
 Type=simple
 PIDFile=/var/run/wwmap-cron.pid
 WorkingDirectory=/var/lib/wwmap/cron
-EnvironmentFile=/var/lib/wwmap/env
 
 User=wwmap
 Group=wwmap

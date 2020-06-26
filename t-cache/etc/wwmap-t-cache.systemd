@@ -10,7 +10,6 @@ Requires=postgresql.service
 Type=simple
 PIDFile=/var/run/wwmap-t-cache.pid
 WorkingDirectory=/var/lib/wwmap/t-cache
-EnvironmentFile=/var/lib/wwmap/env
 
 User=wwmap
 Group=wwmap

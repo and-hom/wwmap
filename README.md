@@ -37,6 +37,7 @@ GRANT wwmap_group TO wwmap;
 CREATE EXTENSION postgis;
 ```
 3. Install ``wwmap-config`` and change ``WWMAP_POSTGRES_PASSWORD`` with real password of ``wwmap`` user in file ``/etc/wwmap/config.yaml``
+4. Install migrate: https://github.com/golang-migrate/migrate/tree/master/cmd/migrate
 4. Install ``wwmap-db`` and run ``wwmap-db-upgrade up``
 5. Install ``wwmap-backend`` and run ``service wwmap-backend start``
 5. Install ``wwmap-t-cache`` and run ``service wwmap-t-cache start``
