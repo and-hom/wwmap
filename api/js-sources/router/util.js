@@ -11,17 +11,6 @@ export function flipLine(arr) {
     return arr.map(flip)
 }
 
-export function distanceText(lenMeters) {
-    let distanceText;
-    if (lenMeters < 1000) {
-        distanceText = "" + lenMeters.toFixed(0) + "m";
-    } else {
-        distanceText = "" + (lenMeters / 1000).toFixed(2) + "km";
-    }
-    return distanceText;
-}
-
-
 export function mouseToCoords(evt) {
     let map = evt.get('map');
     if (!map) {
