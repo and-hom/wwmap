@@ -241,7 +241,7 @@ WWMapMeasurementTool.prototype.onMouseMoved = function (cursorPosPx, coords) {
 
     // geometry direct
     this.multiPath.setLine(markerPos, nearestRiver ? nearestRiver.id : -1,
-        turf.distance(markerPos, this.multiPath.pointEnd(), {units: 'meters'}));
+        turf.distance(flip(markerPos), flip(this.multiPath.pointEnd()), {units: 'meters'}));
 };
 
 WWMapMeasurementTool.prototype.mouseToCoords = function (pixelPos) {
