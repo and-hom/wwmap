@@ -251,12 +251,12 @@ function createSlice(coords) {
     });
 }
 
-function lenText(x) {
-    if (x < 1000) {
-        return Math.floor(x) + " m";
+function lenText(lenMeters) {
+    if (lenMeters < 1000) {
+        return Math.floor(lenMeters) + " m";
     }
-    if (x < 5000) {
-        return Math.floor(x / 100) / 10 + " km"
+    if (lenMeters < 5000) {
+        return Math.floor(lenMeters / 100) / 10 + " km"
     }
-    return Math.floor(x / 1000) + "km"
+    return Math.floor(lenMeters / 1000) + "km"
 }
