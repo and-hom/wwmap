@@ -4,7 +4,7 @@ set -e
 TABLES=`cat /usr/share/wwmap/backup/tables.list`
 
 function config() {
-    python -c 'import yaml; print(yaml.load(open("/etc/wwmap/config.yaml","r"))'$1')'
+    python -c 'import yaml; config = open("/etc/wwmap/config.yaml","r"); print((yaml.safe_load(config) if "safe_load" in dir(yaml) else yaml.load(config))'$1')'
 }
 
 CONN_STR=`config '["db"]["connection-string"]'`
