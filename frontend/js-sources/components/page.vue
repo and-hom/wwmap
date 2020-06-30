@@ -20,12 +20,12 @@
         <footer class="footer">
             <div class="wwmap-footer">
                 <span v-if="showTechInfo">
-                    <span>Версия бэкенда:&nbsp;<a target="_blank" :href="'./package-changelog.htm?module=' + 'backend'">{{backVersion}}</a></span>
-                    <span>Версия фронтенда:&nbsp;<a target="_blank" :href="'./package-changelog.htm?module=' + 'frontend'">{{frontVersion}}</a></span>
-                    <span>Версия api карты:&nbsp;<a target="_blank" :href="'./package-changelog.htm?module=' + 'api'">{{apiVersion}}</a></span>
-                    <span>Версия t-cache:&nbsp;<a target="_blank" :href="'./package-changelog.htm?module=' + 't-cache'">{{tCacheVersion}}</a></span>
-                    <span>Версия cron:&nbsp;<a target="_blank" :href="'./package-changelog.htm?module=' + 'cron'">{{cronVersion}}</a></span>
-                    <span>Версия базы:&nbsp;<a target="_blank" :href="'./package-changelog.htm?module=' + 'db'">{{dbVersion}}</a></span>
+                    <span>Бэкенд:&nbsp;<a target="_blank" :href="'./package-changelog.htm?module=' + 'backend'">{{backVersion}}</a></span>
+                    <span>Фронтенд:&nbsp;<a target="_blank" :href="'./package-changelog.htm?module=' + 'frontend'">{{frontVersion}}</a></span>
+                    <span>Api карты:&nbsp;<a target="_blank" :href="'./package-changelog.htm?module=' + 'api'">{{apiVersion}}</a></span>
+                    <span>T-cache:&nbsp;<a target="_blank" :href="'./package-changelog.htm?module=' + 't-cache'">{{tCacheVersion}}</a></span>
+                    <span>Cron:&nbsp;<a target="_blank" :href="'./package-changelog.htm?module=' + 'cron'">{{cronVersion}}</a></span>
+                    <span>База:&nbsp;<a target="_blank" :href="'./package-changelog.htm?module=' + 'db'">{{dbVersion}}</a></span>
                 </span><span>Контакт для связи:&nbsp;<a
                     href="mailto:info@wwmap.ru">info@wwmap.ru</a></span>
             </div>
