@@ -30,25 +30,9 @@ import upperFirst from 'lodash/upperFirst'
 import camelCase from 'lodash/camelCase'
 
 import {TabsPlugin} from 'bootstrap-vue'
-import {
-    COUNTRY_ACTIVE_ENTITY_LEVEL,
-    getActiveId,
-    getCountries,
-    getRegion,
-    getRegions,
-    getReports,
-    getRiver,
-    getRiversByCountry,
-    getRiversByRegion,
-    getSpot,
-    getSpots,
-    REGION_ACTIVE_ENTITY_LEVEL,
-    RIVER_ACTIVE_ENTITY_LEVEL,
-    SPOT_ACTIVE_ENTITY_LEVEL
-} from './editor'
-import {getAuthorizedUserInfoOrNull, getTokenFromRequestAndStartWwmapSession, acquireTokenVk, startWwmapSession} from './auth'
+import {getCountries} from './editor'
+import {getTokenFromRequestAndStartWwmapSession, acquireTokenVk, startWwmapSession} from './auth'
 import {parseParams} from './api'
-import {sensors} from './sensors'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'vue-select/dist/vue-select.css';
 
