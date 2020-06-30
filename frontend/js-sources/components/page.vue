@@ -22,6 +22,7 @@
                 <span v-if="showTechInfo">
                     <span>Версия бэкенда:&nbsp;<a target="_blank" :href="'./package-changelog.htm?module=' + 'backend'">{{backVersion}}</a></span>
                     <span>Версия фронтенда:&nbsp;<a target="_blank" :href="'./package-changelog.htm?module=' + 'frontend'">{{frontVersion}}</a></span>
+                    <span>Версия api карты:&nbsp;<a target="_blank" :href="'./package-changelog.htm?module=' + 'api'">{{apiVersion}}</a></span>
                     <span>Версия t-cache:&nbsp;<a target="_blank" :href="'./package-changelog.htm?module=' + 't-cache'">{{tCacheVersion}}</a></span>
                     <span>Версия cron:&nbsp;<a target="_blank" :href="'./package-changelog.htm?module=' + 'cron'">{{cronVersion}}</a></span>
                     <span>Версия базы:&nbsp;<a target="_blank" :href="'./package-changelog.htm?module=' + 'db'">{{dbVersion}}</a></span>
@@ -224,6 +225,7 @@
                     return "dropdown-item"
                 },
                 backVersion: '–',
+                apiVersion: typeof wwmap != 'undefined' && wwmap && wwmap.version ? wwmap.version : '–',
                 dbVersion: '–',
                 frontVersion: frontendVersion,
                 tCacheVersion: '–',

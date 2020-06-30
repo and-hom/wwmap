@@ -2,7 +2,7 @@ import {CATALOG_LINK_TYPES, WWMap} from './map'
 import {WWMapPopup} from "./popup";
 import {RiverList} from "./riverList";
 import {canEdit, getWwmapUserInfoForMapControls} from "./util";
-import {apiBase} from './config';
+import {apiBase, apiVersion} from './config';
 import {loadFragment} from "./template-data";
 
 import './style/map.css'
@@ -37,6 +37,7 @@ var riverList;
 var reportPopup;
 var tutorialPopup;
 export var userInfoFunction = null;
+export const version = apiVersion;
 
 export function initWWMap(mapId, riversListId, options) {
     let optDefined = typeof options == 'object';
