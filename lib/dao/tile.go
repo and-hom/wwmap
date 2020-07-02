@@ -144,7 +144,7 @@ func (this *tileStorage) listRivers(rows *sql.Rows) ([]RiverWithSpots, error) {
 		var levelStr sql.NullString
 		var date pq.NullTime
 
-		err := rows.Scan(&river.Id, &river.Title, &river.RegionId, &river.CountryId,
+		err := rows.Scan(&river.Id, &river.Title, &river.RegionId, &river.CountryId, &river.Visible,
 			&spot.Id, &spot.Title, &spot.Description, &pointStr, &categoryStr, &spot.Link, &propsStr,
 			&img.Id, &img.Source, &img.RemoteId, &img.Url, &img.PreviewUrl, &img.DatePublished, &img.Type,
 			&date, &img.DateLevelUpdated, &levelStr)

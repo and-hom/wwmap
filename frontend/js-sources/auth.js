@@ -1,11 +1,10 @@
 import {backendApiBase} from './config'
 import {doGetJson, parseParams} from './api'
+import {getWwmapSessionId, setWwmapSessionId} from "wwmap-js-commons/auth";
 
 export const YANDEX_AUTH = new AuthSource("yandex", "https://oauth.yandex.ru/authorize?response_type=token&client_id=f50947e6ab4944e1b1c14f2a21f76271");
 export const GOOGLE_AUTH = new AuthSource("google", "https://accounts.google.com/o/oauth2/v2/auth?client_id=61884443528-vfpuce81u3ka0aithbpjn405avkjqrt9.apps.googleusercontent.com&redirect_uri=https%3A%2F%2Fwwmap.ru%2Fredirector-google.htm&response_type=token&scope=profile%20email");
 export const VK_AUTH = new AuthSource("vk", "https://oauth.vk.com/authorize?client_id=6703809&display=page&redirect_uri=https://wwmap.ru/redirector-vk.htm&response_type=code");
-
-const WWMAP_SESSION_ID = 'wwmap_token';
 
 export function AuthSource(code, oauthUrl) {
     this.code = code;
@@ -20,14 +19,6 @@ AuthSource.prototype.redirectIfMatch = function (code) {
         this.authRedirect();
     }
 };
-
-export function getWwmapSessionId() {
-    return window.localStorage[WWMAP_SESSION_ID]
-}
-
-export function clearSessionId() {
-    window.localStorage.removeItem(WWMAP_SESSION_ID);
-}
 
 function extractFieldFromHash(tokenParamName) {
     var hash = window.location.hash;
@@ -50,7 +41,7 @@ export function startWwmapSession(source, token) {
         .then(userInfo => {
 
             if (userInfo) {
-                window.localStorage[WWMAP_SESSION_ID] = userInfo.session_id;
+                setWwmapSessionId(userInfo.session_id);
                 cachedUserInfo = userInfo;
                 userInfoWasCached = true;
             }

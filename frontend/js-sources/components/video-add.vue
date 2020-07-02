@@ -40,7 +40,7 @@
     import {store} from '../app-state';
     import {getImages, removeImage, setImageEnabled} from "../editor"
     import {parseParams, doPostJson} from "../api"
-    import {getWwmapSessionId} from "../auth"
+    import {getWwmapSessionId} from "wwmap-js-commons/auth";
     import {backendApiBase} from '../config'
 
     module.exports = {

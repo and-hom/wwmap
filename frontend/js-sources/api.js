@@ -1,5 +1,5 @@
 import {backendApiBase, tCacheVersionUrl, cronApiBase} from './config'
-import {getWwmapSessionId} from './auth'
+import {getWwmapSessionId} from "wwmap-js-commons/auth";
 
 export function sendRequest(url, _type, auth) {
     return new Promise((resolve, reject) => {

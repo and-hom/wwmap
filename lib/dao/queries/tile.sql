@@ -8,7 +8,7 @@ WITH river_ids AS (SELECT $3::bigint AS id)
     ___select-rivers-internal___
 
 --@select-rivers-internal
-SELECT (river).id, (river).title, CASE (region).fake WHEN TRUE THEN 0 ELSE (region).id END, (region).country_id,
+SELECT (river).id, (river).title, CASE (region).fake WHEN TRUE THEN 0 ELSE (region).id END, (region).country_id, (river).visible,
         (white_water_rapid).id, (white_water_rapid).title, (white_water_rapid).short_description,
         ST_AsGeoJSON((white_water_rapid).point), (white_water_rapid).category, (white_water_rapid).link, (white_water_rapid).props,
         COALESCE((image).id, -1), COALESCE((image).source, ''), COALESCE((image).remote_id, ''), COALESCE((image).url, ''), COALESCE((image).preview_url, ''),

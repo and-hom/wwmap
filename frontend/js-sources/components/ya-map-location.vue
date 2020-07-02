@@ -8,7 +8,7 @@
     const uuidv4 = require('uuid/v4');
     import {addMapLayers} from '../map-common'
     import {backendApiBase} from '../config'
-    import {getWwmapSessionId} from '../auth'
+    import {getWwmapSessionId} from "wwmap-js-commons/auth";
 
     module.exports = {
         props: {

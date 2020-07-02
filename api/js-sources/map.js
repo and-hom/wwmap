@@ -7,6 +7,7 @@ import {googleSatTiles} from './map-urls/google'
 import {apiBase} from "./config";
 import {createMeasurementToolControl} from "./router/control";
 import {WWMapMeasurementTool} from "./router/measurement";
+import {getWwmapSessionId} from "wwmap-js-commons/auth";
 
 export function WWMap(divId, bubbleTemplate, riverList, tutorialPopup, catalogLinkType) {
     this.divId = divId;
@@ -69,6 +70,20 @@ WWMap.prototype.createHelpBtn = function () {
         t.tutorialPopup.show()
     });
     return helpButton
+};
+
+WWMap.prototype.createObjectsUrlTemplate = function (showUnpublished) {
+    let unpublishedUrlPart = '';
+    if (showUnpublished) {
+        let sessionId = getWwmapSessionId();
+        unpublishedUrlPart = `&session_id=${sessionId}&show_unpublished=${showUnpublished}`;
+    }
+    return `${apiBase}/ymaps-tile-ww?bbox=%b&zoom=%z&link_type=${this.catalogLinkType}${unpublishedUrlPart}`;
+};
+
+WWMap.prototype.setShowUnpublished = function (showUnpublished) {
+    this.objectManager.setUrlTemplate(this.createObjectsUrlTemplate(showUnpublished))
+    this.objectManager.reloadData();
 };
 
 WWMap.prototype.init = function () {
@@ -156,7 +171,7 @@ WWMap.prototype.init = function () {
         setLastPositionZoomType(t.yMap.getCenter(), t.yMap.getZoom(), t.yMap.getType())
     });
 
-    var objectManager = new ymaps.RemoteObjectManager(apiBase + '/ymaps-tile-ww?bbox=%b&zoom=%z&link_type=' + this.catalogLinkType, {
+    var objectManager = new ymaps.RemoteObjectManager(this.createObjectsUrlTemplate(), {
         clusterHasBalloon: false,
         geoObjectOpenBalloonOnClick: false,
         geoObjectBalloonContentLayout: ymaps.templateLayoutFactory.createClass(this.bubbleTemplate),

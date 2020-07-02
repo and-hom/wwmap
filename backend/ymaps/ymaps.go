@@ -16,7 +16,7 @@ const MAX_CLUSTERS int64 = 8192
 const MAX_CLUSTER_ID int64 = int64(math.MaxInt32)
 
 func mkFeature(point Spot, river RiverWithSpots, withDescription bool, resourcesBase string,
-	processImgForWeb func(img *Img), linkMaker LinkMaker) Feature {
+	processImgForWeb func(img *Img), linkMaker LinkMaker, visible bool) Feature {
 	var description = ""
 	if withDescription {
 		description = point.Description
@@ -161,7 +161,7 @@ func categoryClusterIcon(category int) string {
 	}
 }
 
-func mkCluster(Id clustering.ClusterId, points []Spot, riverTitle string) Feature {
+func mkCluster(Id clustering.ClusterId, points []Spot, riverTitle string, visible bool) Feature {
 	bounds := ClusterGeom(points)
 
 	riverCats := CalculateClusterCategory(points)
@@ -199,10 +199,10 @@ func WhiteWaterPointsToYmaps(clusterMaker clustering.ClusterMaker, rivers []Rive
 			case Spot:
 				spot := obj.(Spot)
 				if spot.Id != skipId {
-					result = append(result, mkFeature(spot, river, true, resourcesBase, processImgForWeb, linkMaker))
+					result = append(result, mkFeature(spot, river, true, resourcesBase, processImgForWeb, linkMaker, river.Visible))
 				}
 			case clustering.Cluster:
-				result = append(result, mkCluster(id, obj.(clustering.Cluster).Points, river.Title))
+				result = append(result, mkCluster(id, obj.(clustering.Cluster).Points, river.Title, river.Visible))
 			}
 		}
 
@@ -233,7 +233,7 @@ func WhiteWaterPointsToYmapsNoCluster(rivers []RiverWithSpots,
 	for _, river := range rivers {
 		for _, spot := range river.Spots {
 			if spot.Id != skipId {
-				result = append(result, mkFeature(spot, river, true, resourcesBase, processImgForWeb, linkMaker))
+				result = append(result, mkFeature(spot, river, true, resourcesBase, processImgForWeb, linkMaker, river.Visible))
 			}
 		}
 	}
@@ -241,5 +241,5 @@ func WhiteWaterPointsToYmapsNoCluster(rivers []RiverWithSpots,
 }
 
 func SingleWhiteWaterPointToYmaps(spot Spot, river RiverWithSpots, resourcesBase string, processImgForWeb func(img *Img), linkMaker LinkMaker) ([]Feature, error) {
-	return []Feature{mkFeature(spot, river, true, resourcesBase, processImgForWeb, linkMaker)}, nil
+	return []Feature{mkFeature(spot, river, true, resourcesBase, processImgForWeb, linkMaker, river.Visible)}, nil
 }
