@@ -115,7 +115,12 @@ ymaps.modules.define("overlay.BiPlacemark", [
                 this._backOverlay.options.setParent(this.options);
                 this._backOverlay.options.set("strokeWidth", 2.5);
                 this._backOverlay.options.set("fill", false);
-                this._backOverlay.options.set("strokeColor", "#444444FF");
+
+                let borderColor = this.options.get("borderColor");
+                if (!borderColor) {
+                    borderColor = "#444444FF";
+                }
+                this._backOverlay.options.set("strokeColor", borderColor);
                 this._backOverlay.setMap(this.getMap());
 
                 this._frontOverlay.options.setParent(this.options);

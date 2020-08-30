@@ -80,7 +80,8 @@ func mkFeature(point Spot, river RiverWithSpots, withDescription bool, resources
 			Id: point.Id,
 
 			IconLayout:      IMAGE,
-			IconImageHref:   CatImg(resourcesBase, point.Category),
+			IconImageHref:   CatImg(resourcesBase, point.Category, visible),
+
 			IconImageSize:   []int{32, 32},
 			IconImageOffset: []int{-16, -16},
 		},
@@ -89,7 +90,8 @@ func mkFeature(point Spot, river RiverWithSpots, withDescription bool, resources
 	if point.Point.Line != nil {
 		feature.Geometry = NewYmapsLineString(*point.Point.Line...)
 		feature.Options.Overlay = "BiPlacemrakOverlay"
-		feature.Options.StrokeColor = CatColor(point.Category.Category)
+		feature.Options.StrokeColor = CatColorWithTransparency(point.Category.Category, visible)
+		feature.Options.BorderColor = tubeBorderColor(visible)
 	} else if point.Point.Point != nil {
 		feature.Geometry = NewYmapsGeoPoint(*point.Point.Point)
 	} else {
@@ -99,30 +101,54 @@ func mkFeature(point Spot, river RiverWithSpots, withDescription bool, resources
 	return feature
 }
 
-func CatImg(resourcesBase string, cat model.SportCategory) string {
-	if cat.Impassable() {
-		return resourcesBase + "/img/impassable.png"
+func tubeBorderColor(visible bool) string {
+	if visible {
+		return "#444444FF"
 	} else {
-		return fmt.Sprintf(resourcesBase+"/img/cat%d.png", cat.Category)
+		return "#44444455"
 	}
 }
 
-func CatColor(cat int) string {
+func CatImg(resourcesBase string, cat model.SportCategory, visible bool) string {
+	if visible {
+		if cat.Impassable() {
+			return resourcesBase + "/img/impassable.png"
+		} else {
+			return fmt.Sprintf(resourcesBase+"/img/cat%d.png", cat.Category)
+		}
+	} else {
+		if cat.Impassable() {
+			return resourcesBase + "/img/impassable-unpublished.png"
+		} else {
+			return fmt.Sprintf(resourcesBase+"/img/cat%d-unpublished.png", cat.Category)
+		}
+	}
+}
+
+func CatColorWithTransparency(cat int, visible bool) string {
+	if visible {
+		return catColor(cat) + "CC"
+	} else {
+		return catColor(cat) + "55"
+	}
+}
+
+func catColor(cat int) string {
 	switch cat {
 	case 1:
-		return "#00FFF9CC"
+		return "#00FFF9"
 	case 2:
-		return "#3CFF00CC"
+		return "#3CFF00"
 	case 3:
-		return "#FCFF17CC"
+		return "#FCFF17"
 	case 4:
-		return "#FFB100CC"
+		return "#FFB100"
 	case 5:
-		return "#FF0000CC"
+		return "#FF0000"
 	case 6:
-		return "#CC0000CC"
+		return "#CC0000"
 	}
-	return "#BBBBBBCC"
+	return "#BBBBBB"
 }
 
 func ClusterGeom(points []Spot) Bbox {
@@ -179,9 +205,23 @@ func mkCluster(Id clustering.ClusterId, points []Spot, riverTitle string, visibl
 			Title:    Id.Title,
 			Category: &model.SportCategory{Category: riverCats.Max},
 			Id:       Id.RiverId,
-		}, Options: FeatureOptions{
-			Preset: categoryClusterIcon(riverCats.Avg),
-		},
+			Color:    CatColorWithTransparency(riverCats.Avg, visible),
+		}, Options: options(visible, riverCats),
+	}
+}
+
+func options(visible bool, riverCats RiverCategoryMetrics) FeatureOptions {
+	if visible {
+		return FeatureOptions{
+			Preset:      categoryClusterIcon(riverCats.Avg),
+			StrokeColor: CatColorWithTransparency(riverCats.Avg, visible),
+			FillColor:   "white",
+		}
+	}
+	return FeatureOptions{
+		Preset:      "wwmap#test", //categoryClusterIcon(riverCats.Avg),
+		StrokeColor: "blue",       //CatColor(riverCats.Avg),
+		FillColor:   "white",
 	}
 }
 

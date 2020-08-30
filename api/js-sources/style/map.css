@@ -269,3 +269,32 @@
     margin: 2px;
     font-size: .85em;
 }
+
+.wwmap-bubble {
+    font-size: 0;
+    width: 1000px;
+}
+
+.wwmap-bubble svg {
+    display: inline-block;
+}
+
+.wwmap-bubble-text {
+    height: 24px;
+    color: black;
+    font-size: 13px;
+    font-family: Arial, sans-serif;
+    white-space: nowrap;
+    padding-top: 1px;
+    padding-left: 2px;
+    padding-right: 2px;
+    width: fit-content;
+    display: inline-block;
+    vertical-align: top;
+
+    background: white;
+    border-top: 3px;
+    border-top-style: solid;
+    border-bottom: 3px;
+    border-bottom-style: solid;
+}
