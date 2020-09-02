@@ -19,6 +19,7 @@ export function WWMap(divId, bubbleTemplate, riverList, tutorialPopup, catalogLi
     this.catalogLinkType = catalogLinkType;
 
     this.catFilter = 1;
+    this.showUnpublished = false;
 
     addCachedLayer('osm#standard', 'OSM (O)', 'OpenStreetMap contributors, CC-BY-SA', 'osm');
     addLayer('google#satellite', 'Спутник Google (G)', 'Изображения © DigitalGlobe,CNES / Airbus, 2018,Картографические данные © Google, 2018', googleSatTiles);
@@ -42,7 +43,9 @@ export function WWMap(divId, bubbleTemplate, riverList, tutorialPopup, catalogLi
 WWMap.prototype.loadRivers = function (bounds) {
     if (this.riverList) {
         var riverList = this.riverList;
-        $.get(apiBase + "/visible-rivers-light?bbox=" + bounds.join(',') + "&max_cat=" + this.catFilter, function (data) {
+        let unpublishedUrlPart = createUnpublishedUrlPart(this.showUnpublished);
+        let url = `${apiBase}/visible-rivers-light?bbox=${bounds.join(',')}&max_cat=${this.catFilter}${unpublishedUrlPart}`;
+        $.get(url, function (data) {
             var dataObj = {
                 "rivers": JSON.parse(data)
             };
@@ -72,18 +75,25 @@ WWMap.prototype.createHelpBtn = function () {
     return helpButton
 };
 
-WWMap.prototype.createObjectsUrlTemplate = function (showUnpublished) {
+function createUnpublishedUrlPart(showUnpublished) {
     let unpublishedUrlPart = '';
     if (showUnpublished) {
         let sessionId = getWwmapSessionId();
         unpublishedUrlPart = `&session_id=${sessionId}&show_unpublished=${showUnpublished}`;
     }
+    return unpublishedUrlPart;
+}
+
+WWMap.prototype.createObjectsUrlTemplate = function (showUnpublished) {
+    let unpublishedUrlPart = createUnpublishedUrlPart(showUnpublished);
     return `${apiBase}/ymaps-tile-ww?bbox=%b&zoom=%z&link_type=${this.catalogLinkType}${unpublishedUrlPart}`;
 };
 
 WWMap.prototype.setShowUnpublished = function (showUnpublished) {
+    this.showUnpublished = showUnpublished;
     this.objectManager.setUrlTemplate(this.createObjectsUrlTemplate(showUnpublished))
     this.objectManager.reloadData();
+    this.loadRivers(this.yMap.getBounds());
 };
 
 WWMap.prototype.init = function () {

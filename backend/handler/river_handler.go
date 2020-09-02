@@ -61,8 +61,9 @@ type RiverListDto struct {
 
 type RiverListLightDto struct {
 	dao.IdTitle
-	Bounds geo.Bbox   `json:"bounds"`
-	Region dao.Region `json:"region"`
+	Bounds  geo.Bbox   `json:"bounds"`
+	Region  dao.Region `json:"region"`
+	Visible bool       `json:"visible"`
 }
 
 type RiverPageDto struct {
@@ -241,7 +242,14 @@ func (this *RiverHandler) GetVisibleRiversLight(w http.ResponseWriter, req *http
 		}
 	}
 
-	rivers, err := this.TileDao.ListRiversWithBounds(bbox, RIVER_LIST_LIMIT, false)
+	showUnpublishedStr := req.FormValue("show_unpublished")
+	showUnpublished := false
+	if showUnpublishedStr == "true" || showUnpublishedStr == "1" {
+		_, allowed, err := CheckRoleAllowed(req, this.UserDao, dao.ADMIN, dao.EDITOR)
+		showUnpublished = err==nil && allowed
+	}
+
+	rivers, err := this.TileDao.ListRiversWithBounds(bbox, RIVER_LIST_LIMIT, showUnpublished)
 	if err != nil {
 		OnError500(w, err, "Can not select rivers")
 		return
@@ -279,6 +287,7 @@ func (this *RiverHandler) GetVisibleRiversLight(w http.ResponseWriter, req *http
 			IdTitle: dao.IdTitle{Id: river.Id, Title: river.Title},
 			Region:  dao.Region{Id: river.RegionId, CountryId: river.CountryId},
 			Bounds:  bounds.WithMargins(RIVER_BOUNDS_MARGINS_RATIO),
+			Visible: river.Visible,
 		})
 	}
 	w.Write([]byte(this.JsonStr(riversWithReports, "[]")))
