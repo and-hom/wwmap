@@ -68,12 +68,7 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 		}
 	}
 
-	showUnpublishedStr := req.FormValue("show_unpublished")
-	showUnpublished := false
-	if showUnpublishedStr == "true" || showUnpublishedStr == "1" {
-		_, allowed, err := CheckRoleAllowed(req, this.UserDao, dao.ADMIN, dao.EDITOR)
-		showUnpublished = err==nil && allowed
-	}
+	showUnpublished := ShowUnpublished(req, this.UserDao)
 
 	var features []Feature
 
@@ -218,12 +213,14 @@ func (this *WhiteWaterHandler) search(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	spots, err := this.WhiteWaterDao.FindByTitlePart(string(requestBody), 30, 0)
+	showUnpublished := ShowUnpublished(r, this.UserDao)
+
+	spots, err := this.WhiteWaterDao.FindByTitlePart(string(requestBody), 30, 0, showUnpublished)
 	if err != nil {
 		OnError500(w, err, "Can not select spots")
 		return
 	}
-	rivers, err := this.RiverDao.FindByTitlePart(string(requestBody), 30, 0)
+	rivers, err := this.RiverDao.FindByTitlePart(string(requestBody), 30, 0, showUnpublished)
 	if err != nil {
 		OnError500(w, err, "Can not select rivers")
 		return

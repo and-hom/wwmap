@@ -118,7 +118,7 @@ UPDATE river SET visible=$2 WHERE id=$1
 --@by-title-part
 WITH
   alias_query AS (SELECT id, jsonb_array_elements_text(aliases) AS alias FROM ___table___),
-  visible_rivers_query AS (SELECT ___table___.id, title, alias_query.alias AS alias FROM ___table___ LEFT OUTER JOIN alias_query ON ___table___.id=alias_query.id WHERE visible=TRUE)
+  visible_rivers_query AS (SELECT ___table___.id, title, alias_query.alias AS alias FROM ___table___ LEFT OUTER JOIN alias_query ON ___table___.id=alias_query.id WHERE visible=TRUE OR $4)
 SELECT river.id, region_id, region.country_id, river.title, region.title AS region_title, fake AS region_fake,
        ST_AsGeoJSON(ST_Extent(white_water_rapid.point)), river.aliases, river.props, visible
     FROM ___table___
@@ -126,10 +126,10 @@ SELECT river.id, region_id, region.country_id, river.title, region.title AS regi
         INNER JOIN region ON river.region_id=region.id
 WHERE ___table___.id=ANY(
     SELECT DISTINCT id FROM visible_rivers_query
-    WHERE  title ilike '%'||$1||'%' OR alias ilike '%'||$2||'%'
+    WHERE  title ilike '%'||$1||'%' OR alias ilike '%'||$1||'%'
     )
 GROUP BY river.id, region_id, region.country_id, region.title, region.fake
-LIMIT $3 OFFSET $4
+LIMIT $2 OFFSET $3
 
 --@parent-ids
 SELECT ___table___.id AS river_id, CASE WHEN region.fake THEN 0 ELSE region.id END AS region_id, region.country_id AS country_id,

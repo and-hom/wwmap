@@ -66,8 +66,8 @@ func (this riverStorage) ListRiversWithBounds(bbox geo.Bbox, limit int, showUnpu
 	return this.listRiverTitles(this.insideBoundsQuery, bbox.Y1, bbox.X1, bbox.Y2, bbox.X2, limit, showUnpublished)
 }
 
-func (this riverStorage) FindByTitlePart(tPart string, limit, offset int) ([]RiverTitle, error) {
-	return this.listRiverTitles(this.findByTitlePartQuery, tPart, tPart, limit, offset)
+func (this riverStorage) FindByTitlePart(tPart string, limit, offset int, showUnpublished bool) ([]RiverTitle, error) {
+	return this.listRiverTitles(this.findByTitlePartQuery, tPart, limit, offset, showUnpublished)
 }
 
 func (this riverStorage) Find(id int64) (River, error) {

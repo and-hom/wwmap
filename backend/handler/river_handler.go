@@ -242,12 +242,7 @@ func (this *RiverHandler) GetVisibleRiversLight(w http.ResponseWriter, req *http
 		}
 	}
 
-	showUnpublishedStr := req.FormValue("show_unpublished")
-	showUnpublished := false
-	if showUnpublishedStr == "true" || showUnpublishedStr == "1" {
-		_, allowed, err := CheckRoleAllowed(req, this.UserDao, dao.ADMIN, dao.EDITOR)
-		showUnpublished = err==nil && allowed
-	}
+	showUnpublished := ShowUnpublished(req, this.UserDao)
 
 	rivers, err := this.TileDao.ListRiversWithBounds(bbox, RIVER_LIST_LIMIT, showUnpublished)
 	if err != nil {

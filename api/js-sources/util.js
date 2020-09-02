@@ -1,4 +1,5 @@
 import {userInfoFunction} from './main'
+import {getWwmapSessionId} from "wwmap-js-commons/auth";
 
 var $ = require( "jquery" );
 require( "jquery.cookie" );
@@ -154,4 +155,14 @@ export function isMobileBrowser() {
         || navigator.userAgent.match(/iPod/i)
         || navigator.userAgent.match(/BlackBerry/i)
         || navigator.userAgent.match(/Windows Phone/i));
+}
+
+
+export function createUnpublishedUrlPart(showUnpublished, first) {
+    if (showUnpublished) {
+        let sessionId = getWwmapSessionId();
+        let firstChar = first ? '?' : '&';
+        return `${firstChar}session_id=${sessionId}&show_unpublished=${showUnpublished}`;
+    }
+    return '';
 }

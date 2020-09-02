@@ -7,7 +7,7 @@ import {googleSatTiles} from './map-urls/google'
 import {apiBase} from "./config";
 import {createMeasurementToolControl} from "./router/control";
 import {WWMapMeasurementTool} from "./router/measurement";
-import {getWwmapSessionId} from "wwmap-js-commons/auth";
+import {createUnpublishedUrlPart} from './util'
 
 export function WWMap(divId, bubbleTemplate, riverList, tutorialPopup, catalogLinkType) {
     this.divId = divId;
@@ -75,15 +75,6 @@ WWMap.prototype.createHelpBtn = function () {
     return helpButton
 };
 
-function createUnpublishedUrlPart(showUnpublished) {
-    let unpublishedUrlPart = '';
-    if (showUnpublished) {
-        let sessionId = getWwmapSessionId();
-        unpublishedUrlPart = `&session_id=${sessionId}&show_unpublished=${showUnpublished}`;
-    }
-    return unpublishedUrlPart;
-}
-
 WWMap.prototype.createObjectsUrlTemplate = function (showUnpublished) {
     let unpublishedUrlPart = createUnpublishedUrlPart(showUnpublished);
     return `${apiBase}/ymaps-tile-ww?bbox=%b&zoom=%z&link_type=${this.catalogLinkType}${unpublishedUrlPart}`;
@@ -94,6 +85,7 @@ WWMap.prototype.setShowUnpublished = function (showUnpublished) {
     this.objectManager.setUrlTemplate(this.createObjectsUrlTemplate(showUnpublished))
     this.objectManager.reloadData();
     this.loadRivers(this.yMap.getBounds());
+    this.wwMapSearchProvider.showUnpublished = showUnpublished;
 };
 
 WWMap.prototype.init = function () {
@@ -220,17 +212,19 @@ WWMap.prototype.init = function () {
         this.yMap.controls.add(createMeasurementToolControl(this.measurementTool), {});
     }
 
+    this.wwMapSearchProvider = new WWMapSearchProvider(e => {
+        if (t.measurementTool && t.measurementTool.canEditPath()) {
+            t.measurementTool.onMouseMoved(e.get('position'), e.get('coords'));
+        }
+    }, e => {
+        if (t.measurementTool && t.measurementTool.canEditPath()) {
+            t.measurementTool.multiPath.pushEmptySegment();
+        }
+    });
+
     let searchControl = new ymaps.control.SearchControl({
         options: {
-            provider: new WWMapSearchProvider(e => {
-                if (t.measurementTool && t.measurementTool.canEditPath()) {
-                    t.measurementTool.onMouseMoved(e.get('position'), e.get('coords'));
-                }
-            }, e => {
-                if (t.measurementTool && t.measurementTool.canEditPath()) {
-                    t.measurementTool.multiPath.pushEmptySegment();
-                }
-            }),
+            provider: this.wwMapSearchProvider,
             placeholderContent: 'Река или порог'
         }
     });
