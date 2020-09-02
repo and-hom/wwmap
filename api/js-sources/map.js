@@ -44,7 +44,7 @@ WWMap.prototype.loadRivers = function (bounds) {
     if (this.riverList) {
         var riverList = this.riverList;
         let unpublishedUrlPart = createUnpublishedUrlPart(this.showUnpublished);
-        let url = `${apiBase}/visible-rivers-light?bbox=${bounds.join(',')}&max_cat=${this.catFilter}${unpublishedUrlPart}`;
+        let url = `${apiBase}/visible-rivers-lite?bbox=${bounds.join(',')}&max_cat=${this.catFilter}${unpublishedUrlPart}`;
         $.get(url, function (data) {
             var dataObj = {
                 "rivers": JSON.parse(data)
