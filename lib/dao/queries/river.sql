@@ -117,18 +117,25 @@ UPDATE river SET visible=$2 WHERE id=$1
 
 --@by-title-part
 WITH
-  alias_query AS (SELECT id, jsonb_array_elements_text(aliases) AS alias FROM ___table___),
-  visible_rivers_query AS (SELECT ___table___.id, title, alias_query.alias AS alias FROM ___table___ LEFT OUTER JOIN alias_query ON ___table___.id=alias_query.id WHERE visible=TRUE OR $4)
-SELECT river.id, region_id, region.country_id, river.title, region.title AS region_title, fake AS region_fake,
-       ST_AsGeoJSON(ST_Extent(white_water_rapid.point)), river.aliases, river.props, visible
-    FROM ___table___
-        INNER JOIN white_water_rapid ON river.id=white_water_rapid.river_id
-        INNER JOIN region ON river.region_id=region.id
-WHERE ___table___.id=ANY(
-    SELECT DISTINCT id FROM visible_rivers_query
-    WHERE  title ilike '%'||$1||'%' OR alias ilike '%'||$1||'%'
-    )
-GROUP BY river.id, region_id, region.country_id, region.title, region.fake
+  alias_query AS (SELECT id, jsonb_array_elements_text(aliases) AS alias FROM river),
+  visible_rivers_query AS (SELECT river.id, title, alias_query.alias AS alias FROM river
+                                LEFT OUTER JOIN alias_query ON river.id=alias_query.id
+                                WHERE visible=TRUE OR $4),
+  rank_query AS (SELECT id,
+                        wwmap_search(visible_rivers_query.title, $1) AS title_rank ,
+                        wwmap_search(visible_rivers_query.alias, $1) AS alias_rank
+                    FROM visible_rivers_query),
+  final_rank_query AS (SELECT id, max(title_rank) + sum(alias_rank) AS own_rank FROM rank_query GROUP BY id),
+  river_data_query AS (SELECT river.id, region_id, region.country_id, river.title, region.title AS region_title, fake AS region_fake,
+                              ST_AsGeoJSON(ST_Extent(white_water_rapid.point)), river.aliases, river.props, visible
+                       FROM river
+                                INNER JOIN final_rank_query ON river.id=final_rank_query.id AND own_rank>0
+                                INNER JOIN white_water_rapid ON river.id=white_water_rapid.river_id
+                                INNER JOIN region ON river.region_id=region.id
+                       GROUP BY river.id, region_id, region.country_id, region.title, region.fake)
+SELECT river_data_query.*
+    FROM river_data_query INNER JOIN final_rank_query ON river_data_query.id=final_rank_query.id
+    ORDER BY final_rank_query.own_rank DESC
 LIMIT $2 OFFSET $3
 
 --@parent-ids

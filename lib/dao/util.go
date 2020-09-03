@@ -3,6 +3,7 @@ package dao
 import (
 	"github.com/and-hom/wwmap/lib/util"
 	"github.com/lib/pq"
+	"regexp"
 	"time"
 )
 
@@ -37,3 +38,5 @@ func nullPtrToPqDate(t *time.Time) pq.NullTime {
 		return pq.NullTime{Valid: true, Time: *t}
 	}
 }
+
+var eYoRepl = regexp.MustCompile(`(?i)ё`)
