@@ -8,3 +8,12 @@ export function calculateZoom(p) {
     let z = Math.log(180 / d) / Math.log(2) + 2;
     return Math.min(Math.round(z), 19);
 }
+
+export function format() {
+    var s = arguments[0];
+    for (var i = 0; i < arguments.length - 1; i++) {
+        var reg = new RegExp("\\{" + i + "\\}", "gm");
+        s = s.replace(reg, arguments[i + 1]);
+    }
+    return s;
+}

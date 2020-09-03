@@ -14,6 +14,7 @@ import SitesPage from './pages/sites-page.vue'
 import JobsPage from './pages/jobs-page.vue'
 import TimelinePage from './pages/timeline-page.vue'
 import TransferPage from './pages/transfer-page.vue'
+import PackageChangelog from './pages/package-changelog-page.vue'
 
 import vSelect from 'vue-select'
 import VueGallery from 'vue-gallery';
@@ -22,6 +23,7 @@ import Datepicker from 'vuejs-datepicker';
 import {ImageRating} from 'vue-rate-it';
 import VueGoogleCharts from 'vue-google-charts'
 import VueTagsInput from '@johmun/vue-tags-input';
+import LoadScript from 'vue-plugin-load-script';
 
 import VueSlider from 'vue-slider-component'
 import 'vue-slider-component/theme/default.css'
@@ -38,6 +40,7 @@ import 'vue-select/dist/vue-select.css';
 
 import './style/main.css'
 import './style/editor.css'
+import {mapJsApiUrl} from "./config";
 
 const moment = require('moment');
 
@@ -101,6 +104,10 @@ export function initTransfer() {
     return init(TransferPage)
 }
 
+export function initPackageChangelog() {
+    return init(PackageChangelog)
+}
+
 function init(page) {
     Vue.component('v-select', vSelect);
     Vue.component('gallery', VueGallery);
@@ -111,6 +118,7 @@ function init(page) {
     Vue.use(VueGoogleCharts);
     Vue.use(VueTagsInput);
     Vue.use(VueScrollTo);
+    Vue.use(LoadScript);
     Vue.component('VueSlider', VueSlider);
 
     Vue.filter('formatDateTimeStr', function (value) {
@@ -138,10 +146,14 @@ function init(page) {
         store.commit('setTreePath', countries)
     });
 
-    app = new Vue({
-        el: '#vue-app',
-        render: h => h(page),
-    });
+    Vue.loadScript(mapJsApiUrl)
+        .catch(err => console.error(err))
+        .finally(() => {
+            app = new Vue({
+                el: '#vue-app',
+                render: h => h(page),
+            });
+        });
 }
 
 export function getApp() {

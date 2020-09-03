@@ -20,11 +20,12 @@
         <footer class="footer">
             <div class="wwmap-footer">
                 <span v-if="showTechInfo">
-                    <span>Версия бэкенда:&nbsp;{{backVersion}}</span>
-                    <span>Версия фронтенда:&nbsp;{{frontVersion}}</span>
-                    <span>Версия t-cache:&nbsp;{{tCacheVersion}}</span>
-                    <span>Версия cron:&nbsp;{{cronVersion}}</span>
-                    <span>Версия базы:&nbsp;{{dbVersion}}</span>
+                    <span>Бэкенд:&nbsp;<a target="_blank" :href="'./package-changelog.htm?module=' + 'backend'">{{backVersion}}</a></span>
+                    <span>Фронтенд:&nbsp;<a target="_blank" :href="'./package-changelog.htm?module=' + 'frontend'">{{frontVersion}}</a></span>
+                    <span>Api карты:&nbsp;<a target="_blank" :href="'./package-changelog.htm?module=' + 'api'">{{apiVersion}}</a></span>
+                    <span>T-cache:&nbsp;<a target="_blank" :href="'./package-changelog.htm?module=' + 't-cache'">{{tCacheVersion}}</a></span>
+                    <span>Cron:&nbsp;<a target="_blank" :href="'./package-changelog.htm?module=' + 'cron'">{{cronVersion}}</a></span>
+                    <span>База:&nbsp;<a target="_blank" :href="'./package-changelog.htm?module=' + 'db'">{{dbVersion}}</a></span>
                 </span><span>Контакт для связи:&nbsp;<a
                     href="mailto:info@wwmap.ru">info@wwmap.ru</a></span>
             </div>
@@ -224,6 +225,7 @@
                     return "dropdown-item"
                 },
                 backVersion: '–',
+                apiVersion: typeof wwmap != 'undefined' && wwmap && wwmap.version ? wwmap.version : '–',
                 dbVersion: '–',
                 frontVersion: frontendVersion,
                 tCacheVersion: '–',

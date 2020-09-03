@@ -10,6 +10,11 @@ module.exports = env => {
         appEnv = env.APP_ENV;
     }
 
+    let apiVersion = '"Unknown"';
+    if (env && env.VERSION) {
+        apiVersion = `"${env.VERSION}"`;
+    }
+
     console.log(`Build ${appEnv} environment`);
 
     return {
@@ -34,6 +39,9 @@ module.exports = env => {
                 filename: '[name].css',
                 chunkFilename: '[id].css',
                 ignoreOrder: false,
+            }),
+            new webpack.DefinePlugin({
+                API_VERSION: apiVersion,
             }),
         ],
         module: {
