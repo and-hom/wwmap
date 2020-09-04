@@ -1,3 +1,9 @@
+wwmap-cron-modules (0.0.33) unstable; urgency=medium
+
+  * #346 Use yaml safe_load instead of load
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Fri, 04 Sep 2020 23:51:04 +0300
+
 wwmap-cron-modules (0.0.32) unstable; urgency=medium
 
   * #303 Fix bindata prefix 
