@@ -6,7 +6,7 @@ DEB_VERSION = $(shell dpkg-parsechangelog --show-field Version)
 
 build:
 	npm i
-	npm run build -- --env.APP_ENV=production
+	npm run build -- --env.APP_ENV=production --env.VERSION=$(DEB_VERSION)
 	rm js/*.js.map
 
 override_dh_auto_install:
