@@ -4,8 +4,8 @@
             <div class="row">
                 <div class="col-10">
                     <div id="wwmap-container" style="width:100%; height: 700px; padding-bottom:17px;"></div>
-                    <input type="checkbox" id="show-unpublished" v-model="showUnpublished"/>
-                    <label for="show-unpublished" :style="unpublishedLabelStyle">Показывать неопубликованное</label>
+                    <input v-if="canViewUnpublished" type="checkbox" id="show-unpublished" v-model="showUnpublished"/>
+                    <label v-if="canViewUnpublished" for="show-unpublished" :style="unpublishedLabelStyle">Показывать неопубликованное</label>
                 </div>
                 <div class="col-2">
                     <div id="wwmap-rivers" class="wwmap-river-menu"></div>
@@ -20,7 +20,7 @@
 </template>
 
 <script>
-    import {getAuthorizedUserInfoOrNull} from "../auth";
+    import {getAuthorizedUserInfoOrNull, hasRole, ROLE_ADMIN, ROLE_EDITOR} from "../auth";
 
     function loadMapWhenDivIsReady(t) {
         if ($('#wwmap-container').outerWidth()) {
@@ -39,6 +39,9 @@
         mounted: function () {
             loadMapWhenDivIsReady(this);
         },
+        created: function (){
+            hasRole(ROLE_ADMIN, ROLE_EDITOR).then(canViewUnpublished => this.canViewUnpublished = canViewUnpublished);
+        },
         watch: {
             showUnpublished: function (newValue) {
                 this.unpublishedLabelStyle = newValue ? 'color:red; text-decoration: underline;' : '';
@@ -49,6 +52,7 @@
             return {
                 showUnpublished: false,
                 unpublishedLabelStyle: '',
+                canViewUnpublished: false,
                 map: null,
             }
         },
