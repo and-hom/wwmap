@@ -1,7 +1,7 @@
 <div class="wwmap-river-menu">
     {{#each rivers}}
     <div class="wwmap-river-menu-item"><div class="wwmap-river-menu-title">
-            <a href="" style="padding-left:10px;" onclick="wwmap.show_river_info_popup({{id}}); return false;">{{title}}</a>
+            <a href="" style="padding-left:10px;" onclick="wwmap.show_river_info_popup({{id}}); return false;">{{#if visible}}{{%else%}}<img src="https://wwmap.ru/img/invisible.png"/>&nbsp;{{/if}}{{title}}</a>
         </div><div class="wwmap-river-menu-controls">
                 <a href="" style="padding-left:10px;" onclick="wwmap.show_map_at_and_highlight_river({{bounds}}, {{id}}); return false;"><img src="https://wwmap.ru/img/locate.png" width="25px" alt="Показать на карте" title="Показать на карте"/></a>
             {{#if ../canEdit}}

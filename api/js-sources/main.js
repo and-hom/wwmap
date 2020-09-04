@@ -4,6 +4,7 @@ import {RiverList} from "./riverList";
 import {canEdit, getWwmapUserInfoForMapControls} from "./util";
 import {apiBase, apiVersion} from './config';
 import {loadFragment} from "./template-data";
+import {initPresets} from './placemark-preset'
 
 import './style/map.css'
 import './contrib/lightbox.min.css'
@@ -67,14 +68,22 @@ export function initWWMap(mapId, riversListId, options) {
     }
 
     // init and show map
-    ymaps.ready(function () {
-        loadFragment('bubble_template').then(bubbleContent => {
-            wwMap = new WWMap(mapId, bubbleContent, riverList, tutorialPopup, catalogLinkType);
-            ymaps.modules.require(['overlay.BiPlacemark'], function (BiPlacemarkOverlay) {
-                ymaps.overlay.storage.add("BiPlacemrakOverlay", BiPlacemarkOverlay);
-                wwMap.init()
+    return new Promise((resolve, reject) => {
+        try {
+            ymaps.ready(function () {
+                initPresets();
+                loadFragment('bubble_template').then(bubbleContent => {
+                    wwMap = new WWMap(mapId, bubbleContent, riverList, tutorialPopup, catalogLinkType);
+                    ymaps.modules.require(['overlay.BiPlacemark'], function (BiPlacemarkOverlay) {
+                        ymaps.overlay.storage.add("BiPlacemrakOverlay", BiPlacemarkOverlay);
+                        wwMap.init()
+                        resolve(wwMap);
+                    });
+                });
             });
-        });
+        } catch (e) {
+            reject(e);
+        }
     });
 }
 

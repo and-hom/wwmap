@@ -87,7 +87,7 @@
 <script>
     import FileUpload from 'vue-upload-component';
     import {backendApiBase} from '../config'
-    import {getWwmapSessionId} from '../auth'
+    import {getWwmapSessionId} from "wwmap-js-commons/auth";
     import {getImages, removeImage, setImageEnabled, setSpotPreview} from "../editor";
 
     module.exports = {

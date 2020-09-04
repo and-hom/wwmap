@@ -11,7 +11,6 @@ import (
 	"github.com/and-hom/wwmap/lib/model"
 	"github.com/and-hom/wwmap/lib/util"
 	"github.com/lib/pq"
-	"regexp"
 	"strings"
 	"time"
 )
@@ -82,11 +81,9 @@ func (this whiteWaterStorage) ListByRiverAndTitle(riverId int64, title string) (
 	return this.list(this.listByRiverAndTitleQuery, riverId, title)
 }
 
-var eYoRepl = regexp.MustCompile(`(?i)ё`)
-
-func (this whiteWaterStorage) FindByTitlePart(tPart string, limit, offset int) ([]WhiteWaterPointWithRiverTitle, error) {
+func (this whiteWaterStorage) FindByTitlePart(tPart string, limit, offset int, showUnpublished bool) ([]WhiteWaterPointWithRiverTitle, error) {
 	tPart = eYoRepl.ReplaceAllLiteralString(tPart, "е")
-	return this.list(this.findByTitlePartQuery, pq.Array(strings.Fields(tPart)), limit, offset)
+	return this.list(this.findByTitlePartQuery, pq.Array(strings.Fields(tPart)), limit, offset, showUnpublished)
 }
 
 func (this whiteWaterStorage) Find(id int64) (WhiteWaterPointWithRiverTitle, bool, error) {

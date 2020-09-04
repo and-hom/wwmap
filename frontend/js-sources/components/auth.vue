@@ -15,7 +15,8 @@
 </template>
 
 <script>
-    import {getAuthorizedUserInfoOrNull, clearSessionId, YANDEX_AUTH, GOOGLE_AUTH, VK_AUTH} from '../auth'
+    import {getAuthorizedUserInfoOrNull, YANDEX_AUTH, GOOGLE_AUTH, VK_AUTH} from '../auth'
+    import {clearWwmapSessionId} from "wwmap-js-commons/auth";
 
 
     module.exports = {
@@ -39,7 +40,7 @@
             return {
                 userInfo: null,
                 clearSessionId: function () {
-                    clearSessionId();
+                    clearWwmapSessionId();
                     location.reload();
                 },
                 yndxRedirect: function () {

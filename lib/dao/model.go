@@ -79,6 +79,7 @@ type Spot struct {
 
 type RiverWithSpots struct {
 	IdTitle
+	Visible   bool
 	Spots     []Spot
 	RegionId  int64
 	CountryId int64

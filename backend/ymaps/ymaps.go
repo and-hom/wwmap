@@ -14,9 +14,10 @@ import (
 
 const MAX_CLUSTERS int64 = 8192
 const MAX_CLUSTER_ID int64 = int64(math.MaxInt32)
+const CAT_ICON_SIZE = 32
 
 func mkFeature(point Spot, river RiverWithSpots, withDescription bool, resourcesBase string,
-	processImgForWeb func(img *Img), linkMaker LinkMaker) Feature {
+	processImgForWeb func(img *Img), linkMaker LinkMaker, visible bool) Feature {
 	var description = ""
 	if withDescription {
 		description = point.Description
@@ -72,6 +73,12 @@ func mkFeature(point Spot, river RiverWithSpots, withDescription bool, resources
 		properties.Category = &point.Category
 	}
 
+	img_x := CAT_ICON_SIZE * (point.Category.Category + 1)
+	img_y := 0
+	if !visible {
+		img_y = CAT_ICON_SIZE * 2
+	}
+
 	feature := Feature{
 		Id:         point.Id,
 		Type:       FEATURE,
@@ -79,17 +86,20 @@ func mkFeature(point Spot, river RiverWithSpots, withDescription bool, resources
 		Options: FeatureOptions{
 			Id: point.Id,
 
-			IconLayout:      IMAGE,
-			IconImageHref:   CatImg(resourcesBase, point.Category),
-			IconImageSize:   []int{32, 32},
-			IconImageOffset: []int{-16, -16},
+			IconLayout:    IMAGE,
+			IconImageHref: resourcesBase + "/img/categories.png",
+
+			IconImageSize:     []int{CAT_ICON_SIZE, CAT_ICON_SIZE},
+			IconImageOffset:   []int{-16, -16},
+			IconImageClipRect: [][]int{{img_x, img_y}, {img_x + CAT_ICON_SIZE, img_y + CAT_ICON_SIZE}},
 		},
 	}
 
 	if point.Point.Line != nil {
 		feature.Geometry = NewYmapsLineString(*point.Point.Line...)
 		feature.Options.Overlay = "BiPlacemrakOverlay"
-		feature.Options.StrokeColor = CatColor(point.Category.Category)
+		feature.Options.StrokeColor = CatColorWithTransparency(point.Category.Category, visible)
+		feature.Options.BorderColor = tubeBorderColor(visible)
 	} else if point.Point.Point != nil {
 		feature.Geometry = NewYmapsGeoPoint(*point.Point.Point)
 	} else {
@@ -99,30 +109,38 @@ func mkFeature(point Spot, river RiverWithSpots, withDescription bool, resources
 	return feature
 }
 
-func CatImg(resourcesBase string, cat model.SportCategory) string {
-	if cat.Impassable() {
-		return resourcesBase + "/img/impassable.png"
+func tubeBorderColor(visible bool) string {
+	if visible {
+		return "#444444FF"
 	} else {
-		return fmt.Sprintf(resourcesBase+"/img/cat%d.png", cat.Category)
+		return "#44444455"
 	}
 }
 
-func CatColor(cat int) string {
+func CatColorWithTransparency(cat int, visible bool) string {
+	if visible {
+		return catColor(cat) + "CC"
+	} else {
+		return catColor(cat) + "55"
+	}
+}
+
+func catColor(cat int) string {
 	switch cat {
 	case 1:
-		return "#00FFF9CC"
+		return "#00FFF9"
 	case 2:
-		return "#3CFF00CC"
+		return "#3CFF00"
 	case 3:
-		return "#FCFF17CC"
+		return "#FCFF17"
 	case 4:
-		return "#FFB100CC"
+		return "#FFB100"
 	case 5:
-		return "#FF0000CC"
+		return "#FF0000"
 	case 6:
-		return "#CC0000CC"
+		return "#CC0000"
 	}
-	return "#BBBBBBCC"
+	return "#BBBBBB"
 }
 
 func ClusterGeom(points []Spot) Bbox {
@@ -161,7 +179,7 @@ func categoryClusterIcon(category int) string {
 	}
 }
 
-func mkCluster(Id clustering.ClusterId, points []Spot, riverTitle string) Feature {
+func mkCluster(Id clustering.ClusterId, points []Spot, riverTitle string, visible bool) Feature {
 	bounds := ClusterGeom(points)
 
 	riverCats := CalculateClusterCategory(points)
@@ -179,9 +197,23 @@ func mkCluster(Id clustering.ClusterId, points []Spot, riverTitle string) Featur
 			Title:    Id.Title,
 			Category: &model.SportCategory{Category: riverCats.Max},
 			Id:       Id.RiverId,
-		}, Options: FeatureOptions{
-			Preset: categoryClusterIcon(riverCats.Avg),
-		},
+			Color:    CatColorWithTransparency(riverCats.Avg, visible),
+		}, Options: options(visible, riverCats),
+	}
+}
+
+func options(visible bool, riverCats RiverCategoryMetrics) FeatureOptions {
+	if visible {
+		return FeatureOptions{
+			Preset:      categoryClusterIcon(riverCats.Avg),
+			StrokeColor: CatColorWithTransparency(riverCats.Avg, visible),
+			FillColor:   "white",
+		}
+	}
+	return FeatureOptions{
+		Preset:      "wwmap#test", //categoryClusterIcon(riverCats.Avg),
+		StrokeColor: "blue",       //CatColor(riverCats.Avg),
+		FillColor:   "white",
 	}
 }
 
@@ -199,10 +231,10 @@ func WhiteWaterPointsToYmaps(clusterMaker clustering.ClusterMaker, rivers []Rive
 			case Spot:
 				spot := obj.(Spot)
 				if spot.Id != skipId {
-					result = append(result, mkFeature(spot, river, true, resourcesBase, processImgForWeb, linkMaker))
+					result = append(result, mkFeature(spot, river, true, resourcesBase, processImgForWeb, linkMaker, river.Visible))
 				}
 			case clustering.Cluster:
-				result = append(result, mkCluster(id, obj.(clustering.Cluster).Points, river.Title))
+				result = append(result, mkCluster(id, obj.(clustering.Cluster).Points, river.Title, river.Visible))
 			}
 		}
 
@@ -233,7 +265,7 @@ func WhiteWaterPointsToYmapsNoCluster(rivers []RiverWithSpots,
 	for _, river := range rivers {
 		for _, spot := range river.Spots {
 			if spot.Id != skipId {
-				result = append(result, mkFeature(spot, river, true, resourcesBase, processImgForWeb, linkMaker))
+				result = append(result, mkFeature(spot, river, true, resourcesBase, processImgForWeb, linkMaker, river.Visible))
 			}
 		}
 	}
@@ -241,5 +273,5 @@ func WhiteWaterPointsToYmapsNoCluster(rivers []RiverWithSpots,
 }
 
 func SingleWhiteWaterPointToYmaps(spot Spot, river RiverWithSpots, resourcesBase string, processImgForWeb func(img *Img), linkMaker LinkMaker) ([]Feature, error) {
-	return []Feature{mkFeature(spot, river, true, resourcesBase, processImgForWeb, linkMaker)}, nil
+	return []Feature{mkFeature(spot, river, true, resourcesBase, processImgForWeb, linkMaker, river.Visible)}, nil
 }

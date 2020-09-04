@@ -33,16 +33,26 @@
         </div>
     </div>
     <div style="margin-bottom: 20px;">
-        <h3>{{title}}{{#if canEdit}}&nbsp;<a href="https://wwmap.ru/editor.htm#{{region.country_id}},{{region.id}},{{id}}" target="_blank" style="padding-left: 20px;"><img src="https://wwmap.ru/img/edit.png" width="25px" alt="Редактор" title="Редактор"/></a>{{/if}}</h3>
+        <h3>{{title}}{{#if canEdit}}&nbsp;<a href="https://wwmap.ru/editor.htm#{{region.country_id}},{{region.id}},{{id}}" target="_blank" style="padding-left: 20px;"><img src="{{resource_base}}/img/edit.png" width="25px" alt="Редактор" title="Редактор"/></a>{{/if}}</h3>
         {{#if region.id>0 }}<div style="margin-top:-11px; margin-bottom:8px; font-size:70%;color:grey">{{region.title}}</div>{{/if}}
         {{#if max_category>0 }}
-        <div style="font-size:80%;"><img style="width: 16px; margin-bottom: 1px;" src="https://wwmap.ru/img/cat{{max_category}}-fill.png" title="{{max_category}} к.с."/>&nbsp;&nbsp;{{max_category}}&nbsp;к.с. - Максимальная категория препятствий</div>
+        <div class="wwmap-category-block"><div
+                    class="wwmap-category-icon"
+                    style="background-image: url('{{resource_base}}/img/categories.png'); background-position: -{{js "(parseInt(this.max_category) + 1) * 32"}}px -32px;"
+                    title="{{max_category}} к.с."></div><div
+                    style="display: inline-block">{{max_category}}&nbsp;к.с. - Максимальная категория препятствий</div></div>
         {{/if}}
         {{#if avg_category>0 }}
-        <div style="font-size:80%;"><img style="width: 16px; margin-bottom: 1px;" src="https://wwmap.ru/img/cat{{avg_category}}-fill.png" title="{{avg_category}} к.с."/>&nbsp;&nbsp;{{avg_category}}&nbsp;к.с. - Минимальная категория трёх самых сложных препятствий</div>
+        <div class="wwmap-category-block"><div
+                    class="wwmap-category-icon"
+                    style="background-image: url('{{resource_base}}/img/categories.png'); background-position: -{{js "(parseInt(this.avg_category) + 1) * 32"}}px -32px;"
+                    title="{{avg_category}} к.с."></div><div>{{avg_category}}&nbsp;к.с. - Минимальная категория трёх самых сложных препятствий</div></div>
         {{/if}}
         {{#if has_impassible }}
-        <div style="font-size:80%;"><img style="width: 16px; margin-bottom: 1px;" src="https://wwmap.ru/img/impassable.png"/>&nbsp;&nbsp;Есть непроходимые участки (негабарит, завалы, плотины, тросы или другие причины)</div>
+        <div class="wwmap-category-block"><div
+                    class="wwmap-category-icon"
+                    style="background-image: url('{{resource_base}}/img/categories.png'); background-position: 0 0;"
+            ></div><div>Есть непроходимые участки (негабарит, завалы, плотины, тросы или другие причины)</div></div>
         {{/if}}
         <div style="margin-top:11px; text-align: justify;">{{description}}</div>
     </div>

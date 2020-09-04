@@ -154,7 +154,7 @@
 
 <script>
     import FileUpload from 'vue-upload-component';
-    import {getWwmapSessionId, hasRole, ROLE_ADMIN, ROLE_EDITOR} from '../../auth'
+    import {hasRole, ROLE_ADMIN, ROLE_EDITOR} from '../../auth'
     import {sensors, sensorsById} from '../../sensors'
     import {store} from '../../app-state'
     import {
@@ -167,6 +167,7 @@
         setActiveEntityUrlHash,
     } from '../../editor'
     import {backendApiBase} from '../../config'
+    import {getWwmapSessionId} from "wwmap-js-commons/auth";
 
     var $ = require("jquery");
     require("jquery.cookie");

@@ -15,11 +15,12 @@
     "css-loader": "^3.1.0",
     "dynamic-import": "^0.1.1",
     "jqtpl-dsx": "^1.0.4",
-    "jquery": "^3.1.1",
+    "jquery": "^3.5.1",
     "jquery.cookie": "^1.4.1",
     "js-file-download": "^0.4.8",
     "style-loader": "^0.23.1",
-    "tether": "^1.4.6"
+    "tether": "^1.4.6",
+    "wwmap-js-commons": "../lib-js"
   },
   "devDependencies": {
     "@babel/core": "^7.6.4",

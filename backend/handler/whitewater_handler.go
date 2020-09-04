@@ -53,7 +53,7 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 	if onlyIdStr != "" {
 		onlyId, err = strconv.ParseInt(onlyIdStr, 10, 64)
 		if err != nil {
-			OnError500(w, err, fmt.Sprintf("Can not parse only id %s", skipIdStr))
+			OnError500(w, err, fmt.Sprintf("Can not parse only id %s", onlyIdStr))
 			return
 		}
 	}
@@ -63,20 +63,12 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 	if riverIdStr != "" {
 		riverId, err = strconv.ParseInt(riverIdStr, 10, 64)
 		if err != nil {
-			OnError500(w, err, fmt.Sprintf("Can not parse river id %s", skipIdStr))
+			OnError500(w, err, fmt.Sprintf("Can not parse river id %s", riverIdStr))
 			return
 		}
 	}
 
-	sessionId := req.FormValue("session_id")
-	allowed := false
-	if sessionId != "" {
-		_, allowed, err = CheckRoleAllowed(req, this.UserDao, dao.ADMIN, dao.EDITOR)
-		if err != nil {
-			OnError500(w, err, "Can not get user info for token")
-			return
-		}
-	}
+	showUnpublished := ShowUnpublished(req, this.UserDao)
 
 	var features []Feature
 
@@ -109,6 +101,7 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 			CountryId: river.Region.CountryId,
 			RegionId:  river.Region.Id,
 			Spots:     []dao.Spot{},
+			Visible:   river.Visible,
 		}
 
 		features, err = ymaps.SingleWhiteWaterPointToYmaps(sp, rws, this.ResourceBase, this.processForWeb, getLinkMaker(req.FormValue("link_type")))
@@ -128,7 +121,7 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 		features = ymaps.WhiteWaterPointsToYmapsNoCluster([]dao.RiverWithSpots{river},
 			this.ResourceBase, skip, this.processForWeb, getLinkMaker(req.FormValue("link_type")))
 	} else {
-		rivers, err := this.TileDao.ListRiversWithBounds(bbox, PREVIEWS_COUNT, allowed)
+		rivers, err := this.TileDao.ListRiversWithBounds(bbox, PREVIEWS_COUNT, showUnpublished)
 		if err != nil {
 			OnError500(w, err, fmt.Sprintf("Can not read whitewater points for bbox %s", bbox.String()))
 			return
@@ -220,12 +213,14 @@ func (this *WhiteWaterHandler) search(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	spots, err := this.WhiteWaterDao.FindByTitlePart(string(requestBody), 30, 0)
+	showUnpublished := ShowUnpublished(r, this.UserDao)
+
+	spots, err := this.WhiteWaterDao.FindByTitlePart(string(requestBody), 30, 0, showUnpublished)
 	if err != nil {
 		OnError500(w, err, "Can not select spots")
 		return
 	}
-	rivers, err := this.RiverDao.FindByTitlePart(string(requestBody), 30, 0)
+	rivers, err := this.RiverDao.FindByTitlePart(string(requestBody), 30, 0, showUnpublished)
 	if err != nil {
 		OnError500(w, err, "Can not select rivers")
 		return

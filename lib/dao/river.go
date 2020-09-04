@@ -8,6 +8,7 @@ import (
 	"github.com/and-hom/wwmap/lib/dao/queries"
 	"github.com/and-hom/wwmap/lib/geo"
 	"github.com/lib/pq"
+	"strings"
 )
 
 func NewRiverPostgresDao(postgresStorage PostgresStorage) RiverDao {
@@ -66,8 +67,9 @@ func (this riverStorage) ListRiversWithBounds(bbox geo.Bbox, limit int, showUnpu
 	return this.listRiverTitles(this.insideBoundsQuery, bbox.Y1, bbox.X1, bbox.Y2, bbox.X2, limit, showUnpublished)
 }
 
-func (this riverStorage) FindByTitlePart(tPart string, limit, offset int) ([]RiverTitle, error) {
-	return this.listRiverTitles(this.findByTitlePartQuery, tPart, tPart, limit, offset)
+func (this riverStorage) FindByTitlePart(tPart string, limit, offset int, showUnpublished bool) ([]RiverTitle, error) {
+	tPart = eYoRepl.ReplaceAllLiteralString(tPart, "е")
+	return this.listRiverTitles(this.findByTitlePartQuery, pq.Array(strings.Fields(tPart)), limit, offset, showUnpublished)
 }
 
 func (this riverStorage) Find(id int64) (River, error) {

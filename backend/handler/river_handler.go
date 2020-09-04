@@ -30,7 +30,7 @@ type RiverHandler struct {
 
 func (this *RiverHandler) Init() {
 	this.Register("/visible-rivers", HandlerFunctions{Get: this.GetVisibleRivers})
-	this.Register("/visible-rivers-light", HandlerFunctions{Get: this.GetVisibleRiversLight})
+	this.Register("/visible-rivers-lite", HandlerFunctions{Get: this.GetVisibleRiversLite})
 	this.Register("/river-card/{riverId}", HandlerFunctions{Get: this.GetRiverCard})
 }
 
@@ -59,10 +59,11 @@ type RiverListDto struct {
 	HtmlUrl string            `json:"html"`
 }
 
-type RiverListLightDto struct {
+type RiverListLiteDto struct {
 	dao.IdTitle
-	Bounds geo.Bbox   `json:"bounds"`
-	Region dao.Region `json:"region"`
+	Bounds  geo.Bbox   `json:"bounds"`
+	Region  dao.Region `json:"region"`
+	Visible bool       `json:"visible"`
 }
 
 type RiverPageDto struct {
@@ -81,6 +82,7 @@ type RiverPageDto struct {
 	HasImpassible bool                   `json:"has_impassible"`
 	WeatherPoint  *geo.Point             `json:"weather_point"`
 	SearchQuery   string                 `json:"search_query"`
+	ResourceBase  string                 `json:"resource_base"`
 }
 
 type ImgWithSpot struct {
@@ -168,6 +170,7 @@ func (this *RiverHandler) GetRiverCard(w http.ResponseWriter, req *http.Request)
 			url.QueryEscape("река"),
 			url.QueryEscape(river.Title),
 			url.QueryEscape("сплав")}, "+"),
+		ResourceBase: this.ResourceBase,
 	}
 	w.Write([]byte(this.JsonStr(dto, "{}")))
 }
@@ -225,7 +228,7 @@ func (this *ReportsListBuilder) others() {
 	}
 }
 
-func (this *RiverHandler) GetVisibleRiversLight(w http.ResponseWriter, req *http.Request) {
+func (this *RiverHandler) GetVisibleRiversLite(w http.ResponseWriter, req *http.Request) {
 	bbox, err := this.bboxFormValue(w, req)
 	if err != nil {
 		return
@@ -241,13 +244,15 @@ func (this *RiverHandler) GetVisibleRiversLight(w http.ResponseWriter, req *http
 		}
 	}
 
-	rivers, err := this.TileDao.ListRiversWithBounds(bbox, RIVER_LIST_LIMIT, false)
+	showUnpublished := ShowUnpublished(req, this.UserDao)
+
+	rivers, err := this.TileDao.ListRiversWithBounds(bbox, RIVER_LIST_LIMIT, showUnpublished)
 	if err != nil {
 		OnError500(w, err, "Can not select rivers")
 		return
 	}
 
-	riversWithReports := make([]RiverListLightDto, 0, len(rivers))
+	riversWithReports := make([]RiverListLiteDto, 0, len(rivers))
 	for i := 0; i < len(rivers); i++ {
 		river := &rivers[i]
 		if len(river.Spots) == 0 {
@@ -275,10 +280,11 @@ func (this *RiverHandler) GetVisibleRiversLight(w http.ResponseWriter, req *http
 			continue
 		}
 
-		riversWithReports = append(riversWithReports, RiverListLightDto{
+		riversWithReports = append(riversWithReports, RiverListLiteDto{
 			IdTitle: dao.IdTitle{Id: river.Id, Title: river.Title},
 			Region:  dao.Region{Id: river.RegionId, CountryId: river.CountryId},
 			Bounds:  bounds.WithMargins(RIVER_BOUNDS_MARGINS_RATIO),
+			Visible: river.Visible,
 		})
 	}
 	w.Write([]byte(this.JsonStr(riversWithReports, "[]")))

@@ -204,3 +204,13 @@ func CheckRoleAllowedAndMakeResponse(w http.ResponseWriter, userDao dao.UserDao,
 	}
 	return r2, true
 }
+
+func ShowUnpublished(req *http.Request, userDao dao.UserDao) bool {
+	showUnpublishedStr := req.FormValue("show_unpublished")
+	showUnpublished := false
+	if showUnpublishedStr == "true" || showUnpublishedStr == "1" {
+		_, allowed, err := CheckRoleAllowed(req, userDao, dao.ADMIN, dao.EDITOR)
+		showUnpublished = err == nil && allowed
+	}
+	return showUnpublished
+}

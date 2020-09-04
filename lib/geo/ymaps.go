@@ -169,6 +169,7 @@ type FeatureProperties struct {
 	Category   *model.SportCategory `json:"category,omitempty"`
 	RiverTitle string               `json:"river_title,omitempty"`
 	Images     []Preview            `json:"images,omitempty"`
+	Color      string               `json:"color,omitempty"`
 }
 
 type Preview struct {
@@ -193,12 +194,15 @@ type FeatureOptions struct {
 	Preset string `json:"preset,omitempty"`
 	Id     int64  `json:"id,omitempty"`
 
-	IconLayout      IconLayout `json:"iconLayout,omitempty"`
-	IconImageHref   string     `json:"iconImageHref,omitempty"`
-	IconImageSize   []int      `json:"iconImageSize,omitempty"`
-	IconImageOffset []int      `json:"iconImageOffset,omitempty"`
+	IconLayout        IconLayout `json:"iconLayout,omitempty"`
+	IconImageHref     string     `json:"iconImageHref,omitempty"`
+	IconImageSize     []int      `json:"iconImageSize,omitempty"`
+	IconImageOffset   []int      `json:"iconImageOffset,omitempty"`
+	IconImageClipRect [][]int    `json:"iconImageClipRect,omitempty"`
 
 	StrokeColor string `json:"strokeColor,omitempty"`
+	FillColor   string `json:"fillColor,omitempty"`
+	BorderColor string `json:"borderColor,omitempty"`
 	Overlay     string `json:"overlay,omitempty"`
 }
 

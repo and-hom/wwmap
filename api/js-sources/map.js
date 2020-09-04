@@ -7,6 +7,7 @@ import {googleSatTiles} from './map-urls/google'
 import {apiBase} from "./config";
 import {createMeasurementToolControl} from "./router/control";
 import {WWMapMeasurementTool} from "./router/measurement";
+import {createUnpublishedUrlPart} from './util'
 
 export function WWMap(divId, bubbleTemplate, riverList, tutorialPopup, catalogLinkType) {
     this.divId = divId;
@@ -18,6 +19,7 @@ export function WWMap(divId, bubbleTemplate, riverList, tutorialPopup, catalogLi
     this.catalogLinkType = catalogLinkType;
 
     this.catFilter = 1;
+    this.showUnpublished = false;
 
     addCachedLayer('osm#standard', 'OSM (O)', 'OpenStreetMap contributors, CC-BY-SA', 'osm');
     addLayer('google#satellite', 'Спутник Google (G)', 'Изображения © DigitalGlobe,CNES / Airbus, 2018,Картографические данные © Google, 2018', googleSatTiles);
@@ -41,7 +43,9 @@ export function WWMap(divId, bubbleTemplate, riverList, tutorialPopup, catalogLi
 WWMap.prototype.loadRivers = function (bounds) {
     if (this.riverList) {
         var riverList = this.riverList;
-        $.get(apiBase + "/visible-rivers-light?bbox=" + bounds.join(',') + "&max_cat=" + this.catFilter, function (data) {
+        let unpublishedUrlPart = createUnpublishedUrlPart(this.showUnpublished);
+        let url = `${apiBase}/visible-rivers-lite?bbox=${bounds.join(',')}&max_cat=${this.catFilter}${unpublishedUrlPart}`;
+        $.get(url, function (data) {
             var dataObj = {
                 "rivers": JSON.parse(data)
             };
@@ -69,6 +73,19 @@ WWMap.prototype.createHelpBtn = function () {
         t.tutorialPopup.show()
     });
     return helpButton
+};
+
+WWMap.prototype.createObjectsUrlTemplate = function (showUnpublished) {
+    let unpublishedUrlPart = createUnpublishedUrlPart(showUnpublished);
+    return `${apiBase}/ymaps-tile-ww?bbox=%b&zoom=%z&link_type=${this.catalogLinkType}${unpublishedUrlPart}`;
+};
+
+WWMap.prototype.setShowUnpublished = function (showUnpublished) {
+    this.showUnpublished = showUnpublished;
+    this.objectManager.setUrlTemplate(this.createObjectsUrlTemplate(showUnpublished))
+    this.objectManager.reloadData();
+    this.loadRivers(this.yMap.getBounds());
+    this.wwMapSearchProvider.showUnpublished = showUnpublished;
 };
 
 WWMap.prototype.init = function () {
@@ -156,7 +173,7 @@ WWMap.prototype.init = function () {
         setLastPositionZoomType(t.yMap.getCenter(), t.yMap.getZoom(), t.yMap.getType())
     });
 
-    var objectManager = new ymaps.RemoteObjectManager(apiBase + '/ymaps-tile-ww?bbox=%b&zoom=%z&link_type=' + this.catalogLinkType, {
+    var objectManager = new ymaps.RemoteObjectManager(this.createObjectsUrlTemplate(), {
         clusterHasBalloon: false,
         geoObjectOpenBalloonOnClick: false,
         geoObjectBalloonContentLayout: ymaps.templateLayoutFactory.createClass(this.bubbleTemplate),
@@ -195,17 +212,19 @@ WWMap.prototype.init = function () {
         this.yMap.controls.add(createMeasurementToolControl(this.measurementTool), {});
     }
 
+    this.wwMapSearchProvider = new WWMapSearchProvider(e => {
+        if (t.measurementTool && t.measurementTool.canEditPath()) {
+            t.measurementTool.onMouseMoved(e.get('position'), e.get('coords'));
+        }
+    }, e => {
+        if (t.measurementTool && t.measurementTool.canEditPath()) {
+            t.measurementTool.multiPath.pushEmptySegment();
+        }
+    });
+
     let searchControl = new ymaps.control.SearchControl({
         options: {
-            provider: new WWMapSearchProvider(e => {
-                if (t.measurementTool && t.measurementTool.canEditPath()) {
-                    t.measurementTool.onMouseMoved(e.get('position'), e.get('coords'));
-                }
-            }, e => {
-                if (t.measurementTool && t.measurementTool.canEditPath()) {
-                    t.measurementTool.multiPath.pushEmptySegment();
-                }
-            }),
+            provider: this.wwMapSearchProvider,
             placeholderContent: 'Река или порог'
         }
     });
