@@ -14,6 +14,7 @@ import (
 
 const MAX_CLUSTERS int64 = 8192
 const MAX_CLUSTER_ID int64 = int64(math.MaxInt32)
+const CAT_ICON_SIZE = 32
 
 func mkFeature(point Spot, river RiverWithSpots, withDescription bool, resourcesBase string,
 	processImgForWeb func(img *Img), linkMaker LinkMaker, visible bool) Feature {
@@ -72,6 +73,12 @@ func mkFeature(point Spot, river RiverWithSpots, withDescription bool, resources
 		properties.Category = &point.Category
 	}
 
+	img_x := CAT_ICON_SIZE * (point.Category.Category + 1)
+	img_y := 0
+	if !visible {
+		img_y = CAT_ICON_SIZE * 2
+	}
+
 	feature := Feature{
 		Id:         point.Id,
 		Type:       FEATURE,
@@ -79,11 +86,12 @@ func mkFeature(point Spot, river RiverWithSpots, withDescription bool, resources
 		Options: FeatureOptions{
 			Id: point.Id,
 
-			IconLayout:      IMAGE,
-			IconImageHref:   CatImg(resourcesBase, point.Category, visible),
+			IconLayout:    IMAGE,
+			IconImageHref: resourcesBase + "/img/categories.png",
 
-			IconImageSize:   []int{32, 32},
-			IconImageOffset: []int{-16, -16},
+			IconImageSize:     []int{CAT_ICON_SIZE, CAT_ICON_SIZE},
+			IconImageOffset:   []int{-16, -16},
+			IconImageClipRect: [][]int{{img_x, img_y}, {img_x + CAT_ICON_SIZE, img_y + CAT_ICON_SIZE}},
 		},
 	}
 
@@ -106,22 +114,6 @@ func tubeBorderColor(visible bool) string {
 		return "#444444FF"
 	} else {
 		return "#44444455"
-	}
-}
-
-func CatImg(resourcesBase string, cat model.SportCategory, visible bool) string {
-	if visible {
-		if cat.Impassable() {
-			return resourcesBase + "/img/impassable.png"
-		} else {
-			return fmt.Sprintf(resourcesBase+"/img/cat%d.png", cat.Category)
-		}
-	} else {
-		if cat.Impassable() {
-			return resourcesBase + "/img/impassable-unpublished.png"
-		} else {
-			return fmt.Sprintf(resourcesBase+"/img/cat%d-unpublished.png", cat.Category)
-		}
 	}
 }
 

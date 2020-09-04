@@ -82,6 +82,7 @@ type RiverPageDto struct {
 	HasImpassible bool                   `json:"has_impassible"`
 	WeatherPoint  *geo.Point             `json:"weather_point"`
 	SearchQuery   string                 `json:"search_query"`
+	ResourceBase  string                 `json:"resource_base"`
 }
 
 type ImgWithSpot struct {
@@ -169,6 +170,7 @@ func (this *RiverHandler) GetRiverCard(w http.ResponseWriter, req *http.Request)
 			url.QueryEscape("река"),
 			url.QueryEscape(river.Title),
 			url.QueryEscape("сплав")}, "+"),
+		ResourceBase: this.ResourceBase,
 	}
 	w.Write([]byte(this.JsonStr(dto, "{}")))
 }

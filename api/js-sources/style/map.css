@@ -298,3 +298,20 @@
     border-bottom: 3px;
     border-bottom-style: solid;
 }
+
+.wwmap-category-block {
+    font-size:80%;
+}
+
+.wwmap-category-block div {
+    display: inline-block;
+    margin-right: 12px;
+    vertical-align: middle;
+}
+
+.wwmap-category-icon {
+    width: 32px;
+    height: 32px;
+    zoom: 0.5;
+    background-repeat: no-repeat;
+}

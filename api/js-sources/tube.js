@@ -134,6 +134,7 @@ ymaps.modules.define("overlay.BiPlacemark", [
                 this._frontOverlay.options.set("imageHref", this.options.get("iconImageHref"));
                 this._frontOverlay.options.set("imageSize", this.options.get("iconImageSize"));
                 this._frontOverlay.options.set("imageOffset", this.options.get("iconImageOffset"));
+                this._frontOverlay.options.set("imageClipRect", this.options.get("iconImageClipRect"));
                 this._frontOverlay.setMap(this.getMap());
             }
         },

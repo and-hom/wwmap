@@ -194,10 +194,11 @@ type FeatureOptions struct {
 	Preset string `json:"preset,omitempty"`
 	Id     int64  `json:"id,omitempty"`
 
-	IconLayout      IconLayout `json:"iconLayout,omitempty"`
-	IconImageHref   string     `json:"iconImageHref,omitempty"`
-	IconImageSize   []int      `json:"iconImageSize,omitempty"`
-	IconImageOffset []int      `json:"iconImageOffset,omitempty"`
+	IconLayout        IconLayout `json:"iconLayout,omitempty"`
+	IconImageHref     string     `json:"iconImageHref,omitempty"`
+	IconImageSize     []int      `json:"iconImageSize,omitempty"`
+	IconImageOffset   []int      `json:"iconImageOffset,omitempty"`
+	IconImageClipRect [][]int    `json:"iconImageClipRect,omitempty"`
 
 	StrokeColor string `json:"strokeColor,omitempty"`
 	FillColor   string `json:"fillColor,omitempty"`
