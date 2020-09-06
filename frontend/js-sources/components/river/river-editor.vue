@@ -170,7 +170,8 @@
         saveRiver,
         setActiveEntityUrlHash,
     } from '../../editor'
-    import {backendApiBase, markdownEditorConfig} from '../../config'
+    import {backendApiBase} from '../../config'
+    import {markdownEditorConfig} from '../../toast-editor-config'
     import {getWwmapSessionId} from "wwmap-js-commons/auth";
     import {Editor} from '@toast-ui/vue-editor';
 

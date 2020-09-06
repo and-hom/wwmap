@@ -179,7 +179,7 @@
     import {store} from '../../app-state';
     import {hasRole, ROLE_ADMIN, ROLE_EDITOR} from '../../auth';
     import {Editor} from '@toast-ui/vue-editor';
-    import {markdownEditorConfig} from "../../config";
+    import {markdownEditorConfig} from "../../toast-editor-config";
 
     const NEW_POINT_POSITION_KOEFF = 0.04;
 

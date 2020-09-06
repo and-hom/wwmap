@@ -293,7 +293,7 @@
     import Sortable from 'sortablejs';
     import {getWwmapSessionId} from "wwmap-js-commons/auth";
     import {Editor} from '@toast-ui/vue-editor';
-    import {markdownEditorConfig} from "../../config";
+    import {markdownEditorConfig} from "../../toast-editor-config";
 
     var $ = require("jquery");
     require("jquery.cookie");
