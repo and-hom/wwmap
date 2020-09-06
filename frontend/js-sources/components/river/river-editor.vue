@@ -20,10 +20,14 @@
                         </dd>
                         <dt>Описание:</dt>
                         <dd>
-                                    <textarea v-bind:text-content="river.aliases"
-                                              rows="10" cols="120"
-                                              style="resize: none; margin-left:40px;"
-                                              v-model="river.description"></textarea>
+                          <div class="wwmap-system-hint" style="color: red">Избегайте излишнего форматирования: этот текст показывается в карточке реки на карте.</div>
+                          <div style="margin-left: 40px; margin-top: 10px">
+                              <editor ref="descEditor"
+                                  initialEditType="wysiwyg"
+                                  :initialValue="river.description"
+                                  :options="editorOptions"
+                                  v-on:change="onDescriptionChanged();"/>
+                          </div>
                         </dd>
                         <dt>Другие варианты названия для автоматического поиска отчётов:</dt>
                         <dd>
@@ -166,8 +170,9 @@
         saveRiver,
         setActiveEntityUrlHash,
     } from '../../editor'
-    import {backendApiBase} from '../../config'
+    import {backendApiBase, markdownEditorConfig} from '../../config'
     import {getWwmapSessionId} from "wwmap-js-commons/auth";
+    import {Editor} from '@toast-ui/vue-editor';
 
     var $ = require("jquery");
     require("jquery.cookie");
@@ -175,7 +180,8 @@
     module.exports = {
         props: ['river', 'reports', 'transfers', 'country', 'region'],
         components: {
-            FileUpload: FileUpload
+            FileUpload: FileUpload,
+            editor: Editor,
         },
         computed: {
             uploadPath: function () {
@@ -233,6 +239,8 @@
                 operationInProgress: false,
 
                 canEdit: false,
+
+                editorOptions: markdownEditorConfig,
                 save: function () {
                     if (!this.river.title || !this.river.title.replace(/\s/g, '').length) {
                         this.showError("Нельзя сохранять реку без названия");
@@ -365,6 +373,9 @@
             }
         },
         methods: {
+            onDescriptionChanged: function (){
+              this.river.description = this.$refs.descEditor.invoke('getMarkdown');
+            },
             onSelectSensor: function (x) {
                 if (!x || !x.id) {
                     return

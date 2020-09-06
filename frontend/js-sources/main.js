@@ -37,6 +37,9 @@ import {getTokenFromRequestAndStartWwmapSession, acquireTokenVk, startWwmapSessi
 import {parseParams} from './api'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'vue-select/dist/vue-select.css';
+import 'codemirror/lib/codemirror.css';
+import '@toast-ui/editor/dist/toastui-editor.css';
+import '@toast-ui/editor/dist/toastui-editor-viewer.css';
 
 import './style/main.css'
 import './style/editor.css'

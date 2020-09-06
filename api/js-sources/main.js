@@ -4,11 +4,13 @@ import {RiverList} from "./riverList";
 import {canEdit, getWwmapUserInfoForMapControls} from "./util";
 import {apiBase, apiVersion} from './config';
 import {loadFragment} from "./template-data";
-import {initPresets} from './placemark-preset'
+import {initPresets} from './placemark-preset';
+import {initLayoutFilters} from "./layout-template-filter";
 
-import './style/map.css'
-import './contrib/lightbox.min.css'
-import './contrib/lightbox.min'
+import './style/map.css';
+import './contrib/lightbox.min.css';
+import './contrib/lightbox.min';
+import {regiterTemplate7Helpers} from "./template7-helpers";
 
 require('./tube');
 
@@ -67,11 +69,14 @@ export function initWWMap(mapId, riversListId, options) {
         riverList = new RiverList(riversListId, 'rivers_template', riversTemplateData)
     }
 
+    regiterTemplate7Helpers();
+
     // init and show map
     return new Promise((resolve, reject) => {
         try {
             ymaps.ready(function () {
                 initPresets();
+                initLayoutFilters();
                 loadFragment('bubble_template').then(bubbleContent => {
                     wwMap = new WWMap(mapId, bubbleContent, riverList, tutorialPopup, catalogLinkType);
                     ymaps.modules.require(['overlay.BiPlacemark'], function (BiPlacemarkOverlay) {
