@@ -1,3 +1,9 @@
+wwmap-api (2.1.6) unstable; urgency=medium
+
+  * #324 Rich text (markdown) for spot and river editor/viewer
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sun, 06 Sep 2020 21:59:53 +0300
+
 wwmap-api (2.1.5) unstable; urgency=medium
 
   * #343 Page footer improvements + Package changelog on UI
