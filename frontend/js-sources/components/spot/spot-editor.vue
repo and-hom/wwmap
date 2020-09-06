@@ -95,9 +95,15 @@
                                                         v-on:spotClick="$emit('spotClick', $event)"/>
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col-2"><strong>Описание: </strong></div>
-                        <div class="col-10"><textarea rows="10" cols="120" v-model="spot.short_description"></textarea>
+                    <div class="row" style="padding-top: 12px;">
+                        <div class="col-2"><strong>Краткое описание: </strong></div>
+                        <div class="col-10">
+                            <div class="wwmap-system-hint" style="color: red">Избегайте излишнего форматирования: этот текст показывается во всплывающей подсказке у порога на карте.</div>
+                            <editor ref="descEditor"
+                                  initialEditType="wysiwyg"
+                                  :initialValue="spot.short_description"
+                                  :options="editorOptions"
+                                  v-on:change="onDescriptionChanged();"/>
                         </div>
                     </div>
                     <div class="row">
@@ -172,11 +178,17 @@
     import {getImages, getRiver, nvlReturningId, saveSpot, setActiveEntityUrlHash} from '../../editor'
     import {store} from '../../app-state';
     import {hasRole, ROLE_ADMIN, ROLE_EDITOR} from '../../auth';
+    import {Editor} from '@toast-ui/vue-editor';
+    import {markdownEditorConfig} from "../../config";
 
     const NEW_POINT_POSITION_KOEFF = 0.04;
 
     module.exports = {
         props: ['spot', 'country', 'region', 'images', 'schemas', 'videos', 'zoom'],
+
+        components: {
+          editor: Editor,
+        },
 
         mounted: function () {
             hasRole(ROLE_ADMIN, ROLE_EDITOR).then(canEdit => this.canEdit = canEdit);
@@ -224,10 +236,14 @@
                 canEdit: false,
                 river: null,
                 endPointBackup: null,
+                editorOptions: markdownEditorConfig,
             }
         },
 
         methods: {
+            onDescriptionChanged: function () {
+              this.spot.short_description  = this.$refs.descEditor.invoke('getMarkdown');
+            },
             save: function () {
                 if (!this.spot.title || !this.spot.title.replace(/\s/g, '').length) {
                     this.showError("Нельзя сохранять порог без названия");

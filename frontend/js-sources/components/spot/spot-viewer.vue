@@ -39,7 +39,9 @@
             </div>
         </div>
         <div class="wwmap-desc-section-div" v-if="spot.short_description">
-            {{ spot.short_description }}
+          <div style="padding-left:40px;">
+            <viewer :initialValue="spot.short_description"/>
+          </div>
         </div>
         <div class="wwmap-desc-section-div">
             <ya-map-location ref="locationView"
@@ -140,9 +142,14 @@
     import {store} from '../../app-state';
     import {hasRole, ROLE_ADMIN, ROLE_EDITOR} from '../../auth';
     import {backendApiBase} from '../../config'
+    import { Viewer } from '@toast-ui/vue-editor';
 
     module.exports = {
         props: ['spot', 'country', 'region', 'images', 'schemas', 'videos'],
+
+        components: {
+          viewer: Viewer,
+        },
 
         mounted: function () {
             hasRole(ROLE_ADMIN, ROLE_EDITOR).then(canEdit => this.canEdit = canEdit);

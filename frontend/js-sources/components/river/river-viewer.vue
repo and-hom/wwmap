@@ -53,9 +53,8 @@
             <dt>Описание:</dt>
             <dd>
                 <div style="padding-left:40px;">
-                    {{river.description}}
+                    <viewer :initialValue="river.description"/>
                 </div>
-
             </dd>
             <dt>Другие варианты названия для автоматического поиска отчётов:</dt>
             <dd>
@@ -123,6 +122,7 @@
     import {addMapLayers, registerMapSwitchLayersHotkeys} from '../../map-common';
     import {createMapParamsStorage} from 'wwmap-js-commons/map-settings'
     import {getWwmapSessionId} from "wwmap-js-commons/auth";
+    import { Viewer } from '@toast-ui/vue-editor';
 
     function expandIfTooSmall(b) {
         let minDelta = 0.01;
@@ -135,7 +135,8 @@
     module.exports = {
         props: ['river', 'reports', 'transfers', 'country', 'region'],
         components: {
-            FileUpload: FileUpload
+            FileUpload: FileUpload,
+            viewer: Viewer,
         },
         mounted: function () {
             hasRole(ROLE_ADMIN, ROLE_EDITOR).then(canEdit => this.canEdit = canEdit);

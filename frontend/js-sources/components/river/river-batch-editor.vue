@@ -132,8 +132,12 @@
                                 </div>
                                 <div class="row">
                                     <div class="col-2"><strong>Описание: </strong></div>
-                                    <div class="col-10"><textarea rows="10" cols="120"
-                                                                  v-model="spot.short_description"></textarea>
+                                    <div class="col-10">
+                                        <editor :ref="'descEditor_'+index"
+                                              initialEditType="wysiwyg"
+                                              :initialValue="spot.short_description"
+                                              :options="editorOptions"
+                                              v-on:change="spot.short_description = getDescriptionChanged(index);"/>
                                     </div>
                                 </div>
                                 <div class="row">
@@ -288,6 +292,8 @@
     import {backendApiBase} from '../../config'
     import Sortable from 'sortablejs';
     import {getWwmapSessionId} from "wwmap-js-commons/auth";
+    import {Editor} from '@toast-ui/vue-editor';
+    import {markdownEditorConfig} from "../../config";
 
     var $ = require("jquery");
     require("jquery.cookie");
@@ -295,7 +301,8 @@
     module.exports = {
         props: ['river', 'reports', 'country', 'region'],
         components: {
-            FileUpload: FileUpload
+            FileUpload: FileUpload,
+            editor: Editor,
         },
         created: function () {
             let t = this;
@@ -390,9 +397,17 @@
                 spots: [],
                 spotIndexes: [],
                 spotsForDeleteIds: [],
+
+                editorOptions: markdownEditorConfig,
             }
         },
         methods: {
+            getDescriptionChanged: function (index) {
+              let editor = this.$refs[`descEditor_${index}`];
+              return editor && editor.length > 0
+                  ? editor[0].invoke('getMarkdown')
+                  : '';
+            },
             saveSpotsBatch: function () {
                 this.hideError();
                 let forDelete = this.spotsForDeleteIds;
