@@ -3,7 +3,7 @@
 mkdir -p /var/lib/wwmap/frontend/changelog
 ln -sf /usr/share/doc/wwmap-frontend/changelog.gz /var/lib/wwmap/frontend/changelog/frontend.txt.gz
 ln -sf /usr/share/doc/wwmap-backend/changelog.gz /var/lib/wwmap/frontend/changelog/backend.txt.gz
-ln -sf /usr/share/doc/wwmap-backend/changelog.gz /var/lib/wwmap/frontend/changelog/api.txt.gz
+ln -sf /usr/share/doc/wwmap-api/changelog.gz /var/lib/wwmap/frontend/changelog/api.txt.gz
 ln -sf /usr/share/doc/wwmap-t-cache/changelog.gz /var/lib/wwmap/frontend/changelog/t-cache.txt.gz
 ln -sf /usr/share/doc/wwmap-cron/changelog.gz /var/lib/wwmap/frontend/changelog/cron.txt.gz
 ln -sf /usr/share/doc/wwmap-db/changelog.gz /var/lib/wwmap/frontend/changelog/db.txt.gz
