@@ -112,6 +112,8 @@ func objectActionStr(action dao.ChangesLogEntryType) string {
 
 func objectTypeStr(objectType string) (string, bool) {
 	switch objectType {
+	case handler.REGION_LOG_ENTRY_TYPE:
+		return "Регионов", true
 	case handler.RIVER_LOG_ENTRY_TYPE:
 		return "Рек", true
 	case handler.SPOT_LOG_ENTRY_TYPE:

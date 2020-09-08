@@ -144,3 +144,6 @@ SELECT ___table___.id AS river_id, CASE WHEN region.fake THEN 0 ELSE region.id E
     FROM ___table___
     INNER JOIN region ON ___table___.region_id = region.id
 WHERE ___table___.id = ANY($1)
+
+--@count-by-region
+SELECT count(1) FROM river WHERE region_id=$1

@@ -268,6 +268,24 @@ export const store = new Vuex.Store({
             state.selectedCountry = payload.countryId;
         },
 
+        newRegion(state, payload) {
+            state.spoteditorstate.visible = false;
+            state.rivereditorstate.visible = false;
+            state.regioneditorstate.visible = false;
+            state.countryeditorstate.visible = false;
+
+            state.regioneditorstate.visible = true;
+            state.regioneditorstate.editMode = true;
+            state.regioneditorstate.region = {
+                id: 0,
+                title: '',
+                country_id: payload.country.id,
+                fake: false,
+                has_rivers: false,
+            };
+            state.regioneditorstate.country = payload.country;
+        },
+
         newRiver(state, payload) {
             state.spoteditorstate.visible = false;
             state.rivereditorstate.visible = false;
@@ -327,6 +345,9 @@ export const store = new Vuex.Store({
             }
         },
 
+        setRegionEditorEditMode(state, payload) {
+            state.regioneditorstate.editMode = payload;
+        },
         setRiverEditorPageMode(state, mode) {
             state.rivereditorstate.pageMode = mode;
         },

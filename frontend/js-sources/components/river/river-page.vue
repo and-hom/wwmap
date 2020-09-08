@@ -154,7 +154,7 @@
                     });
                     store.commit('showRegionPage', {
                         country: this.country,
-                        countryId: nvlReturningId(this.river.region)
+                        regionId: nvlReturningId(this.river.region)
                     });
                 }
             },

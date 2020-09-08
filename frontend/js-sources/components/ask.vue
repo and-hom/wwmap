@@ -12,7 +12,7 @@
                     <p>{{ msg }}</p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" data-dismiss="modal" v-on:click="okFn()">{{okBtnTitle}}</button>
+                    <button v-if="okBtn" type="button" class="btn btn-primary" data-dismiss="modal" v-on:click="okFn()">{{okBtnTitle}}</button>
                     <button v-if="noBtn" type="button" class="btn btn-secondary" data-dismiss="modal" v-on:click="noFn()">{{noBtnTitle}}</button>
                     <button v-if="cancelBtn" type="button" class="btn btn-secondary" data-dismiss="modal">{{cancelBtnTitle}}</button>
                 </div>
@@ -56,6 +56,10 @@
                 default: function () {
 
                 }
+            },
+            okBtn: {
+                type: Boolean,
+                default: true
             },
             cancelBtn: {
                 type: Boolean,

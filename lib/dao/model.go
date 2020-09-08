@@ -100,6 +100,11 @@ func (this RiverWithSpotsExt) GetProperties() map[string]interface{} {
 	return this.Props
 }
 
+type RegionParentIds struct {
+	CountryId   int64  `json:"country_id"`
+	RegionTitle string `json:"region_title"`
+}
+
 type RiverParentIds struct {
 	CountryId  int64  `json:"country_id"`
 	RegionId   int64  `json:"region_id"`

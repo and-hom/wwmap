@@ -4,6 +4,7 @@
         <div v-if="canEdit" class="btn-toolbar">
             <div class="btn-group mr-2" role="group">
                 <button type="button" class="btn btn-primary" v-on:click="add_river()">Добавить реку без региона</button>
+                <button type="button" class="btn btn-success" v-on:click="add_region()">Добавить регион</button>
             </div>
         </div>
         <h1>{{ country.title }}</h1>
@@ -36,6 +37,11 @@
                             title: this.country.title,
                             country_id: this.country.id,
                         }
+                    })
+                },
+                add_region: function () {
+                    store.commit('newRegion', {
+                        country: this.country,
                     })
                 },
             }

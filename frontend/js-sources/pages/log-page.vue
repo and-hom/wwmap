@@ -43,7 +43,10 @@
                         {{entry.type}}
                     </td>
 
-                    <td v-if="isRiver(entry)">
+                    <td v-if="isRegion(entry)">
+                        <a :href="getRegionUrl(entry.object_id)">{{getRegionTitle(entry.object_id)}}</a>
+                    </td>
+                    <td v-else-if ="isRiver(entry)">
                         <a :href="getRiverUrl(entry.object_id)">{{getRiverTitle(entry.object_id)}}</a>
                     </td>
                     <td v-else-if="isSpot(entry)">
@@ -75,6 +78,9 @@
             doGetJson(backendApiBase + "/log", true).then(logs => {
                 this.logs = logs;
 
+                this.regionIds = this.logs.filter(this.isRegion).map(this.getObjId).filter(this.distinct);
+                doPostJson(backendApiBase + "/region_base_ids", this.regionIds, true).then(regionById => this.regionById = regionById);
+
                 this.riverIds = this.logs.filter(this.isRiver).map(this.getObjId).filter(this.distinct);
                 doPostJson(backendApiBase + "/river_base_ids", this.riverIds, true).then(riverById => this.riverById = riverById);
 
@@ -92,11 +98,25 @@
         data() {
             return {
                 logs: [],
+                regionById: {},
                 riverById: {},
                 spotById: {},
                 imgById: {},
                 vkLink: function (vkId) {
                     return "https://vk.com/id" + vkId;
+                },
+
+                getRegionUrl: function (id) {
+                    let regionData = this.regionById[id];
+                    if (!regionData) {
+                        return null
+                    }
+                    return "https://wwmap.ru/editor.htm#" + regionData.country_id + "," + id;
+                },
+
+                getRegionTitle: function (id) {
+                    let regionData = this.regionById[id];
+                    return !regionData ? ("Регион " + id) : regionData.region_title;
                 },
 
                 getRiverUrl: function (id) {
@@ -144,6 +164,9 @@
                 },
                 getObjId: function (logEntry) {
                     return logEntry.object_id
+                },
+                isRegion: function (logEntry) {
+                    return logEntry.object_type == 'REGION'
                 },
                 isRiver: function (logEntry) {
                     return logEntry.object_type == 'RIVER'
