@@ -23,6 +23,8 @@ func (this *TransferHandler) Init() {
 	})
 	this.Register("/transfer-full", handler.HandlerFunctions{
 		Get: this.ListFull,
+		Post: this.ForRoles(this.Upsert, dao.ADMIN, dao.EDITOR),
+		Put:  this.ForRoles(this.Upsert, dao.ADMIN, dao.EDITOR),
 	})
 	this.Register("/transfer/{id}", handler.HandlerFunctions{
 		Delete: this.ForRoles(this.Delete, dao.ADMIN, dao.EDITOR),
@@ -72,12 +74,12 @@ func (this *TransferHandler) Upsert(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 	} else {
-		if _, err := this.TransferDao.Insert(transfer); err != nil {
+		if transfer.Id, err = this.TransferDao.Insert(transfer); err != nil {
 			http2.OnError500(w, err, "Can't insert")
 			return
 		}
 	}
-	this.JsonAnswer(w, true)
+	this.JsonAnswer(w, transfer)
 }
 
 func (this *TransferHandler) Delete(w http.ResponseWriter, req *http.Request) {

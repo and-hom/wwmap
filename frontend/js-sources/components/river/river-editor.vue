@@ -42,14 +42,36 @@
                     </dl>
                 </b-tab>
                 <b-tab title="Заброски">
-                    <div style="margin-top: 10px; margin-bottom: 20px;">
-                        <a target="_blank" href="./transfer.htm">Редактор забросок</a>
-                    </div>
-                    <v-select multiple
-                              v-model="river.transfers"
-                              :options="allTransfers"
-                              :reduce="transfer => transfer.id"
-                              label="title"/>
+                  <linked-entity-in-place-editor
+                      v-model="river.transfers"
+                      :multiselect="true"
+                      :bind-id="true"
+                      :base-url="transferApiBase"
+                      :auth-for-list="false"
+                      :show-selected="true"
+                      :map="false">
+                    <template v-slot:form="slotProps">
+                      <transfer-form v-model="slotProps.entity"/>
+                    </template>
+                    <template v-slot:grid="slotProps">
+                      <table class="table">
+                        <thead>
+                        <tr>
+                          <th width="200px">Название</th>
+                          <th width="250px">Откуда</th>
+                          <th width="250px">Реки</th>
+                          <th>Контакты / Описание</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <transfer-row v-for="transfer in slotProps.entities"
+                                      :key="transfer.id"
+                                      :transfer="transfer"
+                                      :can-edit="true"/>
+                        </tbody>
+                      </table>
+                    </template>
+                  </linked-entity-in-place-editor>
                 </b-tab>
                 <b-tab title="Системные параметры">
                     <span class="wwmap-system-hint" style="padding-top: 10px;">Тут собраны настройки разных системных вещей для этой реки</span>
@@ -75,24 +97,12 @@
                                             href="http://gis.vodinfo.ru/informer/">gis.vodinfo.ru/informer</a></strong>
                                 </div>
                                 <div class="col-9">
-                                    <ul id="sensors">
-                                        <li v-for="sensor in selectedSensors">
-                                            {{ sensor }} - {{ sensorsById[sensor] }}
-                                            <button v-on:click.stop="removeSensor(sensor)">[x]</button>
-                                        </li>
-                                    </ul>
-                                    <v-select v-model="activeSensor" label="title" :options="sensors"
-                                              @input="onSelectSensor">
-                                        <template slot="no-options">
-                                            Начните печатать название гидропоста
-                                        </template>
-                                        <template slot="option" slot-scope="option">
-                                            {{ option.id }}&nbsp;&dash;&nbsp;{{ option.title }}
-                                        </template>
-                                        <template slot="selected-option" slot-scope="option">
-                                            {{ option.id }}&nbsp;&dash;&nbsp;{{ option.title }}
-                                        </template>
-                                    </v-select>
+                                  <linked-entity-in-place-editor
+                                      v-model="river.props.vodinfo_sensors"
+                                      :multiselect="true"
+                                      :bind-id="true"
+                                      :data="sensors"
+                                      :show-selected="false"/>
                                 </div>
                             </div>
                             <div class="row">
@@ -103,44 +113,14 @@
                                     </div>
                                 </div>
                                 <div class="col-9">
-                                    <div v-if="meteoPointSelectMode">
-                                        <div class="wwmap-system-hint">Выберите из списка или
-                                            <button v-on:click.stop="addMeteoPoint">создайте</button>
-                                        </div>
-                                        <v-select v-model="meteoPoint" label="title" :options="meteoPoints"
-                                                  @input="onSelectMeteoPoint">
-                                            <template slot="no-options">
-                                                Начните печатать название точки
-                                            </template>
-                                            <template slot="option" slot-scope="option">
-                                                {{ option.id }}&nbsp;&dash;&nbsp;{{ option.title }}
-                                            </template>
-                                            <template slot="selected-option" slot-scope="option">
-                                                {{ option.id }}&nbsp;&dash;&nbsp;{{ option.title }}
-                                            </template>
-                                        </v-select>
-                                    </div>
-                                    <div v-else>
-                                        <div style="padding-top:15px;">
-                                            <ya-map-location v-bind:spot="meteoPoint" width="100%" height="600px"
-                                                             :editable="true" :ya-search="true"/>
-                                        </div>
-                                        <label style="padding-right: 10px;"
-                                               for="meteo_point_title_input"><strong>Название:</strong></label><input
-                                            id="meteo_point_title_input" type="text" v-model="meteoPoint.title"
-                                            style="margin-top: 10px; width: 80%;"/>
-                                        <div class="btn-toolbar" style="padding-top:15px;">
-                                            <div class="btn-group mr-2" role="group">
-                                                <button type="button" class="btn btn-success"
-                                                        v-on:click.stop="onAddMeteoPoint" :disabled="!meteoPoint.title">
-                                                    Добавить
-                                                </button>
-                                                <button type="button" class="btn btn-cancel"
-                                                        v-on:click.stop="onCancelAddMeteoPoint">Отмена
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
+                                  <linked-entity-in-place-editor
+                                      v-model="river.props.meteo_point"
+                                      :multiselect="false"
+                                      :bind-id="true"
+                                      :base-url="meteoPointApiBase"
+                                      :auth-for-list="true"
+                                      :show-selected="false"
+                                      :map-default-location="getCenter"/>
                                 </div>
                             </div>
                             <hr/>
@@ -162,10 +142,8 @@
     import {sensors, sensorsById} from '../../sensors'
     import {store} from '../../app-state'
     import {
-        addMeteoPoint,
         getAllRegions,
         getAllTransfers,
-        getMeteoPoints,
         nvlReturningId,
         saveRiver,
         setActiveEntityUrlHash,
@@ -174,12 +152,13 @@
     import {markdownEditorConfig} from '../../toast-editor-config'
     import {getWwmapSessionId} from "wwmap-js-commons/auth";
     import {Editor} from '@toast-ui/vue-editor';
+    import {createMapParamsStorage} from "wwmap-js-commons/map-settings";
 
     var $ = require("jquery");
     require("jquery.cookie");
 
     module.exports = {
-        props: ['river', 'reports', 'transfers', 'country', 'region'],
+        props: ['river', 'reports', 'transfers', 'country', 'region', 'bounds'],
         components: {
             FileUpload: FileUpload,
             editor: Editor,
@@ -225,21 +204,18 @@
         mounted: function () {
             let t = this;
             hasRole(ROLE_ADMIN, ROLE_EDITOR).then(canEdit => this.canEdit = canEdit);
-
-            getMeteoPoints().then(points => {
-                t.meteoPoints = points;
-                t.meteoPoint = t.getMeteoPointById(t.river.props.meteo_point);
-            });
         },
         data: function () {
             return {
                 prevRegionId: nvlReturningId(this.river.region.id),
                 prevCountryId: this.river.region.country_id,
                 map: null,
-                center: [0, 0],
+                mapParamsStorage: createMapParamsStorage(),
                 operationInProgress: false,
 
                 canEdit: false,
+                meteoPointApiBase: backendApiBase + '/meteo-point',
+                transferApiBase: backendApiBase + '/transfer-full',
 
                 editorOptions: markdownEditorConfig,
                 save: function () {
@@ -250,7 +226,6 @@
 
                     this.$refs.btnBar.disable()
                     saveRiver(this.river).then(updated => {
-                        this.meteoPoint = this.getMeteoPointById(this.river.props.meteo_point);
                         this.selectedSensors = this.river.props.vodinfo_sensors;
                         this.pageMode = 'view';
                         this.hideError();
@@ -299,26 +274,7 @@
                 // end of editor
 
                 files: [],
-                add_spot: function () {
-                    store.commit("setRiverEditorVisible", false);
-                    store.commit("setSpotEditorVisible", false);
 
-                    store.commit("setSpotEditorState", {
-                        visible: true,
-                        editMode: true,
-                        spot: {
-                            id: 0,
-                            river: this.river,
-                            order_index: "0",
-                            automatic_ordering: true,
-                            point: this.center,
-                            aliases: [],
-                            props: {},
-                        },
-                        country: this.country,
-                        region: this.region,
-                    });
-                },
 
                 regions: [],
                 parseAliases: function (strVal) {
@@ -333,35 +289,6 @@
                 sensorsById: sensorsById,
                 activeSensor: {id: null, title: null},
 
-
-                meteoPoints: [],
-                meteoPoint: null,
-                meteoPointSelectMode: true,
-                getMeteoPointById: function (id) {
-                    if (id) {
-                        for (let i = 0; i < this.meteoPoints.length; i++) {
-                            if (this.meteoPoints[i].id == id) {
-                                return this.meteoPoints[i]
-                            }
-                        }
-                    }
-                    return {id: null, title: null, point: this.center}
-                },
-                addMeteoPoint: function () {
-                    this.meteoPointSelectMode = false;
-                },
-                onCancelAddMeteoPoint: function () {
-                    this.meteoPointSelectMode = true;
-                },
-                onAddMeteoPoint: function () {
-                    this.onCancelAddMeteoPoint();
-                    addMeteoPoint(this.meteoPoint).then(p => {
-                        this.meteoPoint = p;
-                        this.river.props.meteo_point = p.id;
-                        getMeteoPoints().then(meteoPoints => this.meteoPoints = meteoPoints)
-                    });
-                },
-
                 gpxJustUploaded: false,
                 gpxUrl: function (transliterate) {
                     return `${backendApiBase}/downloads/river/${this.river.id}/gpx?tr=${transliterate}`;
@@ -371,6 +298,15 @@
                 },
 
                 allTransfers: [],
+
+              getCenter: function (bounds) {
+                return bounds
+                    ? [
+                      (bounds[0][0] + bounds[1][0])/2,
+                      (bounds[0][1] + bounds[1][1])/2,
+                    ]
+                    : createMapParamsStorage().getLastPositionZoomType().position;
+              },
             }
         },
         methods: {
@@ -400,9 +336,6 @@
                     this.selectedSensors = this.river.props.vodinfo_sensors;
                 }
             },
-            onSelectMeteoPoint: function (x) {
-                this.river.props.meteo_point = x.id
-            }
         }
     }
 

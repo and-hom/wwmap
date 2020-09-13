@@ -9,32 +9,18 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div class="settings">
-                        <label for="task_title">Название</label><input id="task_title" v-model="transfer.title"/>
-                        <label for="stations">Откуда</label>
-                        <span style="width:300px">
-                            <vue-tags-input
-                                id="stations"
-                                v-model="currentTag"
-                                :tags="current_stations"
-                                :autocomplete-items="autocomplete_stations"
-                                @tags-changed="newTags => current_stations = newTags"/>
-                        </span>
-                        <label for="description">Описание</label><textarea id="description"
-                                                                           v-model="transfer.description"
-                                                                           style="width:300px; height:300px;"></textarea>
-                        <label for="rivers">Реки</label>
-                        <div id="rivers">
-                            <div v-if="refreshRiverHack">
-                                <div v-for="river in transfer.rivers" style="min-height: 32px;">{{river.title}}
-                                    <button style="float: right;" v-on:click.stop="delRiver(river.id)">[X]</button>
-                                </div>
-                            </div>
-                            <river-select
-                                    v-model="river"
-                                    v-on:input="addRiver($event)"></river-select>
-                        </div>
+                  <transfer-form v-model="transfer"/>
+                  <label for="rivers">Реки</label>
+                  <div id="rivers">
+                    <div v-if="refreshRiverHack">
+                      <div v-for="river in transfer.rivers" style="min-height: 32px;">{{ river.title }}
+                        <button style="float: right;" v-on:click.stop="delRiver(river.id)">[X]</button>
+                      </div>
                     </div>
+                    <river-select
+                        v-model="river"
+                        v-on:input="addRiver($event)"></river-select>
+                  </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-primary" data-dismiss="modal" v-on:click="save()">
@@ -90,31 +76,6 @@
             },
         },
         computed: {
-            autocomplete_stations: {
-                get: function () {
-                    return this.stations.filter(s => s).map(s => {
-                        return {
-                            "text": s,
-                        }
-                    })
-                }
-            },
-            current_stations: {
-                get: function () {
-                    if (this.transfer.stations) {
-                        return this.transfer.stations.filter(s => s).map(s => {
-                            return {
-                                "text": s,
-                            }
-                        })
-                    } else {
-                        return [];
-                    }
-                },
-                set: function (val) {
-                    this.transfer.stations = val.map(v => v.text);
-                },
-            },
             rivers: {
                 get: function () {
                     return this.transfer.rivers ? this.transfer.rivers : [];
@@ -126,7 +87,6 @@
         },
         data: function () {
             return {
-                currentTag: '',
                 river: null,
                 refreshRiverHack:true,
             }

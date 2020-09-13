@@ -117,7 +117,7 @@
     import FileUpload from 'vue-upload-component';
     import {hasRole, ROLE_ADMIN, ROLE_EDITOR} from '../../auth'
     import {getRiverFromTree, navigateToSpot, store} from '../../app-state'
-    import {getRiverBounds, setRiverVisible,} from '../../editor'
+    import {setRiverVisible,} from '../../editor'
     import {backendApiBase} from '../../config'
     import {addMapLayers, registerMapSwitchLayersHotkeys} from '../../map-common';
     import {createMapParamsStorage} from 'wwmap-js-commons/map-settings'
@@ -133,29 +133,31 @@
     }
 
     module.exports = {
-        props: ['river', 'reports', 'transfers', 'country', 'region'],
+        props: ['river', 'reports', 'transfers', 'country', 'region', 'bounds'],
         components: {
             FileUpload: FileUpload,
             viewer: Viewer,
         },
         mounted: function () {
-            hasRole(ROLE_ADMIN, ROLE_EDITOR).then(canEdit => this.canEdit = canEdit);
-
-            getRiverBounds(this.river.id).then(bounds => {
-                this.bounds = bounds;
-
-                let hideMap = this.bounds == null;
-                if (this.map && hideMap) {
-                    this.map.destroy();
-                    this.map = null;
-                } else if (this.map) {
-                    this.objectManager.setUrlTemplate(backendApiBase + '/ymaps-tile-ww?bbox=%b&zoom=%z&river=' + this.river.id);
-                    this.map.setBounds(this.bounds);
-                } else if (!this.map && !hideMap) {
-                    this.showMap();
-                }
-
-            });
+          hasRole(ROLE_ADMIN, ROLE_EDITOR).then(canEdit => this.canEdit = canEdit);
+        },
+        watch: {
+          // This would be called anytime the value of title changes
+          bounds(newValue, _) {
+            if (newValue==null) {
+              return ;
+            }
+            let hideMap = this.bounds == null;
+            if (this.map && hideMap) {
+              this.map.destroy();
+              this.map = null;
+            } else if (this.map) {
+              this.objectManager.setUrlTemplate(backendApiBase + '/ymaps-tile-ww?bbox=%b&zoom=%z&river=' + this.river.id);
+              this.map.setBounds(this.bounds);
+            } else if (!this.map && !hideMap) {
+              this.showMap();
+            }
+          }
         },
         computed: {
             uploadPath: function () {
@@ -181,7 +183,6 @@
                 map: null,
                 canEdit: false,
                 mapParamsStorage: createMapParamsStorage(),
-                bounds: null,
 
                 setVisible: function (visible) {
                     setRiverVisible(this.river.id, visible).then(river => {

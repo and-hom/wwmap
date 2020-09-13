@@ -10,7 +10,8 @@
                       :reports="reports"
                       :transfers="transfers"
                       :country="country"
-                      :region="region">
+                      :region="region"
+                      :bounds="bounds">
             <button type="button" class="btn btn-primary" v-on:click="add_spot()">Добавить препятствие</button>
             <button type="button" class="btn btn-info"
                     v-on:click="pageMode='edit'; hideError();">Редактирование</button>
@@ -27,6 +28,7 @@
                       :transfers="transfers"
                       :country="country"
                       :region="region"
+                      :bounds="bounds"
                       v:sensors="sensors">
             <button type="button" class="btn btn-secondary" v-on:click="cancelEditing()">Отменить</button>
             <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#del-river" v-if="river.id>0">Удалить
@@ -50,8 +52,9 @@
 <script>
     import {store} from '../../app-state';
     import {hasRole, ROLE_ADMIN, ROLE_EDITOR} from '../../auth';
-    import {getRiver, nvlReturningId, removeRiver, setActiveEntityUrlHash} from '../../editor';
+    import {getRiver, getRiverBounds, nvlReturningId, removeRiver, setActiveEntityUrlHash} from '../../editor';
     import {createMapParamsStorage} from 'wwmap-js-commons/map-settings'
+    import {backendApiBase} from "../../config";
 
     module.exports = {
         props: ['initialRiver', 'reports', 'transfers', 'country', 'region'],
@@ -70,12 +73,18 @@
             hasRole(ROLE_ADMIN, ROLE_EDITOR).then(canEdit => this.canEdit = canEdit);
             this.resetToInitialIfRequired();
         },
+        mounted: function () {
+          getRiverBounds(this.river.id).then(bounds => {
+            this.bounds = bounds;
+          });
+        },
         updated: function () {
             this.resetToInitialIfRequired();
         },
         data: function () {
             return {
                 river: null,
+                bounds: null,
                 previousRiverId: this.initialRiver.id,
                 canEdit: false,
                 mapParamsStorage: createMapParamsStorage(),
