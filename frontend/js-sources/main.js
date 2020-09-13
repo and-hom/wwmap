@@ -14,6 +14,7 @@ import SitesPage from './pages/sites-page.vue'
 import JobsPage from './pages/jobs-page.vue'
 import TimelinePage from './pages/timeline-page.vue'
 import TransferPage from './pages/transfer-page.vue'
+import CampPage from './pages/camp-page.vue'
 import PackageChangelog from './pages/package-changelog-page.vue'
 
 import vSelect from 'vue-select'
@@ -105,6 +106,10 @@ export function initTimeline() {
 
 export function initTransfer() {
     return init(TransferPage)
+}
+
+export function initCamp() {
+    return init(CampPage)
 }
 
 export function initPackageChangelog() {
