@@ -1,8 +1,14 @@
 <template>
   <page link="transfer.htm">
     <div v-if="canEdit">
-      <create-transfer :transfer="transferForEdit" :stations="stations" :okFn="editOk"
-                       :cancelFn="resetTransferForEdit"/>
+      <create-entity :transfer="transferForEdit"
+                     :stations="stations"
+                     :okFn="editOk"
+                     :cancelFn="resetTransferForEdit">
+        <template v-slot:form="slotProps">
+          <transfer-form v-model="slotProps.entity"/>
+        </template>
+      </create-entity>
       <h2 style="display: inline;">Трансферы</h2>
       <button data-toggle="modal" data-target="#add-transfer" style="margin-left:30px;">+</button>
     </div>
@@ -42,10 +48,9 @@
 
 <script>
 import {doDelete, doGetJson} from "../api";
-import {backendApiBase, frontendBase} from "../config";
+import {backendApiBase} from "../config";
 import {hasRole, ROLE_ADMIN, ROLE_EDITOR} from "../auth";
 import Vue from "vue";
-import {calculateZoom} from "wwmap-js-commons/util";
 
 const moment = require('moment');
 const VueScrollTo = require('vue-scrollto');
@@ -75,7 +80,7 @@ export default {
   },
   methods: {
     refresh: function () {
-      doGetJson(backendApiBase + "/transfer-full", false).then(transfers => {
+      doGetJson(backendApiBase + "/transfer", false).then(transfers => {
         this.transfers = transfers;
         this.stations = Array.from(new Set(transfers.flatMap(t => t.stations)));
       }).then(this.scrollToActive)

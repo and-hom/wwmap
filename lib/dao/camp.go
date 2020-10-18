@@ -3,14 +3,23 @@ package dao
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/lib/dao/queries"
 	"github.com/and-hom/wwmap/lib/geo"
+	"github.com/lib/pq"
 )
 
 func NewCampPostgresDao(postgresStorage PostgresStorage) CampDao {
 	return &campStorage{
-		PostgresStorage:       postgresStorage,
+		riverLinksStorage: riverLinksStorage{
+			PostgresStorage:        postgresStorage,
+			listRefsByRiverQuery:   queries.SqlQuery("camp", "list-refs-by-river"),
+			insertRefsQuery:        queries.SqlQuery("camp", "insert-refs"),
+			deleteRefsQuery:        queries.SqlQuery("camp", "delete-refs"),
+			deleteRefsByRiverQuery: queries.SqlQuery("camp", "delete-refs-by-river"),
+			listRivers:             queries.SqlQuery("linked-entity", "list-rivers"),
+		},
 		listQuery:             queries.SqlQuery("camp", "list"),
 		findWithinBoundsQuery: queries.SqlQuery("camp", "find-witin-bounds"),
 		findQuery:             queries.SqlQuery("camp", "find"),
@@ -21,7 +30,7 @@ func NewCampPostgresDao(postgresStorage PostgresStorage) CampDao {
 }
 
 type campStorage struct {
-	PostgresStorage
+	riverLinksStorage
 	listQuery             string
 	findWithinBoundsQuery string
 	findQuery             string
@@ -30,16 +39,33 @@ type campStorage struct {
 	removeQuery           string
 }
 
-func (this campStorage) List() ([]Camp, error) {
-	found, err := this.doFindList(this.listQuery, this.scan)
+func (this campStorage) List(withRivers bool) ([]Camp, error) {
+	found, err := this.DoFindList(this.listQuery, this.scan)
 	if err != nil {
 		return []Camp{}, err
 	}
-	return found.([]Camp), nil
+
+	camps := found.([]Camp)
+
+	if withRivers {
+		if err := this.enrichWithRiverData(convertCamps(&camps)); err != nil {
+			return nil, err
+		}
+	}
+
+	return camps, nil
+}
+
+func convertCamps(transfers *[]Camp) []ILinkedEntity {
+	result := make([]ILinkedEntity, len(*transfers))
+	for i := 0; i < len(*transfers); i++ {
+		result[i] = &(*transfers)[i]
+	}
+	return result
 }
 
 func (this campStorage) FindWithinBounds(bbox geo.Bbox) ([]Camp, error) {
-	found, err := this.doFindList(this.findWithinBoundsQuery, this.scan, bbox.Y1, bbox.X1, bbox.Y2, bbox.X2)
+	found, err := this.DoFindList(this.findWithinBoundsQuery, this.scan, bbox.Y1, bbox.X1, bbox.Y2, bbox.X2)
 	if err != nil {
 		return []Camp{}, err
 	}
@@ -51,7 +77,7 @@ func (this campStorage) Insert(camp ...Camp) ([]int64, error) {
 	for i := 0; i < len(camp); i++ {
 		data[i] = camp[i]
 	}
-	result, err := this.updateReturningId(this.insertQuery, this.campToArgs(false), true, data...)
+	result, err := this.UpdateReturningId(this.insertQuery, this.campToArgs(false), true, data...)
 	if err != nil {
 		return []int64{}, err
 	}
@@ -59,11 +85,16 @@ func (this campStorage) Insert(camp ...Camp) ([]int64, error) {
 }
 
 func (this campStorage) Update(camp Camp) error {
-	return this.performUpdates(this.removeQuery, this.campToArgs(true), camp)
+	fields, err := this.campToArgs(true)(camp)
+	if err != nil {
+		return err
+	}
+	return this.update(this.updateQuery, camp.Id, camp.Rivers, fields)
 }
 
 func (this campStorage) Find(id int64) (Camp, bool, error) {
-	camp, found, err := this.doFindAndReturn(this.findQuery, this.scan, id)
+	camp, found, err := this.DoFindAndReturn(this.findQuery, this.scan, id)
+	fmt.Println(this.findQuery, camp)
 	if err != nil {
 		return Camp{}, false, err
 	}
@@ -71,7 +102,7 @@ func (this campStorage) Find(id int64) (Camp, bool, error) {
 }
 
 func (this campStorage) Remove(id int64, tx interface{}) error {
-	return this.performUpdatesWithinTxOptionally(tx, this.removeQuery, IdMapper, id)
+	return this.PerformUpdatesWithinTxOptionally(tx, this.removeQuery, IdMapper, id)
 }
 
 func (this campStorage) scan(rows *sql.Rows) (Camp, error) {
@@ -79,11 +110,14 @@ func (this campStorage) scan(rows *sql.Rows) (Camp, error) {
 	pointStr := ""
 	numTentPlaces := sql.NullInt64{}
 	osmId := sql.NullInt64{}
+	rivers := pq.Int64Array{}
 
-	err := rows.Scan(&camp.Id, &osmId, &camp.Title, &camp.Description, &pointStr, &numTentPlaces)
+	err := rows.Scan(&camp.Id, &osmId, &camp.Title, &camp.Description, &pointStr, &numTentPlaces, &rivers)
 	if err != nil {
 		return camp, err
 	}
+
+	camp.Rivers = []int64(rivers)
 
 	var pgPoint geo.GeoPoint
 	err = json.Unmarshal([]byte(pointStr), &pgPoint)

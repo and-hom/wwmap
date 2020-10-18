@@ -205,15 +205,6 @@ type LevelDao interface {
 	RemoveNullsBefore(fromDate JSONDate) error
 }
 
-type CampDao interface {
-	List() ([]Camp, error)
-	Insert(camp ...Camp) ([]int64, error)
-	Update(camp Camp) error
-	Find(id int64) (Camp, bool, error)
-	Remove(id int64, tx interface{}) error
-	FindWithinBounds(bbox Bbox) ([]Camp, error)
-}
-
 type RateDao interface {
 	RemoveByRefId(refId int64, tx interface{}) error
 }
@@ -226,13 +217,26 @@ type DbVersionDao interface {
 	GetDbVersion() (int, error)
 }
 
-type TransferDao interface {
-	List() ([]Transfer, error)
-	ByRiver(riverId int64) ([]Transfer, error)
-	ListFull() ([]TransferFull, error)
-	Insert(transfer TransferFull) (int64, error)
-	Update(transfer TransferFull) error
-	Remove(id int64) error
+type RiverLinksDao interface {
 	SetLinksForRiver(riverId int64, transfers []int64) error
-	GetIdsForRiver(int64) ([]int64, error)
+    GetIdsForRiver(riverId int64) ([]int64, error)
+}
+
+type TransferDao interface {
+	RiverLinksDao
+	List(withRivers bool) ([]Transfer, error)
+	ByRiver(riverId int64) ([]Transfer, error)
+	Insert(transfer Transfer) (int64, error)
+	Update(transfer Transfer) error
+	Remove(id int64) error
+}
+
+type CampDao interface {
+	RiverLinksDao
+	List(withRivers bool) ([]Camp, error)
+	Insert(camp ...Camp) ([]int64, error)
+	Update(camp Camp) error
+	Find(id int64) (Camp, bool, error)
+	Remove(id int64, tx interface{}) error
+	FindWithinBounds(bbox Bbox) ([]Camp, error)
 }

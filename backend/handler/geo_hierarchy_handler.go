@@ -105,6 +105,7 @@ type RiverDto struct {
 	Visible     bool                   `json:"visible"`
 	Props       map[string]interface{} `json:"props"`
 	Transfers   []int64                `json:"transfers,omitempty"`
+	Camps       []int64                `json:"camps,omitempty"`
 }
 
 type RegionDto struct {
@@ -490,6 +491,7 @@ func (this *GeoHierarchyHandler) SaveRiver(w http.ResponseWriter, r *http.Reques
 	}
 
 	this.TransferDao.SetLinksForRiver(id, river.Transfers)
+	this.CampDao.SetLinksForRiver(id, river.Camps)
 
 	this.writeRiver(id, w)
 	this.LogUserEvent(r, RIVER_LOG_ENTRY_TYPE, id, logEntryType, riverForDb.Title)
@@ -931,12 +933,10 @@ type SpotBatch struct {
 }
 
 func (this *GeoHierarchyHandler) ListCamps(w http.ResponseWriter, r *http.Request) {
-	countries, err := this.CampDao.List()
-	if err != nil {
-		OnError500(w, err, "Can not list camps")
-		return
-	}
-	this.JsonAnswer(w, countries)
+	this.JsonAnswerF(w, func() (i interface{}, err error) {
+		withRivers := getBoolParameter(r, "rivers", false)
+		return this.CampDao.List(withRivers)
+	}, "Can't list camp records")
 }
 
 func (this *GeoHierarchyHandler) GetCamp(w http.ResponseWriter, r *http.Request) {
@@ -952,7 +952,7 @@ func (this *GeoHierarchyHandler) GetCamp(w http.ResponseWriter, r *http.Request)
 
 func (this *GeoHierarchyHandler) SaveCamp(w http.ResponseWriter, r *http.Request) {
 	camp := dao.Camp{}
-	body, err := decodeJsonBody(r, &camp)
+	body, err := DecodeJsonBody(r, &camp)
 	if err != nil {
 		OnError500(w, err, "Can not parse json from request body: "+body)
 		return

@@ -21,28 +21,20 @@ func (this *TransferHandler) Init() {
 		Post: this.ForRoles(this.Upsert, dao.ADMIN, dao.EDITOR),
 		Put:  this.ForRoles(this.Upsert, dao.ADMIN, dao.EDITOR),
 	})
-	this.Register("/transfer-full", handler.HandlerFunctions{
-		Get: this.ListFull,
-		Post: this.ForRoles(this.Upsert, dao.ADMIN, dao.EDITOR),
-		Put:  this.ForRoles(this.Upsert, dao.ADMIN, dao.EDITOR),
-	})
 	this.Register("/transfer/{id}", handler.HandlerFunctions{
 		Delete: this.ForRoles(this.Delete, dao.ADMIN, dao.EDITOR),
+		Post: this.ForRoles(this.Upsert, dao.ADMIN, dao.EDITOR),
+		Put:  this.ForRoles(this.Upsert, dao.ADMIN, dao.EDITOR),
 	})
 	this.Register("/transfer/river/{id}", handler.HandlerFunctions{
 		Get: this.ByRiver,
 	})
 }
 
-func (this *TransferHandler) List(w http.ResponseWriter, req *http.Request) {
+func (this *TransferHandler) List(w http.ResponseWriter, r *http.Request) {
 	this.JsonAnswerF(w, func() (i interface{}, err error) {
-		return this.TransferDao.List()
-	}, "Can't list transfer records")
-}
-
-func (this *TransferHandler) ListFull(w http.ResponseWriter, req *http.Request) {
-	this.JsonAnswerF(w, func() (i interface{}, err error) {
-		return this.TransferDao.ListFull()
+		withRivers := getBoolParameter(r, "rivers", false)
+		return this.TransferDao.List(withRivers)
 	}, "Can't list transfer records")
 }
 
@@ -61,7 +53,7 @@ func (this *TransferHandler) ByRiver(w http.ResponseWriter, req *http.Request) {
 }
 
 func (this *TransferHandler) Upsert(w http.ResponseWriter, req *http.Request) {
-	transfer := dao.TransferFull{}
+	transfer := dao.Transfer{}
 	body, err := handler.DecodeJsonBody(req, &transfer)
 	if err != nil {
 		http2.OnError500(w, err, "Can not parse json from request body: "+body)

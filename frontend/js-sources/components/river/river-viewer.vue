@@ -9,7 +9,7 @@
             <div style="width: 700px;">
                 <img border='0' :src="informerUrl" v-for="informerUrl in informerUrls()">
             </div>
-            <div id="map" style="width:650px; height: 450px;padding-left: 30px;"></div>
+          <ya-map-viewer bounds="bounds" style="width:650px; height: 450px;padding-left: 30px;"/>
         </div>
         <dl>
             <dt>Показывать на карте:</dt>
@@ -119,7 +119,6 @@
     import {getRiverFromTree, navigateToSpot, store} from '../../app-state'
     import {setRiverVisible,} from '../../editor'
     import {backendApiBase} from '../../config'
-    import {addMapLayers, registerMapSwitchLayersHotkeys} from '../../map-common';
     import {createMapParamsStorage} from 'wwmap-js-commons/map-settings'
     import {getWwmapSessionId} from "wwmap-js-commons/auth";
     import { Viewer } from '@toast-ui/vue-editor';
@@ -140,24 +139,6 @@
         },
         mounted: function () {
           hasRole(ROLE_ADMIN, ROLE_EDITOR).then(canEdit => this.canEdit = canEdit);
-        },
-        watch: {
-          // This would be called anytime the value of title changes
-          bounds(newValue, _) {
-            if (newValue==null) {
-              return ;
-            }
-            let hideMap = this.bounds == null;
-            if (this.map && hideMap) {
-              this.map.destroy();
-              this.map = null;
-            } else if (this.map) {
-              this.objectManager.setUrlTemplate(backendApiBase + '/ymaps-tile-ww?bbox=%b&zoom=%z&river=' + this.river.id);
-              this.map.setBounds(this.bounds);
-            } else if (!this.map && !hideMap) {
-              this.showMap();
-            }
-          }
         },
         computed: {
             uploadPath: function () {
@@ -180,10 +161,7 @@
         },
         data: function () {
             return {
-                map: null,
                 canEdit: false,
-                mapParamsStorage: createMapParamsStorage(),
-
                 setVisible: function (visible) {
                     setRiverVisible(this.river.id, visible).then(river => {
                         this.river = river;
@@ -210,70 +188,6 @@
                         return "http://gis.vodinfo.ru/informer/draw/v2_" + s + "_300_200_30_ffffff_110_8_7_H_none.png";
                     });
                 },
-                showMap: function () {
-                    if (this.bounds == null) {
-                        return;
-                    }
-                    let t = this;
-                    ymaps.ready(function () {
-                        ymaps.modules.require(['overlay.BiPlacemark'], function (BiPlacemarkOverlay) {
-                            if (ymaps.overlay.storage.get("BiPlacemrakOverlay") == null) {
-                                ymaps.overlay.storage.add("BiPlacemrakOverlay", BiPlacemarkOverlay);
-                            }
-                            addMapLayers();
-
-                            let mapParams = t.mapParamsStorage.getLastPositionZoomType();
-                            let map = new ymaps.Map("map", {
-                                bounds: expandIfTooSmall(t.bounds),
-                                type: mapParams.type,
-                                controls: ["zoomControl"]
-                            });
-
-                            t.mapParamsStorage.setLastPositionZoomType(map.getCenter(), map.getZoom(), map.getType())
-                            map.events.add('typechange', function () {
-                                t.mapParamsStorage.setLastPositionZoomType(map.getCenter(), map.getZoom(), map.getType())
-                            });
-                            map.events.add('boundschange', function () {
-                                t.mapParamsStorage.setLastPositionZoomType(map.getCenter(), map.getZoom(), map.getType())
-                            });
-                            map.controls.add(
-                                new ymaps.control.TypeSelector([
-                                        'osm#standard',
-                                        'ggc#standard',
-                                        'topomapper#genshtab',
-                                        'marshruty.ru#genshtab',
-                                        'yandex#satellite',
-                                        'google#satellite',
-                                        'bing#satellite',
-                                    ]
-                                )
-                            );
-                            registerMapSwitchLayersHotkeys(map);
-                            var objectManager = new ymaps.RemoteObjectManager(backendApiBase + '/ymaps-tile-ww?bbox=%b&zoom=%z&river=' + t.river.id, {
-                                clusterHasBalloon: false,
-                                geoObjectOpenBalloonOnClick: false,
-                                geoObjectStrokeWidth: 3,
-                                splitRequests: true
-                            });
-
-                            objectManager.objects.events.add(['click'], function (e) {
-                                let id = e.get('objectId');
-                                navigateToSpot(id, false);
-                            });
-
-                            map.geoObjects.add(objectManager);
-                            t.map = map;
-                            t.objectManager = objectManager;
-                        });
-                    });
-                },
-                reloadMap: function () {
-                    if (this.map) {
-                        this.map.destroy();
-                    }
-                    this.showMap();
-                },
-
                 gpxUrl: function (transliterate) {
                     return `${backendApiBase}/downloads/river/${this.river.id}/gpx?tr=${transliterate}`;
                 },

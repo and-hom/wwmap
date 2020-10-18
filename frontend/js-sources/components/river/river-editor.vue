@@ -41,6 +41,22 @@
                         </dd>
                     </dl>
                 </b-tab>
+                <b-tab title="Стоянки">
+                  <linked-entity-in-place-editor
+                      v-model="river.camps"
+                      :multiselect="true"
+                      :bind-id="true"
+                      :base-url="campApiBase"
+                      :auth-for-list="false"
+                      :show-selected="true"
+                      :map="true"
+                      :map-default-location="getCenter"
+                      :allow-empty-title="true">
+                    <template v-slot:form="slotProps">
+                      <camp-form v-model="slotProps.entity"/>
+                    </template>
+                  </linked-entity-in-place-editor>
+                </b-tab>
                 <b-tab title="Заброски">
                   <linked-entity-in-place-editor
                       v-model="river.transfers"
@@ -215,7 +231,8 @@
 
                 canEdit: false,
                 meteoPointApiBase: backendApiBase + '/meteo-point',
-                transferApiBase: backendApiBase + '/transfer-full',
+                transferApiBase: backendApiBase + '/transfer',
+                campApiBase: backendApiBase + '/camp',
 
                 editorOptions: markdownEditorConfig,
                 save: function () {

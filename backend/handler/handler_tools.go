@@ -142,3 +142,12 @@ func (this *App) LogUserEvent(r *http.Request, objType string, id int64, logType
 		}
 	}()
 }
+
+func getBoolParameter(req *http.Request, name string, _default bool) bool {
+	valStr := req.FormValue(name)
+	value, err := strconv.ParseBool(valStr)
+	if err != nil {
+		return _default
+	}
+	return value
+}

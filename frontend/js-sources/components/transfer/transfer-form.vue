@@ -1,5 +1,5 @@
 <template>
-  <div class="settings">
+  <div class="wwmap-settings">
     <label for="task_title">Название</label><input id="task_title" v-model="transfer.title" v-on:change="$emit('input', transfer)"/>
     <label for="stations">Откуда</label>
     <span style="width:300px">
@@ -29,7 +29,7 @@ module.exports = {
     },
   },
   created() {
-    doGetJson(backendApiBase + "/transfer-full", false).then(transfers => {
+    doGetJson(backendApiBase + "/transfer", false).then(transfers => {
       this.stations = Array.from(new Set(transfers.flatMap(t => t.stations)));
     })
   },

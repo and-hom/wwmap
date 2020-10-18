@@ -64,7 +64,6 @@
                     if (component.map) {
                         component.map.destroy();
                         component.label.geometry.setCoordinates(component.getP(0));
-                        return
                     } else {
                         addMapLayers();
                     }

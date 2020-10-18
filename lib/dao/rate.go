@@ -24,5 +24,5 @@ type rateStorage struct {
 }
 
 func (this rateStorage) RemoveByRefId(refId int64, tx interface{}) error {
-	return this.performUpdatesWithinTxOptionally(tx, this.removeQuery, IdMapper, refId)
+	return this.PerformUpdatesWithinTxOptionally(tx, this.removeQuery, IdMapper, refId)
 }

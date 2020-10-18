@@ -457,14 +457,6 @@ type Meteo struct {
 	Rain int `json:"rain"`
 }
 
-type Camp struct {
-	IdTitle
-	OsmId         int64  `json:"osm_id"`
-	Description   string `json:"description"`
-	Point         Point  `json:"point"`
-	NumTentPlaces uint16 `json:"num_tent_places"`
-}
-
 const NAN_LEVEL = math.MinInt32
 const LEVEL_GRADUATION int = 4
 
@@ -538,20 +530,42 @@ func min(x, y int) int {
 	return y
 }
 
-type Transfer struct {
+type ILinkedEntity interface {
+	SetRiversData(*[]LinkedEntityRiver)
+	GetRivers() []int64
+}
+
+type LinkedEntity struct {
 	IdTitle
-	Stations    []string `json:"stations"`
-	Description string   `json:"description"`
+	Rivers     []int64 `json:"rivers"`
+	RiversData *[]LinkedEntityRiver `json:"rivers_data"`
 }
 
-type TransferFull struct {
-	Transfer
-	Rivers []TransferToRiver `json:"rivers"`
+func (this *LinkedEntity) SetRiversData(riversData *[]LinkedEntityRiver)  {
+	this.RiversData = riversData
 }
 
-type TransferToRiver struct {
+func (this *LinkedEntity) GetRivers() []int64  {
+	return this.Rivers
+}
+
+type LinkedEntityRiver struct {
 	IdTitle
 	RegionId  int64 `json:"region_id"`
 	CountryId int64 `json:"country_id"`
 	Bounds    *Bbox `json:"bounds,omitempty"`
+}
+
+type Camp struct {
+	LinkedEntity
+	OsmId         int64  `json:"osm_id"`
+	Description   string `json:"description"`
+	Point         Point  `json:"point"`
+	NumTentPlaces uint16 `json:"num_tent_places"`
+}
+
+type Transfer struct {
+	LinkedEntity
+	Stations    []string `json:"stations"`
+	Description string   `json:"description"`
 }

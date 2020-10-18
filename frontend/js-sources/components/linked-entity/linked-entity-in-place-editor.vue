@@ -2,12 +2,13 @@
   <div>
     <div v-if="editMode">
       <div style="padding-top:15px;">
-        <ya-map-location v-if="map"
-                         v-bind:spot="newEntity"
-                         width="100%"
-                         height="600px"
-                         :editable="true"
-                         :ya-search="true"/>
+        <div v-if="map" style="margin-bottom: 20px">
+          <ya-map-location v-bind:spot="newEntity"
+                           width="100%"
+                           height="600px"
+                           :editable="true"
+                           :ya-search="true"/>
+        </div>
         <slot name="form" v-bind:entity="newEntity">
           <label style="padding-right: 10px;" for="title_input"><strong>Название:</strong></label><input
             id="title_input" type="text" v-model="newEntity.title" style="margin-top: 10px; width: 80%;"/>
@@ -17,9 +18,9 @@
             <button type="button"
                     class="btn btn-success"
                     v-on:click.stop="onSaveEntity"
-                    :disabled="!newEntity.title">Добавить
+                    :disabled="!newEntity.title && !allowEmptyTitle">{{ saveBtnText() }}
             </button>
-            <button type="button" class="btn btn-cancel" v-on:click.stop="this.editMode = false">Отмена</button>
+            <button type="button" class="btn btn-cancel" v-on:click.stop="editMode = false">Отмена</button>
           </div>
         </div>
       </div>
@@ -36,7 +37,13 @@
           {{ option.id }}&nbsp;&dash;&nbsp;{{ option.title }}
         </template>
         <template slot="selected-option" slot-scope="option">
-          {{ option.id }}&nbsp;&dash;&nbsp;{{ option.title }}
+          {{ option.id }}&nbsp;&dash;&nbsp;{{ option.title }}<a href="#"
+                                                                type="button"
+                                                                title="Редактировать"
+                                                                aria-label="Редактировать"
+                                                                v-on:click.stop="newEntity=option; editMode=true;"
+                                                                class="vs__deselect"><img
+            src="https://wwmap.ru/img/edit.png"/></a>
         </template>
       </v-select>
     </div>
@@ -54,6 +61,7 @@
 <script>
 
 import {doGetJson, doPostJson} from "../../api";
+import {valueToSelectModel, selectModelToValue} from "../../multiselect-utils";
 
 module.exports = {
   props: {
@@ -88,41 +96,19 @@ module.exports = {
       type: Boolean,
       default: true,
     },
-    mapDefaultLocation: {}
+    mapDefaultLocation: {},
+    allowEmptyTitle: {
+      type: Boolean,
+      default: false,
+    }
   },
   computed: {
     selected: {
       get() {
-        if (this.multiselect) {
-          if (this.bindId) {
-            return this.value ? this.entities.filter(e => this.value.includes(e.id)) : []
-          } else {
-            return this.value ? this.value : []
-          }
-        } else {
-          if (this.bindId) {
-            return this.entities.filter(e => e.id == this.value)
-          } else {
-            return this.value ? [this.value] : [];
-          }
-        }
+        return valueToSelectModel(this.value, this.entities, this.multiselect, this.bindId);
       },
       set(selected) {
-        let val;
-        if (this.multiselect) {
-          if (this.bindId) {
-            val = selected.map(s => s.id)
-          } else {
-            val = selected
-          }
-        } else {
-          if (this.bindId) {
-            val = selected.length > 0 && selected[0] ? selected[0].id : null
-          } else {
-            val = selected.length > 0 ? selected[0] : null
-          }
-        }
-        this.$emit('input', val);
+        this.$emit('input', selectModelToValue(selected, this.multiselect, this.bindId));
       }
     },
     selectorModel: {
@@ -161,13 +147,13 @@ module.exports = {
       ).then(entities => this.entities = entities)
     },
 
-      onSelectEntity: function (entity) {
-        if (this.multiselect) {
-          this.selected = this.selected.concat(entity);
-        } else {
-          this.selected = [entity]
-        }
-      },
+    onSelectEntity: function (entity) {
+      if (this.multiselect) {
+        this.selected = this.selected.concat(entity);
+      } else {
+        this.selected = [entity]
+      }
+    },
 
     onUnselectEntity: function (entity) {
       this.selected = this.selected.filter(e => e.id != entity.id);
@@ -213,6 +199,9 @@ module.exports = {
       return {
         point: pos,
       }
+    },
+    saveBtnText: function () {
+      return this.newEntity.id ? "Сохранить" : "Добавить"
     },
   }
 }
