@@ -310,8 +310,15 @@
 }
 
 .wwmap-category-icon {
+    width: 16px;
+    height: 16px;
+}
+
+.wwmap-category-icon div{
     width: 32px;
     height: 32px;
-    zoom: 0.5;
     background-repeat: no-repeat;
+    transform: scale(0.5);
+    transform-origin: 0 0;
+    padding-top: -16px  ;
 }
