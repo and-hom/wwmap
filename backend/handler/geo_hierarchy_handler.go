@@ -41,9 +41,9 @@ func (this *GeoHierarchyHandler) Init() {
 	this.Register("/region", HandlerFunctions{Get: this.ListAllRegions})
 	this.Register("/region/{regionId}", HandlerFunctions{
 		Get:    this.GetRegion,
-		Put:    this.ForRoles(this.SaveRegion, dao.ADMIN, dao.EDITOR),
-		Post:   this.ForRoles(this.SaveRegion, dao.ADMIN, dao.EDITOR),
-		Delete: this.ForRoles(this.RemoveRegion, dao.ADMIN, dao.EDITOR),
+		Put:    this.ForRoles(this.SaveRegion, dao.ADMIN),
+		Post:   this.ForRoles(this.SaveRegion, dao.ADMIN),
+		Delete: this.ForRoles(this.RemoveRegion, dao.ADMIN),
 	})
 
 	this.Register("/river", HandlerFunctions{Get: this.FilterRivers})

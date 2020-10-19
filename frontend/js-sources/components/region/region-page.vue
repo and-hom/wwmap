@@ -12,7 +12,7 @@
                    :country="country"
                    :region="region">
       <button type="button" class="btn btn-primary" v-on:click="add_river()">Добавить реку</button>
-      <button type="button" class="btn btn-info"
+      <button type="button" class="btn btn-info" v-if="canEditRegion"
               v-on:click="editMode=true; hideError();">Редактирование
       </button>
       <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#del-region"
@@ -25,7 +25,7 @@
       </button>
     </region-viewer>
 
-    <region-editor v-if="canEdit && editMode"
+    <region-editor v-if="canEditRegion && editMode"
                    ref="editor"
                    :country="country"
                    :region="region">
@@ -44,13 +44,14 @@
 
 <script>
 import {store} from '../../app-state';
-import {hasRole, ROLE_ADMIN, ROLE_EDITOR} from '../../auth';
-import {nvlReturningId, getRegion, removeRegion, setActiveEntityUrlHash} from "../../editor";
+import {hasRole, ROLE_ADMIN} from '../../auth';
+import {getRegion, removeRegion, setActiveEntityUrlHash} from "../../editor";
 
 module.exports = {
   props: ['initialRegion', 'country'],
   created: function () {
-    hasRole(ROLE_ADMIN, ROLE_EDITOR).then(canEdit => this.canEdit = canEdit);
+    hasRole(ROLE_ADMIN).then(canEdit => this.canEdit = canEdit);
+    hasRole(ROLE_ADMIN).then(canEditRegion => this.canEditRegion = canEditRegion);
     this.resetToInitialIfRequired();
   },
   updated: function () {
@@ -70,6 +71,7 @@ module.exports = {
   data: function () {
     return {
       canEdit: false,
+      canEditRegion: false,
       region: null,
       previousRegionId: this.initialRegion.id,
 

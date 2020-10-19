@@ -9,7 +9,6 @@
 </template>
 
 <script>
-    import {store} from '../../app-state';
     import {hasRole, ROLE_ADMIN, ROLE_EDITOR} from '../../auth';
 
     module.exports = {

@@ -24,7 +24,7 @@
 
 <script>
 import {store} from '../../app-state';
-import {hasRole, ROLE_ADMIN, ROLE_EDITOR} from '../../auth';
+import {hasRole, ROLE_ADMIN} from '../../auth';
 import {getCountries, saveRegion, setActiveEntityUrlHash} from "../../editor";
 
 var $ = require("jquery");
@@ -36,7 +36,7 @@ module.exports = {
     getCountries().then(countries => this.countries = countries);
   },
   mounted: function () {
-    hasRole(ROLE_ADMIN, ROLE_EDITOR).then(canEdit => this.canEdit = canEdit);
+    hasRole(ROLE_ADMIN).then(canEdit => this.canEdit = canEdit);
   },
   computed: {
     editMode: {
