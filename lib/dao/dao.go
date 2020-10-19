@@ -31,6 +31,7 @@ type RiverDao interface {
 	SetVisible(id int64, visible bool) error
 	FindByTitlePart(tPart string, limit, offset int, showUnpublished bool) ([]RiverTitle, error)
 	GetParentIds(riverIds []int64) (map[int64]RiverParentIds, error)
+	CountByRegion(regionId int64) (int, error)
 }
 
 type WhiteWaterDao interface {
@@ -155,11 +156,15 @@ type CountryDao interface {
 
 type RegionDao interface {
 	HasProperties
-	Get(id int64) (Region, error)
+	Get(id int64) (Region, bool, error)
 	GetFake(countryId int64) (Region, bool, error)
 	CreateFake(countryId int64) (int64, error)
 	List(countryId int64) ([]Region, error)
 	ListAllWithCountry() ([]RegionWithCountry, error)
+	Save(region ...Region) error
+	Insert(region Region) (int64, error)
+	Remove(id int64) error
+	GetParentIds(riverIds []int64) (map[int64]RegionParentIds, error)
 }
 
 type RefererDao interface {

@@ -27,7 +27,7 @@
                         </div>
                         <div>
                             <region-page v-if="regioneditorstate.visible"
-                                         v-bind:region="regioneditorstate.region"
+                                         v-bind:initial-region="regioneditorstate.region"
                                          v-bind:country="regioneditorstate.country"/>
                         </div>
                         <div>

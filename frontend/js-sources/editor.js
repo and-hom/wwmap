@@ -37,6 +37,14 @@ export function getRegion(regionId) {
     return doGetJson(backendApiBase + "/region/" + regionId)
 }
 
+export function saveRegion(region) {
+    return doPostJson(backendApiBase + "/region/" + region.id, region, true)
+}
+
+export function removeRegion(id) {
+    return doDelete(backendApiBase + "/region/" + id, true)
+}
+
 export function getRiversByCountry(countryId) {
     return doGetJson(backendApiBase + "/country/" + countryId + "/river")
 }

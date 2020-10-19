@@ -2,8 +2,9 @@ package dao
 
 import (
 	"database/sql"
-	"fmt"
+	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/lib/dao/queries"
+	"github.com/lib/pq"
 )
 
 func NewRegionPostgresDao(postgresStorage PostgresStorage) RegionDao {
@@ -15,6 +16,10 @@ func NewRegionPostgresDao(postgresStorage PostgresStorage) RegionDao {
 		getByIdQuery:            queries.SqlQuery("region", "get-by-id"),
 		getFakeQuery:            queries.SqlQuery("region", "get-fake"),
 		createFakeQuery:         queries.SqlQuery("region", "create-fake"),
+		insertQuery:             queries.SqlQuery("region", "insert"),
+		updateQuery:             queries.SqlQuery("region", "update"),
+		deleteQuery:             queries.SqlQuery("region", "delete"),
+		parentIds:               queries.SqlQuery("region", "parent-ids"),
 	}
 }
 
@@ -26,6 +31,10 @@ type regionStorage struct {
 	listAllWithCountryQuery string
 	getFakeQuery            string
 	createFakeQuery         string
+	insertQuery             string
+	updateQuery             string
+	deleteQuery             string
+	parentIds               string
 }
 
 func (this regionStorage) List(countryId int64) ([]Region, error) {
@@ -36,15 +45,15 @@ func (this regionStorage) List(countryId int64) ([]Region, error) {
 	return lst.([]Region), nil
 }
 
-func (this regionStorage) Get(id int64) (Region, error) {
+func (this regionStorage) Get(id int64) (Region, bool, error) {
 	result, found, err := this.DoFindAndReturn(this.getByIdQuery, scanFuncI, id)
 	if err != nil {
-		return Region{}, err
+		return Region{}, found, err
 	}
 	if !found {
-		return Region{}, fmt.Errorf("Region with id %d not found", id)
+		return Region{}, found, nil
 	}
-	return result.(Region), nil
+	return result.(Region), found, nil
 }
 
 func (this regionStorage) ListAllWithCountry() ([]RegionWithCountry, error) {
@@ -78,6 +87,53 @@ func (this regionStorage) GetFake(countryId int64) (Region, bool, error) {
 
 func (this regionStorage) CreateFake(countryId int64) (int64, error) {
 	return this.insertReturningId(this.createFakeQuery, countryId)
+}
+
+func (this regionStorage) Save(regions ...Region) error {
+	vars := make([]interface{}, len(regions))
+	for i, p := range regions {
+		vars[i] = p
+	}
+	return this.PerformUpdates(this.updateQuery, func(entity interface{}) ([]interface{}, error) {
+		_region := entity.(Region)
+		return []interface{}{_region.CountryId, _region.Title, _region.Fake, _region.Id}, nil
+	}, vars...)
+}
+
+func (this regionStorage) Insert(region Region) (int64, error) {
+	id, err := this.UpdateReturningId(this.insertQuery, func(entity interface{}) ([]interface{}, error) {
+		_e := entity.(Region)
+		return []interface{}{_e.CountryId, _e.Title, _e.Fake}, nil
+	}, true, region)
+	if err != nil {
+		return 0, err
+	}
+	return id[0], err
+}
+
+func (this regionStorage) Remove(id int64) error {
+	log.Infof("Remove region %d", id)
+	return this.PerformUpdatesWithinTxOptionally(nil, this.deleteQuery, IdMapper, id)
+}
+
+func (this regionStorage) GetParentIds(riverIds []int64) (map[int64]RegionParentIds, error) {
+	result := make(map[int64]RegionParentIds)
+
+	_, err := this.DoFindList(this.parentIds, func(rows *sql.Rows) (int, error) {
+		regionId := int64(0)
+		parentIds := RegionParentIds{}
+		err := rows.Scan(&regionId, &parentIds.CountryId, &parentIds.RegionTitle)
+
+		if err == nil {
+			result[regionId] = parentIds
+		}
+		return 0, err
+	}, pq.Array(riverIds))
+
+	if err != nil {
+		return result, err
+	}
+	return result, nil
 }
 
 func scanFuncI(rows *sql.Rows) (interface{}, error) {

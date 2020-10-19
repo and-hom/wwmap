@@ -33,6 +33,7 @@ func NewRiverPostgresDao(postgresStorage PostgresStorage) RiverDao {
 		setVisibleQuery:         queries.SqlQuery("river", "set-visible"),
 		findByTitlePartQuery:    queries.SqlQuery("river", "by-title-part"),
 		parentIds:               queries.SqlQuery("river", "parent-ids"),
+		countByRegionQuery:      queries.SqlQuery("river", "count-by-region"),
 	}
 }
 
@@ -57,6 +58,7 @@ type riverStorage struct {
 	setVisibleQuery         string
 	findByTitlePartQuery    string
 	parentIds               string
+	countByRegionQuery      string
 }
 
 func (this riverStorage) FindTitles(titles []string) ([]RiverTitle, error) {
@@ -185,6 +187,14 @@ func (this riverStorage) listRiverFull(query string, queryParams ...interface{})
 		return []River{}, err
 	}
 	return found.([]River), err
+}
+
+func (this riverStorage) CountByRegion(regionId int64) (int, error) {
+	result, _, err := this.DoFindAndReturn(this.countByRegionQuery, IntColumnMapper, regionId)
+	if err!=nil {
+		return 0, err
+	}
+	return result.(int), nil
 }
 
 func (this riverStorage) listRiverTitles(query string, queryParams ...interface{}) ([]RiverTitle, error) {
