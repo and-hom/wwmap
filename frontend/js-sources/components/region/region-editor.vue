@@ -41,11 +41,11 @@ module.exports = {
   computed: {
     editMode: {
       get: function () {
-        return store.state.spoteditorstate.editMode
+        return store.state.regioneditorstate.editMode
       },
 
       set: function (newVal) {
-        store.commit("setSpotEditorEditMode", newVal);
+        store.commit("setRegionEditorEditMode", newVal);
       }
     },
   },
@@ -78,6 +78,9 @@ module.exports = {
             spotId: null
           });
           store.dispatch('reloadCountrySubentities', updated.country_id);
+          if(this.prevCountryId > 0) {
+            store.dispatch('reloadCountrySubentities', this.prevCountryId);
+          }
 
           this.editMode = false;
 
