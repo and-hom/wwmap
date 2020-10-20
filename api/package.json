@@ -1,6 +1,6 @@
 {
   "name": "wwmap-js-api",
-  "version": "2.1.6",
+  "version": "2.1.7",
   "description": "WWMap javascript API",
   "main": "webpack.config.js",
   "scripts": {

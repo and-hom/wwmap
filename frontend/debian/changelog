@@ -1,3 +1,11 @@
+wwmap-frontend (0.0.67) unstable; urgency=medium
+
+  * #278 Region editor
+  * #343 Path to api changelog fixed
+  * Showdown dependency added
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Tue, 20 Oct 2020 00:10:38 +0300
+
 wwmap-frontend (0.0.66) unstable; urgency=medium
 
   * #324 Rich text (markdown) for spot and river editor/viewer

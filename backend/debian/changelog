@@ -1,3 +1,9 @@
+wwmap-backend (0.0.60) unstable; urgency=medium
+
+  * #278 Region editor
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Tue, 20 Oct 2020 00:09:14 +0300
+
 wwmap-backend (0.0.59) unstable; urgency=medium
 
   * #336 Show/hide unpublished on main map selector
