@@ -72,7 +72,7 @@ func (this campStorage) FindWithinBounds(bbox geo.Bbox) ([]Camp, error) {
 	return found.([]Camp), nil
 }
 
-func (this campStorage) Insert(camp ...Camp) ([]int64, error) {
+func (this campStorage) InsertMultiple(camp ...Camp) ([]int64, error) {
 	data := make([]interface{}, len(camp))
 	for i := 0; i < len(camp); i++ {
 		data[i] = camp[i]
@@ -82,6 +82,14 @@ func (this campStorage) Insert(camp ...Camp) ([]int64, error) {
 		return []int64{}, err
 	}
 	return result, nil
+}
+
+func (this campStorage) Insert(camp Camp) (int64, error) {
+	fields, err := this.campToArgs(false)(camp)
+	if err != nil {
+		return 0, err
+	}
+	return this.insert(this.insertQuery, camp.Rivers, fields)
 }
 
 func (this campStorage) Update(camp Camp) error {

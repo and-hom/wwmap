@@ -2,17 +2,24 @@
   <div>
     <div v-if="canEdit">
       <h2 style="display: inline;">{{ title }}</h2>
-      <button data-toggle="modal" data-target="#add" style="margin-left:30px;">+</button>
-      <create-entity :entity="forEdit"
+      <button data-toggle="modal" data-target="#add" style="margin-left:30px;"
+              v-on:click="entityForEdit=blankEntityFactory()">+</button>
+      <create-entity :entity="entityForEdit"
                      :urlBase="urlBase"
                      :okFn="editOk"
-                     :cancelFn="resetEntityForEdit">
+                     :failFn="editFail"
+                     :cancelFn="editCancel">
         <template v-slot:form="slotProps">
           <slot name="form" v-bind:entity="slotProps.entity">
           </slot>
         </template>
       </create-entity>
     </div>
+    <transition name="fade">
+      <div class="alert alert-danger" role="alert" v-if="errMsg">
+        {{errMsg}}
+      </div>
+    </transition>
     <table class="table">
       <thead>
       <tr>
@@ -29,7 +36,7 @@
           <span v-else>{{ entity[field.name] }}</span>
         </td>
         <td v-if="canEdit" class="btn-col">
-          <button v-on:click="forEdit={ ...entity }"
+          <button v-on:click="entityForEdit={ ...entity }"
                   data-toggle="modal" data-target="#add">Правка
           </button>
           <ask :id="'del-'+entity.id" title="Удалить?"
@@ -62,6 +69,7 @@ td.fitwidth {
 
 import {doDelete, doGetJson} from "../../api";
 import {hasRole, ROLE_ADMIN, ROLE_EDITOR} from "../../auth";
+import {store} from "../../app-state";
 
 module.exports = {
   props: {
@@ -82,6 +90,11 @@ module.exports = {
       required: true,
     }
   },
+  computed: {
+    errMsg() {
+      return store.state.errMsg
+    },
+  },
   created: function () {
     this.refresh();
     hasRole(ROLE_ADMIN, ROLE_EDITOR).then(canEdit => this.canEdit = canEdit);
@@ -91,23 +104,36 @@ module.exports = {
       entities: [],
       forEdit: {},
       canEdit: false,
+      entityForEdit: this.blankEntityFactory(),
     }
   },
   methods: {
     remove: function (id) {
-      doDelete(urlBase + id, true).then(this.refresh)
+      this.hideError();
+      doDelete(`${this.urlBase}/${id}`, true).then(this.refresh)
+          .catch(err => this.showError(err));
     },
     editOk: function () {
+      this.hideError();
       this.refresh();
-      this.forEdit = this.blankEntityFactory();
+      this.entityForEdit = this.blankEntityFactory();
     },
-    resetEntityForEdit: function () {
-      this.forEdit = this.blankEntityFactory();
+    editFail: function (err) {
+      this.showError(err)
+    },
+    editCancel: function () {
+      this.entityForEdit = this.blankEntityFactory();
     },
     refresh: function () {
-      doGetJson(this.urlBase + "?rivers=true", false).then(entities => {
+      doGetJson(`${this.urlBase}?rivers=true`, false).then(entities => {
         this.entities = entities;
       })
+    },
+    showError: function (errMsg) {
+      store.commit("setErrMsg", errMsg);
+    },
+    hideError: function () {
+      store.commit("setErrMsg", null);
     },
   },
 }

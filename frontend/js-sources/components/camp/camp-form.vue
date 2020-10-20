@@ -8,6 +8,7 @@
     <label for="num_tent_places">Кол-во мест под палатку</label><input id="num_tent_places"
                                                                        type="number"
                                                                        min="0"
+                                                                       oninput="validity.valid||(value='');"
                                                                        v-model.number="camp.num_tent_places"/>
 
   </div>

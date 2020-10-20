@@ -1,5 +1,5 @@
 <template>
-  <ul v-if="rivers" style="list-style-type: none; padding: 0;">
+  <ul v-if="rivers" style="width: 200px; list-style-type: none; padding: 0;">
     <li v-for="river in rivers">
       <div style="width: 100%; min-height: 30px; display: block;">
         <span>{{ river.title }}</span>

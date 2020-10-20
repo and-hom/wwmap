@@ -970,12 +970,7 @@ func (this *GeoHierarchyHandler) SaveCamp(w http.ResponseWriter, r *http.Request
 		id = camp.Id
 		logType = dao.ENTRY_TYPE_MODIFY
 	} else {
-		var ids []int64
-		ids, err = this.CampDao.Insert(camp)
-		if len(ids) == 0 && err == nil {
-			err = errors.New("0 ids selected")
-		}
-		id = ids[0]
+		id, err = this.CampDao.Insert(camp)
 		logType = dao.ENTRY_TYPE_CREATE
 	}
 	if err != nil {
@@ -1020,17 +1015,7 @@ func (this *GeoHierarchyHandler) RemoveCamp(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	err = this.Storage.WithinTx(func(tx interface{}) error {
-		err := this.CampPhotoDao.RemoveByRefId(campId, tx)
-		if err != nil {
-			return err
-		}
-		err = this.CampRateDao.RemoveByRefId(campId, tx)
-		if err != nil {
-			return err
-		}
-		return this.CampDao.Remove(campId, tx)
-	})
+	err = this.CampDao.Remove(campId, nil)
 
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not remove camp by id: %d", campId))

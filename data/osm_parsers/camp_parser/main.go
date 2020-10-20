@@ -75,7 +75,7 @@ func (this *Loader) insertCampLoop() {
 		ww, ok := <-this.channel
 		if len(buf) >= INSERT_BUF_SIZE || !ok && len(buf) > 0 {
 			log.Debug("Flush buf")
-			_, err := this.campDao.Insert(buf...)
+			_, err := this.campDao.InsertMultiple(buf...)
 			if err != nil {
 				log.Error("Can not insert (start query per row insertion): ", err)
 				for _, ww := range buf {

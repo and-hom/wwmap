@@ -115,6 +115,24 @@ func (this riverLinksStorage) enrichWithRiverData(entities []ILinkedEntity) erro
 	return nil
 }
 
+func (this riverLinksStorage) insert(insertQuery string, rivers []int64, fields []interface{}) (int64, error) {
+	id, err := this.UpdateReturningId(insertQuery, ArrayMapper, true, fields)
+	if err != nil {
+		return 0, err
+	}
+	resultId := id[0]
+
+	r := make([]interface{}, len(rivers))
+	for i := 0; i < len(rivers); i++ {
+		r[i] = rivers[i]
+	}
+	err = this.PerformUpdates(this.insertRefsQuery, func(entity interface{}) ([]interface{}, error) {
+		riverId := entity.(int64)
+		return []interface{}{resultId, riverId}, nil
+	}, r...)
+	return resultId, err
+}
+
 func (this riverLinksStorage) update(updateQuery string, entityId int64, rivers []int64, fields []interface{}) error {
 	return this.PostgresStorage.WithinTx(func(tx interface{}) error {
 		if err := this.PerformUpdatesWithinTxOptionally(tx, updateQuery, ArrayMapper, fields); err != nil {

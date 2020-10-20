@@ -6,8 +6,8 @@
                  :fields='[
                      {"label": "Название",          "name":"title"},
                      {"label": "Описание",          "name":"description"},
-                     {"label": "Реки",              "name":"rivers",          "type": "rivers"},
-                     {"label": "Мест под палатку",  "name":"num_tent_places"},
+                     {"label": "Реки",              "name":"rivers_data",          "type": "rivers"},
+                     {"label": "Мест под палатку",  "name":"num_tent_places",      "type": "natural_number"},
                  ]'
                  :blank-entity-factory="createBlankCamp">
       <template v-slot:form="slotProps">

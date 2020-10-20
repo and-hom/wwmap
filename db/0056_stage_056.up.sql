@@ -22,7 +22,7 @@ CREATE TABLE rate
 
 CREATE TABLE camp_rate
 (
-    FOREIGN KEY (ref_id) REFERENCES camp (id)
+    FOREIGN KEY (ref_id) REFERENCES camp (id) ON DELETE CASCADE
 ) INHERITS (rate);
 
 CREATE TABLE photo
@@ -36,12 +36,12 @@ CREATE TABLE photo
 
 CREATE TABLE camp_photo
 (
-    FOREIGN KEY (ref_id) REFERENCES camp (id)
+    FOREIGN KEY (ref_id) REFERENCES camp (id) ON DELETE CASCADE
 ) INHERITS (photo);
 
 CREATE TABLE camp_river_ref
 (
-    camp_id  BIGINT NOT NULL REFERENCES camp (id),
-    river_id BIGINT NOT NULL REFERENCES river (id),
+    camp_id  BIGINT NOT NULL REFERENCES camp (id) ON DELETE CASCADE,
+    river_id BIGINT NOT NULL REFERENCES river (id) ON DELETE CASCADE,
     PRIMARY KEY (camp_id, river_id)
 );
