@@ -17,3 +17,7 @@ export function format() {
     }
     return s;
 }
+
+export function arrays_intersects(a1, a2) {
+    return a1.filter(el => a2.indexOf(el) >= 0).length > 0
+}

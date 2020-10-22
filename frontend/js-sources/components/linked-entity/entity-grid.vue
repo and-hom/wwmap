@@ -1,9 +1,10 @@
 <template>
-  <div>
+  <div style="margin-left: 15px; margin-right: 15px;">
     <div v-if="canEdit">
       <h2 style="display: inline;">{{ title }}</h2>
       <button data-toggle="modal" data-target="#add" style="margin-left:30px;"
-              v-on:click="entityForEdit=blankEntityFactory()">+</button>
+              v-on:click="entityForEdit=blankEntityFactory()">+
+      </button>
       <create-entity :entity="entityForEdit"
                      :urlBase="urlBase"
                      :okFn="editOk"
@@ -17,36 +18,46 @@
     </div>
     <transition name="fade">
       <div class="alert alert-danger" role="alert" v-if="errMsg">
-        {{errMsg}}
+        {{ errMsg }}
       </div>
     </transition>
-    <table class="table">
-      <thead>
-      <tr>
-        <th v-for="field in fields">
-          {{ field.label }}
-        </th>
-        <th v-if="canEdit" class="btn-col"></th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr v-for="entity in entities">
-        <td v-for="field in fields" class="fitwidth">
-          <river-links v-if="field.type=='rivers'" :rivers="entity[field.name]"/>
-          <span v-else>{{ entity[field.name] }}</span>
-        </td>
-        <td v-if="canEdit" class="btn-col">
-          <button v-on:click="entityForEdit={ ...entity }"
-                  data-toggle="modal" data-target="#add">Правка
-          </button>
-          <ask :id="'del-'+entity.id" title="Удалить?"
-               msg="Отменить удаление будет нельзя"
-               :ok-fn="function() {remove(entity.id)}"></ask>
-          <button data-toggle="modal" :data-target="'#del-'+entity.id">Удалить</button>
-        </td>
-      </tr>
-      </tbody>
-    </table>
+    <pager :data="entities"
+           :filter="riverFilter"
+           :filter-function="filterData"
+           :page-size="10">
+      <template v-slot:filter="slotProps">
+        <river-select v-model="riverFilter" :multiselect="true" :bindId="true"/>
+      </template>
+      <template v-slot:default="slotProps">
+        <table class="table">
+          <thead>
+          <tr>
+            <th v-for="field in fields">
+              {{ field.label }}
+            </th>
+            <th v-if="canEdit" class="btn-col"></th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr v-for="entity in slotProps.data">
+            <td v-for="field in fields" class="fitwidth">
+              <river-links v-if="field.type=='rivers'" :rivers="entity[field.name]"/>
+              <span v-else>{{ entity[field.name] }}</span>
+            </td>
+            <td v-if="canEdit" class="btn-col">
+              <button v-on:click="entityForEdit={ ...entity }"
+                      data-toggle="modal" data-target="#add">Правка
+              </button>
+              <ask :id="'del-'+entity.id" title="Удалить?"
+                   msg="Отменить удаление будет нельзя"
+                   :ok-fn="function() {remove(entity.id)}"></ask>
+              <button data-toggle="modal" :data-target="'#del-'+entity.id">Удалить</button>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </template>
+    </pager>
   </div>
 </template>
 
@@ -70,6 +81,7 @@ td.fitwidth {
 import {doDelete, doGetJson} from "../../api";
 import {hasRole, ROLE_ADMIN, ROLE_EDITOR} from "../../auth";
 import {store} from "../../app-state";
+import {arrays_intersects} from "wwmap-js-commons/util";
 
 module.exports = {
   props: {
@@ -105,6 +117,7 @@ module.exports = {
       forEdit: {},
       canEdit: false,
       entityForEdit: this.blankEntityFactory(),
+      riverFilter: [],
     }
   },
   methods: {
@@ -134,6 +147,13 @@ module.exports = {
     },
     hideError: function () {
       store.commit("setErrMsg", null);
+    },
+    filterData(data, filter) {
+      if(data && filter && filter.length > 0) {
+        return data.filter(d => d.rivers && arrays_intersects(d.rivers, filter))
+      } else {
+        return data
+      }
     },
   },
 }
