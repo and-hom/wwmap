@@ -50,7 +50,7 @@ div.settings label:after {
 </style>
 
 <script>
-import {doPostJson} from '../../api'
+import {doPostJson} from '../../../api'
 
 module.exports = {
   props: {

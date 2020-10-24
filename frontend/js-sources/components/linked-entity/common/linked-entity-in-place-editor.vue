@@ -60,8 +60,8 @@
 
 <script>
 
-import {doGetJson, doPostJson} from "../../api";
-import {valueToSelectModel, selectModelToValue} from "../../multiselect-utils";
+import {doGetJson, doPostJson} from "../../../api";
+import {valueToSelectModel, selectModelToValue} from "../../../multiselect-utils";
 
 module.exports = {
   props: {

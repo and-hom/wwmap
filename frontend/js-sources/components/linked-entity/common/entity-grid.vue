@@ -91,9 +91,9 @@ td.fitwidth {
 
 <script>
 
-import {doDelete, doGetJson} from "../../api";
-import {hasRole, ROLE_ADMIN, ROLE_EDITOR} from "../../auth";
-import {store} from "../../app-state";
+import {doDelete, doGetJson} from "../../../api";
+import {hasRole, ROLE_ADMIN, ROLE_EDITOR} from "../../../auth";
+import {store} from "../../../app-state";
 import {arrays_intersects} from "wwmap-js-commons/util";
 
 module.exports = {

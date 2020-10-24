@@ -1,3 +1,10 @@
+export const DEFAULT_POINT_ZOOM = 15;
+
+export function calculateCenter(point) {
+    let p = [point[0], point[point.length - 1]];
+    return [(p[0][0] + p[1][0]) / 2, (p[0][1] + p[1][1]) / 2,]
+}
+
 export function calculateZoom(p) {
     let dx = Math.abs(p[0][0] - p[1][0]);
     let dy = Math.abs(p[0][1] - p[1][1]);

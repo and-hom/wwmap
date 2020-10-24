@@ -11,15 +11,20 @@
            style="padding-right:10px;float:left;"><img
             src="https://wwmap.ru/img/locate.png" width="25px" alt="Показать на карте"
             title="Показать на карте"/></a>
+        <img v-else
+             style="padding-right:10px; float:left; width: 35px; height: 25px; opacity: 0.3;"
+             src="https://wwmap.ru/img/locate.png"
+             alt="Нет порогов - нечего показывать на карте"
+             width="25px"/>
       </div>
     </li>
   </ul>
 </template>
 
 <script>
-import {frontendBase} from "../../config";
-import {calculateZoom} from "wwmap-js-commons/util";
-import {hasRole, ROLE_ADMIN, ROLE_EDITOR} from "../../auth";
+import {frontendBase} from "../../../config";
+import {calculateCenter, calculateZoom, DEFAULT_POINT_ZOOM} from "wwmap-js-commons/util";
+import {hasRole, ROLE_ADMIN, ROLE_EDITOR} from "../../../auth";
 
 module.exports = {
   props: ["rivers"],
@@ -34,14 +39,13 @@ module.exports = {
       return `${frontendBase}editor.htm#${river.country_id},${river.region_id},${river.id}`
     },
     mapLine(river) {
-      let bounds = this.centerOf(river.bounds);
+      let center = this.centerOf(river.bounds);
       let z = this.zoomOf(river.bounds);
-      return `${frontendBase}map.htm#${bounds[0]},${bounds[1]},${z}`
+      return `${frontendBase}map.htm#${center[0]},${center[1]},${z}`
     },
     centerOf(point) {
       if (Array.isArray(point[0])) {
-        let p = [point[0], point[point.length - 1]];
-        return [(p[0][0] + p[1][0]) / 2, (p[0][1] + p[1][1]) / 2,]
+        return calculateCenter(point)
       } else {
         return point;
       }
@@ -50,7 +54,7 @@ module.exports = {
       if (Array.isArray(p[0])) {
         return calculateZoom(p);
       } else {
-        return 15;
+        return DEFAULT_POINT_ZOOM;
       }
     },
   },
