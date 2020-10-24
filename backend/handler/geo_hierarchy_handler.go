@@ -46,7 +46,8 @@ func (this *GeoHierarchyHandler) Init() {
 		Delete: this.ForRoles(this.RemoveRegion, dao.ADMIN),
 	})
 
-	this.Register("/river", HandlerFunctions{Get: this.FilterRivers})
+	this.Register("/river", HandlerFunctions{Get: this.ListAllRivers})
+	this.Register("/river-search", HandlerFunctions{Get: this.FilterRivers})
 	this.Register("/river/{riverId}", HandlerFunctions{Get: this.GetRiver,
 		Put:    this.ForRoles(this.SaveRiver, dao.ADMIN, dao.EDITOR),
 		Post:   this.ForRoles(this.SaveRiver, dao.ADMIN, dao.EDITOR),
@@ -635,6 +636,15 @@ func (this *GeoHierarchyHandler) writeRiver(riverId int64, w http.ResponseWriter
 		Transfers:   transfers,
 	}
 	this.JsonAnswer(w, riverWithRegion)
+}
+
+func (this *GeoHierarchyHandler) ListAllRivers(w http.ResponseWriter, r *http.Request) {
+	regions, err := this.RiverDao.ListAll()
+	if err != nil {
+		OnError500(w, err, "Can not list rivers")
+		return
+	}
+	this.JsonAnswer(w, regions)
 }
 
 func (this *GeoHierarchyHandler) FilterRivers(w http.ResponseWriter, r *http.Request) {

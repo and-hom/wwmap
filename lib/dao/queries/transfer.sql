@@ -1,8 +1,15 @@
 --@list
-SELECT id, title, stations, description FROM transfer ORDER BY ID;
+SELECT id, title, stations, description, array_agg(river_id)
+FROM transfer LEFT OUTER JOIN transfer_river ON transfer.id = transfer_river.transfer_id
+GROUP BY 1,2,3,4
+ORDER BY 1;
 
 --@list-by-river
-SELECT id, title, stations, description FROM transfer t INNER JOIN transfer_river tr on t.id = tr.transfer_id WHERE tr.river_id=$1 ORDER BY ID;
+SELECT id, title, stations, description, array_agg(river_id)
+FROM transfer t INNER JOIN transfer_river tr on t.id = tr.transfer_id
+WHERE tr.river_id=$1
+GROUP BY 1,2,3,4
+ORDER BY 1;
 
 --@insert
 INSERT INTO transfer(title, stations, description) VALUES ($1, $2, $3) RETURNING id;

@@ -1,14 +1,14 @@
 <template>
-  <ul v-if="rivers" style="width: 200px; list-style-type: none; padding: 0;">
+  <ul v-if="rivers" style="width: 100%; list-style-type: none; padding: 0;">
     <li v-for="river in rivers">
       <div style="width: 100%; min-height: 30px; display: block;">
         <span>{{ river.title }}</span>
         <a :href="editorLink(river)" target="_blank"
-           style="float:right;"><img
+           style="float:left;"><img
             src="https://wwmap.ru/img/edit.png" width="25px" :alt="editorLinkAlt()"
             :title="editorLinkAlt()"/></a>
         <a v-if="river.bounds" :href="mapLine(river)" target="_blank"
-           style="padding-left:10px;float:right;"><img
+           style="padding-right:10px;float:left;"><img
             src="https://wwmap.ru/img/locate.png" width="25px" alt="Показать на карте"
             title="Показать на карте"/></a>
       </div>

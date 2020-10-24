@@ -40,7 +40,7 @@ type campStorage struct {
 }
 
 func (this campStorage) List(withRivers bool) ([]Camp, error) {
-	found, err := this.DoFindList(this.listQuery, this.scan)
+	found, err := this.DoFindList(this.listQuery, this.campMapper)
 	if err != nil {
 		return []Camp{}, err
 	}
@@ -65,7 +65,7 @@ func convertCamps(transfers *[]Camp) []ILinkedEntity {
 }
 
 func (this campStorage) FindWithinBounds(bbox geo.Bbox) ([]Camp, error) {
-	found, err := this.DoFindList(this.findWithinBoundsQuery, this.scan, bbox.Y1, bbox.X1, bbox.Y2, bbox.X2)
+	found, err := this.DoFindList(this.findWithinBoundsQuery, this.campMapper, bbox.Y1, bbox.X1, bbox.Y2, bbox.X2)
 	if err != nil {
 		return []Camp{}, err
 	}
@@ -101,7 +101,7 @@ func (this campStorage) Update(camp Camp) error {
 }
 
 func (this campStorage) Find(id int64) (Camp, bool, error) {
-	camp, found, err := this.DoFindAndReturn(this.findQuery, this.scan, id)
+	camp, found, err := this.DoFindAndReturn(this.findQuery, this.campMapper, id)
 	fmt.Println(this.findQuery, camp)
 	if err != nil {
 		return Camp{}, false, err
@@ -113,7 +113,7 @@ func (this campStorage) Remove(id int64, tx interface{}) error {
 	return this.PerformUpdatesWithinTxOptionally(tx, this.removeQuery, IdMapper, id)
 }
 
-func (this campStorage) scan(rows *sql.Rows) (Camp, error) {
+func (this campStorage) campMapper(rows *sql.Rows) (Camp, error) {
 	camp := Camp{}
 	pointStr := ""
 	numTentPlaces := sql.NullInt64{}

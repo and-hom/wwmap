@@ -215,7 +215,7 @@
                 loading(true);
                 var component = this
                 fetch(
-                    backendApiBase + '/river?q=' + search
+                    backendApiBase + '/river-search?q=' + search
                 ).then(function (res) {
                     res.json().then(function (json) {
                         component.options = json

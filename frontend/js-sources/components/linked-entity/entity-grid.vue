@@ -32,7 +32,7 @@
         <table class="table">
           <thead>
           <tr>
-            <th v-for="field in fields">
+            <th v-for="field in fields" :class="colClass(field.type)">
               {{ field.label }}
             </th>
             <th v-if="canEdit" class="btn-col"></th>
@@ -42,6 +42,7 @@
           <tr v-for="entity in slotProps.data">
             <td v-for="field in fields" class="fitwidth">
               <river-links v-if="field.type=='rivers'" :rivers="entity[field.name]"/>
+              <tags v-else-if="field.type=='tags'" :tags="entity[field.name]"/>
               <span v-else>{{ entity[field.name] }}</span>
             </td>
             <td v-if="canEdit" class="btn-col">
@@ -73,6 +74,18 @@ td.fitwidth {
 
 .btn-col {
   width: 200px;
+}
+
+.rivers-col {
+  /*width: 200px;*/
+}
+
+.tags-col {
+
+}
+
+.default-col {
+
 }
 </style>
 
@@ -149,10 +162,20 @@ module.exports = {
       store.commit("setErrMsg", null);
     },
     filterData(data, filter) {
-      if(data && filter && filter.length > 0) {
+      if (data && filter && filter.length > 0) {
         return data.filter(d => d.rivers && arrays_intersects(d.rivers, filter))
       } else {
         return data
+      }
+    },
+    colClass(fieldType) {
+      switch (fieldType) {
+        case 'rivers':
+          return 'rivers-col';
+        case 'tags':
+          return 'tags-col';
+        default:
+          return 'default-col';
       }
     },
   },

@@ -30,10 +30,6 @@ export default {
       camps: [],
       canEdit: false,
       campForEdit: {},
-      stations: [],
-      editorLinkAlt: this.canEdit ? 'Редактор' : 'Посмотреть в каталоге',
-      selected: window.location.hash ? window.location.hash.substr(1) : '',
-      scrolled: false,
       backendApiBase: backendApiBase,
     }
   },
