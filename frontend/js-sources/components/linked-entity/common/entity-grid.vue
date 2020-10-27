@@ -7,6 +7,7 @@
       </button>
       <create-entity :entity="entityForEdit"
                      :urlBase="urlBase"
+                     :has-map="hasMap"
                      :okFn="editOk"
                      :failFn="editFail"
                      :cancelFn="editCancel">
@@ -43,6 +44,7 @@
             <td v-for="field in fields" class="fitwidth">
               <river-links v-if="field.type=='rivers'" :rivers="entity[field.name]"/>
               <tags v-else-if="field.type=='tags'" :tags="entity[field.name]"/>
+              <location v-else-if="field.type=='location'" :point-or-line="entity[field.name]"/>
               <span v-else>{{ entity[field.name] }}</span>
             </td>
             <td v-if="canEdit" class="btn-col">
@@ -118,6 +120,9 @@ module.exports = {
   computed: {
     errMsg() {
       return store.state.errMsg
+    },
+    hasMap() {
+      return this.fields.filter(f => f.type == 'location' && f.name == 'point').length > 0
     },
   },
   created: function () {
