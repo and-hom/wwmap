@@ -45,7 +45,6 @@ module.exports = {
     doGetJson(backendApiBase + '/river').then(json => {
       component.rivers = json;
       component.options = json;
-      loading(false);
     }, err => {
       console.error(err);
       component.rivers = [];

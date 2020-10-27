@@ -5,6 +5,7 @@
                  :url-base="backendApiBase + '/camp'"
                  :fields='[
                      {"label": "Название",          "name":"title"},
+                     {"label": "Место",             "name":"point",                "type": "location"},
                      {"label": "Описание",          "name":"description"},
                      {"label": "Реки",              "name":"rivers_data",          "type": "rivers"},
                      {"label": "Мест под палатку",  "name":"num_tent_places",      "type": "natural_number"},
@@ -19,7 +20,6 @@
 
 <script>
 import {backendApiBase, frontendBase} from "../config";
-import {calculateZoom} from "wwmap-js-commons/util";
 
 const moment = require('moment');
 const VueScrollTo = require('vue-scrollto');

@@ -21,23 +21,12 @@
 <script>
 import {backendApiBase} from "../config";
 import {hasRole, ROLE_ADMIN, ROLE_EDITOR} from "../auth";
-import Vue from "vue";
 
 const moment = require('moment');
-const VueScrollTo = require('vue-scrollto');
 
 export default {
   created: function () {
-    Vue.use(VueScrollTo)
-    this.refresh();
     hasRole(ROLE_ADMIN, ROLE_EDITOR).then(canEdit => this.canEdit = canEdit);
-  },
-  mounted: function () {
-  },
-  beforeDestroy: function () {
-
-  },
-  updated: function () {
   },
   data() {
     return {
