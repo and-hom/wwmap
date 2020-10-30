@@ -48,7 +48,8 @@ func (this *GeoHierarchyHandler) Init() {
 
 	this.Register("/river", HandlerFunctions{Get: this.ListAllRivers})
 	this.Register("/river-search", HandlerFunctions{Get: this.FilterRivers})
-	this.Register("/river/{riverId}", HandlerFunctions{Get: this.GetRiver,
+	this.Register("/river/{riverId}", HandlerFunctions{
+		Get:    this.GetRiver,
 		Put:    this.ForRoles(this.SaveRiver, dao.ADMIN, dao.EDITOR),
 		Post:   this.ForRoles(this.SaveRiver, dao.ADMIN, dao.EDITOR),
 		Delete: this.ForRoles(this.RemoveRiver, dao.ADMIN, dao.EDITOR)})
@@ -84,17 +85,6 @@ func (this *GeoHierarchyHandler) Init() {
 		HandlerFunctions{Post: this.ForRoles(this.SpotParentIds, dao.ADMIN)})
 	this.Register("/image_base_ids",
 		HandlerFunctions{Post: this.ForRoles(this.ImageParentIds, dao.ADMIN)})
-
-	this.Register("/camp", HandlerFunctions{
-		Get:  this.ListCamps,
-		Post: this.ForRoles(this.SaveCamp, dao.ADMIN, dao.EDITOR),
-	})
-	this.Register("/camp/{campId}", HandlerFunctions{
-		Get:    this.GetCamp,
-		Post:   this.ForRoles(this.SaveCamp, dao.ADMIN, dao.EDITOR),
-		Put:    this.ForRoles(this.SaveCamp, dao.ADMIN, dao.EDITOR),
-		Delete: this.ForRoles(this.RemoveCamp, dao.ADMIN, dao.EDITOR),
-	})
 }
 
 type RiverDto struct {
@@ -120,7 +110,7 @@ func (this *GeoHierarchyHandler) ListCountries(w http.ResponseWriter, r *http.Re
 		OnError500(w, err, "Can not list countries")
 		return
 	}
-	this.JsonAnswer(w, countries)
+	JsonAnswer(w, countries)
 }
 
 func (this *GeoHierarchyHandler) ListRegions(w http.ResponseWriter, r *http.Request) {
@@ -136,7 +126,7 @@ func (this *GeoHierarchyHandler) ListRegions(w http.ResponseWriter, r *http.Requ
 		OnError500(w, err, fmt.Sprintf("Can not list regions of country %d", countryId))
 		return
 	}
-	this.JsonAnswer(w, regions)
+	JsonAnswer(w, regions)
 }
 
 func (this *GeoHierarchyHandler) ListAllRegions(w http.ResponseWriter, r *http.Request) {
@@ -145,7 +135,7 @@ func (this *GeoHierarchyHandler) ListAllRegions(w http.ResponseWriter, r *http.R
 		OnError500(w, err, "Can not list regions")
 		return
 	}
-	this.JsonAnswer(w, regions)
+	JsonAnswer(w, regions)
 }
 
 func (this *GeoHierarchyHandler) GetRegion(w http.ResponseWriter, r *http.Request) {
@@ -239,7 +229,7 @@ func (this *GeoHierarchyHandler) writeRegion(regionId int64, w http.ResponseWrit
 		riverCnt > 0,
 	}
 
-	this.JsonAnswer(w, dto)
+	JsonAnswer(w, dto)
 }
 
 func (this *GeoHierarchyHandler) ListCountryRivers(w http.ResponseWriter, r *http.Request) {
@@ -255,7 +245,7 @@ func (this *GeoHierarchyHandler) ListCountryRivers(w http.ResponseWriter, r *htt
 		OnError500(w, err, fmt.Sprintf("Can not list rivers of country %d", countryId))
 		return
 	}
-	this.JsonAnswer(w, rivers)
+	JsonAnswer(w, rivers)
 }
 
 func (this *GeoHierarchyHandler) ListRegionRivers(w http.ResponseWriter, r *http.Request) {
@@ -271,7 +261,7 @@ func (this *GeoHierarchyHandler) ListRegionRivers(w http.ResponseWriter, r *http
 		OnError500(w, err, fmt.Sprintf("Can not list rivers of region %d", regionId))
 		return
 	}
-	this.JsonAnswer(w, rivers)
+	JsonAnswer(w, rivers)
 }
 
 const DEFAULT_REPORT_GROUP_LIMIT int = 20
@@ -300,7 +290,7 @@ func (this *GeoHierarchyHandler) ListRiverReports(w http.ResponseWriter, r *http
 		OnError500(w, err, fmt.Sprintf("Can not list reports of river %d", riverId))
 		return
 	}
-	this.JsonAnswer(w, voyageReports)
+	JsonAnswer(w, voyageReports)
 }
 
 func (this *GeoHierarchyHandler) ListSpots(w http.ResponseWriter, r *http.Request) {
@@ -316,7 +306,7 @@ func (this *GeoHierarchyHandler) ListSpots(w http.ResponseWriter, r *http.Reques
 		OnError500(w, err, fmt.Sprintf("Can not list spots of river %d", riverId))
 		return
 	}
-	this.JsonAnswer(w, spots)
+	JsonAnswer(w, spots)
 }
 
 func (this *GeoHierarchyHandler) ListSpotsFull(w http.ResponseWriter, r *http.Request) {
@@ -332,7 +322,7 @@ func (this *GeoHierarchyHandler) ListSpotsFull(w http.ResponseWriter, r *http.Re
 		OnError500(w, err, fmt.Sprintf("Can not list spots of river %d", riverId))
 		return
 	}
-	this.JsonAnswer(w, spots)
+	JsonAnswer(w, spots)
 }
 
 func (this *GeoHierarchyHandler) GetRiverCenter(w http.ResponseWriter, r *http.Request) {
@@ -347,7 +337,7 @@ func (this *GeoHierarchyHandler) GetRiverCenter(w http.ResponseWriter, r *http.R
 		OnError500(w, err, fmt.Sprintf("Can not get centroid of river %d", riverId))
 		return
 	}
-	this.JsonAnswer(w, centroid)
+	JsonAnswer(w, centroid)
 }
 
 func (this *GeoHierarchyHandler) GetRiverBounds(w http.ResponseWriter, r *http.Request) {
@@ -362,7 +352,7 @@ func (this *GeoHierarchyHandler) GetRiverBounds(w http.ResponseWriter, r *http.R
 		OnError500(w, err, fmt.Sprintf("Can not get bounds of river %d", riverId))
 		return
 	}
-	this.JsonAnswer(w, bounds)
+	JsonAnswer(w, bounds)
 }
 
 func (this *GeoHierarchyHandler) UploadGpx(w http.ResponseWriter, req *http.Request) {
@@ -415,7 +405,7 @@ func (this *GeoHierarchyHandler) UploadGpx(w http.ResponseWriter, req *http.Requ
 
 	this.LogUserEvent(req, RIVER_LOG_ENTRY_TYPE, riverId, dao.ENTRY_TYPE_MODIFY, "Upload GPX")
 
-	this.JsonAnswer(w, spots)
+	JsonAnswer(w, spots)
 }
 
 func (this *GeoHierarchyHandler) GetRiver(w http.ResponseWriter, r *http.Request) {
@@ -625,6 +615,12 @@ func (this *GeoHierarchyHandler) writeRiver(riverId int64, w http.ResponseWriter
 		return
 	}
 
+	camps, err := this.CampDao.GetIdsForRiver(riverId)
+	if err != nil {
+		OnError500(w, err, fmt.Sprintf("Can not get camps for river %d", riverId))
+		return
+	}
+
 	riverWithRegion := RiverDto{
 		Id:          river.Id,
 		Title:       river.Title,
@@ -634,8 +630,9 @@ func (this *GeoHierarchyHandler) writeRiver(riverId int64, w http.ResponseWriter
 		Visible:     river.Visible,
 		Props:       river.Props,
 		Transfers:   transfers,
+		Camps:   	 camps,
 	}
-	this.JsonAnswer(w, riverWithRegion)
+	JsonAnswer(w, riverWithRegion)
 }
 
 func (this *GeoHierarchyHandler) ListAllRivers(w http.ResponseWriter, r *http.Request) {
@@ -644,7 +641,7 @@ func (this *GeoHierarchyHandler) ListAllRivers(w http.ResponseWriter, r *http.Re
 		OnError500(w, err, "Can not list rivers")
 		return
 	}
-	this.JsonAnswer(w, regions)
+	JsonAnswer(w, regions)
 }
 
 func (this *GeoHierarchyHandler) FilterRivers(w http.ResponseWriter, r *http.Request) {
@@ -669,7 +666,7 @@ func (this *GeoHierarchyHandler) FilterRivers(w http.ResponseWriter, r *http.Req
 			Props:   river.Props,
 		}
 	}
-	this.JsonAnswer(w, dtos)
+	JsonAnswer(w, dtos)
 }
 
 func (this *GeoHierarchyHandler) GetSpot(w http.ResponseWriter, r *http.Request) {
@@ -786,7 +783,7 @@ func (this *GeoHierarchyHandler) writeSpot(spotId int64, w http.ResponseWriter) 
 		OnError500(w, err, fmt.Sprintf("Can not get spot %d", spotId))
 		return
 	}
-	this.JsonAnswer(w, spot)
+	JsonAnswer(w, spot)
 }
 
 func (this *GeoHierarchyHandler) GetRiverPassportPdf(w http.ResponseWriter, req *http.Request) {
@@ -830,7 +827,7 @@ func (this *GeoHierarchyHandler) RiverParentIds(w http.ResponseWriter, req *http
 		OnError500(w, err, "Can not get rivers info")
 		return
 	}
-	this.JsonAnswer(w, ids)
+	JsonAnswer(w, ids)
 }
 
 func (this *GeoHierarchyHandler) RegionParentIds(w http.ResponseWriter, req *http.Request) {
@@ -862,7 +859,7 @@ func (this *GeoHierarchyHandler) SpotParentIds(w http.ResponseWriter, req *http.
 		OnError500(w, err, "Can not get rivers info")
 		return
 	}
-	this.JsonAnswer(w, ids)
+	JsonAnswer(w, ids)
 }
 
 func (this *GeoHierarchyHandler) ImageParentIds(w http.ResponseWriter, req *http.Request) {
@@ -878,7 +875,7 @@ func (this *GeoHierarchyHandler) ImageParentIds(w http.ResponseWriter, req *http
 		OnError500(w, err, "Can not get rivers info")
 		return
 	}
-	this.JsonAnswer(w, ids)
+	JsonAnswer(w, ids)
 }
 
 func (this *GeoHierarchyHandler) SaveSpotBatch(w http.ResponseWriter, r *http.Request) {
@@ -934,103 +931,10 @@ func (this *GeoHierarchyHandler) SaveSpotBatch(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	this.JsonAnswer(w, "OK")
+	JsonAnswer(w, "OK")
 }
 
 type SpotBatch struct {
 	Delete []int64                   `json:"delete"`
 	Update []dao.WhiteWaterPointFull `json:"update"`
-}
-
-func (this *GeoHierarchyHandler) ListCamps(w http.ResponseWriter, r *http.Request) {
-	this.JsonAnswerF(w, func() (i interface{}, err error) {
-		withRivers := getBoolParameter(r, "rivers", false)
-		return this.CampDao.List(withRivers)
-	}, "Can't list camp records")
-}
-
-func (this *GeoHierarchyHandler) GetCamp(w http.ResponseWriter, r *http.Request) {
-	pathParams := mux.Vars(r)
-	campId, err := strconv.ParseInt(pathParams["campId"], 10, 64)
-	if err != nil {
-		OnError(w, err, "Can not parse id", http.StatusBadRequest)
-		return
-	}
-
-	this.writeCamp(campId, w)
-}
-
-func (this *GeoHierarchyHandler) SaveCamp(w http.ResponseWriter, r *http.Request) {
-	camp := dao.Camp{}
-	body, err := DecodeJsonBody(r, &camp)
-	if err != nil {
-		OnError500(w, err, "Can not parse json from request body: "+body)
-		return
-	}
-
-	if len(strings.TrimSpace(camp.Title)) == 0 {
-		OnError(w, errors.New(""), "Can not save camp with empty name", http.StatusBadRequest)
-		return
-	}
-
-	var id int64
-	var logType dao.ChangesLogEntryType
-	if camp.Id > 0 {
-		err = this.CampDao.Update(camp)
-		id = camp.Id
-		logType = dao.ENTRY_TYPE_MODIFY
-	} else {
-		id, err = this.CampDao.Insert(camp)
-		logType = dao.ENTRY_TYPE_CREATE
-	}
-	if err != nil {
-		OnError500(w, err, "Can not save camp: "+body)
-		return
-	}
-
-	this.writeCamp(id, w)
-
-	this.LogUserEvent(r, CAMP_LOG_ENTRY_TYPE, id, logType, camp.Title)
-}
-
-func (this *GeoHierarchyHandler) writeCamp(campId int64, w http.ResponseWriter) {
-	camp, found, err := this.CampDao.Find(campId)
-	if err != nil {
-		OnError500(w, err, fmt.Sprintf("Can not get camp %d", campId))
-		return
-	}
-	if !found {
-		OnError(w, nil, fmt.Sprintf("Camp with id %d not found", campId), http.StatusNotFound)
-		return
-	}
-	this.JsonAnswer(w, camp)
-}
-
-func (this *GeoHierarchyHandler) RemoveCamp(w http.ResponseWriter, r *http.Request) {
-	pathParams := mux.Vars(r)
-	campIdStr := pathParams["campId"]
-	campId, err := strconv.ParseInt(campIdStr, 10, 64)
-	if err != nil {
-		OnError(w, err, "Can not parse id", http.StatusBadRequest)
-		return
-	}
-
-	camp, found, err := this.CampDao.Find(campId)
-	if err != nil {
-		OnError500(w, err, fmt.Sprintf("Can not select camp by id: %d", campId))
-		return
-	}
-	if !found {
-		OnError(w, err, fmt.Sprintf("Camp with id %d not found", campId), http.StatusNotFound)
-		return
-	}
-
-	err = this.CampDao.Remove(campId, nil)
-
-	if err != nil {
-		OnError500(w, err, fmt.Sprintf("Can not remove camp by id: %d", campId))
-		return
-	}
-
-	this.LogUserEvent(r, CAMP_LOG_ENTRY_TYPE, campId, dao.ENTRY_TYPE_DELETE, camp.Title)
 }

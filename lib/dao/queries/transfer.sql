@@ -4,6 +4,13 @@ FROM transfer LEFT OUTER JOIN transfer_river ON transfer.id = transfer_river.tra
 GROUP BY 1,2,3,4
 ORDER BY 1;
 
+--@find
+SELECT id, title, stations, description, array_agg(river_id)
+FROM transfer LEFT OUTER JOIN transfer_river ON transfer.id = transfer_river.transfer_id
+WHERE transfer.id=$1
+GROUP BY 1,2,3,4
+ORDER BY 1;
+
 --@list-by-river
 SELECT id, title, stations, description, array_agg(river_id)
 FROM transfer t INNER JOIN transfer_river tr on t.id = tr.transfer_id

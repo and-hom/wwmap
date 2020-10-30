@@ -3,7 +3,6 @@ package dao
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/lib/dao/queries"
 	"github.com/and-hom/wwmap/lib/geo"
@@ -21,6 +20,7 @@ func NewCampPostgresDao(postgresStorage PostgresStorage) CampDao {
 			listRivers:             queries.SqlQuery("linked-entity", "list-rivers"),
 		},
 		listQuery:             queries.SqlQuery("camp", "list"),
+		listByRiverQuery:      queries.SqlQuery("camp", "list-by-river"),
 		findWithinBoundsQuery: queries.SqlQuery("camp", "find-witin-bounds"),
 		findQuery:             queries.SqlQuery("camp", "find"),
 		insertQuery:           queries.SqlQuery("camp", "insert"),
@@ -32,6 +32,7 @@ func NewCampPostgresDao(postgresStorage PostgresStorage) CampDao {
 type campStorage struct {
 	riverLinksStorage
 	listQuery             string
+	listByRiverQuery      string
 	findWithinBoundsQuery string
 	findQuery             string
 	insertQuery           string
@@ -54,6 +55,14 @@ func (this campStorage) List(withRivers bool) ([]Camp, error) {
 	}
 
 	return camps, nil
+}
+
+func (this campStorage) ByRiver(riverId int64) ([]Camp, error) {
+	result, err := this.DoFindList(this.listByRiverQuery, this.campMapper, riverId)
+	if err != nil {
+		return []Camp{}, err
+	}
+	return result.([]Camp), nil
 }
 
 func convertCamps(transfers *[]Camp) []ILinkedEntity {
@@ -102,7 +111,6 @@ func (this campStorage) Update(camp Camp) error {
 
 func (this campStorage) Find(id int64) (Camp, bool, error) {
 	camp, found, err := this.DoFindAndReturn(this.findQuery, this.campMapper, id)
-	fmt.Println(this.findQuery, camp)
 	if err != nil {
 		return Camp{}, false, err
 	}

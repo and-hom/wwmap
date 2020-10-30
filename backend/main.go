@@ -4,6 +4,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/backend/clustering"
 	"github.com/and-hom/wwmap/backend/handler"
+	"github.com/and-hom/wwmap/backend/handler/linked_entity"
 	"github.com/and-hom/wwmap/backend/passport"
 	"github.com/and-hom/wwmap/backend/referer"
 	"github.com/and-hom/wwmap/lib/blob"
@@ -98,6 +99,9 @@ func main() {
 		CampRateDao:  campRateDao,
 	}
 
+	transferHandler := (&linked_entity.TransferHandler{App: app, TransferDao: transferDao}).Create()
+	campHandler := (&linked_entity.CampHandler{App: app, CampDao: campDao}).Create()
+
 	_handlers := []ApiHandler{
 		&handler.DownloadsHandler{app},
 		&handler.RiverHandler{
@@ -134,7 +138,8 @@ func main() {
 		},
 		handler.CreateSystemHandler(&app, dbVersionDao, version),
 		&handler.MeteoHandler{app},
-		&handler.TransferHandler{app, transferDao},
+		&transferHandler,
+		&campHandler,
 	}
 
 	for _, h := range _handlers {

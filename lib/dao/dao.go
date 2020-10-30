@@ -225,6 +225,7 @@ type RiverLinksDao interface {
 type TransferDao interface {
 	RiverLinksDao
 	List(withRivers bool) ([]Transfer, error)
+	Find(id int64) (Transfer, bool, error)
 	ByRiver(riverId int64) ([]Transfer, error)
 	Insert(transfer Transfer) (int64, error)
 	Update(transfer Transfer) error
@@ -234,6 +235,7 @@ type TransferDao interface {
 type CampDao interface {
 	RiverLinksDao
 	List(withRivers bool) ([]Camp, error)
+	ByRiver(riverId int64) ([]Camp, error)
 	Insert(camp Camp) (int64, error)
 	InsertMultiple(camp ...Camp) ([]int64, error)
 	Update(camp Camp) error

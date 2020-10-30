@@ -6,6 +6,15 @@ SELECT ___fields___, array_agg(river_id) filter (where river_id is not null) :: 
 FROM camp LEFT JOIN camp_river_ref on camp.id = camp_river_ref.camp_id
 GROUP BY 1,2,3,4,5,6
 
+
+--@list-by-river
+SELECT ___fields___, array_agg(other_refs.river_id) :: bigint[]
+FROM camp
+    INNER JOIN camp_river_ref current_ref ON camp.id = current_ref.camp_id
+    INNER JOIN camp_river_ref other_refs on camp.id = other_refs.camp_id
+WHERE current_ref.river_id=$1
+GROUP BY 1,2,3,4,5,6
+
 --@find-witin-bounds
 SELECT ___fields___,array[]::bigint[] FROM camp WHERE point && ST_MakeEnvelope($1,$2,$3,$4)
 

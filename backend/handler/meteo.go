@@ -32,7 +32,7 @@ func (this *MeteoHandler) AddMeteoPoint(w http.ResponseWriter, req *http.Request
 		OnError500(w, err, "Can't insert meteo point")
 		return
 	}
-	this.JsonAnswer(w, p)
+	JsonAnswer(w, p)
 }
 
 func (this *MeteoHandler) ListMeteoPoints(w http.ResponseWriter, req *http.Request) {
@@ -45,5 +45,5 @@ func (this *MeteoHandler) listMeteoPoints(w http.ResponseWriter) {
 		OnError500(w, err, "Can't list points")
 		return
 	}
-	this.JsonAnswer(w, points)
+	JsonAnswer(w, points)
 }

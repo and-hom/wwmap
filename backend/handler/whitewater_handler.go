@@ -158,7 +158,7 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 
 	featureCollection := MkFeatureCollection(features)
 
-	w.Write(this.JsonpAnswer(callback, featureCollection, "{}"))
+	w.Write(JsonpAnswer(callback, featureCollection, "{}"))
 }
 
 func (this *WhiteWaterHandler) RiverPathSegments(w http.ResponseWriter, req *http.Request) {
@@ -172,7 +172,7 @@ func (this *WhiteWaterHandler) RiverPathSegments(w http.ResponseWriter, req *htt
 		OnError(w, err, "Can not select paths", http.StatusBadRequest)
 		return
 	}
-	this.JsonAnswer(w, ways)
+	JsonAnswer(w, ways)
 }
 
 func (this *WhiteWaterHandler) RouterData(w http.ResponseWriter, req *http.Request) {
@@ -186,7 +186,7 @@ func (this *WhiteWaterHandler) RouterData(w http.ResponseWriter, req *http.Reque
 	for i := 0; i < len(ways); i++ {
 		waysMap[ways[i].Id] = ways[i]
 	}
-	this.JsonAnswer(w, RouterDataResp{
+	JsonAnswer(w, RouterDataResp{
 		Tracks: waysMap,
 	})
 }
@@ -197,7 +197,7 @@ func (this *WhiteWaterHandler) RouterStaticData(w http.ResponseWriter, req *http
 		OnError500(w, err, "Can not get waterway ids")
 		return
 	}
-	this.JsonAnswer(w, ids)
+	JsonAnswer(w, ids)
 }
 
 func getLinkMaker(linkType string) ymaps.LinkMaker {
@@ -233,7 +233,7 @@ func (this *WhiteWaterHandler) search(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	this.JsonAnswer(w, SearchResp{
+	JsonAnswer(w, SearchResp{
 		Spots:        spots,
 		Rivers:       rivers,
 		ResourceBase: this.ResourceBase,

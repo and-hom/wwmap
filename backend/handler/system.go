@@ -29,7 +29,7 @@ func (this *SystemHandler) Init() {
 }
 
 func (this *SystemHandler) Version(w http.ResponseWriter, req *http.Request) {
-	this.JsonAnswer(w, this.version)
+	JsonAnswer(w, this.version)
 }
 
 func (this *SystemHandler) DbVersion(w http.ResponseWriter, req *http.Request) {
@@ -38,7 +38,7 @@ func (this *SystemHandler) DbVersion(w http.ResponseWriter, req *http.Request) {
 		OnError500(w, err, "Can't select schema version")
 		return
 	}
-	this.JsonAnswer(w, dbVersion)
+	JsonAnswer(w, dbVersion)
 }
 
 func (this *SystemHandler) Log(w http.ResponseWriter, req *http.Request) {
@@ -49,7 +49,7 @@ func (this *SystemHandler) Log(w http.ResponseWriter, req *http.Request) {
 			OnError500(w, err, "Can not fetch log entries")
 			return
 		}
-		this.JsonAnswer(w, lastRows)
+		JsonAnswer(w, lastRows)
 		return
 	}
 
@@ -62,7 +62,7 @@ func (this *SystemHandler) Log(w http.ResponseWriter, req *http.Request) {
 		OnError500(w, err, "Can not fetch log entries")
 		return
 	}
-	this.JsonAnswer(w, entries)
+	JsonAnswer(w, entries)
 }
 
 const DEFAULT_GAV = "865"
@@ -72,7 +72,7 @@ var gavRe = regexp.MustCompile("https://khms\\d+.googleapis\\.com/kh\\?v=(\\d+)"
 
 func (this *SystemHandler) Gav(w http.ResponseWriter, req *http.Request) {
 	if gav != "" {
-		this.JsonAnswer(w, gav)
+		JsonAnswer(w, gav)
 		return
 	}
 
@@ -80,7 +80,7 @@ func (this *SystemHandler) Gav(w http.ResponseWriter, req *http.Request) {
 	resp, err := client.Get("https://maps.googleapis.com/maps/api/js")
 	if err != nil {
 		log.Error("Can't fetch googleapi script:", err)
-		this.JsonAnswer(w, DEFAULT_GAV)
+		JsonAnswer(w, DEFAULT_GAV)
 		return
 	}
 	defer resp.Body.Close()
@@ -88,7 +88,7 @@ func (this *SystemHandler) Gav(w http.ResponseWriter, req *http.Request) {
 	bytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Error("Can't read googleapi script:", err)
-		this.JsonAnswer(w, DEFAULT_GAV)
+		JsonAnswer(w, DEFAULT_GAV)
 		return
 	}
 
@@ -96,9 +96,9 @@ func (this *SystemHandler) Gav(w http.ResponseWriter, req *http.Request) {
 	if found != nil && len(found) > 1 {
 		gav = found[1]
 		log.Info("Detected google api version is ", gav)
-		this.JsonAnswer(w, gav)
+		JsonAnswer(w, gav)
 	} else {
 		log.Error("Can't find googleapi version")
-		this.JsonAnswer(w, DEFAULT_GAV)
+		JsonAnswer(w, DEFAULT_GAV)
 	}
 }

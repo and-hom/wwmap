@@ -18,6 +18,7 @@ func NewTransferPostgresDao(postgresStorage PostgresStorage) TransferDao {
 			listRivers:             queries.SqlQuery("linked-entity", "list-rivers"),
 		},
 		listQuery:        queries.SqlQuery("transfer", "list"),
+		findQuery:        queries.SqlQuery("transfer", "find"),
 		listByRiverQuery: queries.SqlQuery("transfer", "list-by-river"),
 		insertQuery:      queries.SqlQuery("transfer", "insert"),
 		updateQuery:      queries.SqlQuery("transfer", "update"),
@@ -28,6 +29,7 @@ func NewTransferPostgresDao(postgresStorage PostgresStorage) TransferDao {
 type transferStorage struct {
 	riverLinksStorage
 	listQuery        string
+	findQuery        string
 	listByRiverQuery string
 	listFullQuery    string
 	insertQuery      string
@@ -50,6 +52,14 @@ func (this transferStorage) List(withRivers bool) ([]Transfer, error) {
 	}
 
 	return transfers, nil
+}
+
+func (this transferStorage) Find(id int64) (Transfer, bool, error) {
+	camp, found, err := this.DoFindAndReturn(this.findQuery, transferMapper, id)
+	if err != nil {
+		return Transfer{}, false, err
+	}
+	return camp.(Transfer), found, err
 }
 
 func convertTransfers(transfers *[]Transfer) []ILinkedEntity {
