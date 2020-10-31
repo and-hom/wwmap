@@ -61,7 +61,7 @@ function fromArray(params) {
     }
     if (params.length >= 4) {
         let t = params[3].replace('-', '#');
-        if (ymaps.mapType.storage.get(t)) {
+        if (ymaps && ymaps.mapType && ymaps.mapType.storage && ymaps.mapType.storage.get(t)) {
             type = t;
         }
     }
@@ -134,9 +134,11 @@ CookieMapParamsStorage.prototype.setLastPositionZoomType = function (pos, z, typ
 }
 
 CookieMapParamsStorage.prototype.getLastPositionZoomType = function () {
-    getFromCookie(this.posCookieName, null)
-    getFromCookie(this.zoomCookieName, null)
-    getFromCookie(this.mapTypeCookieName, null)
+    return new MapParams(
+        getFromCookie(this.posCookieName, null),
+        getFromCookie(this.zoomCookieName, null),
+        getFromCookie(this.mapTypeCookieName, null)
+    )
 }
 
 export function EditorHashMapParamsStorage() {
