@@ -4,6 +4,7 @@ import Vuex from 'vuex'
 import {
     COUNTRY_ACTIVE_ENTITY_LEVEL,
     getActiveId,
+    getCamps,
     getRegion,
     getRegions,
     getReports,
@@ -234,7 +235,12 @@ export const store = new Vuex.Store({
         showRiverPage(state, payload) {
             hideAllEditorPanes(state);
 
-            Promise.all([getRiver(payload.riverId), getReports(payload.riverId), getTransfers(payload.riverId)])
+            Promise.all([
+                getRiver(payload.riverId),
+                getReports(payload.riverId),
+                getTransfers(payload.riverId),
+                getCamps(payload.riverId),
+            ])
                 .then(riverData => {
                     let river = riverData[0];
                     state.rivereditorstate.river = river;
@@ -244,6 +250,7 @@ export const store = new Vuex.Store({
 
                     state.rivereditorstate.reports = riverData[1];
                     state.rivereditorstate.transfers = riverData[2];
+                    state.rivereditorstate.camps = riverData[3];
 
                     state.rivereditorstate.visible = true;
                 });

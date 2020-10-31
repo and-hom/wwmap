@@ -61,6 +61,10 @@ export function getTransfers(riverId) {
     return doGetJson(backendApiBase + "/transfer/river/" + riverId)
 }
 
+export function getCamps(riverId) {
+    return doGetJson(backendApiBase + "/camp/river/" + riverId)
+}
+
 export function getSpots(riverId) {
     return doGetJson(backendApiBase + "/river/" + riverId + "/spots")
 }
