@@ -2,9 +2,8 @@
   <v-select v-model="river"
             label="title"
             :multiple="multiselect"
-            :filterable="false"
-            :options="options"
-            @search="onSearch">
+            :filterable="true"
+            :options="options">
     <template slot="no-options">
       Начните печатать название реки
     </template>
@@ -50,11 +49,6 @@ module.exports = {
       component.rivers = [];
       component.options = [];
     });
-  },
-  methods: {
-    onSearch: function (search, loading) {
-      this.options = this.rivers.filter(r => r.title.toLowerCase().includes(search.toLowerCase()))
-    },
   },
   computed: {
     river: {
