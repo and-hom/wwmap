@@ -20,6 +20,7 @@
 
 <script>
 import {backendApiBase, frontendBase} from "../config";
+import {createMapParamsStorage} from "wwmap-js-commons/map-settings";
 
 const moment = require('moment');
 const VueScrollTo = require('vue-scrollto');
@@ -31,6 +32,7 @@ export default {
       canEdit: false,
       campForEdit: {},
       backendApiBase: backendApiBase,
+      mapParamsStorage: createMapParamsStorage(),
     }
   },
   methods: {
@@ -38,7 +40,7 @@ export default {
       return {
         title: "",
         description: "",
-        point: [0, 0],
+        point: this.mapParamsStorage.getLastPositionZoomType().position,
         rivers: [],
       }
     },
