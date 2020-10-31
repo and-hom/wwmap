@@ -21,6 +21,7 @@ type WhiteWaterHandler struct {
 }
 
 const PREVIEWS_COUNT int = 20
+const MIN_ZOOM_SHOW_CAMPS int = 12
 
 func (this *WhiteWaterHandler) Init() {
 	this.Register("/ymaps-tile-ww", HandlerFunctions{Get: this.TileWhiteWaterHandler})
@@ -69,6 +70,7 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 	}
 
 	showUnpublished := ShowUnpublished(req, this.UserDao)
+	showCamps := GetBoolParameter(req, "show_camps", false)
 
 	var features []Feature
 
@@ -120,6 +122,15 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 
 		features = ymaps.WhiteWaterPointsToYmapsNoCluster([]dao.RiverWithSpots{river},
 			this.ResourceBase, skip, this.processForWeb, getLinkMaker(req.FormValue("link_type")))
+
+		if showCamps && zoom >= MIN_ZOOM_SHOW_CAMPS {
+			camps, err := this.CampDao.FindWithinBoundsForRiver(bbox, riverId)
+			if err != nil {
+				logrus.Error(err)
+			} else {
+				features = append(features, ymaps.CampsToYmaps(camps, this.ResourceBase, skip)...)
+			}
+		}
 	} else {
 		rivers, err := this.TileDao.ListRiversWithBounds(bbox, PREVIEWS_COUNT, showUnpublished)
 		if err != nil {
@@ -148,11 +159,13 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 			return
 		}
 
-		camps, err := this.CampDao.FindWithinBounds(bbox)
-		if err != nil {
-			logrus.Error(err)
-		} else {
-			features = append(features, ymaps.CampsToYmaps(camps, this.ResourceBase)...)
+		if showCamps && zoom >= MIN_ZOOM_SHOW_CAMPS {
+			camps, err := this.CampDao.FindWithinBounds(bbox)
+			if err != nil {
+				logrus.Error(err)
+			} else {
+				features = append(features, ymaps.CampsToYmaps(camps, this.ResourceBase, skip)...)
+			}
 		}
 	}
 

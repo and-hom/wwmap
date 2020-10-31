@@ -19,25 +19,27 @@ func NewCampPostgresDao(postgresStorage PostgresStorage) CampDao {
 			deleteRefsByRiverQuery: queries.SqlQuery("camp", "delete-refs-by-river"),
 			listRivers:             queries.SqlQuery("linked-entity", "list-rivers"),
 		},
-		listQuery:             queries.SqlQuery("camp", "list"),
-		listByRiverQuery:      queries.SqlQuery("camp", "list-by-river"),
-		findWithinBoundsQuery: queries.SqlQuery("camp", "find-witin-bounds"),
-		findQuery:             queries.SqlQuery("camp", "find"),
-		insertQuery:           queries.SqlQuery("camp", "insert"),
-		updateQuery:           queries.SqlQuery("camp", "update"),
-		removeQuery:           queries.SqlQuery("camp", "remove"),
+		listQuery:                     queries.SqlQuery("camp", "list"),
+		listByRiverQuery:              queries.SqlQuery("camp", "list-by-river"),
+		findWithinBoundsQuery:         queries.SqlQuery("camp", "find-witin-bounds"),
+		findWithinBoundsQueryForRiver: queries.SqlQuery("camp", "find-witin-bounds-for-river"),
+		findQuery:                     queries.SqlQuery("camp", "find"),
+		insertQuery:                   queries.SqlQuery("camp", "insert"),
+		updateQuery:                   queries.SqlQuery("camp", "update"),
+		removeQuery:                   queries.SqlQuery("camp", "remove"),
 	}
 }
 
 type campStorage struct {
 	riverLinksStorage
-	listQuery             string
-	listByRiverQuery      string
-	findWithinBoundsQuery string
-	findQuery             string
-	insertQuery           string
-	updateQuery           string
-	removeQuery           string
+	listQuery                     string
+	listByRiverQuery              string
+	findWithinBoundsQuery         string
+	findWithinBoundsQueryForRiver string
+	findQuery                     string
+	insertQuery                   string
+	updateQuery                   string
+	removeQuery                   string
 }
 
 func (this campStorage) List(withRivers bool) ([]Camp, error) {
@@ -75,6 +77,14 @@ func convertCamps(transfers *[]Camp) []ILinkedEntity {
 
 func (this campStorage) FindWithinBounds(bbox geo.Bbox) ([]Camp, error) {
 	found, err := this.DoFindList(this.findWithinBoundsQuery, this.campMapper, bbox.Y1, bbox.X1, bbox.Y2, bbox.X2)
+	if err != nil {
+		return []Camp{}, err
+	}
+	return found.([]Camp), nil
+}
+
+func (this campStorage) FindWithinBoundsForRiver(bbox geo.Bbox, riverId int64) ([]Camp, error) {
+	found, err := this.DoFindList(this.findWithinBoundsQueryForRiver, this.campMapper, bbox.Y1, bbox.X1, bbox.Y2, bbox.X2, riverId)
 	if err != nil {
 		return []Camp{}, err
 	}

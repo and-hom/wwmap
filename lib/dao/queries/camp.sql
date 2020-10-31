@@ -18,6 +18,11 @@ GROUP BY 1,2,3,4,5,6
 --@find-witin-bounds
 SELECT ___fields___,array[]::bigint[] FROM camp WHERE point && ST_MakeEnvelope($1,$2,$3,$4)
 
+--@find-witin-bounds-for-river
+SELECT ___fields___,array[]::bigint[]
+FROM camp INNER JOIN camp_river_ref ON camp.id=camp_river_ref.camp_id
+WHERE point && ST_MakeEnvelope($1,$2,$3,$4) && camp_river_ref.river_id=$5
+
 --@find
 SELECT ___fields___, array_agg(river_id) filter (where river_id is not null) :: bigint[]
 FROM camp LEFT JOIN camp_river_ref on camp.id = camp_river_ref.camp_id WHERE id=$1

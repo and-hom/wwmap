@@ -26,7 +26,8 @@
                              width="100%"
                              height="600px"
                              :editable="true"
-                             :ya-search="true"/>
+                             :ya-search="true"
+                             :show-camps="true"/>
           </div>
         </div>
         <div class="modal-footer">

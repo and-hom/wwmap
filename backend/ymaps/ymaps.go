@@ -276,11 +276,14 @@ func SingleWhiteWaterPointToYmaps(spot Spot, river RiverWithSpots, resourcesBase
 	return []Feature{mkFeature(spot, river, true, resourcesBase, processImgForWeb, linkMaker, river.Visible)}, nil
 }
 
-func CampsToYmaps(camps []Camp, resourcesBase string) []Feature {
-	result := make([]Feature, len(camps))
+func CampsToYmaps(camps []Camp, resourcesBase string, skip int64) []Feature {
+	result := make([]Feature, 0, len(camps))
 	for i := 0; i < len(camps); i++ {
 		camp := camps[i]
-		result[i] = Feature{
+		if (camp.Id == skip) {
+			continue
+		}
+		result = append(result, Feature{
 			Id:       camp.Id,
 			Type:     FEATURE,
 			Geometry: NewYmapsGeoPoint(camp.Point),
@@ -296,7 +299,7 @@ func CampsToYmaps(camps []Camp, resourcesBase string) []Feature {
 				Title:       camp.Title,
 				HintContent: camp.Title,
 			},
-		}
+		})
 	}
 	return result
 }

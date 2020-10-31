@@ -242,4 +242,5 @@ type CampDao interface {
 	Find(id int64) (Camp, bool, error)
 	Remove(id int64, tx interface{}) error
 	FindWithinBounds(bbox Bbox) ([]Camp, error)
+	FindWithinBoundsForRiver(bbox Bbox, riverId int64) ([]Camp, error)
 }

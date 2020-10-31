@@ -1,7 +1,13 @@
 import {WWMapSearchProvider} from "./searchProvider";
 import {createLegend} from "./legend";
 import {show_map_at_and_highlight_river, highlight_river} from "./main";
-import {CACHED_TILES_TEMPLATE, GOOGLE_SAT_TILES, getLastPositionAndZoom, setLastPositionZoomType, getWwmapUserInfoForMapControls, isMobileBrowser} from './util';
+import {
+    CACHED_TILES_TEMPLATE,
+    getLastPositionAndZoom,
+    setLastPositionZoomType,
+    isMobileBrowser,
+    createCampsUrlPart
+} from './util';
 import {bingSatTiles} from './map-urls/bing'
 import {googleSatTiles} from './map-urls/google'
 import {apiBase} from "./config";
@@ -20,6 +26,9 @@ export function WWMap(divId, bubbleTemplate, riverList, tutorialPopup, catalogLi
 
     this.catFilter = 1;
     this.showUnpublished = false;
+    this.showCamps = true;
+
+    this.onBoundsChange = null;
 
     addCachedLayer('osm#standard', 'OSM (O)', 'OpenStreetMap contributors, CC-BY-SA', 'osm');
     addLayer('google#satellite', 'Спутник Google (G)', 'Изображения © DigitalGlobe,CNES / Airbus, 2018,Картографические данные © Google, 2018', googleSatTiles);
@@ -75,17 +84,24 @@ WWMap.prototype.createHelpBtn = function () {
     return helpButton
 };
 
-WWMap.prototype.createObjectsUrlTemplate = function (showUnpublished) {
-    let unpublishedUrlPart = createUnpublishedUrlPart(showUnpublished);
-    return `${apiBase}/ymaps-tile-ww?bbox=%b&zoom=%z&link_type=${this.catalogLinkType}${unpublishedUrlPart}`;
+WWMap.prototype.createObjectsUrlTemplate = function () {
+    let unpublishedUrlPart = createUnpublishedUrlPart(this.showUnpublished);
+    let campsPart = createCampsUrlPart(this.showCamps);
+    return `${apiBase}/ymaps-tile-ww?bbox=%b&zoom=%z&link_type=${this.catalogLinkType}${unpublishedUrlPart}${campsPart}`;
 };
 
 WWMap.prototype.setShowUnpublished = function (showUnpublished) {
     this.showUnpublished = showUnpublished;
-    this.objectManager.setUrlTemplate(this.createObjectsUrlTemplate(showUnpublished))
+    this.objectManager.setUrlTemplate(this.createObjectsUrlTemplate())
     this.objectManager.reloadData();
     this.loadRivers(this.yMap.getBounds());
     this.wwMapSearchProvider.showUnpublished = showUnpublished;
+};
+
+WWMap.prototype.setShowCamps = function (showCamps) {
+    this.showCamps = showCamps;
+    this.objectManager.setUrlTemplate(this.createObjectsUrlTemplate())
+    this.objectManager.reloadData();
 };
 
 WWMap.prototype.init = function () {
@@ -165,8 +181,13 @@ WWMap.prototype.init = function () {
     });
 
     this.yMap.events.add('boundschange', function (e) {
-        setLastPositionZoomType(t.yMap.getCenter(), t.yMap.getZoom(), t.yMap.getType());
+        let center = t.yMap.getCenter();
+        let zoom = t.yMap.getZoom();
+        setLastPositionZoomType(center, zoom, t.yMap.getType());
         t.loadRivers(e.get("newBounds"))
+        if (t.onBoundsChange) {
+            t.onBoundsChange(center, zoom)
+        }
     });
 
     this.yMap.events.add('typechange', function (e) {
@@ -252,6 +273,10 @@ WWMap.prototype.init = function () {
 
 WWMap.prototype.setBounds = function (bounds, opts) {
     this.yMap.setBounds(bounds, opts)
+};
+
+WWMap.prototype.setOnBoundsChange = function (onBoundsChange) {
+    this.onBoundsChange = onBoundsChange;
 };
 
 WWMap.prototype.hideSelectedRiverTracks = function () {
