@@ -843,7 +843,7 @@ func (this *GeoHierarchyHandler) RegionParentIds(w http.ResponseWriter, req *htt
 		OnError500(w, err, "Can not get rivers info")
 		return
 	}
-	this.JsonAnswer(w, ids)
+	JsonAnswer(w, ids)
 }
 
 func (this *GeoHierarchyHandler) SpotParentIds(w http.ResponseWriter, req *http.Request) {
