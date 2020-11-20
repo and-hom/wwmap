@@ -6,8 +6,10 @@
         </li>
         <li class="page-item" v-if="isNotBegin(pages)"><a class="page-link" href="#" v-on:click.stop="left()">&lt;</a>
         </li>
-        <li class="page-item" v-for="page in pages"><a class="page-link" href="#"
-                                                       v-on:click.stop="toPage(page)">{{ page + 1 }}</a></li>
+        <li :class="pageBtnClass(page)" v-if="!isSinglePage(pages)" v-for="page in pages"><a class="page-link" href="#"
+                                                                                   v-on:click.stop="toPage(page)">{{
+            page + 1
+          }}</a></li>
         <li class="page-item" v-if="isNotEnd(pages)"><a class="page-link" href="#" v-on:click.stop="right()">&gt;</a>
         </li>
         <li class="page-item" v-if="isNotEnd(pages)"><a class="page-link" href="#"
@@ -46,7 +48,18 @@ module.exports = {
     pages: {
       get() {
         let pages = Array();
-        for (let i = this.currentPage - 3; i <= this.currentPage + 3; i++) {
+        let lower = this.currentPage - 3;
+        let upper = this.currentPage + 3;
+        let btnCount = upper - lower + 1;
+
+        let start = lower;
+        if (start < 0) {
+          start = 0;
+        } else if (upper >= this.pageCount) {
+          start = this.pageCount - btnCount;
+        }
+
+        for (let i = start; i < start + btnCount; i++) {
           if (this.isValidPage(i)) {
             pages.push(i)
           }
@@ -62,7 +75,7 @@ module.exports = {
     },
     pageCount: {
       get() {
-        return Math.floor(this.filteredData.length / this.pageSize);
+        return Math.ceil(this.filteredData.length / this.pageSize);
       }
     },
   },
@@ -103,10 +116,17 @@ module.exports = {
     toPage(page) {
       if (this.isValidPage(page)) {
         this.currentPage = page;
+      } else if (page && page > this.pageCount) {
+        this.currentPage = this.pageCount - 1;
+      } else {
+        this.currentPage = 0;
       }
     },
     isValidPage(page) {
       return page >= 0 && page < this.pageCount;
+    },
+    isSinglePage(pages) {
+      return !this.pages || this.pages.length <= 1;
     },
     isNotBegin(pages) {
       return pages[0] != 0
@@ -120,6 +140,9 @@ module.exports = {
         this.filteredData = this.filterFunction(data, filter);
         this.toPage(page);
       }
+    },
+    pageBtnClass(page) {
+      return this.currentPage == page ? 'page-item active' : 'page-item';
     },
   }
 }
