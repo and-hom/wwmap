@@ -86,19 +86,19 @@ func (this *RiskReportsProvider) ReportsSinceForPage(t time.Time, page int, onRe
 		}
 
 		authorAndTimeBlock := row.Find(".userInfo")
-		datePublished := zero
+		var datePublished *time.Time = nil
 		if authorAndTimeBlock != nil {
 			timeStr := authorAndTimeBlock.Text()
 			d, ok := DATE_FORMAT.GetDate(timeStr)
 			if ok {
-				datePublished = d
+				datePublished = &d
 			} else {
-				datePublished = zero
+				datePublished = nil
 			}
 		}
 
 		// skip pages before startDate
-		if datePublished.Before(t) {
+		if datePublished==nil || datePublished.Before(t) {
 			return
 		}
 
@@ -113,14 +113,14 @@ func (this *RiskReportsProvider) ReportsSinceForPage(t time.Time, page int, onRe
 
 		onReport(dao.VoyageReport{
 			RemoteId:      remoteId,
-			Title:         title,
+			LinkedEntity: dao.LinkedEntity{IdTitle: dao.IdTitle{Title: title}},
 			Author:        author,
 			Source:        SOURCE,
 			Url:           articleUrl,
 			Tags:          tags,
-			DateOfTrip:    zero,
+			DateOfTrip:    nil,
 			DatePublished: datePublished,
-			DateModified:  datePublished,
+			DateModified:  util.PtrToTime(datePublished),
 		})
 	})
 

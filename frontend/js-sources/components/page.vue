@@ -118,6 +118,10 @@
                                 href: "transfer.htm",
                                 title: "Заброски",
                             },
+                            {
+                                href: "report.htm",
+                                title: "Отчёты",
+                            },
                         ]
                     },
                     {

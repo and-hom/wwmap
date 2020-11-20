@@ -2,7 +2,6 @@ package dao
 
 import (
 	"database/sql"
-	"fmt"
 	"github.com/lib/pq"
 )
 
@@ -109,7 +108,6 @@ func (this riverLinksStorage) enrichWithRiverData(entities []ILinkedEntity) erro
 			}
 		}
 
-		fmt.Println(riverData)
 		t.SetRiversData(&riverData)
 	}
 	return nil

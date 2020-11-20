@@ -101,6 +101,7 @@ func main() {
 
 	transferHandler := (&linked_entity.TransferHandler{App: app, TransferDao: transferDao}).Create()
 	campHandler := (&linked_entity.CampHandler{App: app, CampDao: campDao}).Create()
+	voyageReportHandler := (&linked_entity.VoyageReportHandler{App: app, VoyageReportDao: voyageReportDao}).Create()
 
 	_handlers := []ApiHandler{
 		&handler.DownloadsHandler{app},
@@ -140,6 +141,7 @@ func main() {
 		&handler.MeteoHandler{app},
 		&transferHandler,
 		&campHandler,
+		&voyageReportHandler,
 	}
 
 	for _, h := range _handlers {

@@ -264,7 +264,7 @@ func (this *App) uploadRiver(catalogConnector *common.CatalogConnector, country 
 const MAX_REPORTS_PER_SOURCE = 15
 
 func (this *App) reports(riverId int64) ([]common.VoyageReportLink, error) {
-	r, err := this.VoyageReportDao.List(riverId, MAX_REPORTS_PER_SOURCE)
+	r, err := this.VoyageReportDao.ByRiver(riverId, MAX_REPORTS_PER_SOURCE)
 	if err != nil {
 		log.Errorf("Can not read report links: %v", err)
 		return []common.VoyageReportLink{}, err

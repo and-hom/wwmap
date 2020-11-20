@@ -3,7 +3,7 @@
     <div :class="modalDialogClass" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Добавить</h5>
+          <h5 class="modal-title">{{header}}</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -11,6 +11,9 @@
         <div class="modal-body">
           <div class="settings-container">
             <slot name="form" v-bind:entity="entity">
+              <div class="wwmap-settings">
+                <label for="title">Название</label><input id="title" v-model="entity.title"/>
+              </div>
             </slot>
             <label for="rivers">Реки</label>
             <div id="rivers">
@@ -114,7 +117,10 @@ module.exports = {
       return this.hasMap
           ? 'modal-dialog modal-dialog-centered entity-editor-form'
           : 'modal-dialog modal-dialog-centered';
-    }
+    },
+    header() {
+      return this.entity && this.entity.id ? 'Изменить' : 'Добавить';
+    },
   },
   data: function () {
     return {

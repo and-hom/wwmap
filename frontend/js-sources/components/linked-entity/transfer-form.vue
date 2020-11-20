@@ -1,6 +1,6 @@
 <template>
   <div class="wwmap-settings">
-    <label for="task_title">Название</label><input id="task_title" v-model="transfer.title" v-on:change="$emit('input', transfer)"/>
+    <label for="title">Название</label><input id="title" v-model="transfer.title" v-on:change="$emit('input', transfer)"/>
     <label for="stations">Откуда</label>
     <span style="width:300px">
                             <vue-tags-input

@@ -1,7 +1,6 @@
 <template>
   <page link="camp.htm">
-    <entity-grid v-model="camps"
-                 title="Стоянки"
+    <entity-grid title="Стоянки"
                  :url-base="backendApiBase + '/camp'"
                  :fields='[
                      {"label": "Название",          "name":"title"},
@@ -19,18 +18,12 @@
 </template>
 
 <script>
-import {backendApiBase, frontendBase} from "../config";
+import {backendApiBase} from "../config";
 import {createMapParamsStorage} from "wwmap-js-commons/map-settings";
-
-const moment = require('moment');
-const VueScrollTo = require('vue-scrollto');
 
 export default {
   data() {
     return {
-      camps: [],
-      canEdit: false,
-      campForEdit: {},
       backendApiBase: backendApiBase,
       mapParamsStorage: createMapParamsStorage(),
     }

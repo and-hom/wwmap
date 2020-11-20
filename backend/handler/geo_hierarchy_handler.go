@@ -285,7 +285,7 @@ func (this *GeoHierarchyHandler) ListRiverReports(w http.ResponseWriter, r *http
 		}
 	}
 
-	voyageReports, err := this.VoyageReportDao.List(riverId, int(groupLimit))
+	voyageReports, err := this.VoyageReportDao.ByRiver(riverId, int(groupLimit))
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not list reports of river %d", riverId))
 		return

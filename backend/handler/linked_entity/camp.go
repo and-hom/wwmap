@@ -21,6 +21,7 @@ func (this *CampHandler) Create() linkedEntityHanler {
 		this.App,
 		this,
 		"camp",
+		[]dao.Role{dao.ADMIN, dao.EDITOR},
 	}
 }
 

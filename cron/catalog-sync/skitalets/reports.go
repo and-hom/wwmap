@@ -69,7 +69,7 @@ func (this SkitaletsReportsProvider) ReportsSince(t time.Time) ([]dao.VoyageRepo
 		}
 
 		datePublished := this.parseDateOfTrip(row.Find(".card-date").Text())
-		if datePublished.Before(t) {
+		if datePublished == nil || datePublished.Before(t) {
 			return
 		}
 
@@ -100,14 +100,14 @@ func (this SkitaletsReportsProvider) ReportsSince(t time.Time) ([]dao.VoyageRepo
 		}
 		reports = append(reports, dao.VoyageReport{
 			RemoteId:      fmt.Sprintf("%x", this.hash.Sum(nil)),
-			Title:         title,
+			LinkedEntity: dao.LinkedEntity{IdTitle: dao.IdTitle{Title: title}},
 			Author:        author,
 			Source:        SOURCE,
 			Url:           url,
 			Tags:          tags,
-			DateOfTrip:    zero,
+			DateOfTrip:    nil,
 			DatePublished: datePublished,
-			DateModified:  datePublished,
+			DateModified:  util.PtrToTime(datePublished),
 		})
 	})
 
@@ -210,15 +210,15 @@ func getTagsFromString(text string, onTag func(tag string)) {
 	}
 }
 
-func (this SkitaletsReportsProvider) parseDateOfTrip(dateStr string) time.Time {
+func (this SkitaletsReportsProvider) parseDateOfTrip(dateStr string) *time.Time {
 	for _, df := range DATE_FORMAT {
 		d, found := df.GetDate(this.replaceMonth(dateStr))
 		if found {
-			return d
+			return &d
 		}
 	}
 	log.Debug("Can not parse date: %s\n", dateStr)
-	return zero
+	return nil
 }
 
 func (this SkitaletsReportsProvider) Images(reportId string) ([]dao.Img, error) {

@@ -21,6 +21,7 @@ func (this *TransferHandler) Create() linkedEntityHanler {
 		this.App,
 		this,
 		"transfer",
+		[]dao.Role{dao.ADMIN, dao.EDITOR},
 	}
 }
 

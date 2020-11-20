@@ -254,19 +254,6 @@ func (this NotificationRecipientWithClassifier) String() string {
 	return fmt.Sprintf("%v - %s", this.NotificationRecipient, this.Classifier)
 }
 
-type VoyageReport struct {
-	Id            int64     `json:"id,omitempty"`
-	Title         string    `json:"title"`
-	Author        string    `json:"author"`
-	Source        string    `json:"source"`
-	RemoteId      string    `json:"remote_id"`
-	Url           string    `json:"url"`
-	DatePublished time.Time `json:"id,omitempty"`
-	DateModified  time.Time `json:"id,omitempty"`
-	DateOfTrip    time.Time `json:"id,omitempty"`
-	Tags          []string  `json:"-"`
-}
-
 type ImageType string
 
 const (
@@ -568,4 +555,16 @@ type Transfer struct {
 	LinkedEntity
 	Stations    []string `json:"stations"`
 	Description string   `json:"description"`
+}
+
+type VoyageReport struct {
+	LinkedEntity
+	Author        string    `json:"author"`
+	Source        string    `json:"source"`
+	RemoteId      string    `json:"remote_id"`
+	Url           string    `json:"url"`
+	DatePublished *time.Time `json:"date_published,omitempty"`
+	DateModified  time.Time `json:"date_modified,omitempty"`
+	DateOfTrip    *time.Time `json:"date_of_trip,omitempty"`
+	Tags          []string  `json:"tags"`
 }

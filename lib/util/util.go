@@ -29,6 +29,13 @@ func ZeroDateUTC() time.Time {
 	return time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC)
 }
 
+func PtrToTime(t *time.Time) time.Time  {
+	if t == nil {
+		return ZeroDateUTC()
+	}
+	return *t
+}
+
 func FirstOr(arr []string, _default string) string {
 	if len(arr) > 0 {
 		return arr[0]

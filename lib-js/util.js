@@ -28,3 +28,11 @@ export function format() {
 export function arrays_intersects(a1, a2) {
     return a1.filter(el => a2.indexOf(el) >= 0).length > 0
 }
+
+export function randomStringId(len) {
+    let result = Math.random().toString(36).substring(2, 15);
+    while (result.length < len) {
+        result += Math.random().toString(36).substring(2, 15);
+    }
+    return result.substring(0, len);
+}

@@ -42,9 +42,12 @@
           <tbody>
           <tr v-for="entity in slotProps.data">
             <td v-for="field in fields" class="fitwidth">
-              <river-links v-if="field.type=='rivers'" :rivers="entity[field.name]"/>
+              <river-links v-if="field.type=='rivers'" :rivers="entity[field.name]" style="width: 200px"/>
               <tags v-else-if="field.type=='tags'" :tags="entity[field.name]"/>
               <location v-else-if="field.type=='location'" :point-or-line="entity[field.name]"/>
+              <a v-else-if="field.type=='link'" target="_blank" :href="entity[field.name]">{{ field.text && entity[field.text] ? entity[field.text] : entity[field.name] }}</a>
+              <span v-else-if="field.type=='date'">{{ entity[field.name] | formatDateStr | orElse('&mdash;') | yearOnly0102}}</span>
+              <span v-else-if="field.type=='dateTime'">{{ entity[field.name] | formatDateTimeStr | orElse('&mdash;') | yearOnly0102}}</span>
               <span v-else>{{ entity[field.name] }}</span>
             </td>
             <td v-if="canEdit" class="btn-col">
@@ -104,6 +107,10 @@ module.exports = {
       type: Array,
       required: true,
     },
+    editable: {
+      type: Boolean,
+      default: true,
+    },
     urlBase: {
       type: String,
       required: true,
@@ -114,7 +121,9 @@ module.exports = {
     },
     blankEntityFactory: {
       type: Function,
-      required: true,
+      default: function () {
+        return {};
+      },
     }
   },
   computed: {
@@ -127,7 +136,9 @@ module.exports = {
   },
   created: function () {
     this.refresh();
-    hasRole(ROLE_ADMIN, ROLE_EDITOR).then(canEdit => this.canEdit = canEdit);
+    if(this.editable) {
+      hasRole(ROLE_ADMIN, ROLE_EDITOR).then(canEdit => this.canEdit = canEdit);
+    }
   },
   data() {
     return {

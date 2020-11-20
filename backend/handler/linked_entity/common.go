@@ -11,19 +11,20 @@ type linkedEntityHanler struct {
 	App
 	handler linkedEntityHandler
 	base string
+	roles []dao.Role
 }
 
 func (this *linkedEntityHanler) Init() {
 	this.Register("/"+this.base, handler.HandlerFunctions{
 		Get:  this.handler.List,
-		Post: this.ForRoles(this.handler.Upsert, dao.ADMIN, dao.EDITOR),
-		Put:  this.ForRoles(this.handler.Upsert, dao.ADMIN, dao.EDITOR),
+		Post: this.ForRoles(this.handler.Upsert, this.roles...),
+		Put:  this.ForRoles(this.handler.Upsert, this.roles...),
 	})
 	this.Register("/"+this.base+"/{id}", handler.HandlerFunctions{
-		Delete: this.ForRoles(this.handler.Delete, dao.ADMIN, dao.EDITOR),
-		Post:   this.ForRoles(this.handler.Upsert, dao.ADMIN, dao.EDITOR),
-		Put:    this.ForRoles(this.handler.Upsert, dao.ADMIN, dao.EDITOR),
-		Get:    this.ForRoles(this.handler.Get, dao.ADMIN, dao.EDITOR),
+		Delete: this.ForRoles(this.handler.Delete, this.roles...),
+		Post:   this.ForRoles(this.handler.Upsert, this.roles...),
+		Put:    this.ForRoles(this.handler.Upsert, this.roles...),
+		Get:    this.ForRoles(this.handler.Get, this.roles...),
 	})
 	this.Register("/"+this.base+"/river/{id}", handler.HandlerFunctions{
 		Get: this.handler.ByRiver,

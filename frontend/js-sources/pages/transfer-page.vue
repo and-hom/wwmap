@@ -1,7 +1,6 @@
 <template>
   <page link="transfer.htm">
-    <entity-grid v-model="transfers"
-                 title="Заброски"
+    <entity-grid title="Заброски"
                  :url-base="backendApiBase + '/transfer'"
                  :fields='[
                      {"label": "Название",          "name":"title"},
@@ -20,19 +19,10 @@
 
 <script>
 import {backendApiBase} from "../config";
-import {hasRole, ROLE_ADMIN, ROLE_EDITOR} from "../auth";
-
-const moment = require('moment');
 
 export default {
-  created: function () {
-    hasRole(ROLE_ADMIN, ROLE_EDITOR).then(canEdit => this.canEdit = canEdit);
-  },
   data() {
     return {
-      transfers: [],
-      canEdit: false,
-      transferForEdit: {},
       backendApiBase: backendApiBase,
     }
   },
