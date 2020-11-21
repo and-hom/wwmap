@@ -162,14 +162,15 @@ type FeatureProperties struct {
 	Id              int64           `json:"id,omitempty"`
 
 	// custom fields
-	Title      string               `json:"title,omitempty"`
-	Link       string               `json:"link,omitempty"`
-	Comment    string               `json:"comment,omitempty"`
-	ShortDesc  string               `json:"short_description,omitempty"`
-	Category   *model.SportCategory `json:"category,omitempty"`
-	RiverTitle string               `json:"river_title,omitempty"`
-	Images     []Preview            `json:"images,omitempty"`
-	Color      string               `json:"color,omitempty"`
+	Title         string               `json:"title,omitempty"`
+	Link          string               `json:"link,omitempty"`
+	Comment       string               `json:"comment,omitempty"`
+	ShortDesc     string               `json:"short_description,omitempty"`
+	Category      *model.SportCategory `json:"category,omitempty"`
+	RiverCategory *int                 `json:"river_category,omitempty"`
+	RiverTitle    string               `json:"river_title,omitempty"`
+	Images        []Preview            `json:"images,omitempty"`
+	Color         string               `json:"color,omitempty"`
 }
 
 type Preview struct {

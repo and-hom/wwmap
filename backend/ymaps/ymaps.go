@@ -17,7 +17,7 @@ const MAX_CLUSTER_ID int64 = int64(math.MaxInt32)
 const CAT_ICON_SIZE = 32
 
 func mkFeature(point Spot, river RiverWithSpots, withDescription bool, resourcesBase string,
-	processImgForWeb func(img *Img), linkMaker LinkMaker, visible bool) Feature {
+	processImgForWeb func(img *Img), linkMaker LinkMaker, visible bool, maxCategory *int) Feature {
 	var description = ""
 	if withDescription {
 		description = point.Description
@@ -68,6 +68,8 @@ func mkFeature(point Spot, river RiverWithSpots, withDescription bool, resources
 		ShortDesc:  description,
 		RiverTitle: river.Title,
 		Images:     imgs,
+
+		RiverCategory: maxCategory,
 	}
 	if point.Category.Category > 0 {
 		properties.Category = &point.Category
@@ -225,13 +227,14 @@ func WhiteWaterPointsToYmaps(clusterMaker clustering.ClusterMaker, rivers []Rive
 		if err != nil {
 			return []Feature{}, nil
 		}
+		maxCategory := river.ComputeMaxCategory()
 
 		for id, obj := range riverClusters {
 			switch obj.(type) {
 			case Spot:
 				spot := obj.(Spot)
 				if spot.Id != skipId {
-					result = append(result, mkFeature(spot, river, true, resourcesBase, processImgForWeb, linkMaker, river.Visible))
+					result = append(result, mkFeature(spot, river, true, resourcesBase, processImgForWeb, linkMaker, river.Visible, &maxCategory))
 				}
 			case clustering.Cluster:
 				result = append(result, mkCluster(id, obj.(clustering.Cluster).Points, river.Title, river.Visible))
@@ -265,7 +268,7 @@ func WhiteWaterPointsToYmapsNoCluster(rivers []RiverWithSpots,
 	for _, river := range rivers {
 		for _, spot := range river.Spots {
 			if spot.Id != skipId {
-				result = append(result, mkFeature(spot, river, true, resourcesBase, processImgForWeb, linkMaker, river.Visible))
+				result = append(result, mkFeature(spot, river, true, resourcesBase, processImgForWeb, linkMaker, river.Visible, nil))
 			}
 		}
 	}
@@ -273,5 +276,5 @@ func WhiteWaterPointsToYmapsNoCluster(rivers []RiverWithSpots,
 }
 
 func SingleWhiteWaterPointToYmaps(spot Spot, river RiverWithSpots, resourcesBase string, processImgForWeb func(img *Img), linkMaker LinkMaker) ([]Feature, error) {
-	return []Feature{mkFeature(spot, river, true, resourcesBase, processImgForWeb, linkMaker, river.Visible)}, nil
+	return []Feature{mkFeature(spot, river, true, resourcesBase, processImgForWeb, linkMaker, river.Visible, nil)}, nil
 }
