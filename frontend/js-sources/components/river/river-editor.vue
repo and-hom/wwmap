@@ -48,7 +48,7 @@
                       :bind-id="true"
                       :base-url="campApiBase"
                       :auth-for-list="false"
-                      :show-selected="true"
+                      :show-selected="false"
                       :map="true"
                       :map-default-location="getCenter"
                       :allow-empty-title="true">
@@ -75,15 +75,17 @@
                         <tr>
                           <th width="200px">Название</th>
                           <th width="250px">Откуда</th>
-                          <th width="250px">Реки</th>
                           <th>Контакты / Описание</th>
                         </tr>
                         </thead>
                         <tbody>
-                        <transfer-row v-for="transfer in slotProps.entities"
-                                      :key="transfer.id"
-                                      :transfer="transfer"
-                                      :can-edit="true"/>
+                        <tr v-for="transfer in slotProps.entities">
+                          <td width="200px">{{transfer.title}}</td>
+                          <td width="250px"><ul style="display: inline-block; margin-bottom: 0;" class="wwmap-tags">
+                            <li v-for="station in transfer.stations" style="margin-bottom: 0;" class="wwmap-tag">{{station}}</li>
+                          </ul></td>
+                          <td>{{transfer.description}}</td>
+                        </tr>
                         </tbody>
                       </table>
                     </template>
