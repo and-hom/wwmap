@@ -15,7 +15,7 @@ import JobsPage from './pages/jobs-page.vue'
 import TimelinePage from './pages/timeline-page.vue'
 import TransferPage from './pages/transfer-page.vue'
 import CampPage from './pages/camp-page.vue'
-import ReportPage from './pages/report-page.vue'
+import VoyageReportPage from './pages/voyage-report-page.vue'
 import PackageChangelog from './pages/package-changelog-page.vue'
 
 import vSelect from 'vue-select'
@@ -113,8 +113,8 @@ export function initCamp() {
     return init(CampPage)
 }
 
-export function initReport() {
-    return init(ReportPage)
+export function initVoyageReport() {
+    return init(VoyageReportPage)
 }
 
 export function initPackageChangelog() {

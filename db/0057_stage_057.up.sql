@@ -22,4 +22,3 @@ ALTER TABLE voyage_report_river
     ADD CONSTRAINT voyage_report_river_river_id_fkey
         FOREIGN KEY (river_id) REFERENCES river
             ON DELETE CASCADE;
- 

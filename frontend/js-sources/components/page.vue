@@ -119,7 +119,7 @@
                                 title: "Заброски",
                             },
                             {
-                                href: "report.htm",
+                                href: "voyage-report.htm",
                                 title: "Отчёты",
                             },
                         ]

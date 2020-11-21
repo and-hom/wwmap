@@ -10,8 +10,8 @@ import (
 type linkedEntityHanler struct {
 	App
 	handler linkedEntityHandler
-	base string
-	roles []dao.Role
+	base    string
+	roles   []dao.Role
 }
 
 func (this *linkedEntityHanler) Init() {
