@@ -85,6 +85,16 @@ type RiverWithSpots struct {
 	CountryId int64
 }
 
+func (this RiverWithSpots) ComputeMaxCategory() int {
+	maxCategory := 0
+	for _, spot := range this.Spots {
+		if spot.Category.Category > maxCategory {
+			maxCategory = spot.Category.Category
+		}
+	}
+	return maxCategory
+}
+
 type RiverWithSpotsExt struct {
 	RiverWithSpots
 	Description string
