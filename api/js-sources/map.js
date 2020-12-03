@@ -1,19 +1,19 @@
 import {WWMapSearchProvider} from "./searchProvider";
 import {createLegend} from "./legend";
-import {show_map_at_and_highlight_river, highlight_river} from "./main";
+import {highlight_river} from "./main";
 import {
     CACHED_TILES_TEMPLATE,
+    createUnpublishedUrlPart,
     getLastPositionAndZoom,
     setLastPositionZoomType,
     isMobileBrowser,
-    createCampsUrlPart
+    createCampsUrlPart,
 } from './util';
 import {bingSatTiles} from './map-urls/bing'
 import {googleSatTiles} from './map-urls/google'
 import {apiBase} from "./config";
 import {createMeasurementToolControl} from "./router/control";
 import {WWMapMeasurementTool} from "./router/measurement";
-import {createUnpublishedUrlPart} from './util'
 
 export function WWMap(divId, bubbleTemplate, riverList, tutorialPopup, catalogLinkType) {
     this.divId = divId;
@@ -203,10 +203,24 @@ WWMap.prototype.init = function () {
     });
 
     objectManager.setFilter(function (obj) {
-        if (obj.properties.category && t.catFilter) {
-            var objCategory = parseInt(obj.properties.category[0]);
-            return t.catFilter === 1 || objCategory < 0 || objCategory >= t.catFilter;
+        if (t.catFilter <= 1) {
+            return true;
         }
+
+        if (t.catFilter) {
+            var objCategory = obj.properties.category
+                ? parseInt(obj.properties.category[0])
+                : 0;
+            var riverCategory = obj.properties.river_category
+                ? parseInt(obj.properties.river_category)
+                : objCategory;
+
+            if (objCategory <= 0) {
+                objCategory = riverCategory;
+            }
+            return objCategory >= t.catFilter;
+        }
+
         return true
     });
 
