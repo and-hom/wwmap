@@ -1,3 +1,10 @@
+wwmap-backend (0.0.61) unstable; urgency=medium
+
+  * #361 Fix category filter on map: don't show uncategorized spots if river
+    max category is less then filter value
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Thu, 03 Dec 2020 22:44:48 +0300
+
 wwmap-backend (0.0.60) unstable; urgency=medium
 
   * #278 Region editor

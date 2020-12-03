@@ -1,4 +1,10 @@
-wwmap-api (2.1.7) UNRELEASED; urgency=medium
+wwmap-api (2.1.8) unstable; urgency=medium
+
+  * #361 Fix category filter on map: don't show uncategorized spots if river max category is less then filter value
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Thu, 03 Dec 2020 22:43:40 +0300
+
+wwmap-api (2.1.7) unstable; urgency=medium
 
   * #358 Fix category icon on river card in firefox
   * Showdown dependency added
