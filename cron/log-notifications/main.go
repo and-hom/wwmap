@@ -98,18 +98,6 @@ func appendId(m *map[string][]int64, objectType string, id int64) {
 	(*m)[objectType] = append(arr, id)
 }
 
-func objectActionStr(action dao.ChangesLogEntryType) string {
-	switch action {
-	case dao.ENTRY_TYPE_CREATE:
-		return "добавлено"
-	case dao.ENTRY_TYPE_MODIFY:
-		return "отредактировано"
-	case dao.ENTRY_TYPE_DELETE:
-		return "удалено"
-	}
-	return string(action)
-}
-
 func objectTypeStr(objectType string) (string, bool) {
 	switch objectType {
 	case handler.REGION_LOG_ENTRY_TYPE:
@@ -120,6 +108,12 @@ func objectTypeStr(objectType string) (string, bool) {
 		return "Порогов", true
 	case handler.IMAGE_LOG_ENTRY_TYPE:
 		return "Изображений", true
+	case handler.CAMP_LOG_ENTRY_TYPE:
+		return "Стоянок", true
+	case handler.VOYAGE_REPORT_LOG_ENTRY_TYPE:
+		return "Отчётов", true
+	case handler.TRANSFER_LOG_ENTRY_TYPE:
+		return "Забросок", true
 	}
 	return "", false
 }

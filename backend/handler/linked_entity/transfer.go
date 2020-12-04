@@ -65,18 +65,23 @@ func (this *TransferHandler) Upsert(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	var logType dao.ChangesLogEntryType
 	if transfer.Id > 0 {
 		if err := this.TransferDao.Update(transfer); err != nil {
 			OnError500(w, err, "Can't update")
 			return
 		}
+		logType = dao.ENTRY_TYPE_MODIFY
 	} else {
 		if transfer.Id, err = this.TransferDao.Insert(transfer); err != nil {
 			OnError500(w, err, "Can't insert")
 			return
 		}
+		logType = dao.ENTRY_TYPE_CREATE
 	}
 	JsonAnswer(w, transfer)
+
+	this.LogUserEvent(req, handler.TRANSFER_LOG_ENTRY_TYPE, transfer.Id, logType, transfer.Title)
 }
 
 func (this *TransferHandler) Delete(w http.ResponseWriter, req *http.Request) {
@@ -88,10 +93,22 @@ func (this *TransferHandler) Delete(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	transfer, found, err := this.TransferDao.Find(id)
+	if err != nil {
+		OnError500(w, err, fmt.Sprintf("Can not select transfer by id: %d", id))
+		return
+	}
+	if !found {
+		OnError(w, err, fmt.Sprintf("Transfer with id %d not found", id), http.StatusNotFound)
+		return
+	}
+
+
 	if err := this.TransferDao.Remove(id); err != nil {
 		OnError500(w, err, fmt.Sprintf("Can't delete transfer with id %d", id))
 		return
 	}
+	this.LogUserEvent(req, handler.TRANSFER_LOG_ENTRY_TYPE, id, dao.ENTRY_TYPE_DELETE, transfer.Title)
 }
 
 func (this *TransferHandler) writeTransfer(id int64, w http.ResponseWriter) {
