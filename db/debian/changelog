@@ -1,3 +1,12 @@
+wwmap-db (0.0.31) unstable; urgency=medium
+
+  * #357 Common catalogs editor futures
+  * #264 Camps table and editor
+  * #321 Voyage report editor
+  * #12 Transfer grid
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Fri, 04 Dec 2020 22:37:24 +0300
+
 wwmap-db (0.0.30) unstable; urgency=medium
 
   * #12 Transfers catalog

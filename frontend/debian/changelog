@@ -1,3 +1,13 @@
+wwmap-frontend (0.0.68) unstable; urgency=medium
+
+  * #357 Common catalogs editor futures. Add meteo points and level sensors using common components.
+  * #264 Camps table and editor
+  * #321 Voyage report editor
+  * #12 Transfer editing in universal grid
+  * #362 Enable access to map tiles via https
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Fri, 04 Dec 2020 22:45:05 +0300
+
 wwmap-frontend (0.0.67) unstable; urgency=medium
 
   * #278 Region editor

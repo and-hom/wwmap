@@ -1,3 +1,9 @@
+wwmap-api (2.1.9) unstable; urgency=medium
+
+  * #264 Camps on map
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Fri, 04 Dec 2020 22:42:48 +0300
+
 wwmap-api (2.1.8) unstable; urgency=medium
 
   * #361 Fix category filter on map: don't show uncategorized spots if river max category is less then filter value

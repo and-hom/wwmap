@@ -1,3 +1,11 @@
+wwmap-cron-modules (0.0.34) unstable; urgency=medium
+
+  * #264 #357 #12 Report, camp and transfer editing logging
+  * #321 Reports grid and editor: date type changed to pointer
+  * #278 Region editor: new log entry type added
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Fri, 04 Dec 2020 22:47:45 +0300
+
 wwmap-cron-modules (0.0.33) unstable; urgency=medium
 
   * #346 Use yaml safe_load instead of load
