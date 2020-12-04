@@ -111,8 +111,16 @@
                         allow: ['EDITOR', 'ADMIN'],
                         sub: [
                             {
+                                href: "camp.htm",
+                                title: "Стоянки",
+                            },
+                            {
                                 href: "transfer.htm",
                                 title: "Заброски",
+                            },
+                            {
+                                href: "voyage-report.htm",
+                                title: "Отчёты",
                             },
                         ]
                     },

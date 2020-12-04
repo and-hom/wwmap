@@ -104,7 +104,7 @@ func (this *RiverHandler) GetRiverCard(w http.ResponseWriter, req *http.Request)
 		return
 	}
 
-	reports, err := this.VoyageReportDao.List(river.Id, MAX_REPORTS_PER_SOURCE)
+	reports, err := this.VoyageReportDao.ByRiver(river.Id, MAX_REPORTS_PER_SOURCE)
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not select reports for river %d", river.Id))
 		return
@@ -172,7 +172,7 @@ func (this *RiverHandler) GetRiverCard(w http.ResponseWriter, req *http.Request)
 			url.QueryEscape("сплав")}, "+"),
 		ResourceBase: this.ResourceBase,
 	}
-	w.Write([]byte(this.JsonStr(dto, "{}")))
+	w.Write([]byte(JsonStr(dto, "{}")))
 }
 
 func (this *RiverHandler) groupReports(reports []dao.VoyageReport, river dao.RiverWithSpotsExt) []VoyageReportListDto {
@@ -283,7 +283,7 @@ func (this *RiverHandler) GetVisibleRiversLite(w http.ResponseWriter, req *http.
 			Visible: river.Visible,
 		})
 	}
-	w.Write([]byte(this.JsonStr(riversWithReports, "[]")))
+	w.Write([]byte(JsonStr(riversWithReports, "[]")))
 }
 
 func (this *RiverHandler) GetVisibleRivers(w http.ResponseWriter, req *http.Request) {
@@ -303,7 +303,7 @@ func (this *RiverHandler) GetVisibleRivers(w http.ResponseWriter, req *http.Requ
 		river := &rivers[i]
 		river.Bounds = river.Bounds.WithMargins(RIVER_BOUNDS_MARGINS_RATIO)
 
-		reports, err := this.VoyageReportDao.List(river.Id, MAX_REPORTS_PER_SOURCE)
+		reports, err := this.VoyageReportDao.ByRiver(river.Id, MAX_REPORTS_PER_SOURCE)
 		if err != nil {
 			OnError500(w, err, fmt.Sprintf("Can not select reports for river %d", river.Id))
 			return
@@ -328,7 +328,7 @@ func (this *RiverHandler) GetVisibleRivers(w http.ResponseWriter, req *http.Requ
 		}
 
 	}
-	w.Write([]byte(this.JsonStr(riversWithReports, "[]")))
+	w.Write([]byte(JsonStr(riversWithReports, "[]")))
 }
 
 func (this *RiverHandler) getRiverPassportUrl(river HasPropertiesAndId, base string) string {

@@ -1,22 +1,22 @@
 --@list
-SELECT id, title, stations, description FROM transfer ORDER BY ID;
+SELECT id, title, stations, description, array_agg(river_id) filter (where river_id is not null) :: bigint[]
+FROM transfer LEFT OUTER JOIN transfer_river ON transfer.id = transfer_river.transfer_id
+GROUP BY 1,2,3,4
+ORDER BY 1;
+
+--@find
+SELECT id, title, stations, description, array_agg(river_id) filter (where river_id is not null) :: bigint[]
+FROM transfer LEFT OUTER JOIN transfer_river ON transfer.id = transfer_river.transfer_id
+WHERE transfer.id=$1
+GROUP BY 1,2,3,4
+ORDER BY 1;
 
 --@list-by-river
-SELECT id, title, stations, description FROM transfer t INNER JOIN transfer_river tr on t.id = tr.transfer_id WHERE tr.river_id=$1 ORDER BY ID;
-
---@list-full
-WITH
-     river_bounds AS (
-        SELECT river.id AS id, ST_AsGeoJSON(ST_Extent(white_water_rapid.point)) AS bounds from
-        river INNER JOIN white_water_rapid ON  river.id=white_water_rapid.river_id  GROUP BY river.id ),
-     river_data AS (
-        SELECT r.id, r.title, reg.id AS region_id, reg.country_id, b.bounds FROM river r
-            INNER JOIN region reg ON r.region_id = reg.id
-            LEFT OUTER JOIN river_bounds b ON b.id = r.id
-        )
-SELECT t.id, t.title, t.stations, t.description, r.id, r.region_id, r.country_id, r.title, r.bounds FROM transfer t
-LEFT OUTER JOIN transfer_river tr ON t.id = tr.transfer_id
-LEFT OUTER JOIN river_data r ON r.id = tr.river_id;
+SELECT id, title, stations, description, array_agg(river_id) filter (where river_id is not null) :: bigint[]
+FROM transfer t INNER JOIN transfer_river tr on t.id = tr.transfer_id
+WHERE tr.river_id=$1
+GROUP BY 1,2,3,4
+ORDER BY 1;
 
 --@insert
 INSERT INTO transfer(title, stations, description) VALUES ($1, $2, $3) RETURNING id;

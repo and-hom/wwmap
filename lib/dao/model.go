@@ -264,19 +264,6 @@ func (this NotificationRecipientWithClassifier) String() string {
 	return fmt.Sprintf("%v - %s", this.NotificationRecipient, this.Classifier)
 }
 
-type VoyageReport struct {
-	Id            int64     `json:"id,omitempty"`
-	Title         string    `json:"title"`
-	Author        string    `json:"author"`
-	Source        string    `json:"source"`
-	RemoteId      string    `json:"remote_id"`
-	Url           string    `json:"url"`
-	DatePublished time.Time `json:"id,omitempty"`
-	DateModified  time.Time `json:"id,omitempty"`
-	DateOfTrip    time.Time `json:"id,omitempty"`
-	Tags          []string  `json:"-"`
-}
-
 type ImageType string
 
 const (
@@ -540,20 +527,54 @@ func min(x, y int) int {
 	return y
 }
 
-type Transfer struct {
+type ILinkedEntity interface {
+	SetRiversData(*[]LinkedEntityRiver)
+	GetRivers() []int64
+}
+
+type LinkedEntity struct {
 	IdTitle
-	Stations    []string `json:"stations"`
-	Description string   `json:"description"`
+	Rivers     []int64 `json:"rivers"`
+	RiversData *[]LinkedEntityRiver `json:"rivers_data"`
 }
 
-type TransferFull struct {
-	Transfer
-	Rivers []TransferToRiver `json:"rivers"`
+func (this *LinkedEntity) SetRiversData(riversData *[]LinkedEntityRiver)  {
+	this.RiversData = riversData
 }
 
-type TransferToRiver struct {
+func (this *LinkedEntity) GetRivers() []int64  {
+	return this.Rivers
+}
+
+type LinkedEntityRiver struct {
 	IdTitle
 	RegionId  int64 `json:"region_id"`
 	CountryId int64 `json:"country_id"`
 	Bounds    *Bbox `json:"bounds,omitempty"`
+}
+
+type Camp struct {
+	LinkedEntity
+	OsmId         int64  `json:"osm_id"`
+	Description   string `json:"description"`
+	Point         Point  `json:"point"`
+	NumTentPlaces uint16 `json:"num_tent_places"`
+}
+
+type Transfer struct {
+	LinkedEntity
+	Stations    []string `json:"stations"`
+	Description string   `json:"description"`
+}
+
+type VoyageReport struct {
+	LinkedEntity
+	Author        string    `json:"author"`
+	Source        string    `json:"source"`
+	RemoteId      string    `json:"remote_id"`
+	Url           string    `json:"url"`
+	DatePublished *time.Time `json:"date_published,omitempty"`
+	DateModified  time.Time `json:"date_modified,omitempty"`
+	DateOfTrip    *time.Time `json:"date_of_trip,omitempty"`
+	Tags          []string  `json:"tags"`
 }

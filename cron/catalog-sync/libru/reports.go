@@ -83,7 +83,7 @@ func (this LibRuReportsProvider) ReportsSince(t time.Time) ([]dao.VoyageReport, 
 			return
 		}
 		dateOfTrip := this.parseDateOfTrip(title)
-		if dateOfTrip == zero {
+		if dateOfTrip == nil {
 			return
 		}
 
@@ -91,13 +91,13 @@ func (this LibRuReportsProvider) ReportsSince(t time.Time) ([]dao.VoyageReport, 
 
 		reports = append(reports, dao.VoyageReport{
 			RemoteId:      reportUrl,
-			Title:         title,
+			LinkedEntity:  dao.LinkedEntity{IdTitle: dao.IdTitle{Title: title}},
 			Author:        author,
 			Source:        SOURCE,
 			Url:           SITE_URL + reportUrl,
 			Tags:          tags,
 			DateOfTrip:    dateOfTrip,
-			DatePublished: zero,
+			DatePublished: nil,
 			DateModified:  zero,
 		})
 	})
@@ -122,7 +122,7 @@ func (this LibRuReportsProvider) getTags(title string) []string {
 	return tags
 }
 
-func (this LibRuReportsProvider) parseDateOfTrip(title string) time.Time {
+func (this LibRuReportsProvider) parseDateOfTrip(title string) *time.Time {
 	yearFound := yearRe.FindAllStringSubmatch(title, -1)
 	if len(yearFound) > 0 {
 		log.Debug(yearFound)
@@ -130,10 +130,11 @@ func (this LibRuReportsProvider) parseDateOfTrip(title string) time.Time {
 		if err != nil {
 			log.Errorf("Can not parse year: %s", yearFound[0])
 		} else if y > 0 {
-			return time.Date(int(y), time.January, 2, 0, 0, 0, 0, time.UTC)
+			d := time.Date(int(y), time.January, 2, 0, 0, 0, 0, time.UTC)
+			return &d
 		}
 	}
-	return zero
+	return nil
 }
 
 func (this LibRuReportsProvider) Images(reportId string) ([]dao.Img, error) {

@@ -134,7 +134,7 @@ func (this *ImgHandler) AddExternalImage(w http.ResponseWriter, req *http.Reques
 		OnError500(w, err, "Can not insert")
 		return
 	}
-	this.JsonAnswer(w, img)
+	JsonAnswer(w, img)
 }
 
 func (this *ImgHandler) Upload(w http.ResponseWriter, req *http.Request) {
@@ -372,7 +372,7 @@ func (this *ImgHandler) SetDate(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	this.JsonAnswer(w, level)
+	JsonAnswer(w, level)
 
 	this.LogUserEvent(req, IMAGE_LOG_ENTRY_TYPE, imgId, dao.ENTRY_TYPE_MODIFY, fmt.Sprintf("date=%v", date))
 }
@@ -399,7 +399,7 @@ func (this *ImgHandler) SetManualLevel(w http.ResponseWriter, req *http.Request)
 		return
 	}
 
-	this.JsonAnswer(w, levels)
+	JsonAnswer(w, levels)
 
 	this.LogUserEvent(req, IMAGE_LOG_ENTRY_TYPE, imgId, dao.ENTRY_TYPE_MODIFY, fmt.Sprintf("manual level=%v", level))
 }
@@ -419,7 +419,7 @@ func (this *ImgHandler) ResetManualLevel(w http.ResponseWriter, req *http.Reques
 		return
 	}
 
-	this.JsonAnswer(w, levels)
+	JsonAnswer(w, levels)
 
 	this.LogUserEvent(req, IMAGE_LOG_ENTRY_TYPE, imgId, dao.ENTRY_TYPE_MODIFY, "reset manual level")
 }
@@ -495,7 +495,7 @@ func (this *ImgHandler) GetPreview(w http.ResponseWriter, req *http.Request) {
 	}
 
 	this.processForWeb(&img)
-	this.JsonAnswer(w, img)
+	JsonAnswer(w, img)
 }
 
 func (this *ImgHandler) listImagesForSpot(w http.ResponseWriter, spotId int64, _type dao.ImageType) {
@@ -508,7 +508,7 @@ func (this *ImgHandler) listImagesForSpot(w http.ResponseWriter, spotId int64, _
 		this.processForWeb(&imgs[i].Img)
 	}
 
-	this.JsonAnswer(w, imgs)
+	JsonAnswer(w, imgs)
 }
 
 func getImgType(req *http.Request) dao.ImageType {

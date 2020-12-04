@@ -9,7 +9,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div class="settings">
+                    <div class="wwmap-settings">
                         <label for="task_title">Название</label><input id="task_title" v-model="job.title"/>
                         <label for="cron_expr">Cron expression</label><input id="cron_expr" v-model="job.expr"/>
                         <label for="enabled">Включен</label><input type="checkbox" id="enabled" v-model="job.enabled"/>
@@ -35,23 +35,6 @@
         </div>
     </div>
 </template>
-
-<style type="text/css">
-    div.settings {
-        display: grid;
-        grid-template-columns: max-content max-content;
-        grid-gap: 5px;
-    }
-
-    div.settings label {
-        text-align: right;
-        margin-right: 15px;
-    }
-
-    div.settings label:after {
-        content: ":";
-    }
-</style>
 
 <script>
     import {cronApiBase} from '../../config'

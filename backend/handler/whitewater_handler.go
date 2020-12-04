@@ -21,6 +21,7 @@ type WhiteWaterHandler struct {
 }
 
 const PREVIEWS_COUNT int = 20
+const MIN_ZOOM_SHOW_CAMPS int = 12
 
 func (this *WhiteWaterHandler) Init() {
 	this.Register("/ymaps-tile-ww", HandlerFunctions{Get: this.TileWhiteWaterHandler})
@@ -69,6 +70,7 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 	}
 
 	showUnpublished := ShowUnpublished(req, this.UserDao)
+	showCamps := GetBoolParameter(req, "show_camps", false)
 
 	var features []Feature
 
@@ -120,6 +122,15 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 
 		features = ymaps.WhiteWaterPointsToYmapsNoCluster([]dao.RiverWithSpots{river},
 			this.ResourceBase, skip, this.processForWeb, getLinkMaker(req.FormValue("link_type")))
+
+		if showCamps && zoom >= MIN_ZOOM_SHOW_CAMPS {
+			camps, err := this.CampDao.FindWithinBoundsForRiver(bbox, riverId)
+			if err != nil {
+				logrus.Error(err)
+			} else {
+				features = append(features, ymaps.CampsToYmaps(camps, this.ResourceBase, skip)...)
+			}
+		}
 	} else {
 		rivers, err := this.TileDao.ListRiversWithBounds(bbox, PREVIEWS_COUNT, showUnpublished)
 		if err != nil {
@@ -147,11 +158,20 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 			OnError500(w, err, fmt.Sprintf("Can not cluster: %s", bbox.String()))
 			return
 		}
+
+		if showCamps && zoom >= MIN_ZOOM_SHOW_CAMPS {
+			camps, err := this.CampDao.FindWithinBounds(bbox)
+			if err != nil {
+				logrus.Error(err)
+			} else {
+				features = append(features, ymaps.CampsToYmaps(camps, this.ResourceBase, skip)...)
+			}
+		}
 	}
 
 	featureCollection := MkFeatureCollection(features)
 
-	w.Write(this.JsonpAnswer(callback, featureCollection, "{}"))
+	w.Write(JsonpAnswer(callback, featureCollection, "{}"))
 }
 
 func (this *WhiteWaterHandler) RiverPathSegments(w http.ResponseWriter, req *http.Request) {
@@ -165,7 +185,7 @@ func (this *WhiteWaterHandler) RiverPathSegments(w http.ResponseWriter, req *htt
 		OnError(w, err, "Can not select paths", http.StatusBadRequest)
 		return
 	}
-	this.JsonAnswer(w, ways)
+	JsonAnswer(w, ways)
 }
 
 func (this *WhiteWaterHandler) RouterData(w http.ResponseWriter, req *http.Request) {
@@ -179,7 +199,7 @@ func (this *WhiteWaterHandler) RouterData(w http.ResponseWriter, req *http.Reque
 	for i := 0; i < len(ways); i++ {
 		waysMap[ways[i].Id] = ways[i]
 	}
-	this.JsonAnswer(w, RouterDataResp{
+	JsonAnswer(w, RouterDataResp{
 		Tracks: waysMap,
 	})
 }
@@ -190,7 +210,7 @@ func (this *WhiteWaterHandler) RouterStaticData(w http.ResponseWriter, req *http
 		OnError500(w, err, "Can not get waterway ids")
 		return
 	}
-	this.JsonAnswer(w, ids)
+	JsonAnswer(w, ids)
 }
 
 func getLinkMaker(linkType string) ymaps.LinkMaker {
@@ -226,7 +246,7 @@ func (this *WhiteWaterHandler) search(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	this.JsonAnswer(w, SearchResp{
+	JsonAnswer(w, SearchResp{
 		Spots:        spots,
 		Rivers:       rivers,
 		ResourceBase: this.ResourceBase,

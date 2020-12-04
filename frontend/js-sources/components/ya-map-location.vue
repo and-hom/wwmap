@@ -44,6 +44,14 @@
                 type: Boolean,
                 default: true
             },
+            showCamps: {
+                type: Boolean,
+                default: false
+            },
+            exceptCamp: {
+                type: Number,
+                required: false
+            },
         },
         watch: {
             // This would be called anytime the value of title changes
@@ -64,7 +72,6 @@
                     if (component.map) {
                         component.map.destroy();
                         component.label.geometry.setCoordinates(component.getP(0));
-                        return
                     } else {
                         addMapLayers();
                     }
@@ -207,6 +214,7 @@
                     if (st) {
                         url += '&session_id=' + st
                     }
+                    url += `&show_camps=${this.showCamps}`
                     return url
                 },
                 addObjectManager: function () {

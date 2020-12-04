@@ -111,6 +111,8 @@ func (this *App) collectReferer(r *http.Request) {
 	}
 }
 
+const VOYAGE_REPORT_LOG_ENTRY_TYPE = "REPORT"
+const CAMP_LOG_ENTRY_TYPE = "CAMP"
 const SPOT_LOG_ENTRY_TYPE = "SPOT"
 const RIVER_LOG_ENTRY_TYPE = "RIVER"
 const REGION_LOG_ENTRY_TYPE = "REGION"
@@ -140,4 +142,13 @@ func (this *App) LogUserEvent(r *http.Request, objType string, id int64, logType
 			log.Error("User is null but authorized!")
 		}
 	}()
+}
+
+func GetBoolParameter(req *http.Request, name string, _default bool) bool {
+	valStr := req.FormValue(name)
+	value, err := strconv.ParseBool(valStr)
+	if err != nil {
+		return _default
+	}
+	return value
 }

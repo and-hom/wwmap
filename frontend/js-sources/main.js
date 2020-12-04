@@ -14,6 +14,8 @@ import SitesPage from './pages/sites-page.vue'
 import JobsPage from './pages/jobs-page.vue'
 import TimelinePage from './pages/timeline-page.vue'
 import TransferPage from './pages/transfer-page.vue'
+import CampPage from './pages/camp-page.vue'
+import VoyageReportPage from './pages/voyage-report-page.vue'
 import PackageChangelog from './pages/package-changelog-page.vue'
 
 import vSelect from 'vue-select'
@@ -107,6 +109,14 @@ export function initTransfer() {
     return init(TransferPage)
 }
 
+export function initCamp() {
+    return init(CampPage)
+}
+
+export function initVoyageReport() {
+    return init(VoyageReportPage)
+}
+
 export function initPackageChangelog() {
     return init(PackageChangelog)
 }
@@ -127,6 +137,28 @@ function init(page) {
     Vue.filter('formatDateTimeStr', function (value) {
         if (value) {
             return moment(String(value)).format('YYYY-MM-DD HH:mm:ss')
+        }
+    });
+
+    Vue.filter('formatDateStr', function (value) {
+        if (value) {
+            return moment(String(value)).format('YYYY-MM-DD')
+        }
+    });
+
+    Vue.filter('yearOnly0102', function (value) {
+        if (value.endsWith('-01-02')) {
+            return value.substring(0, 4);
+        } else {
+            return value;
+        }
+    });
+
+    Vue.filter('orElse', function (value, emptyPlaceholder) {
+        if (value) {
+            return value;
+        } else {
+            return emptyPlaceholder
         }
     });
 

@@ -46,8 +46,10 @@ func (this *GeoHierarchyHandler) Init() {
 		Delete: this.ForRoles(this.RemoveRegion, dao.ADMIN),
 	})
 
-	this.Register("/river", HandlerFunctions{Get: this.FilterRivers})
-	this.Register("/river/{riverId}", HandlerFunctions{Get: this.GetRiver,
+	this.Register("/river", HandlerFunctions{Get: this.ListAllRivers})
+	this.Register("/river-search", HandlerFunctions{Get: this.FilterRivers})
+	this.Register("/river/{riverId}", HandlerFunctions{
+		Get:    this.GetRiver,
 		Put:    this.ForRoles(this.SaveRiver, dao.ADMIN, dao.EDITOR),
 		Post:   this.ForRoles(this.SaveRiver, dao.ADMIN, dao.EDITOR),
 		Delete: this.ForRoles(this.RemoveRiver, dao.ADMIN, dao.EDITOR)})
@@ -94,6 +96,7 @@ type RiverDto struct {
 	Visible     bool                   `json:"visible"`
 	Props       map[string]interface{} `json:"props"`
 	Transfers   []int64                `json:"transfers,omitempty"`
+	Camps       []int64                `json:"camps,omitempty"`
 }
 
 type RegionDto struct {
@@ -107,7 +110,7 @@ func (this *GeoHierarchyHandler) ListCountries(w http.ResponseWriter, r *http.Re
 		OnError500(w, err, "Can not list countries")
 		return
 	}
-	this.JsonAnswer(w, countries)
+	JsonAnswer(w, countries)
 }
 
 func (this *GeoHierarchyHandler) ListRegions(w http.ResponseWriter, r *http.Request) {
@@ -123,7 +126,7 @@ func (this *GeoHierarchyHandler) ListRegions(w http.ResponseWriter, r *http.Requ
 		OnError500(w, err, fmt.Sprintf("Can not list regions of country %d", countryId))
 		return
 	}
-	this.JsonAnswer(w, regions)
+	JsonAnswer(w, regions)
 }
 
 func (this *GeoHierarchyHandler) ListAllRegions(w http.ResponseWriter, r *http.Request) {
@@ -132,7 +135,7 @@ func (this *GeoHierarchyHandler) ListAllRegions(w http.ResponseWriter, r *http.R
 		OnError500(w, err, "Can not list regions")
 		return
 	}
-	this.JsonAnswer(w, regions)
+	JsonAnswer(w, regions)
 }
 
 func (this *GeoHierarchyHandler) GetRegion(w http.ResponseWriter, r *http.Request) {
@@ -226,7 +229,7 @@ func (this *GeoHierarchyHandler) writeRegion(regionId int64, w http.ResponseWrit
 		riverCnt > 0,
 	}
 
-	this.JsonAnswer(w, dto)
+	JsonAnswer(w, dto)
 }
 
 func (this *GeoHierarchyHandler) ListCountryRivers(w http.ResponseWriter, r *http.Request) {
@@ -242,7 +245,7 @@ func (this *GeoHierarchyHandler) ListCountryRivers(w http.ResponseWriter, r *htt
 		OnError500(w, err, fmt.Sprintf("Can not list rivers of country %d", countryId))
 		return
 	}
-	this.JsonAnswer(w, rivers)
+	JsonAnswer(w, rivers)
 }
 
 func (this *GeoHierarchyHandler) ListRegionRivers(w http.ResponseWriter, r *http.Request) {
@@ -258,7 +261,7 @@ func (this *GeoHierarchyHandler) ListRegionRivers(w http.ResponseWriter, r *http
 		OnError500(w, err, fmt.Sprintf("Can not list rivers of region %d", regionId))
 		return
 	}
-	this.JsonAnswer(w, rivers)
+	JsonAnswer(w, rivers)
 }
 
 const DEFAULT_REPORT_GROUP_LIMIT int = 20
@@ -282,12 +285,12 @@ func (this *GeoHierarchyHandler) ListRiverReports(w http.ResponseWriter, r *http
 		}
 	}
 
-	voyageReports, err := this.VoyageReportDao.List(riverId, int(groupLimit))
+	voyageReports, err := this.VoyageReportDao.ByRiver(riverId, int(groupLimit))
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not list reports of river %d", riverId))
 		return
 	}
-	this.JsonAnswer(w, voyageReports)
+	JsonAnswer(w, voyageReports)
 }
 
 func (this *GeoHierarchyHandler) ListSpots(w http.ResponseWriter, r *http.Request) {
@@ -303,7 +306,7 @@ func (this *GeoHierarchyHandler) ListSpots(w http.ResponseWriter, r *http.Reques
 		OnError500(w, err, fmt.Sprintf("Can not list spots of river %d", riverId))
 		return
 	}
-	this.JsonAnswer(w, spots)
+	JsonAnswer(w, spots)
 }
 
 func (this *GeoHierarchyHandler) ListSpotsFull(w http.ResponseWriter, r *http.Request) {
@@ -319,7 +322,7 @@ func (this *GeoHierarchyHandler) ListSpotsFull(w http.ResponseWriter, r *http.Re
 		OnError500(w, err, fmt.Sprintf("Can not list spots of river %d", riverId))
 		return
 	}
-	this.JsonAnswer(w, spots)
+	JsonAnswer(w, spots)
 }
 
 func (this *GeoHierarchyHandler) GetRiverCenter(w http.ResponseWriter, r *http.Request) {
@@ -334,7 +337,7 @@ func (this *GeoHierarchyHandler) GetRiverCenter(w http.ResponseWriter, r *http.R
 		OnError500(w, err, fmt.Sprintf("Can not get centroid of river %d", riverId))
 		return
 	}
-	this.JsonAnswer(w, centroid)
+	JsonAnswer(w, centroid)
 }
 
 func (this *GeoHierarchyHandler) GetRiverBounds(w http.ResponseWriter, r *http.Request) {
@@ -349,7 +352,7 @@ func (this *GeoHierarchyHandler) GetRiverBounds(w http.ResponseWriter, r *http.R
 		OnError500(w, err, fmt.Sprintf("Can not get bounds of river %d", riverId))
 		return
 	}
-	this.JsonAnswer(w, bounds)
+	JsonAnswer(w, bounds)
 }
 
 func (this *GeoHierarchyHandler) UploadGpx(w http.ResponseWriter, req *http.Request) {
@@ -402,7 +405,7 @@ func (this *GeoHierarchyHandler) UploadGpx(w http.ResponseWriter, req *http.Requ
 
 	this.LogUserEvent(req, RIVER_LOG_ENTRY_TYPE, riverId, dao.ENTRY_TYPE_MODIFY, "Upload GPX")
 
-	this.JsonAnswer(w, spots)
+	JsonAnswer(w, spots)
 }
 
 func (this *GeoHierarchyHandler) GetRiver(w http.ResponseWriter, r *http.Request) {
@@ -479,6 +482,7 @@ func (this *GeoHierarchyHandler) SaveRiver(w http.ResponseWriter, r *http.Reques
 	}
 
 	this.TransferDao.SetLinksForRiver(id, river.Transfers)
+	this.CampDao.SetLinksForRiver(id, river.Camps)
 
 	this.writeRiver(id, w)
 	this.LogUserEvent(r, RIVER_LOG_ENTRY_TYPE, id, logEntryType, riverForDb.Title)
@@ -611,6 +615,12 @@ func (this *GeoHierarchyHandler) writeRiver(riverId int64, w http.ResponseWriter
 		return
 	}
 
+	camps, err := this.CampDao.GetIdsForRiver(riverId)
+	if err != nil {
+		OnError500(w, err, fmt.Sprintf("Can not get camps for river %d", riverId))
+		return
+	}
+
 	riverWithRegion := RiverDto{
 		Id:          river.Id,
 		Title:       river.Title,
@@ -620,8 +630,18 @@ func (this *GeoHierarchyHandler) writeRiver(riverId int64, w http.ResponseWriter
 		Visible:     river.Visible,
 		Props:       river.Props,
 		Transfers:   transfers,
+		Camps:   	 camps,
 	}
-	this.JsonAnswer(w, riverWithRegion)
+	JsonAnswer(w, riverWithRegion)
+}
+
+func (this *GeoHierarchyHandler) ListAllRivers(w http.ResponseWriter, r *http.Request) {
+	regions, err := this.RiverDao.ListAll()
+	if err != nil {
+		OnError500(w, err, "Can not list rivers")
+		return
+	}
+	JsonAnswer(w, regions)
 }
 
 func (this *GeoHierarchyHandler) FilterRivers(w http.ResponseWriter, r *http.Request) {
@@ -646,7 +666,7 @@ func (this *GeoHierarchyHandler) FilterRivers(w http.ResponseWriter, r *http.Req
 			Props:   river.Props,
 		}
 	}
-	this.JsonAnswer(w, dtos)
+	JsonAnswer(w, dtos)
 }
 
 func (this *GeoHierarchyHandler) GetSpot(w http.ResponseWriter, r *http.Request) {
@@ -763,7 +783,7 @@ func (this *GeoHierarchyHandler) writeSpot(spotId int64, w http.ResponseWriter) 
 		OnError500(w, err, fmt.Sprintf("Can not get spot %d", spotId))
 		return
 	}
-	this.JsonAnswer(w, spot)
+	JsonAnswer(w, spot)
 }
 
 func (this *GeoHierarchyHandler) GetRiverPassportPdf(w http.ResponseWriter, req *http.Request) {
@@ -807,7 +827,7 @@ func (this *GeoHierarchyHandler) RiverParentIds(w http.ResponseWriter, req *http
 		OnError500(w, err, "Can not get rivers info")
 		return
 	}
-	this.JsonAnswer(w, ids)
+	JsonAnswer(w, ids)
 }
 
 func (this *GeoHierarchyHandler) RegionParentIds(w http.ResponseWriter, req *http.Request) {
@@ -823,7 +843,7 @@ func (this *GeoHierarchyHandler) RegionParentIds(w http.ResponseWriter, req *htt
 		OnError500(w, err, "Can not get rivers info")
 		return
 	}
-	this.JsonAnswer(w, ids)
+	JsonAnswer(w, ids)
 }
 
 func (this *GeoHierarchyHandler) SpotParentIds(w http.ResponseWriter, req *http.Request) {
@@ -839,7 +859,7 @@ func (this *GeoHierarchyHandler) SpotParentIds(w http.ResponseWriter, req *http.
 		OnError500(w, err, "Can not get rivers info")
 		return
 	}
-	this.JsonAnswer(w, ids)
+	JsonAnswer(w, ids)
 }
 
 func (this *GeoHierarchyHandler) ImageParentIds(w http.ResponseWriter, req *http.Request) {
@@ -855,7 +875,7 @@ func (this *GeoHierarchyHandler) ImageParentIds(w http.ResponseWriter, req *http
 		OnError500(w, err, "Can not get rivers info")
 		return
 	}
-	this.JsonAnswer(w, ids)
+	JsonAnswer(w, ids)
 }
 
 func (this *GeoHierarchyHandler) SaveSpotBatch(w http.ResponseWriter, r *http.Request) {
@@ -911,7 +931,7 @@ func (this *GeoHierarchyHandler) SaveSpotBatch(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	this.JsonAnswer(w, "OK")
+	JsonAnswer(w, "OK")
 }
 
 type SpotBatch struct {

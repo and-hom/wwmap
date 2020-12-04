@@ -153,10 +153,10 @@ func (this *HuskytmReportProvider) ReportsSince(key time.Time) ([]dao.VoyageRepo
 
 		ids = append(ids, dao.VoyageReport{
 			RemoteId:      fmt.Sprintf("%d", post.ID),
-			Title:         title,
+			LinkedEntity: dao.LinkedEntity{IdTitle: dao.IdTitle{Title: title}},
 			Author:        "Husky Team",
 			Url:           post.Link,
-			DatePublished: datePublished,
+			DatePublished: &datePublished,
 			DateModified:  dateModified,
 			DateOfTrip:    getYear(title),
 			Source:        SOURCE,
@@ -166,7 +166,7 @@ func (this *HuskytmReportProvider) ReportsSince(key time.Time) ([]dao.VoyageRepo
 	return ids, latest, nil
 }
 
-func getYear(title string) time.Time {
+func getYear(title string) *time.Time {
 	yearFound := yearRe.FindAllStringSubmatch(title, -1)
 	year := int64(0)
 	for i := 0; i < len(yearFound); i++ {
@@ -180,9 +180,10 @@ func getYear(title string) time.Time {
 		}
 	}
 	if year > 0 {
-		return time.Date(int(year), time.January, 2, 0, 0, 0, 0, time.UTC)
+		d := time.Date(int(year), time.January, 2, 0, 0, 0, 0, time.UTC)
+		return &d
 	}
-	return util.ZeroDateUTC()
+	return nil
 }
 
 func (this *HuskytmReportProvider) cacheImages() error {

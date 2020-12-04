@@ -93,15 +93,6 @@ type WaterWayRefDao interface {
 	RefsById() (map[int64][]int64, error)
 }
 
-type VoyageReportDao interface {
-	UpsertVoyageReports(report ...VoyageReport) ([]VoyageReport, error)
-	GetLastId(source string) (interface{}, error)
-	AssociateWithRiver(voyageReportId, riverId int64) error
-	List(riverId int64, limitByGroup int) ([]VoyageReport, error)
-	ForEach(source string, callback func(report *VoyageReport) error) error
-	RemoveRiverLink(id int64, tx interface{}) error
-}
-
 type ImgDao interface {
 	IdEntity
 	InsertLocal(wwId int64, _type ImageType, source string, datePublished time.Time, date *time.Time, level map[string]int8) (Img, error)
@@ -205,17 +196,58 @@ type LevelDao interface {
 	RemoveNullsBefore(fromDate JSONDate) error
 }
 
+type RateDao interface {
+	RemoveByRefId(refId int64, tx interface{}) error
+}
+
+type PhotoDao interface {
+	RemoveByRefId(refId int64, tx interface{}) error
+}
+
 type DbVersionDao interface {
 	GetDbVersion() (int, error)
 }
 
+type RiverLinksDao interface {
+	SetLinksForRiver(riverId int64, entityIds []int64) error
+    GetIdsForRiver(riverId int64) ([]int64, error)
+}
+
 type TransferDao interface {
-	List() ([]Transfer, error)
+	RiverLinksDao
+	List(withRivers bool) ([]Transfer, error)
+	Find(id int64) (Transfer, bool, error)
 	ByRiver(riverId int64) ([]Transfer, error)
-	ListFull() ([]TransferFull, error)
-	Insert(transfer TransferFull) (int64, error)
-	Update(transfer TransferFull) error
+	Insert(transfer Transfer) (int64, error)
+	Update(transfer Transfer) error
 	Remove(id int64) error
-	SetLinksForRiver(riverId int64, transfers []int64) error
-	GetIdsForRiver(int64) ([]int64, error)
+}
+
+type CampDao interface {
+	RiverLinksDao
+	List(withRivers bool) ([]Camp, error)
+	ByRiver(riverId int64) ([]Camp, error)
+	Insert(camp Camp) (int64, error)
+	InsertMultiple(camp ...Camp) ([]int64, error)
+	Update(camp Camp) error
+	Find(id int64) (Camp, bool, error)
+	Remove(id int64, tx interface{}) error
+	FindWithinBounds(bbox Bbox) ([]Camp, error)
+	FindWithinBoundsForRiver(bbox Bbox, riverId int64) ([]Camp, error)
+}
+
+type VoyageReportDao interface {
+	RiverLinksDao
+	List(withReports bool) ([]VoyageReport, error)
+	ByRiver(riverId int64, limitByGroup int) ([]VoyageReport, error)
+	Insert(report VoyageReport) (int64, error)
+	Update(report VoyageReport) error
+	Find(id int64) (VoyageReport, bool, error)
+	Remove(id int64) error
+
+	UpsertVoyageReports(report ...VoyageReport) ([]VoyageReport, error)
+	GetLastId(source string) (interface{}, error)
+	AssociateWithRiver(voyageReportId, riverId int64) error
+	ForEach(source string, callback func(report *VoyageReport) error) error
+	RemoveRiverLink(id int64, tx interface{}) error
 }

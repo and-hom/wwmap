@@ -182,7 +182,7 @@ func (this TlibReportsProvider) queryData(pageNum int, viewState ViewState, date
 
 		remoteId := urlIdRe.FindStringSubmatch(reportUrl)[1]
 
-		datePublished := zero
+		var datePublished *time.Time = nil
 		author := DEFAULT_AUTHOR
 		pageContents, err := this.getReportPageContents(reportUrl)
 		if err != nil {
@@ -211,19 +211,19 @@ func (this TlibReportsProvider) queryData(pageNum int, viewState ViewState, date
 		dateOfTrip, err := parseDateOfTrip(descriptionText)
 		if err != nil {
 			log.Error("Can not parse date of trip ", err)
-			dateOfTrip = zero
+			dateOfTrip = nil
 		}
 
 		report := dao.VoyageReport{
 			RemoteId: remoteId,
-			Title: title,
+			LinkedEntity: dao.LinkedEntity{IdTitle: dao.IdTitle{Title: title}},
 			Author: author,
 			Source: SOURCE,
 			Url: reportUrl,
 			Tags: tags,
 			DateOfTrip: dateOfTrip,
 			DatePublished: datePublished,
-			DateModified: datePublished,
+			DateModified: util.PtrToTime(datePublished),
 		}
 		onReport(report)
 	})
@@ -243,16 +243,16 @@ func (this TlibReportsProvider) queryData(pageNum int, viewState ViewState, date
 	return false, viewState, nil
 }
 
-func parseDateOfTrip(desc string) (time.Time, error) {
+func parseDateOfTrip(desc string) (*time.Time, error) {
 	dateOfTheTripSubmatch := yearMonthRe.FindStringSubmatch(strings.ToLower(desc))
 	if len(dateOfTheTripSubmatch) < 2 {
 		log.Warn("Date of the trip not dound: ", desc)
-		return zero, nil
+		return nil, nil
 	}
 
 	loc, err := time.LoadLocation("Europe/Moscow")
 	if err != nil {
-		return zero, err
+		return nil, err
 	}
 
 	monthStr := "Январь"
@@ -263,10 +263,10 @@ func parseDateOfTrip(desc string) (time.Time, error) {
 	dateOfTheTripStr := strings.ToLower(dateOfTheTripSubmatch[1] + " " + monthStr)
 	dateOfTheTrip, err := monday.ParseInLocation("2006 January", dateOfTheTripStr, loc, monday.LocaleRuRU)
 	if err != nil {
-		return zero, err
+		return nil, err
 	}
 
-	return dateOfTheTrip, nil
+	return &dateOfTheTrip, nil
 }
 
 func (this TlibReportsProvider) getReportPageContents(reportUrl string) (string, error) {
@@ -285,15 +285,16 @@ func (this TlibReportsProvider) getReportPageContents(reportUrl string) (string,
 	return document.Find("#Label1").Text(), nil
 }
 
-func (this TlibReportsProvider) parseDatePublished(reportUrl string, pageContents string) (time.Time, error) {
+func (this TlibReportsProvider) parseDatePublished(reportUrl string, pageContents string) (*time.Time, error) {
 
 	found := publishedDateRe.FindStringSubmatch(pageContents)
 	if len(found) < 2 {
 		log.Warnf("Date not found for description %s %s:\n%s", reportUrl, found, pageContents)
-		return zero, nil
+		return nil, nil
 	}
 	dateStr := found[1]
-	return time.Parse(TIME_FORMAT, dateStr)
+	d, err := time.Parse(TIME_FORMAT, dateStr)
+	return &d, err
 }
 
 func (this TlibReportsProvider) parseAuthor(reportUrl string, pageContents string) string {

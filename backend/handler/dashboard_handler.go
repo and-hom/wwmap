@@ -3,7 +3,7 @@ package handler
 import (
 	"fmt"
 	"github.com/and-hom/wwmap/lib/dao"
-	"github.com/and-hom/wwmap/lib/handler"
+	. "github.com/and-hom/wwmap/lib/handler"
 	. "github.com/and-hom/wwmap/lib/http"
 	"github.com/and-hom/wwmap/lib/util"
 	"net/http"
@@ -25,8 +25,8 @@ type DashboardHandler struct {
 }
 
 func (this *DashboardHandler) Init() {
-	this.Register("/dashboard/ref-sites", handler.HandlerFunctions{Get: this.RefSites})
-	this.Register("/dashboard/levels", handler.HandlerFunctions{Get: this.Levels})
+	this.Register("/dashboard/ref-sites", HandlerFunctions{Get: this.RefSites})
+	this.Register("/dashboard/levels", HandlerFunctions{Get: this.Levels})
 }
 
 func (this *DashboardHandler) RefSites(w http.ResponseWriter, req *http.Request) {
@@ -37,7 +37,7 @@ func (this *DashboardHandler) RefSites(w http.ResponseWriter, req *http.Request)
 		OnError500(w, err, "Can not list referers")
 		return
 	}
-	this.JsonAnswer(w, refs)
+	JsonAnswer(w, refs)
 }
 
 func (this *DashboardHandler) Levels(w http.ResponseWriter, req *http.Request) {
@@ -154,7 +154,7 @@ func (this *DashboardHandler) Levels(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	this.JsonAnswer(w, result)
+	JsonAnswer(w, result)
 }
 
 func graduationLine(days int64, grade int, y int, color string) JChartDataSet {

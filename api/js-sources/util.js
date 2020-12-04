@@ -166,3 +166,10 @@ export function createUnpublishedUrlPart(showUnpublished, first) {
     }
     return '';
 }
+export function createCampsUrlPart(showCamps, first) {
+    if (showCamps) {
+        let firstChar = first ? '?' : '&';
+        return `${firstChar}show_camps=${showCamps}`;
+    }
+    return '';
+}

@@ -78,7 +78,7 @@ func (this *UserInfoHandler) SessionStart(w http.ResponseWriter, r *http.Request
 		ExperimentalFeaures: false,
 	}
 
-	this.JsonAnswer(w, infoDto)
+	JsonAnswer(w, infoDto)
 }
 
 func (this *UserInfoHandler) GetUserInfo(w http.ResponseWriter, r *http.Request) {
@@ -99,7 +99,7 @@ func (this *UserInfoHandler) GetUserInfo(w http.ResponseWriter, r *http.Request)
 		ExperimentalFeaures: user.ExperimentalFeaures,
 	}
 
-	this.JsonAnswer(w, infoDto)
+	JsonAnswer(w, infoDto)
 }
 
 func (this *UserInfoHandler) ListUsers(w http.ResponseWriter, r *http.Request) {
@@ -109,7 +109,7 @@ func (this *UserInfoHandler) ListUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	this.JsonAnswer(w, users)
+	JsonAnswer(w, users)
 }
 
 func (this *UserInfoHandler) SetRole(w http.ResponseWriter, r *http.Request) {
@@ -154,7 +154,7 @@ func (this *UserInfoHandler) SetRole(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	this.JsonAnswer(w, users)
+	JsonAnswer(w, users)
 
 	loginPrefix := ""
 	if user.AuthProvider == dao.VK {
@@ -198,7 +198,7 @@ func (this *UserInfoHandler) SetExperimentalFeatures(w http.ResponseWriter, r *h
 		}
 	}
 
-	this.JsonAnswer(w, users)
+	JsonAnswer(w, users)
 
 	this.LogUserEvent(r, USER_LOG_ENTRY_TYPE, userId, dao.ENTRY_TYPE_MODIFY, fmt.Sprintf("Exp. %t => %t", oldExperimentalMode, newExperimentalMode))
 }
@@ -250,7 +250,7 @@ func (this *UserInfoHandler) GetVkToken(w http.ResponseWriter, r *http.Request) 
 		OnError(w, nil, answer.ErrDesc, http.StatusUnauthorized)
 	}
 
-	this.JsonAnswer(w, answer)
+	JsonAnswer(w, answer)
 }
 
 func (this *UserInfoHandler) sendChangeRoleMessage(userId int64, info dao.UserInfo, authProvider dao.AuthProvider, oldRole dao.Role, newRole dao.Role) {

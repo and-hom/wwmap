@@ -52,3 +52,18 @@ ul {
 .raw-text-content {
     white-space: pre;
 }
+
+div.wwmap-settings {
+    display: grid;
+    grid-template-columns: max-content max-content;
+    grid-gap: 5px;
+}
+
+div.wwmap-settings label {
+    text-align: right;
+    margin-right: 15px;
+}
+
+div.wwmap-settings label:after {
+    content: ":";
+}

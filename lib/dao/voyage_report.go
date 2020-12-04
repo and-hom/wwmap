@@ -10,24 +10,87 @@ import (
 )
 
 func NewVoyageReportPostgresDao(postgresStorage PostgresStorage) VoyageReportDao {
-	return voyageReportStorage{PostgresStorage: postgresStorage,
+	return voyageReportStorage{
+		riverLinksStorage: riverLinksStorage{
+			PostgresStorage:        postgresStorage,
+			listRefsByRiverQuery:   queries.SqlQuery("voyage-report", "list-refs-by-river"),
+			insertRefsQuery:        queries.SqlQuery("voyage-report", "insert-refs"),
+			deleteRefsQuery:        queries.SqlQuery("voyage-report", "delete-refs"),
+			deleteRefsByRiverQuery: queries.SqlQuery("voyage-report", "delete-refs-by-river"),
+			listRivers:             queries.SqlQuery("linked-entity", "list-rivers"),
+		},
+		insertQuery:          queries.SqlQuery("voyage-report", "insert"),
 		upsertQuery:          queries.SqlQuery("voyage-report", "upsert"),
+		updateQuery:          queries.SqlQuery("voyage-report", "update"),
 		getLastIdQuery:       queries.SqlQuery("voyage-report", "get-last-id"),
+		findQuery:            queries.SqlQuery("voyage-report", "find"),
 		listQuery:            queries.SqlQuery("voyage-report", "list"),
-		upsertRiverLinkQuery: queries.SqlQuery("voyage-report", "upsert-river-link"),
+		listByRiverQuery:     queries.SqlQuery("voyage-report", "list-by-river"),
 		listAllQuery:         queries.SqlQuery("voyage-report", "list-all"),
+		removeQuery:          queries.SqlQuery("voyage-report", "remove"),
+		upsertRiverLinkQuery: queries.SqlQuery("voyage-report", "upsert-river-link"),
 		deleteRiverLinkQuery: queries.SqlQuery("voyage-report", "delete-river-link"),
 	}
 }
 
 type voyageReportStorage struct {
-	PostgresStorage
+	riverLinksStorage
+	insertQuery          string
 	upsertQuery          string
+	updateQuery          string
 	getLastIdQuery       string
+	findQuery            string
 	listQuery            string
+	listByRiverQuery     string
 	listAllQuery         string
+	removeQuery          string
 	upsertRiverLinkQuery string
 	deleteRiverLinkQuery string
+}
+
+func (this voyageReportStorage) List(withRivers bool) ([]VoyageReport, error) {
+	found, err := this.DoFindList(this.listQuery, readReportFromRows)
+	if err != nil {
+		return []VoyageReport{}, err
+	}
+
+	reports := found.([]VoyageReport)
+
+	if withRivers {
+		if err := this.enrichWithRiverData(convertVoyageReports(&reports)); err != nil {
+			return nil, err
+		}
+	}
+
+	return reports, nil
+}
+
+func (this voyageReportStorage) Insert(report VoyageReport) (int64, error) {
+	fields, err := this.reportToArgs(false)(report)
+	if err != nil {
+		return 0, err
+	}
+	return this.insert(this.insertQuery, report.Rivers, fields)
+}
+
+func (this voyageReportStorage) Update(report VoyageReport) error {
+	fields, err := this.reportToArgs(true)(report)
+	if err != nil {
+		return err
+	}
+	return this.update(this.updateQuery, report.Id, report.Rivers, fields)
+}
+
+func (this voyageReportStorage) Find(id int64) (VoyageReport, bool, error) {
+	voyageReport, found, err := this.DoFindAndReturn(this.findQuery, readReportFromRows, id)
+	if err != nil {
+		return VoyageReport{}, false, err
+	}
+	return voyageReport.(VoyageReport), found, err
+}
+
+func (this voyageReportStorage) Remove(id int64) error {
+	return this.PerformUpdates(this.removeQuery, IdMapper, id)
 }
 
 func (this voyageReportStorage) UpsertVoyageReports(reports ...VoyageReport) ([]VoyageReport, error) {
@@ -87,8 +150,8 @@ func (this voyageReportStorage) AssociateWithRiver(voyageReportId, riverId int64
 	return this.PerformUpdates(this.upsertRiverLinkQuery, ArrayMapper, []interface{}{voyageReportId, riverId})
 }
 
-func (this voyageReportStorage) List(riverId int64, limitByGroup int) ([]VoyageReport, error) {
-	result, err := this.DoFindList(this.listQuery, readReportFromRows, riverId, limitByGroup)
+func (this voyageReportStorage) ByRiver(riverId int64, limitByGroup int) ([]VoyageReport, error) {
+	result, err := this.DoFindList(this.listByRiverQuery, readReportFromRows, riverId, limitByGroup)
 
 	if err != nil {
 		return []VoyageReport{}, err
@@ -104,14 +167,57 @@ func (this voyageReportStorage) RemoveRiverLink(id int64, tx interface{}) error 
 func readReportFromRows(rows *sql.Rows) (VoyageReport, error) {
 	report := VoyageReport{}
 	dateOfTrip := pq.NullTime{}
+	datePublished := pq.NullTime{}
 	var tags string
-	err := rows.Scan(&report.Id, &report.Title, &report.RemoteId, &report.Source, &report.Url, &report.DatePublished, &report.DateModified, &dateOfTrip, &tags, &report.Author)
-	if dateOfTrip.Valid {
-		report.DateOfTrip = dateOfTrip.Time
-	}
-	err = json.Unmarshal([]byte(tags), &report.Tags)
-	if err != nil {
-		return report, err
+	rivers := pq.Int64Array{}
+
+	err := rows.Scan(&report.Id, &report.Title, &report.RemoteId, &report.Source, &report.Url, &datePublished,
+		&report.DateModified, &dateOfTrip, &tags, &report.Author, &rivers)
+	report.DateOfTrip = nullDateToPtr(dateOfTrip)
+	report.DatePublished = nullDateToPtr(datePublished)
+	report.Rivers = []int64(rivers)
+
+	if tags == "" {
+		report.Tags = []string{}
+	} else {
+		err = json.Unmarshal([]byte(tags), &report.Tags)
+		if err != nil {
+			return report, err
+		}
 	}
 	return report, err
+}
+
+func (this voyageReportStorage) reportToArgs(withId bool) func(entity interface{}) ([]interface{}, error) {
+	return func(entity interface{}) ([]interface{}, error) {
+		_report := entity.(VoyageReport)
+		tags, err := json.Marshal(_report.Tags)
+		if err != nil {
+			return []interface{}{}, err
+		}
+		params := []interface{}{
+			_report.Title,
+			_report.RemoteId,
+			_report.Source,
+			_report.Url,
+			_report.DatePublished,
+			_report.DateModified,
+			_report.DateOfTrip,
+			tags,
+			_report.Author,
+		}
+
+		if withId {
+			params = append([]interface{}{nullIf0(_report.Id)}, params...)
+		}
+		return params, nil
+	}
+}
+
+func convertVoyageReports(reports *[]VoyageReport) []ILinkedEntity {
+	result := make([]ILinkedEntity, len(*reports))
+	for i := 0; i < len(*reports); i++ {
+		result[i] = &(*reports)[i]
+	}
+	return result
 }

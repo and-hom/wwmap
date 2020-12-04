@@ -278,3 +278,31 @@ func WhiteWaterPointsToYmapsNoCluster(rivers []RiverWithSpots,
 func SingleWhiteWaterPointToYmaps(spot Spot, river RiverWithSpots, resourcesBase string, processImgForWeb func(img *Img), linkMaker LinkMaker) ([]Feature, error) {
 	return []Feature{mkFeature(spot, river, true, resourcesBase, processImgForWeb, linkMaker, river.Visible, nil)}, nil
 }
+
+func CampsToYmaps(camps []Camp, resourcesBase string, skip int64) []Feature {
+	result := make([]Feature, 0, len(camps))
+	for i := 0; i < len(camps); i++ {
+		camp := camps[i]
+		if (camp.Id == skip) {
+			continue
+		}
+		result = append(result, Feature{
+			Id:       camp.Id,
+			Type:     FEATURE,
+			Geometry: NewYmapsGeoPoint(camp.Point),
+			Options: FeatureOptions{
+				Id:              camp.Id,
+				IconLayout:      IMAGE,
+				IconImageHref:   resourcesBase + "/img/camp.svg",
+				IconImageSize:   []int{32, 32},
+				IconImageOffset: []int{-16, -16},
+			},
+			Properties: FeatureProperties{
+				Id:          camp.Id,
+				Title:       camp.Title,
+				HintContent: camp.Title,
+			},
+		})
+	}
+	return result
+}

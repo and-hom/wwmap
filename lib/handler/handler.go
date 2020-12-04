@@ -94,11 +94,11 @@ func (this *Handler) registerOne(path string, method string, handlerFunction Han
 	}).Methods(method)
 }
 
-func (this *Handler) JsonpAnswer(callback string, object interface{}, _default string) []byte {
-	return []byte(callback + "(" + this.JsonStr(object, _default) + ");")
+func JsonpAnswer(callback string, object interface{}, _default string) []byte {
+	return []byte(callback + "(" + JsonStr(object, _default) + ");")
 }
 
-func (this *Handler) JsonStr(f interface{}, _default string) string {
+func JsonStr(f interface{}, _default string) string {
 	bytes, err := json.Marshal(f)
 	if err != nil {
 		log.Errorf("Can not serialize object %v: %s", f, err.Error())
@@ -107,16 +107,16 @@ func (this *Handler) JsonStr(f interface{}, _default string) string {
 	return string(bytes)
 }
 
-func (this *Handler) JsonAnswerF(w http.ResponseWriter, f func() (interface{}, error), errStr string) {
+func JsonAnswerF(w http.ResponseWriter, f func() (interface{}, error), errStr string) {
 	payload, err := f()
 	if err != nil {
 		OnError500(w, err, errStr)
 	} else {
-		this.JsonAnswer(w, payload)
+		JsonAnswer(w, payload)
 	}
 }
 
-func (this *Handler) JsonAnswer(w http.ResponseWriter, f interface{}) {
+func JsonAnswer(w http.ResponseWriter, f interface{}) {
 	bytes, err := json.Marshal(f)
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not serialize object %v", f))

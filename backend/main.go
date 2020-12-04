@@ -4,6 +4,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/backend/clustering"
 	"github.com/and-hom/wwmap/backend/handler"
+	"github.com/and-hom/wwmap/backend/handler/linked_entity"
 	"github.com/and-hom/wwmap/backend/passport"
 	"github.com/and-hom/wwmap/backend/referer"
 	"github.com/and-hom/wwmap/lib/blob"
@@ -41,6 +42,9 @@ func main() {
 	waterWayRefDao := NewWaterWayRefPostgresDao(storage)
 	levelDao := NewLevelPostgresDao(storage)
 	levelSensorDao := NewLevelSensorPostgresDao(storage)
+	campDao := NewCampPostgresDao(storage)
+	campRateDao := NewCampRatePostgresDao(storage)
+	campPhotoDao := NewCampPhotoPostgresDao(storage)
 	dbVersionDao := NewDbVersionPostgresDao(storage)
 	transferDao := NewTransferPostgresDao(storage)
 
@@ -90,7 +94,14 @@ func main() {
 			UserDao:                userDao,
 			FallbackEmailRecipient: configuration.Notifications.FallbackEmailRecipient,
 		},
+		CampDao:      campDao,
+		CampPhotoDao: campPhotoDao,
+		CampRateDao:  campRateDao,
 	}
+
+	transferHandler := (&linked_entity.TransferHandler{App: app, TransferDao: transferDao}).Create()
+	campHandler := (&linked_entity.CampHandler{App: app, CampDao: campDao}).Create()
+	voyageReportHandler := (&linked_entity.VoyageReportHandler{App: app, VoyageReportDao: voyageReportDao}).Create()
 
 	_handlers := []ApiHandler{
 		&handler.DownloadsHandler{app},
@@ -128,7 +139,9 @@ func main() {
 		},
 		handler.CreateSystemHandler(&app, dbVersionDao, version),
 		&handler.MeteoHandler{app},
-		&handler.TransferHandler{app, transferDao},
+		&transferHandler,
+		&campHandler,
+		&voyageReportHandler,
 	}
 
 	for _, h := range _handlers {

@@ -65,7 +65,7 @@ const SUB_QUERY_REPLACE = "___(.*?)___"
 
 var subQueryReplacer = regexp.MustCompile(SUB_QUERY_REPLACE)
 
-func sqlQuery(file string, name string, walkedIdsStack []string) string {
+func sqlQuery(file string, name string, walkedIdsStack []string, env map[string]string) string {
 	queriesOfFile := getQueriesOfFile(file)
 	query, found := queriesOfFile[name]
 	if !found {
@@ -80,10 +80,22 @@ func sqlQuery(file string, name string, walkedIdsStack []string) string {
 				log.Fatalf("Can not replace placeholder %s to query: cyclic dependency detected. Replacement stack is: %v", src, walkedIdsStack)
 			}
 		}
-		return sqlQuery(file, queryId, append(walkedIdsStack, queryId))
+
+		// search variable in passed environment
+		envVar, found := env[queryId]
+		if found {
+			return envVar
+		}
+
+		// search variable in file
+		return sqlQuery(file, queryId, append(walkedIdsStack, queryId), env)
 	})
 }
 
 func SqlQuery(file string, name string) string {
-	return sqlQuery(file, name, []string{name})
+	return sqlQuery(file, name, []string{name}, make(map[string]string))
+}
+
+func SqlQueryWithExplicitReplacements(file string, name string, env map[string]string) string {
+	return sqlQuery(file, name, []string{name}, env)
 }
