@@ -1,3 +1,10 @@
+wwmap-frontend (0.0.69) unstable; urgency=medium
+
+  * #261 Add svg images to package
+  * #321 Fix date format for voyage report grid
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sat, 05 Dec 2020 20:09:25 +0300
+
 wwmap-frontend (0.0.68) unstable; urgency=medium
 
   * #357 Common catalogs editor futures. Add meteo points and level sensors using common components.
