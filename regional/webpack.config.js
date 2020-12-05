@@ -27,7 +27,7 @@ module.exports = env => {
             filename: "wwmap.regional.js",
             publicPath: './js/',
             libraryTarget: 'var',
-            library: 'wwmap_editor'
+            library: 'wwmap_regional'
         },
         plugins: [
             new webpack.ProvidePlugin({

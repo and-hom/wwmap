@@ -1,0 +1,1 @@
+export const mapJsApiUrl = "../api/js/map.v2.1.js"

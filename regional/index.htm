@@ -8,7 +8,6 @@
     <link rel="shortcut icon" href="favicon.ico" type="image/x-icon"/>
 
     <script type="text/javascript" src="https://api-maps.yandex.ru/2.1/?lang=ru_RU"></script>
-    <script type="text/javascript" src="https://wwmap.ru/js/map.v2.1.js"></script>
     <script type="text/javascript" src="js/wwmap.regional.js"></script>
 </head>
 <body>
@@ -180,14 +179,16 @@
 </div>
 <script>
     $(document).ready(function () {
-        if ($('#wwmap-container').outerWidth()) {
-            wwmap.initWWMapRegional("wwmap-container", "AB", null, {
-                catalogLinkType: "wwmap",
-            })
-        } else {
-            console.log("#div-container is not ready yet: has no offsetWidth");
-            setTimeout(loadMapWhenDivIsReady, 100);
-        }
+        wwmap_regional.init(function () {
+            if ($('#wwmap-container').outerWidth()) {
+                wwmap.initWWMapRegional("wwmap-container", "AB", null, {
+                    catalogLinkType: "wwmap",
+                })
+            } else {
+                console.log("#div-container is not ready yet: has no offsetWidth");
+                setTimeout(loadMapWhenDivIsReady, 100);
+            }
+        })
     });
 </script>
 </body>
