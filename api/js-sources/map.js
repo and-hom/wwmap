@@ -9,6 +9,7 @@ import {
     isMobileBrowser,
     createCampsUrlPart,
     createCountryUrlPart,
+    defaultPosition,
 } from './util';
 import {bingSatTiles} from './map-urls/bing'
 import {googleSatTiles} from './map-urls/google'
@@ -113,7 +114,7 @@ WWMap.prototype.init = function (opts) {
     let useHash = opts ? opts.useHash : true;
     let options = opts ? opts.mapOptions : {};
 
-    let positionAndZoom = getLastPositionAndZoom(countryId, useHash, defaultPositionValue);
+    let positionAndZoom = getLastPositionAndZoom(this.countryId, useHash, defaultPositionValue);
 
     let yMap;
     try {
@@ -125,7 +126,7 @@ WWMap.prototype.init = function (opts) {
         }, options);
     } catch (err) {
         setLastPositionZoomType(defaultPositionValue,
-            defaultZoom(), defaultMapType(), useHash, countryId);
+            defaultZoom(), defaultMapType(), useHash, this.countryId);
         throw err
     }
     this.yMap = yMap;
@@ -192,7 +193,7 @@ WWMap.prototype.init = function (opts) {
     this.yMap.events.add('boundschange', function (e) {
         let center = t.yMap.getCenter();
         let zoom = t.yMap.getZoom();
-        setLastPositionZoomType(center, zoom, t.yMap.getType(), useHash, countryId);
+        setLastPositionZoomType(center, zoom, t.yMap.getType(), useHash, this.countryId);
         t.loadRivers(e.get("newBounds"))
         if (t.onBoundsChange) {
             t.onBoundsChange(center, zoom)
@@ -200,7 +201,7 @@ WWMap.prototype.init = function (opts) {
     });
 
     this.yMap.events.add('typechange', function (e) {
-        setLastPositionZoomType(t.yMap.getCenter(), t.yMap.getZoom(), t.yMap.getType(), useHash, countryId)
+        setLastPositionZoomType(t.yMap.getCenter(), t.yMap.getZoom(), t.yMap.getType(), useHash, this.countryId)
     });
 
     let objectManager = new ymaps.RemoteObjectManager(this.createObjectsUrlTemplate(), {
@@ -264,7 +265,7 @@ WWMap.prototype.init = function (opts) {
         if (t.measurementTool && t.measurementTool.canEditPath()) {
             t.measurementTool.multiPath.pushEmptySegment();
         }
-    }, countryId);
+    }, this.countryId);
 
     let searchControl = new ymaps.control.SearchControl({
         options: {

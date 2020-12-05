@@ -291,7 +291,7 @@ func (this *WhiteWaterHandler) search(w http.ResponseWriter, req *http.Request) 
 		return
 	}
 
-	showUnpublished := ShowUnpublished(r, this.UserDao)
+	showUnpublished := ShowUnpublished(req, this.UserDao)
 
 	regionIdStr := req.FormValue("region")
 	regionId := int64(0)

@@ -122,7 +122,7 @@ func (this *GeoHierarchyHandler) GetCountry(w http.ResponseWriter, r *http.Reque
 		OnError(w, err, "Can not parse id", http.StatusBadRequest)
 		return
 	}
-	this.JsonAnswerFWith404(w, func() (interface{}, bool, error) {
+	JsonAnswerFWith404(w, func() (interface{}, bool, error) {
 		return this.CountryDao.Get(countryId)
 	}, "Can't select country with id %d", countryId)
 }
@@ -130,7 +130,7 @@ func (this *GeoHierarchyHandler) GetCountry(w http.ResponseWriter, r *http.Reque
 func (this *GeoHierarchyHandler) GetCountryByCode(w http.ResponseWriter, r *http.Request) {
 	pathParams := mux.Vars(r)
 	code := pathParams["code"]
-	this.JsonAnswerFWith404(w, func() (interface{}, bool, error) {
+	JsonAnswerFWith404(w, func() (interface{}, bool, error) {
 		return this.CountryDao.GetByCode(code)
 	}, "Can't select country with code %s", code)
 }

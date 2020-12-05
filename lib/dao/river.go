@@ -8,7 +8,6 @@ import (
 	"github.com/and-hom/wwmap/lib/dao/queries"
 	"github.com/and-hom/wwmap/lib/geo"
 	"github.com/lib/pq"
-	"strings"
 )
 
 func NewRiverPostgresDao(postgresStorage PostgresStorage) RiverDao {
