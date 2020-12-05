@@ -35,7 +35,7 @@ import camelCase from 'lodash/camelCase'
 
 import {TabsPlugin} from 'bootstrap-vue'
 import {getCountries} from './editor'
-import {getTokenFromRequestAndStartWwmapSession, acquireTokenVk, startWwmapSession} from './auth'
+import {acquireTokenVk, getTokenFromRequestAndStartWwmapSession, startWwmapSession} from './auth'
 import {parseParams} from './api'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'vue-select/dist/vue-select.css';
@@ -149,6 +149,14 @@ function init(page) {
     Vue.filter('yearOnly0102', function (value) {
         if (value.endsWith('-01-02')) {
             return value.substring(0, 4);
+        } else {
+            return value;
+        }
+    });
+
+    Vue.filter('emptyDate00010101', function (value) {
+        if (value && value.startsWith('0001-01-01')) {
+            return null;
         } else {
             return value;
         }

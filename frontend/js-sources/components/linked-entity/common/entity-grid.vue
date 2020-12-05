@@ -46,8 +46,8 @@
               <tags v-else-if="field.type=='tags'" :tags="entity[field.name]"/>
               <location v-else-if="field.type=='location'" :point-or-line="entity[field.name]"/>
               <a v-else-if="field.type=='link'" target="_blank" :href="entity[field.name]">{{ field.text && entity[field.text] ? entity[field.text] : entity[field.name] }}</a>
-              <span v-else-if="field.type=='date'">{{ entity[field.name] | formatDateStr | orElse('&mdash;') | yearOnly0102}}</span>
-              <span v-else-if="field.type=='dateTime'">{{ entity[field.name] | formatDateTimeStr | orElse('&mdash;') | yearOnly0102}}</span>
+              <span v-else-if="field.type=='date'">{{ entity[field.name] | formatDateStr | emptyDate00010101 | orElse('&mdash;') | yearOnly0102}}</span>
+              <span v-else-if="field.type=='dateTime'">{{ entity[field.name] | formatDateTimeStr | emptyDate00010101 | orElse('&mdash;') | yearOnly0102}}</span>
               <span v-else>{{ entity[field.name] }}</span>
             </td>
             <td v-if="canEdit" class="btn-col">
