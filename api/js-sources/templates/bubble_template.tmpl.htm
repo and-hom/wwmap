@@ -2,6 +2,7 @@
     {%if properties.link%}<a target="_blank" href="{{properties.link}}">{{properties.title}}</a>{%else%}{{properties.title}}{%endif%}
 </h3>
 
+{%if properties.object_type == 'spot'%}
 <div class="popover-content">
     <a target="_top" href="#" style="float:right;"
        onclick="wwmap.show_report_popup({{properties.id}}, '{{properties.title}}', '{{properties.river_title}}'); return false">Сообщить о неточности</a>
@@ -34,5 +35,15 @@
     </div>
     {% endif %}
 </div>
+{%endif%}
+
+{%if properties.object_type == 'camp'%}
+<div class="popover-content">
+    <a target="_top" href="#" style="float:right;"
+       onclick="wwmap.show_report_popup({{properties.id}}, '{{properties.title}}', '{{properties.river_title}}'); return false">Сообщить о неточности</a>
+    <div>{{properties.short_description|md|raw}}</div>
+</div>
+{%endif%}
+
 <div class="popover-footer">
 </div>

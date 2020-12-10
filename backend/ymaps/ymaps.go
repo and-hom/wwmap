@@ -64,6 +64,7 @@ func mkFeature(point Spot, river RiverWithSpots, withDescription bool, resources
 		Id:          point.Id,
 
 		Title:      point.Title,
+		ObjectType: OBJECT_TYPE_SPOT,
 		Link:       linkMaker.Make(point, river),
 		ShortDesc:  description,
 		RiverTitle: river.Title,
@@ -300,7 +301,9 @@ func CampsToYmaps(camps []Camp, resourcesBase string, skip int64) []Feature {
 			Properties: FeatureProperties{
 				Id:          camp.Id,
 				Title:       camp.Title,
+				ObjectType:  OBJECT_TYPE_CAMP,
 				HintContent: camp.Title,
+				ShortDesc:   camp.Description,
 			},
 		})
 	}

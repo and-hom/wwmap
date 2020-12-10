@@ -163,6 +163,7 @@ type FeatureProperties struct {
 
 	// custom fields
 	Title         string               `json:"title,omitempty"`
+	ObjectType    ObjectType           `json:"object_type,omitempty"`
 	Link          string               `json:"link,omitempty"`
 	Comment       string               `json:"comment,omitempty"`
 	ShortDesc     string               `json:"short_description,omitempty"`
@@ -189,6 +190,12 @@ type IconLayout string
 const (
 	IMAGE              IconLayout = "default#image"
 	IMAGE_WITH_CONTENT IconLayout = "default#imageWithContent"
+)
+
+type ObjectType string
+const (
+	OBJECT_TYPE_SPOT ObjectType ="spot"
+	OBJECT_TYPE_CAMP ObjectType ="camp"
 )
 
 type FeatureOptions struct {
