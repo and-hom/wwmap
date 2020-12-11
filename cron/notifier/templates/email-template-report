@@ -2,13 +2,13 @@
 
 <table style="width:800px; padding-left:30px;" border="0">
 <tr>
-    <th align="left" style="width:20%">Препятствие</th>
+    <th align="left" style="width:20%">Объекьт</th>
     <th align="left" style="width:70%">Сообщение</th>
     <th align="left" style="width:10%">Время</th>
 </tr>
 {{range .}}
     <tr>
-        <td align="left" style="width:20%">{{.Object.Id}}{{.Title}}<br/>{{.Object.Title}}</td>
+        <td align="left" style="width:20%">{{.Object.Id}} {{.Title}}<br/>{{.Object.Title}}</td>
         <td align="left" style="width:70%">{{.Comment}}</td>
         <td align="left" style="width:10%">{{.CreatedAt}}</td>
     </tr>

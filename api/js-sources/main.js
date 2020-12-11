@@ -37,7 +37,8 @@ export function show_map_at(bounds) {
 }
 
 var riverList;
-var reportPopup;
+var spotReportPopup;
+var campReportPopup;
 var tutorialPopup;
 export var userInfoFunction = null;
 export const version = apiVersion;
@@ -54,7 +55,15 @@ export function initWWMap(mapId, riversListId, options) {
     }
 
     // initialize popup windows
-    reportPopup = new WWMapPopup('report_popup', 'report_popup_template', {
+    spotReportPopup = new WWMapPopup('spot_report_popup', 'spot_report_popup_template', {
+        submitUrl: apiBase + "/report",
+        okMsg: "Запрос отправлен. Я прочитаю его по мере наличия свободного времени",
+        failMsg: "Что-то пошло не так...",
+        // To prevent contents lost
+        closeOnEscape: false,
+        closeOnMouseClickOutside: false
+    });
+    campReportPopup = new WWMapPopup('camp_report_popup', 'camp_report_popup_template', {
         submitUrl: apiBase + "/report",
         okMsg: "Запрос отправлен. Я прочитаю его по мере наличия свободного времени",
         failMsg: "Что-то пошло не так...",
@@ -103,7 +112,7 @@ export function show_river_info_popup(id) {
     return false;
 }
 
-export function show_report_popup(id, title, riverTitle) {
+export function show_spot_report_popup(id, title, riverTitle) {
     var dataObject = {
         object_id: id,
         object_title: title,
@@ -113,6 +122,20 @@ export function show_report_popup(id, title, riverTitle) {
         if (info && info.login) {
             dataObject.user = info.login;
         }
-        reportPopup.show(dataObject)
-    }, err => reportPopup.show(dataObject));
+        spotReportPopup.show(dataObject)
+    }, err => spotReportPopup.show(dataObject));
+}
+
+export function show_camp_report_popup(id, title) {
+    var dataObject = {
+        object_id: id,
+        object_title: title,
+        title: title
+    };
+    getWwmapUserInfoForMapControls().then(info => {
+        if (info && info.login) {
+            dataObject.user = info.login;
+        }
+        campReportPopup.show(dataObject)
+    }, err => campReportPopup.show(dataObject));
 }
