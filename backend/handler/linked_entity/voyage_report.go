@@ -85,7 +85,7 @@ func (this *VoyageReportHandler) Upsert(w http.ResponseWriter, r *http.Request) 
 
 	this.writeVoyageReport(id, w)
 
-	this.LogUserEvent(r, handler.VOYAGE_REPORT_LOG_ENTRY_TYPE, id, logType, voyageReport.Title)
+	this.LogUserEvent(r, handler.VOYAGE_REPORT_LOG_ENTRY_TYPE, id, logType, voyageReport.Url)
 }
 
 func (this *VoyageReportHandler) writeVoyageReport(voyageReportId int64, w http.ResponseWriter) {
@@ -127,5 +127,5 @@ func (this *VoyageReportHandler) Delete(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	this.LogUserEvent(r, handler.VOYAGE_REPORT_LOG_ENTRY_TYPE, voyageReportId, dao.ENTRY_TYPE_DELETE, voyageReport.Title)
+	this.LogUserEvent(r, handler.VOYAGE_REPORT_LOG_ENTRY_TYPE, voyageReportId, dao.ENTRY_TYPE_DELETE, voyageReport.Url)
 }

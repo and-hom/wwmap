@@ -55,6 +55,15 @@
                     <td v-else-if="isImage(entry)">
                         <a :href="getImageUrl(entry.object_id)">{{getImageTitle(entry.object_id)}}</a>
                     </td>
+                    <td v-else-if="isCamp(entry)">
+                        Стоянка {{entry.object_id}} {{entry.description}}
+                    </td>
+                    <td v-else-if="isVoyageReport(entry)">
+                        <a :href="entry.description">Отчёт {{entry.object_id}} {{entry.description}}</a>
+                    </td>
+                    <td v-else-if="isTransfer(entry)">
+                        Заброска {{entry.object_id}} {{entry.description}}
+                    </td>
                     <td v-else-if="isUser(entry)">
                         Пользователь {{entry.object_id}}
                     </td>
@@ -179,6 +188,15 @@
                 },
                 isUser: function (logEntry) {
                     return logEntry.object_type == 'USER'
+                },
+                isCamp: function (logEntry) {
+                    return logEntry.object_type == 'CAMP'
+                },
+                isVoyageReport: function (logEntry) {
+                    return logEntry.object_type == 'REPORT'
+                },
+                isTransfer: function (logEntry) {
+                    return logEntry.object_type == 'TRANSFER'
                 },
 
                 rowStyle: function (entryType) {
