@@ -276,22 +276,23 @@ const IMG_SOURCE_WWMAP string = "wwmap"
 const IMG_WATER_LEVEL_MANUAL string = "0"
 
 type Img struct {
-	Id               int64           `json:"id"`
-	WwId             int64           `json:"ww_id"`
-	ReportId         int64           `json:"report_id"`
-	Source           string          `json:"source"`
-	RemoteId         string          `json:"remote_id"`
-	RawUrl           string          `json:"-"`
-	Url              string          `json:"url"`
-	PreviewUrl       string          `json:"preview_url"`
-	DatePublished    time.Time       `json:"date_published"`
-	LabelsForSearch  []string        `json:"-"`
-	Enabled          bool            `json:"enabled"`
-	Type             ImageType       `json:"type"`
-	MainImage        bool            `json:"main_image"`
-	Date             *time.Time      `json:"date"`
-	DateLevelUpdated time.Time       `json:"-"`
-	Level            map[string]int8 `json:"level"`
+	Id               int64                  `json:"id"`
+	WwId             int64                  `json:"ww_id"`
+	ReportId         int64                  `json:"report_id"`
+	Source           string                 `json:"source"`
+	RemoteId         string                 `json:"remote_id"`
+	RawUrl           string                 `json:"-"`
+	Url              string                 `json:"url"`
+	PreviewUrl       string                 `json:"preview_url"`
+	DatePublished    time.Time              `json:"date_published"`
+	LabelsForSearch  []string               `json:"-"`
+	Enabled          bool                   `json:"enabled"`
+	Type             ImageType              `json:"type"`
+	MainImage        bool                   `json:"main_image"`
+	Date             *time.Time             `json:"date"`
+	DateLevelUpdated time.Time              `json:"-"`
+	Level            map[string]int8        `json:"level"`
+	Props            map[string]interface{} `json:"props"`
 }
 
 func GetImgType(_type string) ImageType {

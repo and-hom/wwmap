@@ -9,11 +9,7 @@
         <table class="table">
             <tr v-for="image in images">
                 <td style="width: 1px;">
-                    <iframe width="560" height="315"
-                            :src="embeddedVideoUrl(image.remote_id)"
-                            frameborder="0"
-                            allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-                            allowfullscreen></iframe>
+                    <youtube-embedded-video :image="image" width="560" height="315"/>
                 </td>
                 <td>
                     <button v-if="image.enabled===false" v-on:click="setImgEnabled(true, image.id)"
@@ -77,9 +73,6 @@
                     }
                     return ""
                 },
-                embeddedVideoUrl: function (id) {
-                    return "https://www.youtube.com/embed/" + id
-                },
                 uploadPath: function () {
                     return backendApiBase + "/spot/" + this.spot.id + "/img_ext?type=" + this.type
                 },
@@ -99,10 +92,23 @@
                         if (!videoId) {
                             throw "В ссылке отсутствует параметр v. Попробуйте ещё раз скопировать ссылку из адресной браузера"
                         }
+
+                        let tStart = params['t']
+                        let tStartInt;
+                        try {
+                            tStartInt = tStart ? parseInt(tStart) : 0;
+                        } catch (e) {
+                            console.error(e)
+                            tStartInt = 0;
+                        }
+
                         var requestData = {
                             id: videoId,
                             type: "video",
-                            source: "youtube"
+                            source: "youtube",
+                            props: {
+                              t: tStartInt
+                            }
                         };
                         var t = this;
                         doPostJson(this.uploadPath(), requestData, true).then(resp => {

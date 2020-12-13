@@ -1,0 +1,2 @@
+ALTER TABLE image
+    ADD COLUMN props JSONB NOT NULL DEFAULT '{}'::jsonb;

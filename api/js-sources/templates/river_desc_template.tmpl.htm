@@ -64,7 +64,7 @@
     <div style="margin-bottom: 20px;">
         {{#each videos}}
         <iframe width="304" height="200"
-                src="https://www.youtube.com/embed/{{remote_id}}"
+                src="https://www.youtube.com/embed/{{remote_id}}?fs=1&start={{props.t}}"
                 frameborder="0"
                 allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
                 allowfullscreen

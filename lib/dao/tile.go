@@ -46,10 +46,11 @@ func (this *tileStorage) GetRiver(riverId int64, imgLimit int) (RiverWithSpotsEx
 		categoryStr := ""
 		riverPropsStr := ""
 		spotPropsStr := ""
+		var imgPropsStr sql.NullString
 
 		err := rows.Scan(&river.Id, &river.Title, &river.Description, &riverPropsStr, &river.Region.Id, &river.Region.Title, &river.Region.CountryId,
 			&spot.Id, &spot.Title, &spot.Description, &pointStr, &categoryStr, &spot.Link, &spotPropsStr,
-			&img.Id, &img.Source, &img.RemoteId, &img.Url, &img.PreviewUrl, &img.DatePublished, &img.Type)
+			&img.Id, &img.Source, &img.RemoteId, &img.Url, &img.PreviewUrl, &img.DatePublished, &img.Type, &imgPropsStr)
 
 		if err != nil {
 			return river, err
@@ -89,6 +90,13 @@ func (this *tileStorage) GetRiver(riverId int64, imgLimit int) (RiverWithSpotsEx
 		}
 
 		if img.Id > 0 {
+			if imgPropsStr.Valid {
+				err := json.Unmarshal([]byte(imgPropsStr.String), &img.Props)
+				if err != nil {
+					return river, err
+				}
+			}
+
 			river.Spots[lSp-1].Images = append(river.Spots[lSp-1].Images, img)
 		}
 	}
@@ -141,13 +149,14 @@ func (this *tileStorage) listRivers(rows *sql.Rows) ([]RiverWithSpots, error) {
 		pointStr := ""
 		categoryStr := ""
 		propsStr := ""
+		var imagePropsStr sql.NullString
 		var levelStr sql.NullString
 		var date pq.NullTime
 
 		err := rows.Scan(&river.Id, &river.Title, &river.RegionId, &river.CountryId, &river.Visible,
 			&spot.Id, &spot.Title, &spot.Description, &pointStr, &categoryStr, &spot.Link, &propsStr,
 			&img.Id, &img.Source, &img.RemoteId, &img.Url, &img.PreviewUrl, &img.DatePublished, &img.Type,
-			&date, &img.DateLevelUpdated, &levelStr)
+			&date, &img.DateLevelUpdated, &levelStr, &imagePropsStr)
 
 		if err != nil {
 			return []RiverWithSpots{}, err
@@ -203,8 +212,15 @@ func (this *tileStorage) listRivers(rows *sql.Rows) ([]RiverWithSpots, error) {
 						delete(img.Level, sensorId)
 					}
 				}
-
 			}
+
+			if (imagePropsStr.Valid) {
+				err := json.Unmarshal([]byte(imagePropsStr.String), &img.Props)
+				if err != nil {
+					return []RiverWithSpots{}, err
+				}
+			}
+
 			rivers[lRiv-1].Spots[lSp-1].Images = append(rivers[lRiv-1].Spots[lSp-1].Images, img)
 		}
 	}

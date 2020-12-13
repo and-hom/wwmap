@@ -48,15 +48,25 @@ func mkFeature(point Spot, river RiverWithSpots, withDescription bool, resources
 			avgLevel /= cnt
 		}
 
+		videoTStart := 0
+		if img.Type == IMAGE_TYPE_VIDEO {
+			if tStart, ok := img.Props["t"]; ok {
+				if t, ok := tStart.(float64); ok {
+					videoTStart = int(t)
+				}
+			}
+		}
+
 		imgs[i] = Preview{
-			Id:         img.Id,
-			PreviewUrl: img.PreviewUrl,
-			Url:        img.Url,
-			Source:     img.Source,
-			RemoteId:   img.RemoteId,
-			LevelStr:   levelStr,
-			Level:      lvlMap,
-			AvgLevel:   avgLevel,
+			Id:          img.Id,
+			PreviewUrl:  img.PreviewUrl,
+			Url:         img.Url,
+			Source:      img.Source,
+			RemoteId:    img.RemoteId,
+			LevelStr:    levelStr,
+			Level:       lvlMap,
+			AvgLevel:    avgLevel,
+			VideoTStart: videoTStart,
 		}
 	}
 	properties := FeatureProperties{
@@ -283,7 +293,7 @@ func CampsToYmaps(camps []Camp, resourcesBase string, skip int64) []Feature {
 	result := make([]Feature, 0, len(camps))
 	for i := 0; i < len(camps); i++ {
 		camp := camps[i]
-		if (camp.Id == skip) {
+		if camp.Id == skip {
 			continue
 		}
 		result = append(result, Feature{

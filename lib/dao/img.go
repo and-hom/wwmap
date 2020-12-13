@@ -17,6 +17,7 @@ var zeroDate = util.ZeroDateUTC()
 
 type imgStorage struct {
 	PostgresStorage
+	PropsManager            PropertyManager
 	upsertQuery             string
 	findQuery               string
 	listQuery               string
@@ -41,6 +42,7 @@ type imgStorage struct {
 func NewImgPostgresDao(postgresStorage PostgresStorage) ImgDao {
 	return imgStorage{
 		PostgresStorage:         postgresStorage,
+		PropsManager:            PropertyManagerImpl{table: "image", dao: &postgresStorage},
 		upsertQuery:             queries.SqlQuery("img", "upsert"),
 		findQuery:               queries.SqlQuery("img", "by-id"),
 		listQuery:               queries.SqlQuery("img", "list"),
@@ -67,7 +69,11 @@ func (this imgStorage) Upsert(imgs ...Img) ([]Img, error) {
 
 	ids, err := this.UpdateReturningId(this.upsertQuery, func(entity interface{}) ([]interface{}, error) {
 		_img := entity.(Img)
-		return []interface{}{_img.ReportId, _img.WwId, _img.Source, _img.RemoteId, _img.Url, _img.PreviewUrl, _img.DatePublished, _img.Type}, nil
+		propsB, err := json.Marshal(_img.Props)
+		if err!=nil {
+			return nil, err
+		}
+		return []interface{}{_img.ReportId, _img.WwId, _img.Source, _img.RemoteId, _img.Url, _img.PreviewUrl, _img.DatePublished, _img.Type, string(propsB)}, nil
 	}, true, this.toInterface(imgs...)...)
 
 	if err != nil {
@@ -87,8 +93,9 @@ func imgMapper(rows *sql.Rows) (Img, error) {
 	var levelString sql.NullString
 	var dateLevelUpdated pq.NullTime
 	var date pq.NullTime
+	props := ""
 	err := rows.Scan(&img.Id, &img.ReportId, &img.WwId, &img.Source, &img.RemoteId, &img.Url, &img.PreviewUrl,
-		&img.DatePublished, &img.Enabled, &img.Type, &img.MainImage, &date, &dateLevelUpdated, &levelString)
+		&img.DatePublished, &img.Enabled, &img.Type, &img.MainImage, &date, &dateLevelUpdated, &levelString, &props)
 	if err != nil {
 		return img, err
 	}
@@ -100,7 +107,8 @@ func imgMapper(rows *sql.Rows) (Img, error) {
 	}
 	img.DateLevelUpdated = nullDateToZero(dateLevelUpdated)
 	img.Date = nullDateToPtr(date)
-	return img, nil
+	err = json.Unmarshal([]byte(props), &img.Props)
+	return img, err
 }
 
 func imgExtMapper(rows *sql.Rows) (ImgExt, error) {
@@ -108,8 +116,9 @@ func imgExtMapper(rows *sql.Rows) (ImgExt, error) {
 	var levelString sql.NullString
 	var dateLevelUpdated pq.NullTime
 	var date pq.NullTime
+	props := ""
 	err := rows.Scan(&img.Id, &img.ReportId, &img.WwId, &img.Source, &img.RemoteId, &img.Url, &img.PreviewUrl,
-		&img.DatePublished, &img.Enabled, &img.Type, &img.MainImage, &date, &dateLevelUpdated, &levelString,
+		&img.DatePublished, &img.Enabled, &img.Type, &img.MainImage, &date, &dateLevelUpdated, &levelString, &props,
 		&img.ReportUrl, &img.ReportTitle)
 	if err != nil {
 		return img, err
@@ -124,6 +133,7 @@ func imgExtMapper(rows *sql.Rows) (ImgExt, error) {
 	img.Date = nullDateToPtr(date)
 	// workaround: unescape report title on store to database
 	img.ReportTitle = html.UnescapeString(img.ReportTitle)
+	err = json.Unmarshal([]byte(props), &img.Props)
 	return img, nil
 }
 
@@ -306,4 +316,8 @@ func (this imgStorage) GetParentIds(imgIds []int64) (map[int64]ImageParentIds, e
 		return result, err
 	}
 	return result, nil
+}
+
+func (this imgStorage) Props() PropertyManager {
+	return this.PropsManager
 }

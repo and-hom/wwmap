@@ -129,6 +129,7 @@ func (this *ImgHandler) AddExternalImage(w http.ResponseWriter, req *http.Reques
 		RawUrl:          "",
 		Enabled:         true,
 		LabelsForSearch: []string{},
+		Props:           data.Props,
 	})
 	if err != nil {
 		OnError500(w, err, "Can not insert")
@@ -516,7 +517,8 @@ func getImgType(req *http.Request) dao.ImageType {
 }
 
 type ExternalImageAddData struct {
-	Id     string `json:"id"`
-	Type   string `json:"type"`
-	Source string `json:"source"`
+	Id     string                 `json:"id"`
+	Type   string                 `json:"type"`
+	Source string                 `json:"source"`
+	Props  map[string]interface{} `json:"props"`
 }

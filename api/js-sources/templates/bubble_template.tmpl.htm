@@ -13,10 +13,10 @@
         {% for img in properties.images %}
         {%if img.source=='youtube'%}
         <div class="wwmap-gallery-youtube wwmap-gallery-img">
-            <a target="_blank" href="https://www.youtube.com/watch?v={{img.remote_id}}" class="wwmap-gallery-youtube-preview"
+            <a target="_blank" href="https://www.youtube.com/watch?v={{img.remote_id}}&t={{img.video_t_start}}" class="wwmap-gallery-youtube-preview"
                style="background: url('https://img.youtube.com/vi/{{img.remote_id}}/0.jpg') no-repeat; background-position: center center; background-size: contain;">
             </a>
-            <a target="_blank" href="https://www.youtube.com/watch?v={{img.remote_id}}" class="wwmap-play-btn"></a>
+            <a target="_blank" href="https://www.youtube.com/watch?v={{img.remote_id}}&t={{img.video_t_start}}" class="wwmap-play-btn"></a>
         </div>
         {%else%}
         <a data-id="{{img.id}}" data-level="{{img.level_str}}" data-lightbox="img-set-{{properties.id}}" target="_blank" href="{{img.url}}">
