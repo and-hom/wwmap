@@ -60,7 +60,7 @@
 
     <div class="popover-content">
         <a target="_top" href="#" style="float:right;"
-            onclick="show_report_popup({{properties.id}}, '{{properties.title}}', '{{properties.river_title}}'); return false">Сообщить о неточности</a>
+            onclick="show_spot_report_popup({{properties.id}}, '{{properties.title}}', '{{properties.river_title}}'); return false">Сообщить о неточности</a>
         {%if properties.category%}<div><strong>Категория сложности:</strong>&nbsp;{{properties.category}}</div>{%endif%}
         {%if properties.river_title%}<div><strong>Река:</strong>&nbsp;{{properties.river_title}}</div>{%endif%}
         <div>{{properties.short_description}}</div>
