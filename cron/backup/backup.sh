@@ -26,7 +26,7 @@ do
   ls -tr1 $DIR/wwmap.*.gz | head -n 1 | xargs rm -f
   BACKUPS=`expr $BACKUPS - 1`
 done
-FILE=$DIR/wwmap.$NOW-$(date +"%T").gz
+FILE=$DIR/wwmap.$NOW-$(date +"%T").$HOSTNAME.gz
 
 pg_dump -Fc --data-only $CONN_STR `for t in $TABLES; do echo -n ' -t '$t; done` | gzip -c > $FILE
 curl -f --user $YA_EMAIL:$YA_PASSWORD -T "{$FILE}" https://webdav.yandex.ru/backup/
