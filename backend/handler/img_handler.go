@@ -23,6 +23,7 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+	"github.com/disintegration/imageorient"
 )
 
 const (
@@ -168,7 +169,7 @@ func (this *ImgHandler) Upload(w http.ResponseWriter, req *http.Request) {
 		reader = headCacher
 	}
 
-	sourceImage, _, err := image.Decode(reader)
+	sourceImage, _, err := imageorient.Decode(reader)
 	if err != nil {
 		OnError500(w, err, "Can not get decode image file")
 		return
