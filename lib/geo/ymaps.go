@@ -174,14 +174,15 @@ type FeatureProperties struct {
 }
 
 type Preview struct {
-	Id         int64           `json:"id"`
-	Source     string          `json:"source,omitempty"`
-	RemoteId   string          `json:"remote_id,omitempty"`
-	Url        string          `json:"url,omitempty"`
-	PreviewUrl string          `json:"preview_url,omitempty"`
-	LevelStr   string          `json:"level_str"`
-	Level      map[string]int8 `json:"level"`
-	AvgLevel   int             `json:"avg_level"`
+	Id          int64           `json:"id"`
+	Source      string          `json:"source,omitempty"`
+	RemoteId    string          `json:"remote_id,omitempty"`
+	Url         string          `json:"url,omitempty"`
+	PreviewUrl  string          `json:"preview_url,omitempty"`
+	LevelStr    string          `json:"level_str"`
+	Level       map[string]int8 `json:"level"`
+	AvgLevel    int             `json:"avg_level"`
+	VideoTStart int             `json:"video_t_start"`
 }
 
 type IconLayout string

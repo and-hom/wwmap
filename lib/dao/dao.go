@@ -95,6 +95,7 @@ type WaterWayRefDao interface {
 
 type ImgDao interface {
 	IdEntity
+	HasProperties
 	InsertLocal(wwId int64, _type ImageType, source string, datePublished time.Time, date *time.Time, level map[string]int8) (Img, error)
 	Upsert(img ...Img) ([]Img, error)
 	Find(id int64) (Img, bool, error)

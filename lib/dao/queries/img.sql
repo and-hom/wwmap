@@ -1,7 +1,7 @@
 --@fields
 image.id, image.report_id, image.white_water_rapid_id,image.source,image.remote_id,image.url,
 image.preview_url,image.date_published, image.enabled, image."type", image.main_image,
-image.date, image.date_level_updated, image.level
+image.date, image.date_level_updated, image.level, props
 
 --@by-id
 SELECT ___fields___
@@ -31,8 +31,8 @@ SELECT ___fields___ FROM
 FROM image WHERE white_water_rapid_id IN (SELECT id FROM white_water_rapid WHERE river_id=$1) AND "type"=$2) sq WHERE r_num<=1
 
 --@upsert
-INSERT INTO image(report_id, white_water_rapid_id,source,remote_id,url,preview_url,date_published, "type")
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT(source, remote_id) DO UPDATE SET date_published=image.date_published RETURNING id
+INSERT INTO image(report_id, white_water_rapid_id,source,remote_id,url,preview_url,date_published, "type", props)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) ON CONFLICT(source, remote_id) DO UPDATE SET date_published=image.date_published RETURNING id
 
 --@insert-local
 INSERT INTO image(id,report_id, white_water_rapid_id, "type", source,remote_id,url,preview_url,date_published, date, date_level_updated, level)

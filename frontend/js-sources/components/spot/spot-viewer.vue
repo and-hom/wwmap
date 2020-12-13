@@ -116,13 +116,7 @@
         <div v-if="videos.length">
             <h2>Видео</h2>
             <div>
-                <iframe width="450" height="300"
-                        v-for="image in videos"
-                        :src="embeddedVideoUrl(image.remote_id)"
-                        frameborder="0"
-                        allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-                        allowfullscreen
-                        style="margin-right: 2px; margin-bottom: 2px;"></iframe>
+                <youtube-embedded-video v-for="image in videos" :image="image" width="450" height="300"/>
             </div>
         </div>
     </div>
@@ -231,9 +225,6 @@
                     }
                     return false
                 })
-            },
-            embeddedVideoUrl: function (id) {
-                return "https://www.youtube.com/embed/" + id
             },
             lastAutoOrdering: function () {
                 var lastOrderingDate = new Date(this.spot.last_automatic_ordering)
