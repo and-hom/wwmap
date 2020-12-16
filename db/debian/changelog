@@ -1,3 +1,9 @@
+wwmap-db (0.0.32) unstable; urgency=medium
+
+  * #374 #325 Add start time to youtube video
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sun, 13 Dec 2020 21:33:19 +0300
+
 wwmap-db (0.0.31) unstable; urgency=medium
 
   * #357 Common catalogs editor futures

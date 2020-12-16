@@ -1,3 +1,11 @@
+wwmap-cron-modules (0.0.35) unstable; urgency=medium
+
+  * #370 Fix report dialog for camp
+  * #372 Camp and transfer tables added to backup
+  * #360 Add hostname to backup file name
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sun, 13 Dec 2020 21:30:59 +0300
+
 wwmap-cron-modules (0.0.34) unstable; urgency=medium
 
   * #264 #357 #12 Report, camp and transfer editing logging

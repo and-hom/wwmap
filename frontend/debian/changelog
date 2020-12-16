@@ -1,3 +1,11 @@
+wwmap-frontend (0.0.70) unstable; urgency=medium
+
+  * #370 Fix report dialog for camp
+  * #374 #325 Add start time to youtube video
+  * #264 #321 #12 Log page fix
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sun, 13 Dec 2020 21:28:43 +0300
+
 wwmap-frontend (0.0.69) unstable; urgency=medium
 
   * #261 Add svg images to package

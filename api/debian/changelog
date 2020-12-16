@@ -1,3 +1,11 @@
+wwmap-api (2.1.10) unstable; urgency=medium
+
+  * #370 Fix report dialog for camp
+  * #374 #325 Add start time to youtube video
+  * #369 Fix bubble for camp
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sun, 13 Dec 2020 21:26:40 +0300
+
 wwmap-api (2.1.9) unstable; urgency=medium
 
   * #264 Camps on map

@@ -1,3 +1,12 @@
+wwmap-backend (0.0.63) unstable; urgency=medium
+
+  * #374 #325 Add start time to youtube video
+  * #375 Use imageorient instead of standard image decoder to support exif image orientation
+  * #264 #321 #12 Log page fix
+  * #369 Fix bubble for camp
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sun, 13 Dec 2020 21:23:45 +0300
+
 wwmap-backend (0.0.62) unstable; urgency=medium
 
   * #357 Common catalogs editor futures
