@@ -72,6 +72,7 @@ type RiverPageDto struct {
 	Description   string                 `json:"description"`
 	Reports       []VoyageReportListDto  `json:"reports"`
 	Transfers     []dao.Transfer         `json:"transfers"`
+	HasCamps      bool                   `json:"has_camps"`
 	Imgs          []ImgWithSpot          `json:"imgs"`
 	Videos        []ImgWithSpot          `json:"videos"`
 	PdfUrl        string                 `json:"pdf"`
@@ -150,7 +151,14 @@ func (this *RiverHandler) GetRiverCard(w http.ResponseWriter, req *http.Request)
 		return
 	}
 
+	hasCamps, err := this.CampDao.ExistsByRiver(riverId)
+	if err != nil {
+		OnError500(w, err, fmt.Sprintf("Can not detect river %d has camps", riverId))
+		return
+	}
+
 	riverCats := dao.CalculateClusterCategory(river.Spots)
+
 	dto := RiverPageDto{
 		IdTitle:       river.IdTitle,
 		Region:        river.Region,
@@ -158,6 +166,7 @@ func (this *RiverHandler) GetRiverCard(w http.ResponseWriter, req *http.Request)
 		Props:         river.Props,
 		Reports:       reportsList,
 		Transfers:     transfers,
+		HasCamps:      hasCamps,
 		Imgs:          imgs,
 		Videos:        videos,
 		PdfUrl:        this.getRiverPassportUrl(&river, this.RiverPassportPdfUrlBase),

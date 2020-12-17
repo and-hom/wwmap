@@ -14,6 +14,7 @@ func NewCampPostgresDao(postgresStorage PostgresStorage) CampDao {
 		riverLinksStorage: riverLinksStorage{
 			PostgresStorage:        postgresStorage,
 			listRefsByRiverQuery:   queries.SqlQuery("camp", "list-refs-by-river"),
+			countRefsByRiverQuery:  queries.SqlQuery("camp", "count-refs-by-river"),
 			insertRefsQuery:        queries.SqlQuery("camp", "insert-refs"),
 			deleteRefsQuery:        queries.SqlQuery("camp", "delete-refs"),
 			deleteRefsByRiverQuery: queries.SqlQuery("camp", "delete-refs-by-river"),

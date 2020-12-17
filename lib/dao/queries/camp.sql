@@ -40,6 +40,9 @@ DELETE FROM camp WHERE id=$1
 --@list-refs-by-river
 SELECT camp_id FROM camp_river_ref WHERE river_id=$1;
 
+--@count-refs-by-river
+SELECT count(1) FROM camp_river_ref WHERE river_id=$1;
+
 --@insert-refs
 INSERT INTO camp_river_ref(camp_id, river_id) VALUES ($1, $2);
 

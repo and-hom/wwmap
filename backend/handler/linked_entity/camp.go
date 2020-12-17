@@ -6,6 +6,8 @@ import (
 	"github.com/and-hom/wwmap/lib/dao"
 	. "github.com/and-hom/wwmap/lib/handler"
 	. "github.com/and-hom/wwmap/lib/http"
+	"github.com/and-hom/wwmap/lib/util"
+	"github.com/ptrv/go-gpx"
 	"github.com/gorilla/mux"
 	"net/http"
 	"strconv"
@@ -125,4 +127,80 @@ func (this *CampHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	this.LogUserEvent(r, handler.CAMP_LOG_ENTRY_TYPE, campId, dao.ENTRY_TYPE_DELETE, camp.Title)
+}
+
+func (this *CampHandler) DownloadGpxForRiver(w http.ResponseWriter, req *http.Request) {
+	pathParams := mux.Vars(req)
+
+	riverId, err := strconv.ParseInt(pathParams["riverId"], 10, 64)
+	if err != nil {
+		OnError(w, err, "Can not parse id", http.StatusBadRequest)
+		return
+	}
+
+	trStr := req.FormValue("tr")
+	transliterate, err := strconv.ParseBool(trStr)
+	if err != nil {
+		transliterate = trStr != ""
+	}
+
+	camps, err := this.CampDao.ByRiver(riverId)
+	if err != nil {
+		OnError500(w, err, fmt.Sprintf("Can not fetch camps for river %d", riverId))
+		return
+	}
+	if len(camps) == 0 {
+		OnError(w, nil, fmt.Sprintf("No camps found for river %d", riverId), http.StatusNotFound)
+		return
+	}
+
+	river, err := this.RiverDao.Find(riverId)
+	if err != nil {
+		OnError500(w, err, fmt.Sprintf("Can not fetch river %d", riverId))
+		return
+	}
+
+	filename := river.Title
+	if transliterate {
+		filename = "Camp " + util.CyrillicToTranslit(filename)
+	} else {
+		filename = "Стоянки " + filename
+	}
+
+	w.Header().Add("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s.gpx\"", filename))
+	w.Header().Add("Content-Type", "application/gpx+xml")
+
+	waypoints := make([]gpx.Wpt, 0, len(camps))
+	for i := 0; i < len(camps); i++ {
+		camp := camps[i]
+
+		title := camp.Title
+		if title =="" {
+			title = fmt.Sprintf("%d", camp.Id)
+		}
+		description := camp.Description
+
+		if transliterate {
+			title = util.CyrillicToTranslit(title)
+			description = util.CyrillicToTranslit(description)
+		}
+		description = util.TrimToLengthWithTrailingDots(description, 1023)
+
+		waypoints = append(waypoints, gpx.Wpt{
+				Lat:  camp.Point.Lat,
+				Lon:  camp.Point.Lon,
+				Cmt:  description,
+				Name: title,
+			})
+
+	}
+	gpxData := gpx.Gpx{
+		Waypoints: waypoints,
+		Creator:   "wwmap",
+	}
+
+	_, err = w.Write(gpxData.ToXML())
+	if err!=nil {
+		OnError500(w, err, fmt.Sprintf("Can't write camp GPX for river %d", riverId))
+	}
 }

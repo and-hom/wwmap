@@ -81,11 +81,11 @@
         <h3>Скачать</h3>
         <table class="wwmap-river-download-table" style="width: auto;">
             <tr>
-                <td><label for="gpx">GPX для навигатора с русскими названиями</label></td>
+                <td><label for="gpx">Пороги: GPX для навигатора с русскими названиями</label></td>
                 <td><a id="gpx" href="{{apiUrl}}/{{id}}/gpx" style="padding-right:10px;" alt="Скачать GPX с точками порогов">GPX</a></td>
             </tr>
             <tr>
-                <td><label for="gpx_en">GPX для навигатора без поддержки русских букв</label></td>
+                <td><label for="gpx_en">Пороги: GPX для навигатора без поддержки русских букв</label></td>
                 <td><a id="gpx_en" href="{{apiUrl}}/{{id}}/gpx?tr=true" alt="Скачать GPX с точками порогов">GPX<sub>en</sub></a></td>
             </tr>
             <tr>
@@ -96,6 +96,16 @@
                 <td><label for="csv_en">Пороги таблицей латиницей</label></td>
                 <td><a id="csv_en" href="{{apiUrl}}/{{id}}/csv?tr=true" alt="Скачать таблицу с точками порогов">CSV<sub>en</sub></a></td>
             </tr>
+            {{#if has_camps}}
+            <tr>
+                <td><label for="camp_gpx">Стоянки: GPX для навигатора с русскими названиями</label></td>
+                <td><a id="camp_gpx" href="{{apiBase}}/camp/gpx/river/{{id}}" style="padding-right:10px;" alt="Скачать GPX со стоянками">Стоянки GPX</a></td>
+            </tr>
+            <tr>
+                <td><label for="camp_gpx_en">Стоянки: GPX для навигатора без поддержки русских букв</label></td>
+                <td><a id="camp_gpx_en" href="{{apiBase}}/camp/gpx/river/{{id}}?tr=true" alt="Скачать GPX со стоянками">Стоянки GPX<sub>en</sub></a></td>
+            </tr>
+            {{/if}}
             {{#if props.export_pdf}}
             <tr>
                 <td><label for="pdf_desc">Краткое описание для печати</label></td>

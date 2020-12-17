@@ -12,6 +12,7 @@ func NewTransferPostgresDao(postgresStorage PostgresStorage) TransferDao {
 		riverLinksStorage: riverLinksStorage{
 			PostgresStorage:        postgresStorage,
 			listRefsByRiverQuery:   queries.SqlQuery("transfer", "list-refs-by-river"),
+			countRefsByRiverQuery:  queries.SqlQuery("transfer", "count-refs-by-river"),
 			insertRefsQuery:        queries.SqlQuery("transfer", "insert-refs"),
 			deleteRefsQuery:        queries.SqlQuery("transfer", "delete-refs"),
 			deleteRefsByRiverQuery: queries.SqlQuery("transfer", "delete-refs-by-river"),

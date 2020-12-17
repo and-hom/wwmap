@@ -66,6 +66,9 @@ DELETE FROM voyage_report WHERE id=$1
 --@list-refs-by-river
 SELECT voyage_report_id FROM voyage_report_river WHERE river_id=$1;
 
+--@count-refs-by-river
+SELECT count(1) FROM voyage_report_river WHERE river_id=$1;
+
 --@insert-refs
 INSERT INTO voyage_report_river(voyage_report_id, river_id) VALUES ($1, $2);
 

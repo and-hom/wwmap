@@ -30,6 +30,9 @@ DELETE FROM transfer WHERE id=$1;
 --@list-refs-by-river
 SELECT transfer_id FROM transfer_river WHERE river_id=$1;
 
+--@count-refs-by-river
+SELECT count(1) FROM transfer_river WHERE river_id=$1;
+
 --@insert-refs
 INSERT INTO transfer_river(transfer_id, river_id) VALUES ($1, $2);
 

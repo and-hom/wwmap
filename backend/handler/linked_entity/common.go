@@ -29,6 +29,12 @@ func (this *linkedEntityHanler) Init() {
 	this.Register("/"+this.base+"/river/{id}", handler.HandlerFunctions{
 		Get: this.handler.ByRiver,
 	})
+
+	if h,ok := this.handler.(linkedEntityWithPointHandler); ok {
+		this.Register("/"+this.base+"/gpx/river/{riverId}", handler.HandlerFunctions{
+			Get: h.DownloadGpxForRiver,
+		})
+	}
 }
 
 type linkedEntityHandler interface {
@@ -39,4 +45,9 @@ type linkedEntityHandler interface {
 	Upsert(writer http.ResponseWriter, request *http.Request)
 	Delete(writer http.ResponseWriter, request *http.Request)
 	ByRiver(writer http.ResponseWriter, request *http.Request)
+}
+
+type linkedEntityWithPointHandler interface {
+	linkedEntityHandler
+	DownloadGpxForRiver(writer http.ResponseWriter, request *http.Request)
 }
