@@ -1,3 +1,10 @@
+wwmap-backend (0.0.64) unstable; urgency=medium
+
+  * #368 Download camps as GPX
+  * #381 Fix exception on null date of report
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Thu, 17 Dec 2020 22:34:43 +0300
+
 wwmap-backend (0.0.63) unstable; urgency=medium
 
   * #374 #325 Add start time to youtube video

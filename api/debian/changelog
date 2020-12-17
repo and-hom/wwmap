@@ -1,3 +1,9 @@
+wwmap-api (2.1.11) UNRELEASED; urgency=medium
+
+  * #368 Download camps as GPX 
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Thu, 17 Dec 2020 22:36:10 +0300
+
 wwmap-api (2.1.10) unstable; urgency=medium
 
   * #370 Fix report dialog for camp
