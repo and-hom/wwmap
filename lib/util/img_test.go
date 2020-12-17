@@ -2,7 +2,6 @@ package util_test
 
 import (
 	"testing"
-	"github.com/and-hom/wwmap/backend/handler"
 	"image"
 	"github.com/stretchr/testify/assert"
 	"github.com/and-hom/wwmap/lib/util"

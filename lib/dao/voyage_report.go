@@ -14,6 +14,7 @@ func NewVoyageReportPostgresDao(postgresStorage PostgresStorage) VoyageReportDao
 		riverLinksStorage: riverLinksStorage{
 			PostgresStorage:        postgresStorage,
 			listRefsByRiverQuery:   queries.SqlQuery("voyage-report", "list-refs-by-river"),
+			countRefsByRiverQuery:  queries.SqlQuery("voyage-report", "count-refs-by-river"),
 			insertRefsQuery:        queries.SqlQuery("voyage-report", "insert-refs"),
 			deleteRefsQuery:        queries.SqlQuery("voyage-report", "delete-refs"),
 			deleteRefsByRiverQuery: queries.SqlQuery("voyage-report", "delete-refs-by-river"),

@@ -212,6 +212,7 @@ type DbVersionDao interface {
 type RiverLinksDao interface {
 	SetLinksForRiver(riverId int64, entityIds []int64) error
     GetIdsForRiver(riverId int64) ([]int64, error)
+	ExistsByRiver(riverId int64) (bool, error)
 }
 
 type TransferDao interface {

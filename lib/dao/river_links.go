@@ -10,6 +10,7 @@ type riverLinksStorage struct {
 	insertRefsQuery        string
 	deleteRefsByRiverQuery string
 	listRefsByRiverQuery   string
+	countRefsByRiverQuery  string
 	deleteRefsQuery        string
 	listRivers             string
 }
@@ -38,6 +39,14 @@ func (this riverLinksStorage) SetLinksForRiver(riverId int64, refIds []int64) er
 
 		return nil
 	})
+}
+
+func (this riverLinksStorage) ExistsByRiver(riverId int64) (bool, error) {
+	result, _, err := this.DoFindAndReturn(this.countRefsByRiverQuery, IntColumnMapper, riverId)
+	if err != nil {
+		return false, err
+	}
+	return result.(int) > 0, nil
 }
 
 func (this riverLinksStorage) loadRivers(ids []int64) (map[int64]LinkedEntityRiver, error) {

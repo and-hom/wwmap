@@ -29,7 +29,7 @@ func ZeroDateUTC() time.Time {
 	return time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC)
 }
 
-func PtrToTime(t *time.Time) time.Time  {
+func PtrToTime(t *time.Time) time.Time {
 	if t == nil {
 		return ZeroDateUTC()
 	}
@@ -108,4 +108,35 @@ func DeferCloser(closer io.Closer) {
 	if err != nil {
 		logrus.Error("Can't close: ", err)
 	}
+}
+
+func TrimToLengthWithTrailingDots(s string, l int) string {
+	if len(s) <= l {
+		return s
+	}
+
+	if l < 1 {
+		return ""
+	}
+	var dots string
+	switch l {
+	case 1:
+		fallthrough
+	case 2:
+		dots = ""
+	case 3:
+		dots = ".."
+	default:
+		dots = "..."
+	}
+
+	textLen := Max(1, l-len(dots))
+	return s[:textLen] + dots
+}
+
+func Max(a int, b int) int {
+	if a > b {
+		return a
+	}
+	return b
 }
