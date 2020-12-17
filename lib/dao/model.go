@@ -579,3 +579,10 @@ type VoyageReport struct {
 	DateOfTrip    *time.Time `json:"date_of_trip,omitempty"`
 	Tags          []string  `json:"tags"`
 }
+
+func (this *VoyageReport) GetDateOfTripYear(_default int) int {
+	if this.DateOfTrip == nil {
+		return _default
+	}
+	return this.DateOfTrip.Year()
+}

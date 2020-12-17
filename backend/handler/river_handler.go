@@ -183,7 +183,7 @@ func (this *RiverHandler) groupReports(reports []dao.VoyageReport, river dao.Riv
 			Url:           report.Url,
 			Title:         report.Title,
 			Author:        report.Author,
-			Year:          report.DateOfTrip.Year(),
+			Year:          report.GetDateOfTripYear(0),
 			SourceLogoUrl: this.ResourceBase + "/img/report_sources/" + strings.ToLower(report.Source) + ".png",
 		})
 	}
@@ -315,7 +315,7 @@ func (this *RiverHandler) GetVisibleRivers(w http.ResponseWriter, req *http.Requ
 				Url:           report.Url,
 				Title:         report.Title,
 				Author:        report.Author,
-				Year:          report.DateOfTrip.Year(),
+				Year:          report.GetDateOfTripYear(0),
 				SourceLogoUrl: this.ResourceBase + "/img/report_sources/" + strings.ToLower(report.Source) + ".png",
 			}
 		}
