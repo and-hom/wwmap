@@ -169,6 +169,8 @@ type ChangesLogDao interface {
 	Insert(entry ChangesLogEntry) error
 	List(objectType string, objectId int64, limit int) ([]ChangesLogEntry, error)
 	ListAll(limit int) ([]ChangesLogEntry, error)
+	ListAllWithUserInfo(limit int) ([]ChangesLogEntryWithUseInfo, error)
+	ListWithUserInfo(objectType string, objectId int64, limit int) ([]ChangesLogEntryWithUseInfo, error)
 	ListAllTimeRange(fromInclude time.Time, toExclude time.Time, limit int) ([]ChangesLogEntry, error)
 }
 

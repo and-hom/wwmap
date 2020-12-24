@@ -17,18 +17,21 @@
                 <tr v-for="entry in logs" :class="rowStyle(entry.type)">
                     <td>{{entry.time}}</td>
 
-                    <td v-if="entry.auth_provider=='yandex'">
-                        {{entry.login}}@yandex.ru
-                    </td>
-                    <td v-else-if="entry.auth_provider=='google'">
-                        Google: {{entry.login}}
-                    </td>
-                    <td v-else-if="entry.auth_provider=='vk'">
-                        <a target="_blank" :href="vkLink(entry.ext_id)">vk/{{entry.login}}</a>
-                    </td>
-                    <td v-else>
-                        {{entry.auth_provider}}/{{entry.ext_id}}
-                    </td>
+                  <td class="user-info">
+                    {{ entry.user_info.first_name }}&nbsp;{{ entry.user_info.last_name }}
+                    <div v-if="entry.auth_provider=='yandex'">
+                      {{ entry.login }}@yandex.ru
+                    </div>
+                    <div v-else-if="entry.auth_provider=='google'">
+                      Google: {{ entry.login }}
+                    </div>
+                    <div v-else-if="entry.auth_provider=='vk'">
+                      <a target="_blank" :href="vkLink(entry.ext_id)">vk/{{ entry.login }}</a>
+                    </div>
+                    <div v-else>
+                      {{ entry.auth_provider }}/{{ entry.ext_id }}
+                    </div>
+                  </td>
 
                     <td v-if="entry.type=='CREATE'">
                         Создан
@@ -78,11 +81,18 @@
     </page>
 </template>
 
-<script>
-    import {doGetJson, doPostJson} from '../api'
-    import {backendApiBase} from '../config'
+<style>
+.user-info div {
+  font-size: 60%;
+  color: gray;
+}
+</style>
 
-    export default {
+<script>
+import {doGetJson, doPostJson} from '../api'
+import {backendApiBase, frontendBase} from '../config'
+
+export default {
         created: function () {
             doGetJson(backendApiBase + "/log", true).then(logs => {
                 this.logs = logs;
@@ -120,7 +130,7 @@
                     if (!regionData) {
                         return null
                     }
-                    return "https://wwmap.ru/editor.htm#" + regionData.country_id + "," + id;
+                    return `${frontendBase}/editor.htm#${regionData.country_id},${id}`;
                 },
 
                 getRegionTitle: function (id) {
@@ -133,7 +143,7 @@
                     if (!riverData) {
                         return null
                     }
-                    return "https://wwmap.ru/editor.htm#" + riverData.country_id + "," + riverData.region_id + "," + id;
+                    return `${frontendBase}editor.htm#${riverData.country_id},${riverData.region_id},${id}`;
                 },
 
                 getRiverTitle: function (id) {
@@ -146,7 +156,7 @@
                     if (!spotData) {
                         return null
                     }
-                    return "https://wwmap.ru/editor.htm#" + spotData.country_id + "," + spotData.region_id + "," + spotData.river_id + "," + id;
+                    return `${frontendBase}/editor.htm#${spotData.country_id},${spotData.region_id},${spotData.river_id},${id}`;
                 },
 
                 getSpotTitle: function (id) {
