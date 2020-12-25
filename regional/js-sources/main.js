@@ -3,7 +3,7 @@ import 'materialize-css/dist/js/materialize.min.js'
 import './style/index.css'
 
 import $ from 'jquery';
-import {mapJsApiUrl} from "../../frontend/js-sources/config";
+import {mapJsApiUrl} from "./config";
 
 global.jQuery = $;
 global.$ = $;

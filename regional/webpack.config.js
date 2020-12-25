@@ -21,7 +21,7 @@ module.exports = env => {
         mode: appEnv == DEVELOPMENT ? 'development' : 'production',
         context: __dirname,
         devtool: "source-map",
-        entry: ["./js-sources/main.js",],
+        entry: ["./js-sources/index.tsx",],
         output: {
             path: __dirname + "/js",
             filename: "wwmap.regional.js",
@@ -63,6 +63,11 @@ module.exports = env => {
                     test: /js-sources\/.*?\.js$/,
                     exclude: /node_modules/,
                     loader: "babel-loader"
+                },
+                {
+                    test: /js-sources\/.*?\.tsx?$/,
+                    exclude: /node_modules/,
+                    loader: "ts-loader"
                 },
                 {
                     test: /js-sources\/config\.js$/,

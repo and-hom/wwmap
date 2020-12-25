@@ -9,6 +9,9 @@
         "useBuiltIns": "entry",
         "corejs": "2.6.10"
       }
+    ],
+    [
+      "@babel/preset-react"
     ]
   ],
   "plugins": [
