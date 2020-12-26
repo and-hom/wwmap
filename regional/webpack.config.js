@@ -1,6 +1,7 @@
 const webpack = require('webpack');
 const {resolve} = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 const DEVELOPMENT = 'development';
 
@@ -23,11 +24,14 @@ module.exports = env => {
         devtool: "source-map",
         entry: ["./js-sources/index.tsx",],
         output: {
-            path: __dirname + "/js",
+            path: __dirname + "/dist",
             filename: "wwmap.regional.js",
-            publicPath: './js/',
+            publicPath: './',
             libraryTarget: 'var',
             library: 'wwmap_regional'
+        },
+        resolve: {
+            extensions: ['.ts', '.tsx', '.js']
         },
         plugins: [
             new webpack.ProvidePlugin({
@@ -42,6 +46,10 @@ module.exports = env => {
             }),
             new webpack.DefinePlugin({
                 FRONTEND_VERSION: frontendVersion,
+            }),
+            new HtmlWebpackPlugin({
+                template: 'js-sources/index.html',
+                inject: 'body'
             }),
         ],
         module: {
@@ -90,6 +98,12 @@ module.exports = env => {
                     }
                 },
             ]
+        },
+        devServer: {
+            contentBase: './dist',
+            compress: true,
+            port: 9000,
+            historyApiFallback: true
         },
     }
 };
