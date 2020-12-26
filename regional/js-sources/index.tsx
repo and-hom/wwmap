@@ -9,6 +9,8 @@ import {
     BrowserRouter
 } from "react-router-dom";
 
+import 'materialize-css';
+import 'materialize-css/dist/css/materialize.min.css';
 
 import {createBrowserHistory} from "history";
 
@@ -20,7 +22,6 @@ class App extends React.Component {
     render() {
         return (
             <div className="App">
-                aaa
                 <Switch>
                     <Route history={history} path='/index' component={Main} />
                     <Route history={history} path='/river' component={River} />
