@@ -1,18 +1,18 @@
 import React from 'react'
 
+import './style/main.css'
 
-// import wwmapApi = require('../../api/js/map.v2.1')
+import {Helmet} from "react-helmet";
 
 export default class Main extends React.Component {
-    // componentDidMount() {
-    //     wwmapApi.initWWMapRegional("wwmap-container", 'AB', null, {
-    //         catalogLinkType: "wwmap",
-    //     })
-    // }
-
     render() {
         return (
             <div>
+                <Helmet>
+                    <script type="text/javascript">
+                        initMap();
+                    </script>
+                </Helmet>
                 <div className="container main-container">
                     <div className="row">
                         <div className="col s12">

@@ -6,8 +6,30 @@
     <title>Путеводитель по рекам Грузии</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon"/>
     <link rel="shortcut icon" href="favicon.ico" type="image/x-icon"/>
+
+    <script type="text/javascript" src="https://api-maps.yandex.ru/2.1/?lang=ru_RU"></script>
+    <script type="text/javascript" src="http://localhost:63342/wwmap/api/js/map.v2.1.js"></script>
 </head>
 <body>
+<script type="application/javascript">
+    function initMap() {
+        loadMapWhenDivIsReady();
+    }
+
+    function loadMapWhenDivIsReady() {
+        if (document.getElementById('wwmap-container')) {
+            wwmap.initWWMapRegional("wwmap-container", 'AB', null, {
+                catalogLinkType: "wwmap",
+            }).then(map => {
+                console.log("Map loaded")
+            }).catch(ex => console.error(ex));
+        } else {
+            console.log("#div-container is not ready yet: has no offsetWidth");
+            setTimeout(() => loadMapWhenDivIsReady(t), 100);
+        }
+    }
+</script>
+
 <div id="root"></div>
 </body>
 </html>

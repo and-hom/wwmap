@@ -130,91 +130,99 @@ export function initWWMapRegional(mapId, countryCode, riversListId, options) {
     }
 
     // init and show map
-    ymaps.ready(function () {
-        loadFragment('bubble_template').then(bubbleContent => {
-            wwMap = new WWMap(mapId, bubbleContent, riverList, tutorialPopup, catalogLinkType);
-            ymaps.modules.require(['overlay.BiPlacemark'], function (BiPlacemarkOverlay) {
-                ymaps.overlay.storage.add("BiPlacemrakOverlay", BiPlacemarkOverlay);
-                ymaps.borders.load("001").then(function (countries) {
-                    let restrictMapArea = null;
-                    let geoObject = null;
-                    let center = null;
-                    let dMax = 1.0;
-                    for (let i = 0; i < countries.features.length; i++) {
-                        if (countries.features[i].properties && countries.features[i].properties.iso3166 != countryCode) {
-                            continue
-                        }
 
-                        try {
-                            let regionCoords = countries.features[i].geometry.coordinates[0];
-                            geoObject = new ymaps.Polygon([
-                                [
-                                    [-80, 179],
-                                    [80, 179],
-                                    [80, 0],
-                                    [80, -179],
-                                    [-80, -179],
-                                    [-80, 0],
-                                    [-80, 179]
-                                ],
-                                regionCoords,
-                            ], {}, {
-                                fill: true,
-                                fillOpacity: 1,
-                                fillColor: '#ffffff',
-                            });
+    return new Promise((resolve, reject) => {
+        try {
+            ymaps.ready(function () {
+                loadFragment('bubble_template').then(bubbleContent => {
+                    wwMap = new WWMap(mapId, bubbleContent, riverList, tutorialPopup, catalogLinkType);
+                    ymaps.modules.require(['overlay.BiPlacemark'], function (BiPlacemarkOverlay) {
+                        ymaps.overlay.storage.add("BiPlacemrakOverlay", BiPlacemarkOverlay);
+                        ymaps.borders.load("001").then(function (countries) {
+                            let restrictMapArea = null;
+                            let geoObject = null;
+                            let center = null;
+                            let dMax = 1.0;
+                            for (let i = 0; i < countries.features.length; i++) {
+                                if (countries.features[i].properties && countries.features[i].properties.iso3166 != countryCode) {
+                                    continue
+                                }
 
-                            restrictMapArea = [[90, 180], [-90, -180]];
-                            for (let i = 0; i < regionCoords.length; i++) {
-                                let point = regionCoords[i];
-                                if (restrictMapArea[0][0] > point[0]) {
-                                    restrictMapArea[0][0] = point[0];
-                                }
-                                if (restrictMapArea[1][0] < point[0]) {
-                                    restrictMapArea[1][0] = point[0];
-                                }
-                                if (restrictMapArea[0][1] > point[1]) {
-                                    restrictMapArea[0][1] = point[1];
-                                }
-                                if (restrictMapArea[1][1] < point[1]) {
-                                    restrictMapArea[1][1] = point[1];
+                                try {
+                                    let regionCoords = countries.features[i].geometry.coordinates[0];
+                                    geoObject = new ymaps.Polygon([
+                                        [
+                                            [-80, 179],
+                                            [80, 179],
+                                            [80, 0],
+                                            [80, -179],
+                                            [-80, -179],
+                                            [-80, 0],
+                                            [-80, 179]
+                                        ],
+                                        regionCoords,
+                                    ], {}, {
+                                        fill: true,
+                                        fillOpacity: 1,
+                                        fillColor: '#ffffff',
+                                    });
+
+                                    restrictMapArea = [[90, 180], [-90, -180]];
+                                    for (let i = 0; i < regionCoords.length; i++) {
+                                        let point = regionCoords[i];
+                                        if (restrictMapArea[0][0] > point[0]) {
+                                            restrictMapArea[0][0] = point[0];
+                                        }
+                                        if (restrictMapArea[1][0] < point[0]) {
+                                            restrictMapArea[1][0] = point[0];
+                                        }
+                                        if (restrictMapArea[0][1] > point[1]) {
+                                            restrictMapArea[0][1] = point[1];
+                                        }
+                                        if (restrictMapArea[1][1] < point[1]) {
+                                            restrictMapArea[1][1] = point[1];
+                                        }
+                                    }
+
+                                    let dx = Math.abs(restrictMapArea[0][0] - restrictMapArea[1][0])
+                                    let dy = Math.abs(restrictMapArea[0][1] - restrictMapArea[1][1])
+                                    dMax = 0.9 * Math.max(dx, dy)
+
+                                    let centerX = (restrictMapArea[0][0] + restrictMapArea[1][0]) / 2
+                                    let centerY = (restrictMapArea[0][1] + restrictMapArea[1][1]) / 2
+
+                                    center = [centerX, centerY]
+                                    restrictMapArea = [[centerX - dMax, centerY - dMax], [centerX + dMax, centerY + dMax]];
+                                } catch (e) {
+                                    console.error(e)
                                 }
                             }
+                            let mapOptions = restrictMapArea ? {
+                                restrictMapArea: restrictMapArea,
+                                minZoom: Math.max(Math.floor(Math.log(180 / dMax) / Math.log(2)), 1),
+                            } : {};
 
-                            let dx = Math.abs(restrictMapArea[0][0] - restrictMapArea[1][0])
-                            let dy = Math.abs(restrictMapArea[0][1] - restrictMapArea[1][1])
-                            dMax = 0.9 * Math.max(dx, dy)
-
-                            let centerX = (restrictMapArea[0][0] + restrictMapArea[1][0]) / 2
-                            let centerY = (restrictMapArea[0][1] + restrictMapArea[1][1]) / 2
-
-                            center = [centerX, centerY]
-                            restrictMapArea = [[centerX - dMax, centerY - dMax], [centerX + dMax, centerY + dMax]];
-                        } catch (e) {
-                            console.error(e)
-                        }
-                    }
-                    let mapOptions = restrictMapArea ? {
-                        restrictMapArea: restrictMapArea,
-                        minZoom: Math.max(Math.floor(Math.log(180 / dMax) / Math.log(2)), 1),
-                    } : {};
-
-                    doGet(`${apiBase}/country/code/${countryCode}`).then(resp => {
-                        return JSON.parse(resp)
-                    }).then(country => {
-                        wwMap.init({
-                            countryId: country.id,
-                            defaultCenter: center,
-                            useHash: false,
-                            mapOptions: mapOptions,
-                        })
-                        if (geoObject) {
-                            wwMap.yMap.geoObjects.add(geoObject);
-                        }
-                    })
+                            doGet(`${apiBase}/country/code/${countryCode}`).then(resp => {
+                                return JSON.parse(resp)
+                            }).then(country => {
+                                wwMap.init({
+                                    countryId: country.id,
+                                    defaultCenter: center,
+                                    useHash: false,
+                                    mapOptions: mapOptions,
+                                })
+                                if (geoObject) {
+                                    wwMap.yMap.geoObjects.add(geoObject);
+                                }
+                                resolve(wwMap);
+                            })
+                        });
+                    });
                 });
             });
-        });
+        } catch (e) {
+            reject(e);
+        }
     });
 }
 
