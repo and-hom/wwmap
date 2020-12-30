@@ -16,7 +16,14 @@ module.exports = env => {
         frontendVersion = `"${env.VERSION}"`;
     }
 
-    console.log(`Build ${appEnv} environment version ${frontendVersion}`);
+
+    let country = 'ab';
+    if (env && env.COUNTRY) {
+        country = `"${env.COUNTRY}"`;
+    }
+    country = country.replace(/['"]/g,'')
+
+    console.log(`Build ${appEnv} environment version ${frontendVersion} for country ${country}`);
 
     return {
         mode: appEnv == DEVELOPMENT ? 'development' : 'production',
@@ -76,6 +83,15 @@ module.exports = env => {
                     test: /js-sources\/.*?\.tsx?$/,
                     exclude: /node_modules/,
                     loader: "ts-loader"
+                },
+                {
+                    test: /js-sources\/country-settings\/ab\.ts$/,
+                    loader: 'file-replace-loader',
+                    options: {
+                        condition: 'if-replacement-exists',
+                        replacement: resolve(`./js-sources/country-settings/${country}.ts`),
+                        async: true,
+                    }
                 },
                 {
                     test: /js-sources\/config\.js$/,
