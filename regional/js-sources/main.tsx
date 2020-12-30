@@ -1,23 +1,18 @@
 import React from 'react'
 
 import './style/main.css'
-
-import {Helmet} from "react-helmet";
+import {country} from './country-settings/ab'
+import RegionMap from "./region-map";
 
 export default class Main extends React.Component {
     render() {
         return (
             <div>
-                <Helmet>
-                    <script type="text/javascript">
-                        initMap();
-                    </script>
-                </Helmet>
                 <div className="container main-container">
                     <div className="row">
                         <div className="col s12">
-                            <h1>Путеводитель по рекам Грузии</h1>
-                            <div id="wwmap-container" className="wwmap-container"></div>
+                            <h1>Путеводитель по рекам {country.countryNamePrepositionalCase}</h1>
+                            <RegionMap country={country}/>
                         </div>
                     </div>
                     <div className="row">

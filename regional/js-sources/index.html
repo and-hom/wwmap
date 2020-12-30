@@ -12,20 +12,16 @@
 </head>
 <body>
 <script type="application/javascript">
-    function initMap() {
-        loadMapWhenDivIsReady();
-    }
-
-    function loadMapWhenDivIsReady() {
+    function loadMapWhenDivIsReady(code) {
         if (document.getElementById('wwmap-container')) {
-            wwmap.initWWMapRegional("wwmap-container", 'AB', null, {
+            wwmap.initWWMapRegional("wwmap-container", code, null, {
                 catalogLinkType: "wwmap",
             }).then(map => {
                 console.log("Map loaded")
             }).catch(ex => console.error(ex));
         } else {
             console.log("#div-container is not ready yet: has no offsetWidth");
-            setTimeout(() => loadMapWhenDivIsReady(t), 100);
+            setTimeout(() => loadMapWhenDivIsReady(code), 100);
         }
     }
 </script>

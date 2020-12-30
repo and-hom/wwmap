@@ -31,22 +31,22 @@ export default class River extends Component {
                             <tr>
                                 <td><label htmlFor="gpx">GPX для навигатора с русскими названиями</label></td>
                                 <td><a id="gpx" href="https://wwmap.ru/api/downloads/river/32/gpx"
-                                       alt="Скачать GPX с точками порогов">GPX</a></td>
+                                       title="Скачать GPX с точками порогов">GPX</a></td>
                             </tr>
                             <tr>
                                 <td><label htmlFor="gpx_en">GPX для навигатора без поддержки русских букв</label></td>
                                 <td><a id="gpx_en" href="https://wwmap.ru/api/downloads/river/32/gpx?tr=true"
-                                       alt="Скачать GPX с точками порогов">GPX<sub>en</sub></a></td>
+                                       title="Скачать GPX с точками порогов">GPX<sub>en</sub></a></td>
                             </tr>
                             <tr>
                                 <td><label htmlFor="csv_en">Пороги таблицей</label></td>
                                 <td><a id="csv_en" href="https://wwmap.ru/api/downloads/river/32/csv"
-                                       alt="Скачать таблицу с точками порогов">CSV</a></td>
+                                       title="Скачать таблицу с точками порогов">CSV</a></td>
                             </tr>
                             <tr>
                                 <td><label htmlFor="csv_en">Пороги таблицей латиницей</label></td>
                                 <td><a id="csv_en" href="https://wwmap.ru/api/downloads/river/32/csv?tr=true"
-                                       alt="Скачать таблицу с точками порогов">CSV<sub>en</sub></a></td>
+                                       title="Скачать таблицу с точками порогов">CSV<sub>en</sub></a></td>
                             </tr>
 
                             </tbody>
