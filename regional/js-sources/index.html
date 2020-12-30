@@ -16,7 +16,7 @@
         if (document.getElementById('wwmap-container')) {
             wwmap.initWWMapRegional("wwmap-container", code, null, {
                 catalogLinkType: "wwmap",
-            }).then(map => {
+            }).then(_ => {
                 console.log("Map loaded")
             }).catch(ex => console.error(ex));
         } else {

@@ -193,7 +193,7 @@ WWMap.prototype.init = function (opts) {
     this.yMap.events.add('boundschange', function (e) {
         let center = t.yMap.getCenter();
         let zoom = t.yMap.getZoom();
-        setLastPositionZoomType(center, zoom, t.yMap.getType(), useHash, this.countryId);
+        setLastPositionZoomType(center, zoom, t.yMap.getType(), useHash, t.countryId);
         t.loadRivers(e.get("newBounds"))
         if (t.onBoundsChange) {
             t.onBoundsChange(center, zoom)
@@ -201,7 +201,7 @@ WWMap.prototype.init = function (opts) {
     });
 
     this.yMap.events.add('typechange', function (e) {
-        setLastPositionZoomType(t.yMap.getCenter(), t.yMap.getZoom(), t.yMap.getType(), useHash, this.countryId)
+        setLastPositionZoomType(t.yMap.getCenter(), t.yMap.getZoom(), t.yMap.getType(), useHash, t.countryId)
     });
 
     let objectManager = new ymaps.RemoteObjectManager(this.createObjectsUrlTemplate(), {
