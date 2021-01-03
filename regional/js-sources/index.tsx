@@ -5,7 +5,6 @@ import {
     Route,
     Switch,
     Redirect,
-    withRouter,
     BrowserRouter
 } from "react-router-dom";
 
@@ -24,7 +23,7 @@ class App extends React.Component {
             <div className="App">
                 <Switch>
                     <Route history={history} path='/index' component={Main} />
-                    <Route history={history} path='/river' component={River} />
+                    <Route history={history} path='/river/:id' component={River} />
                     <Redirect from='/' to='/index'/>
                 </Switch>
             </div>

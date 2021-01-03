@@ -199,6 +199,10 @@ func (this *RiverHandler) groupReports(reports []dao.VoyageReport, river dao.Riv
 	reportsListBuilder := ReportsListBuilder{
 		source:    reportDtos,
 		processed: make(map[string]bool),
+
+		// Serialize empty report list as empty array not null
+		// https://apoorvam.github.io/blog/2017/golang-json-marshal-slice-as-empty-array-not-null/
+		reportsList: make([]VoyageReportListDto, 0),
 	}
 	reportsListBuilder.addReportDtos(huskytm.SOURCE, "huskytm.ru")
 	reportsListBuilder.addReportDtos(tlib.SOURCE, "tlib.ru")

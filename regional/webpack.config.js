@@ -33,7 +33,7 @@ module.exports = env => {
         output: {
             path: __dirname + "/dist",
             filename: "wwmap.regional.js",
-            publicPath: './',
+            publicPath: '/',
             libraryTarget: 'var',
             library: 'wwmap_regional'
         },
@@ -56,7 +56,7 @@ module.exports = env => {
             }),
             new HtmlWebpackPlugin({
                 template: 'js-sources/index.html',
-                inject: 'body'
+                inject: 'body',
             }),
         ],
         module: {

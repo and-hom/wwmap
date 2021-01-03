@@ -36,11 +36,13 @@ func (this *GeoHierarchyHandler) Init() {
 	this.Register("/country", HandlerFunctions{Get: this.ListCountries})
 	this.Register("/country/{countryId}", HandlerFunctions{Get: this.GetCountry})
 	this.Register("/country/code/{code}", HandlerFunctions{Get: this.GetCountryByCode})
+	this.Register("/country/code/{code}/region", HandlerFunctions{Get: this.ListRegionsByCountryCode})
 	this.Register("/country/{countryId}/region", HandlerFunctions{Get: this.ListRegions})
 	this.Register("/country/{countryId}/region/{regionId}/river", HandlerFunctions{Get: this.ListRegionRivers})
 	this.Register("/country/{countryId}/river", HandlerFunctions{Get: this.ListCountryRivers})
 
 	this.Register("/region", HandlerFunctions{Get: this.ListAllRegions})
+	this.Register("/region/{regionId}/river", HandlerFunctions{Get: this.ListRegionRivers})
 	this.Register("/region/{regionId}", HandlerFunctions{
 		Get:    this.GetRegion,
 		Put:    this.ForRoles(this.SaveRegion, dao.ADMIN),
@@ -146,6 +148,28 @@ func (this *GeoHierarchyHandler) ListRegions(w http.ResponseWriter, r *http.Requ
 	regions, err := this.RegionDao.List(countryId)
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not list regions of country %d", countryId))
+		return
+	}
+	JsonAnswer(w, regions)
+}
+
+func (this *GeoHierarchyHandler) ListRegionsByCountryCode(w http.ResponseWriter, r *http.Request) {
+	pathParams := mux.Vars(r)
+	countryCode := pathParams["code"]
+
+	country, found, err := this.CountryDao.GetByCode(countryCode)
+	if err != nil {
+		OnError500(w, err, "Can't select country with code "+countryCode)
+		return
+	}
+	if !found {
+		OnError(w, err, "Country with code " + countryCode + " not found!", http.StatusNotFound)
+		return
+	}
+
+	regions, err := this.RegionDao.List(country.Id)
+	if err != nil {
+		OnError500(w, err, fmt.Sprintf("Can not list regions of country %d", country.Id))
 		return
 	}
 	JsonAnswer(w, regions)
