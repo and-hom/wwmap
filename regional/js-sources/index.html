@@ -14,8 +14,9 @@
 <script type="application/javascript">
     function loadMapWhenDivIsReady(code) {
         if (document.getElementById('wwmap-container')) {
-            wwmap.initWWMapRegional("wwmap-container", code, null, {
+            wwmap.initWWMap("wwmap-container", null, {
                 catalogLinkType: "wwmap",
+                countryCode: code,
             }).then(_ => {
                 console.log("Map loaded")
             }).catch(ex => console.error(ex));
