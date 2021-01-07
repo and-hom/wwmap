@@ -191,6 +191,7 @@ func (this *DataHandler) fetch(w http.ResponseWriter, pos Pos) error {
 	}
 	tmpFile, err := this.fetchUrlToTmpFile(w, url.Url)
 	if err != nil {
+		OnError500(w, err, "Can not fetch map fragment from source")
 		return err
 	}
 	err = os.MkdirAll(filepath.Dir(path), os.ModeDir|0777)
@@ -322,12 +323,16 @@ func main() {
 
 	r := mux.NewRouter()
 
+	timeout := configuration.SourceReadTimeout
+	if  timeout <= 0 {
+		timeout = 15 * time.Second
+	}
 	handler := DataHandler{
 		Handler:    Handler{R: r},
 		baseDir:    configuration.BaseDir,
 		urlMapping: typeCdnMapping(configuration),
 		client: &http.Client{
-			Timeout: 4 * time.Second,
+			Timeout: timeout,
 		},
 		version: version,
 	}
@@ -354,5 +359,5 @@ func main() {
 }
 
 func (this *DataHandler) Version(w http.ResponseWriter, req *http.Request) {
-	this.JsonAnswer(w, this.version)
+	JsonAnswer(w, this.version)
 }
