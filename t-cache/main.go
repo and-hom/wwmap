@@ -320,13 +320,13 @@ func typeCdnMapping(configuration config.TileCache) map[string]Mapping {
 			if maxParallel <= 0 {
 				maxParallel = 5
 			}
-			headersB, err := json.Marshal(u.Headers)
+			headersB, err := json.MarshalIndent(u.Headers, "", "    ")
 			if err!=nil {
 				log.Error("Can't marshal headers for log")
 				headersB = []byte("<>")
 			}
 			log.Infof(
-				"Set up url pattern %s for map \"%s\" with max_parallel = %d and headers:\n",
+				"Set up url pattern %s for map \"%s\" with max_parallel = %d and headers:\n%s",
 				urlPatternStr,
 				t,
 				maxParallel,
