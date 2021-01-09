@@ -154,7 +154,7 @@ func (this TlibReportsProvider) queryData(pageNum int, viewState ViewState, date
 	req.Header.Add("Referer", "http://www.tlib.ru/")
 	req.Header.Add("Origin", "http://www.tlib.ru/")
 	req.Header.Add("Host", "www.tlib.ru")
-	req.Header.Add("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/66.0.3359.181 Chrome/66.0.3359.181 Safari/537.36")
+	req.Header.Add(util.USER_AGENT_HEADER, "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/66.0.3359.181 Chrome/66.0.3359.181 Safari/537.36")
 	req.Header.Add("Cookie", viewState.Cookie)
 
 	resp, err := this.client.Do(req)

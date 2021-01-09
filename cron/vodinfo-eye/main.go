@@ -214,7 +214,7 @@ func DownloadImage(sensorId string, client *http.Client) (image.Image, error) {
 		log.Errorf("Can't create request for %s: %v", url, err)
 		return nil, err
 	}
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/601.7.7 (KHTML, like Gecko) Version/9.1.2 Safari/601.7.7")
+	req.Header.Set(util.USER_AGENT_HEADER, "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/601.7.7 (KHTML, like Gecko) Version/9.1.2 Safari/601.7.7")
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Errorf("Can't perform request for %s: %v", url, err)

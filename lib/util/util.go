@@ -8,6 +8,7 @@ import (
 )
 
 const DEFAULT_LOCATION = "Europe/Moscow"
+const USER_AGENT_HEADER = "User-Agent"
 
 func GetDefaultLocation() *time.Location {
 	l, err := time.LoadLocation(DEFAULT_LOCATION)

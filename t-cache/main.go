@@ -2,11 +2,13 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/lib/config"
 	. "github.com/and-hom/wwmap/lib/handler"
 	. "github.com/and-hom/wwmap/lib/http"
+	"github.com/and-hom/wwmap/lib/util"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 	"image"
@@ -26,6 +28,8 @@ import (
 
 var GMT_LOC, _ = time.LoadLocation("UTC")
 var version string = "development"
+
+const DEFAULT_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/601.7.7 (KHTML, like Gecko) Version/9.1.2 Safari/601.7.7"
 
 type Pos struct {
 	x int
@@ -57,7 +61,8 @@ func (this CdnUrlPattern) mkUrl(pos Pos) string {
 }
 
 type Mapping struct {
-	cdn []CdnUrlPattern
+	cdn     []CdnUrlPattern
+	headers map[string]string
 }
 
 func (this *Mapping) mkUrl(pos Pos) LockableUrlHolder {
@@ -122,14 +127,22 @@ func (this *DataHandler) initDefaultImageIfNecessary() {
 	}
 }
 
-func (this *DataHandler) fetchUrlToTmpFile(w http.ResponseWriter, url string) (string, error) {
+func (this *DataHandler) fetchUrlToTmpFile(w http.ResponseWriter, url string, headers map[string]string) (string, error) {
 	log.Info("Fetch ", url)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		OnError500(w, err, "Can not create request for "+url)
 		return "", err
 	}
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/601.7.7 (KHTML, like Gecko) Version/9.1.2 Safari/601.7.7")
+
+	_, userAgentDefined := headers[util.USER_AGENT_HEADER]
+	if userAgentDefined {
+		for k, v := range headers {
+			req.Header.Set(k, v)
+		}
+	} else {
+		req.Header.Set(util.USER_AGENT_HEADER, DEFAULT_USER_AGENT)
+	}
 
 	resp, err := this.client.Do(req)
 	if err != nil {
@@ -158,7 +171,7 @@ func (this *DataHandler) fetchUrlToTmpFile(w http.ResponseWriter, url string) (s
 		}
 	} else {
 		this.initDefaultImageIfNecessary()
-		log.Info("Use empty image for missing tile")
+		log.Info("Use empty image for missing tile ", url)
 		w.Write(this.defaultData)
 	}
 
@@ -189,7 +202,7 @@ func (this *DataHandler) fetch(w http.ResponseWriter, pos Pos) error {
 		OnError(w, err, "Can not find mapping for type", http.StatusBadRequest)
 		return err
 	}
-	tmpFile, err := this.fetchUrlToTmpFile(w, url.Url)
+	tmpFile, err := this.fetchUrlToTmpFile(w, url.Url, mapping.headers)
 	if err != nil {
 		OnError500(w, err, "Can not fetch map fragment from source")
 		return err
@@ -292,24 +305,48 @@ func typeCdnMapping(configuration config.TileCache) map[string]Mapping {
 		},
 	}
 	for t, u := range configuration.Types {
-		if len(u) == 0 {
+		if len(u.Url) == 0 {
 			log.Warnf("No patterns for type %s", t)
 			continue
 		}
 
-		p := make([]CdnUrlPattern, len(u))
-		for i, urlPatternStr := range u {
+		p := make([]CdnUrlPattern, len(u.Url))
+		for i, urlPatternStr := range u.Url {
 			tmpl, err := template.New(fmt.Sprintf("%s-%d", t, i)).Funcs(funcMap).Parse(urlPatternStr)
 			if err != nil {
 				log.Fatalf("Can not process template %s %v+", urlPatternStr, err)
 			}
+			maxParallel := u.MaxParallelRequests
+			if maxParallel <= 0 {
+				maxParallel = 5
+			}
+			headersB, err := json.Marshal(u.Headers)
+			if err!=nil {
+				log.Error("Can't marshal headers for log")
+				headersB = []byte("<>")
+			}
+			log.Infof(
+				"Set up url pattern %s for map \"%s\" with max_parallel = %d and headers:\n",
+				urlPatternStr,
+				t,
+				maxParallel,
+				string(headersB),
+			)
 			p[i] = CdnUrlPattern{
 				template:  tmpl,
-				semaphore: make(chan int, 5),
+				semaphore: make(chan int, maxParallel),
 			}
 		}
 
-		typeCdnMapping[t] = Mapping{cdn: p}
+		headers := u.Headers
+		if headers == nil {
+			headers = make(map[string]string)
+		}
+
+		typeCdnMapping[t] = Mapping{
+			cdn:     p,
+			headers: headers,
+		}
 	}
 	return typeCdnMapping
 }
@@ -324,7 +361,7 @@ func main() {
 	r := mux.NewRouter()
 
 	timeout := configuration.SourceReadTimeout
-	if  timeout <= 0 {
+	if timeout <= 0 {
 		timeout = 15 * time.Second
 	}
 	handler := DataHandler{

@@ -36,12 +36,18 @@ type Content struct {
 }
 
 type TileCache struct {
-	BindTo            string              `yaml:"bind_to"`
-	ReadTimeout       time.Duration       `yaml:"read_timeout"`
-	WriteTimeout      time.Duration       `yaml:"write_timeout"`
-	SourceReadTimeout time.Duration       `yaml:"source_read_timeout"`
-	BaseDir           string              `yaml:"base_dir"`
-	Types             map[string][]string `yaml:"types"`
+	BindTo            string                      `yaml:"bind_to"`
+	ReadTimeout       time.Duration               `yaml:"read_timeout"`
+	WriteTimeout      time.Duration               `yaml:"write_timeout"`
+	SourceReadTimeout time.Duration               `yaml:"source_read_timeout"`
+	BaseDir           string                      `yaml:"base_dir"`
+	Types             map[string]MapFetchSettings `yaml:"types"`
+}
+
+type MapFetchSettings struct {
+	Url                 []string          `yaml:"url"`
+	MaxParallelRequests int               `yaml:"max_parallel_requests"`
+	Headers             map[string]string `yaml:"headers"`
 }
 
 type Cron struct {

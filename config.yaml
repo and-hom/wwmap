@@ -26,15 +26,26 @@ tile-cache:
   base_dir: "/var/lib/wwmap/t-cache"
   types:
     osm:
-      - "http://a.tile.openstreetmap.org/{{.z}}/{{.x}}/{{.y}}.png"
-      - "http://b.tile.openstreetmap.org/{{.z}}/{{.x}}/{{.y}}.png"
-      - "http://c.tile.openstreetmap.org/{{.z}}/{{.x}}/{{.y}}.png"
+      url:
+        - "http://a.tile.openstreetmap.org/{{.z}}/{{.x}}/{{.y}}.png"
+        - "http://b.tile.openstreetmap.org/{{.z}}/{{.x}}/{{.y}}.png"
+        - "http://c.tile.openstreetmap.org/{{.z}}/{{.x}}/{{.y}}.png"
     ggc:
-      - "http://maps.melda.ru/pub/ggc/{{if lt .z 12}}2km.png{{else}}{{if lt .z 13}}1km.png{{else}}{{if lt .z 14}}500m.png{{else}}250m.png{{end}}{{end}}{{end}}/z{{sum .z 1}}/{{div .x 1024}}/x{{.x}}/{{div .y 1024}}/y{{.y}}.png"
+      url:
+        - "https://maps.melda.ru/pub/ggc/{{if lt .z 12}}2km.png{{else}}{{if lt .z 13}}1km.png{{else}}{{if lt .z 14}}500m.png{{else}}250m.png{{end}}{{end}}{{end}}/z{{sum .z 1}}/{{div .x 1024}}/x{{.x}}/{{div .y 1024}}/y{{.y}}.png"
+      #        - "http://91.237.82.95:8088/pub/ggc/{{if lt .z 13}}2km.png{{else}}{{if lt .z 14}}1km.png{{else}}{{if lt .z 15}}500m.png{{else}}250m.png{{end}}{{end}}{{end}}/z{{sum .z 1}}/{{div .x 1024}}/x{{.x}}/{{div .y 1024}}/y{{.y}}.png"
+      max_parallel_requests: 20
+      headers:
+        User-Agent: "Opera/9.80 (Windows NT 6.1) Presto/2.12.388 Version/12.16"
+        Referer: "http://kosmosnimki.ru/"
+        Accept: "text/html, application/xml;q=0.9, application/xhtml+xml, image/png, image/webp, image/jpeg, image/gif, image/x-xbitmap, */*;q=0.1"
+        Accept-Language: "ru-RU,ru;q=0.9,en;q=0.8"
     marshruty-ru:
-      - "http://maps.marshruty.ru/ml.ashx?al=1&x={{.x}}&y={{.y}}&z={{.z}}"
+      url:
+        - "http://maps.marshruty.ru/ml.ashx?al=1&x={{.x}}&y={{.y}}&z={{.z}}"
     topo-mapper:
-      - "http://144.76.234.108/cgi-bin/tapp/tilecache.py/1.0.0/topomapper_v2/{{.z}}/{{.x}}/{{.y}}"
+      url:
+        - "http://144.76.234.108/cgi-bin/tapp/tilecache.py/1.0.0/topomapper_v2/{{.z}}/{{.x}}/{{.y}}"
 cron:
   bind_to: ":7009"
   read_timeout: 5s
