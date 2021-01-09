@@ -118,14 +118,13 @@ type Configuration struct {
 }
 
 func (this *Configuration) ConfigureLogger() {
-	if this.LogLevel == "" {
-		return
+	if this.LogLevel != "" {
+		level, err := this.LogLevel.ToLogrus()
+		if err != nil {
+			log.Fatalf("Can not parse log level %s: %v", this.LogLevel, err)
+		}
+		log.SetLevel(level)
 	}
-	level, err := this.LogLevel.ToLogrus()
-	if err != nil {
-		log.Fatalf("Can not parse log level %s: %v", this.LogLevel, err)
-	}
-	log.SetLevel(level)
 
 	customFormatter := new(log.TextFormatter)
 	customFormatter.TimestampFormat = "2006-01-02 15:04:05"
