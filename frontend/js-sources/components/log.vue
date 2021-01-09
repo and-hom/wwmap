@@ -18,7 +18,11 @@
     <table v-if="admin" class="wwmap-changes-log">
         <tr style="vertical-align: top;" v-for="entry in logEntries">
             <td style="white-space: nowrap">{{entry.time}}</td>
-            <td>{{entry.login}}<div class="wwmap-system-hint">{{entry.auth_provider}}/{{entry.ext_id}}</div></td>
+            <td>
+              <div>{{ entry.user_info.first_name }}</div>
+              <div>{{ entry.user_info.last_name }}</div>
+              <div class="wwmap-system-hint">{{entry.auth_provider}}/{{entry.ext_id}}</div>
+            </td>
             <td>{{entry.type}}</td>
             <td style="max-width: 200px;">{{entry.description}}</td>
         </tr>

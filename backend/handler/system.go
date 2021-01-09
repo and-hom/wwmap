@@ -44,7 +44,7 @@ func (this *SystemHandler) DbVersion(w http.ResponseWriter, req *http.Request) {
 func (this *SystemHandler) Log(w http.ResponseWriter, req *http.Request) {
 	objectType := req.FormValue("object_type")
 	if objectType == "" {
-		lastRows, err := this.ChangesLogDao.ListAll(300)
+		lastRows, err := this.ChangesLogDao.ListAllWithUserInfo(300)
 		if err != nil {
 			OnError500(w, err, "Can not fetch log entries")
 			return
@@ -57,7 +57,7 @@ func (this *SystemHandler) Log(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		OnError(w, err, "Can not parse object id", http.StatusBadRequest)
 	}
-	entries, err := this.ChangesLogDao.List(objectType, objectId, 100)
+	entries, err := this.ChangesLogDao.ListWithUserInfo(objectType, objectId, 100)
 	if err != nil {
 		OnError500(w, err, "Can not fetch log entries")
 		return

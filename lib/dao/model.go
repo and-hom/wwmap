@@ -429,6 +429,11 @@ type ChangesLogEntry struct {
 	Time         JSONTime            `json:"time"`
 }
 
+type ChangesLogEntryWithUseInfo struct {
+	ChangesLogEntry
+	UserInfo UserInfo `json:"user_info"`
+}
+
 type Daytime string
 
 const (
@@ -535,15 +540,15 @@ type ILinkedEntity interface {
 
 type LinkedEntity struct {
 	IdTitle
-	Rivers     []int64 `json:"rivers"`
+	Rivers     []int64              `json:"rivers"`
 	RiversData *[]LinkedEntityRiver `json:"rivers_data"`
 }
 
-func (this *LinkedEntity) SetRiversData(riversData *[]LinkedEntityRiver)  {
+func (this *LinkedEntity) SetRiversData(riversData *[]LinkedEntityRiver) {
 	this.RiversData = riversData
 }
 
-func (this *LinkedEntity) GetRivers() []int64  {
+func (this *LinkedEntity) GetRivers() []int64 {
 	return this.Rivers
 }
 
@@ -570,14 +575,14 @@ type Transfer struct {
 
 type VoyageReport struct {
 	LinkedEntity
-	Author        string    `json:"author"`
-	Source        string    `json:"source"`
-	RemoteId      string    `json:"remote_id"`
-	Url           string    `json:"url"`
+	Author        string     `json:"author"`
+	Source        string     `json:"source"`
+	RemoteId      string     `json:"remote_id"`
+	Url           string     `json:"url"`
 	DatePublished *time.Time `json:"date_published,omitempty"`
-	DateModified  time.Time `json:"date_modified,omitempty"`
+	DateModified  time.Time  `json:"date_modified,omitempty"`
 	DateOfTrip    *time.Time `json:"date_of_trip,omitempty"`
-	Tags          []string  `json:"tags"`
+	Tags          []string   `json:"tags"`
 }
 
 func (this *VoyageReport) GetDateOfTripYear(_default int) int {
