@@ -29,6 +29,7 @@ func NewVoyageReportPostgresDao(postgresStorage PostgresStorage) VoyageReportDao
 		listByRiverQuery:     queries.SqlQuery("voyage-report", "list-by-river"),
 		listAllQuery:         queries.SqlQuery("voyage-report", "list-all"),
 		removeQuery:          queries.SqlQuery("voyage-report", "remove"),
+		undoRemoveQuery:      queries.SqlQuery("voyage-report", "undo-remove"),
 		upsertRiverLinkQuery: queries.SqlQuery("voyage-report", "upsert-river-link"),
 		deleteRiverLinkQuery: queries.SqlQuery("voyage-report", "delete-river-link"),
 	}
@@ -45,12 +46,13 @@ type voyageReportStorage struct {
 	listByRiverQuery     string
 	listAllQuery         string
 	removeQuery          string
+	undoRemoveQuery      string
 	upsertRiverLinkQuery string
 	deleteRiverLinkQuery string
 }
 
-func (this voyageReportStorage) List(withRivers bool) ([]VoyageReport, error) {
-	found, err := this.DoFindList(this.listQuery, readReportFromRows)
+func (this voyageReportStorage) List(withRivers bool, withRemoved bool) ([]VoyageReport, error) {
+	found, err := this.DoFindList(this.listQuery, readReportFromRows, withRemoved)
 	if err != nil {
 		return []VoyageReport{}, err
 	}
@@ -92,6 +94,10 @@ func (this voyageReportStorage) Find(id int64) (VoyageReport, bool, error) {
 
 func (this voyageReportStorage) Remove(id int64) error {
 	return this.PerformUpdates(this.removeQuery, IdMapper, id)
+}
+
+func (this voyageReportStorage) UndoRemove(id int64) error {
+	return this.PerformUpdates(this.undoRemoveQuery, IdMapper, id)
 }
 
 func (this voyageReportStorage) UpsertVoyageReports(reports ...VoyageReport) ([]VoyageReport, error) {
@@ -173,7 +179,7 @@ func readReportFromRows(rows *sql.Rows) (VoyageReport, error) {
 	rivers := pq.Int64Array{}
 
 	err := rows.Scan(&report.Id, &report.Title, &report.RemoteId, &report.Source, &report.Url, &datePublished,
-		&report.DateModified, &dateOfTrip, &tags, &report.Author, &rivers)
+		&report.DateModified, &dateOfTrip, &tags, &report.Author, &rivers, &report.Removed)
 	report.DateOfTrip = nullDateToPtr(dateOfTrip)
 	report.DatePublished = nullDateToPtr(datePublished)
 	report.Rivers = []int64(rivers)

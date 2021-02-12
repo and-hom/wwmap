@@ -50,12 +50,18 @@
               <span v-else-if="field.type=='dateTime'">{{ entity[field.name] | formatDateTimeStr | emptyDate00010101 | orElse('&mdash;') | yearOnly0102}}</span>
               <span v-else>{{ entity[field.name] }}</span>
             </td>
-            <td v-if="canEdit" class="btn-col">
+            <td v-if="canEdit && removedField && entity[removedField]===true" class="btn-col">
+              <ask :id="'undo-del-'+entity.id" title="Отменить удаление?"
+                   msg="Отменить удаление"
+                   :ok-fn="function() {undoRemove(entity.id)}"></ask>
+              <button data-toggle="modal" :data-target="'#undo-del-'+entity.id">Отменить удаление</button>
+            </td>
+            <td v-else-if="canEdit" class="btn-col">
               <button v-on:click="entityForEdit={ ...entity }"
                       data-toggle="modal" data-target="#add">Правка
               </button>
               <ask :id="'del-'+entity.id" title="Удалить?"
-                   msg="Отменить удаление будет нельзя"
+                   msg="Можно будет отменить удаление"
                    :ok-fn="function() {remove(entity.id)}"></ask>
               <button data-toggle="modal" :data-target="'#del-'+entity.id">Удалить</button>
             </td>
@@ -96,7 +102,7 @@ td.fitwidth {
 
 <script>
 
-import {doDelete, doGetJson} from "../../../api";
+import {doDelete, doGetJson, doPost} from "../../../api";
 import {hasRole, ROLE_ADMIN, ROLE_EDITOR} from "../../../auth";
 import {store} from "../../../app-state";
 import {arrays_intersects} from "wwmap-js-commons/util";
@@ -124,7 +130,11 @@ module.exports = {
       default: function () {
         return {};
       },
-    }
+    },
+    removedField: {
+      type: String,
+      required: false,
+    },
   },
   computed: {
     errMsg() {
@@ -155,6 +165,11 @@ module.exports = {
       doDelete(`${this.urlBase}/${id}`, true).then(this.refresh)
           .catch(err => this.showError(err));
     },
+    undoRemove: function (id) {
+      this.hideError();
+      doPost(`${this.urlBase}/${id}/undo-delete`, true, true).then(this.refresh)
+          .catch(err => this.showError(err));
+    },
     editOk: function () {
       this.hideError();
       this.refresh();
@@ -167,7 +182,7 @@ module.exports = {
       this.entityForEdit = this.blankEntityFactory();
     },
     refresh: function () {
-      doGetJson(`${this.urlBase}?rivers=true`, false).then(entities => {
+      doGetJson(`${this.urlBase}?rivers=true`, true).then(entities => {
         this.entities = entities;
       })
     },

@@ -26,6 +26,9 @@ func (this *linkedEntityHanler) Init() {
 		Put:    this.ForRoles(this.handler.Upsert, this.roles...),
 		Get:    this.ForRoles(this.handler.Get, this.roles...),
 	})
+	this.Register("/"+this.base+"/{id}/undo-delete", handler.HandlerFunctions{
+		Post:   this.ForRoles(this.handler.UndoDelete, this.roles...),
+	})
 	this.Register("/"+this.base+"/river/{id}", handler.HandlerFunctions{
 		Get: this.handler.ByRiver,
 	})
@@ -44,6 +47,7 @@ type linkedEntityHandler interface {
 	List(writer http.ResponseWriter, request *http.Request)
 	Upsert(writer http.ResponseWriter, request *http.Request)
 	Delete(writer http.ResponseWriter, request *http.Request)
+	UndoDelete(writer http.ResponseWriter, request *http.Request)
 	ByRiver(writer http.ResponseWriter, request *http.Request)
 }
 

@@ -583,6 +583,7 @@ type VoyageReport struct {
 	DateModified  time.Time  `json:"date_modified,omitempty"`
 	DateOfTrip    *time.Time `json:"date_of_trip,omitempty"`
 	Tags          []string   `json:"tags"`
+	Removed       bool       `json:"removed"`
 }
 
 func (this *VoyageReport) GetDateOfTripYear(_default int) int {

@@ -242,12 +242,13 @@ type CampDao interface {
 
 type VoyageReportDao interface {
 	RiverLinksDao
-	List(withReports bool) ([]VoyageReport, error)
+	List(withRivers bool, withRemoved bool) ([]VoyageReport, error)
 	ByRiver(riverId int64, limitByGroup int) ([]VoyageReport, error)
 	Insert(report VoyageReport) (int64, error)
 	Update(report VoyageReport) error
 	Find(id int64) (VoyageReport, bool, error)
 	Remove(id int64) error
+	UndoRemove(id int64) error
 
 	UpsertVoyageReports(report ...VoyageReport) ([]VoyageReport, error)
 	GetLastId(source string) (interface{}, error)

@@ -100,6 +100,10 @@ func (this *CampHandler) writeCamp(campId int64, w http.ResponseWriter) {
 	JsonAnswer(w, camp)
 }
 
+func (this *CampHandler) UndoDelete(w http.ResponseWriter, r *http.Request) {
+	OnError(w, nil, "Not implemented", http.StatusNotImplemented)
+}
+
 func (this *CampHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	pathParams := mux.Vars(r)
 	campIdStr := pathParams["id"]
