@@ -6,11 +6,12 @@ import (
 
 type Job struct {
 	dao.IdTitle
-	Expr     string `json:"expr"`
-	Enabled  bool   `json:"enabled"`
-	Critical bool   `json:"critical"`
-	Command  string `json:"command"`
-	Args     string `json:"args"`
+	Expr        string `json:"expr"`
+	Enabled     bool   `json:"enabled"`
+	Critical    bool   `json:"critical"`
+	Command     string `json:"command"`
+	LogsTtlDays int    `json:"logsTtlDays,string"`
+	Args        string `json:"args"`
 }
 
 type Status string

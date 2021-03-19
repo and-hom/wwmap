@@ -26,7 +26,7 @@ func NewExecutionPostgresStorage(postgres dao.PostgresStorage) ExecutionDao {
 		insertQuery:              "INSERT INTO cron.execution(job_id, start, \"end\", status, manual) VALUES ($1, $2, $3, $4, $5) RETURNING id, job_id, start, COALESCE(\"end\", to_timestamp(0)), status, manual",
 		updateStatusQuery:        "UPDATE cron.execution SET \"end\" = $2, status = $3 WHERE id=$1",
 		deleteByJobQuery:         "DELETE FROM cron.execution WHERE job_id=$1",
-		deleteOldQuery:           "WITH del_q AS (DELETE FROM cron.execution WHERE \"end\"<$1 RETURNING id) SELECT COALESCE(max(id),-1), count(id) FROM del_q;",
+		deleteOldQuery:           "WITH del_q AS (DELETE FROM cron.execution WHERE job_id=$1 AND \"end\"<$2 RETURNING id) SELECT COALESCE(max(id),-1), count(id) FROM del_q;",
 		markRunningAsOrphanQuery: "UPDATE cron.execution SET status=$2, \"end\"=$3 WHERE status=$1",
 	}
 }
@@ -88,8 +88,8 @@ func (this ExecutionDao) RemoveByJob(jobId int64) error {
 	return this.PerformUpdates(this.deleteByJobQuery, dao.IdMapper, jobId)
 }
 
-func (this ExecutionDao) RemoveOld(notAfter time.Time) (int64, int64, error) {
-	ids, err := this.UpdateReturningColumns(this.deleteOldQuery, dao.IdMapper, false, notAfter)
+func (this ExecutionDao) RemoveOld(jobId int64, notAfter time.Time) (int64, int64, error) {
+	ids, err := this.UpdateReturningColumns(this.deleteOldQuery, dao.ArrayMapper, false, []interface{}{jobId, notAfter})
 	if err != nil {
 		return 0, 0, err
 	}

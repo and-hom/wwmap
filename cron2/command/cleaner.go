@@ -18,16 +18,21 @@ const LOG_DATE_FORMAT = "2006-01-02 15:04:05-0700"
 
 type CleanerCommand struct {
 	ExecutionDao dao.ExecutionDao
+	JobDao       dao.JobDao
 	LogStorage   blob.BlobStorage
 }
 
 func (this CleanerCommand) Create(args string) CommandExecution {
 	r, w := io.Pipe()
-	ttlDays, err := strconv.Atoi(args)
+	ttlDays := make(map[int64]int)
+	jobs, err := this.JobDao.List()
 	if err != nil {
-		ttlDays = DEFAULT_TTL_DAYS
-		log.Errorf("Can't parse TTL DAYS for cleaner from string \"%s\" - use default %d days: %v", args, ttlDays, err)
+		log.Error("Can't list jobs", err)
 	}
+	for _, job := range jobs {
+		ttlDays[job.Id] = job.LogsTtlDays
+	}
+
 	return cleanerCommandExecution{
 		ExecutionDao: this.ExecutionDao,
 		LogStorage:   this.LogStorage,
@@ -50,7 +55,7 @@ type cleanerCommandExecution struct {
 	LogStorage   blob.BlobStorage
 	ErrReader    io.ReadCloser
 	ErrWriter    io.WriteCloser
-	ttlDays      int
+	ttlDays      map[int64]int
 }
 
 func (this cleanerCommandExecution) GetStreamsOrNils() (io.ReadCloser, io.ReadCloser) {
@@ -60,14 +65,23 @@ func (this cleanerCommandExecution) GetStreamsOrNils() (io.ReadCloser, io.ReadCl
 func (this cleanerCommandExecution) Execute() error {
 	defer util.DeferCloser(this.ErrWriter)
 
-	deleteBeforeDate := time.Now().Add(time.Duration(-this.ttlDays) * 24 * time.Hour)
-	this.logErr("Remove old executions before %s", deleteBeforeDate.Format(LOG_DATE_FORMAT))
-	maxId, exCnt, err := this.ExecutionDao.RemoveOld(deleteBeforeDate)
-	if err != nil {
-		this.logErr("Can't remove old executions: %v", err)
-		return err
+	maxExecutionIdsByJobId := make(map[int64]int64)
+	exCnt := int64(0)
+	for jobId, ttlDays := range this.ttlDays {
+
+		deleteBeforeDate := time.Now().Add(time.Duration(-ttlDays) * 24 * time.Hour)
+		this.logErr("Remove old executions for job %d before %s", jobId, deleteBeforeDate.Format(LOG_DATE_FORMAT))
+
+		maxId, exCntByJob, err := this.ExecutionDao.RemoveOld(jobId, deleteBeforeDate)
+		if err != nil {
+			this.logErr("Can't remove old executions: %v", err)
+			return err
+		}
+
+		maxExecutionIdsByJobId[jobId] = maxId
+		exCnt += exCntByJob
+		this.logErr("Remove old executions for job %d before id=%d", jobId, maxId)
 	}
-	this.logErr("Remove old executions before id=%d", maxId)
 
 	keys, err := this.LogStorage.ListIds()
 	if err != nil {
@@ -82,12 +96,21 @@ func (this cleanerCommandExecution) Execute() error {
 			this.logErr("Strange log storage key %s", key)
 			continue
 		}
+		jobId, err := strconv.ParseInt(path[0], 10, 64)
+		if err != nil {
+			this.logErr("Can't detect job id for key ", key, err)
+			continue
+		}
 		executionId, err := strconv.ParseInt(path[1], 10, 64)
 		if err != nil {
 			this.logErr("Can't detect execution id for key ", key, err)
 			continue
 		}
 
+		maxId, found := maxExecutionIdsByJobId[jobId]
+		if !found {
+			maxId = DEFAULT_TTL_DAYS
+		}
 		if executionId <= maxId {
 			this.logErr("Delete log files for key %s", key)
 			if err := this.LogStorage.Remove(key); err != nil {
