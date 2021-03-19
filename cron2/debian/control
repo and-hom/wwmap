@@ -7,5 +7,5 @@ Section: misc
 Package: wwmap-cron
 Priority: extra
 Architecture: amd64
-Depends: ${shlibs:Depends}, ${misc:Depends}, wwmap-config
+Depends: wwmap-config
 Description: Cron.d with rest api, history and log rotation

@@ -64,7 +64,7 @@ func (this *CronHandler) ForRoles(payload handler.HandlerFunction, roles ...dao.
 }
 
 func (this *CronHandler) Commands(w http.ResponseWriter, req *http.Request) {
-	this.JsonAnswer(w, this.commands)
+	handler.JsonAnswer(w, this.commands)
 }
 
 func (this *CronHandler) List(w http.ResponseWriter, req *http.Request) {
@@ -80,7 +80,7 @@ func (this *CronHandler) List(w http.ResponseWriter, req *http.Request) {
 		unregisteredReason, _ := this.registry.unregisteredReasons[jobs[i].Id]
 		out[i] = JobDto{jobs[i], registered, unregisteredReason}
 	}
-	this.JsonAnswer(w, out)
+	handler.JsonAnswer(w, out)
 }
 
 func (this *CronHandler) Get(w http.ResponseWriter, req *http.Request) {
@@ -101,7 +101,7 @@ func (this *CronHandler) Get(w http.ResponseWriter, req *http.Request) {
 		http2.OnError(w, err, fmt.Sprintf("Job with id %d not exists", id), http.StatusNotFound)
 		return
 	}
-	this.JsonAnswer(w, jobs)
+	handler.JsonAnswer(w, jobs)
 }
 
 func (this *CronHandler) Upsert(w http.ResponseWriter, req *http.Request) {
@@ -138,7 +138,7 @@ func (this *CronHandler) Upsert(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 	}
-	this.JsonAnswer(w, true)
+	handler.JsonAnswer(w, true)
 }
 
 func (this *CronHandler) changeJobState(enabledStateChanged bool, job cronDao.Job, w http.ResponseWriter) bool {
@@ -289,7 +289,7 @@ func (this *CronHandler) Timeline(w http.ResponseWriter, req *http.Request) {
 			previous = &(data[len(data)-1])
 		}
 	}
-	this.JsonAnswer(w, data)
+	handler.JsonAnswer(w, data)
 }
 
 func (this *CronHandler) Run(w http.ResponseWriter, req *http.Request) {
@@ -316,15 +316,15 @@ func (this *CronHandler) Run(w http.ResponseWriter, req *http.Request) {
 }
 
 func (this *CronHandler) Version(w http.ResponseWriter, req *http.Request) {
-	this.JsonAnswer(w, this.version)
+	handler.JsonAnswer(w, this.version)
 }
 
 func (this *CronHandler) Health(w http.ResponseWriter, req *http.Request) {
 	if len(this.registry.failedJobs) > 0 {
 		http.Error(w, "Some critical jobs failed", http.StatusInternalServerError)
-		this.JsonAnswer(w, this.registry.failedJobs)
+		handler.JsonAnswer(w, this.registry.failedJobs)
 	} else {
-		this.JsonAnswer(w, "ok")
+		handler.JsonAnswer(w, "ok")
 	}
 }
 

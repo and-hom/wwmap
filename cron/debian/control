@@ -7,5 +7,5 @@ Section: misc
 Package: wwmap-cron-modules
 Priority: extra
 Architecture: amd64
-Depends: ${shlibs:Depends}, ${misc:Depends}, wwmap-config, wkhtmltopdf, logrotate, wwmap-cron
+Depends: wwmap-config, wkhtmltopdf, logrotate, wwmap-cron
 Description: WWMap periodical tasks
