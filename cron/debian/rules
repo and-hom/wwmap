@@ -1,4 +1,8 @@
 #!/usr/bin/make -f
+
+.EXPORT_ALL_VARIABLES:
+CGO_ENABLED=0
+
 %:
 	dh $@
 
