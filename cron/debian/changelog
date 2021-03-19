@@ -1,3 +1,9 @@
+wwmap-cron-modules (0.0.36) unstable; urgency=medium
+
+  * Use new format of configuration
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Wed, 17 Mar 2021 09:06:45 +0300
+
 wwmap-cron-modules (0.0.35) unstable; urgency=medium
 
   * #370 Fix report dialog for camp

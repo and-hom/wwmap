@@ -1,3 +1,9 @@
+wwmap-cron (1.0.2) unstable; urgency=medium
+
+  * Use new configuration format 
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Wed, 17 Mar 2021 09:09:08 +0300
+
 wwmap-cron (1.0.1) unstable; urgency=medium
 
   * #300 Squash neighbour executions if they are too close in current timeline resolution
