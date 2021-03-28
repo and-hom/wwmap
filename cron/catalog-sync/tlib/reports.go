@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"github.com/pkg/errors"
 	"strings"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"regexp"
 	"github.com/goodsign/monday"
 	"github.com/and-hom/wwmap/lib/util"

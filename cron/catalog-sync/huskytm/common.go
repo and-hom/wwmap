@@ -5,7 +5,7 @@ package huskytm
 import (
 	"errors"
 	"fmt"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strconv"
 )

@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"io/ioutil"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 func Yandex(cacheExpireTime time.Duration) Passport {

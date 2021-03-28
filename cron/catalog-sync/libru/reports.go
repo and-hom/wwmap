@@ -2,7 +2,7 @@ package libru
 
 import (
 	"github.com/PuerkitoBio/goquery"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/and-hom/wwmap/cron/catalog-sync/common"
 	"github.com/and-hom/wwmap/lib/dao"
 	"github.com/and-hom/wwmap/lib/util"

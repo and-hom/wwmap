@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>
+<dataset>
+    <cron.job
+            id="1001"
+            title="New name"
+            expr="*/1 * * * *"
+            enabled="false"
+            command="another_command"
+            args="args"
+            critical="true"
+    />
+</dataset>

@@ -4,7 +4,7 @@ package main
 
 import (
 	"bytes"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	_ "golang.org/x/image/bmp"
 	"image"
 	"math"

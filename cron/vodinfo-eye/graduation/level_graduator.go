@@ -3,7 +3,7 @@ package graduation
 import (
 	"errors"
 	"fmt"
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/and-hom/wwmap/lib/dao"
 	"sort"
 )

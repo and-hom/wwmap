@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/and-hom/wwmap/lib/config"
 	"crypto/tls"
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"log"
 )
 

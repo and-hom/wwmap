@@ -2,7 +2,7 @@ package handler
 
 import (
 	"fmt"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/and-hom/wwmap/cron/catalog-sync/huskytm"
 	"github.com/and-hom/wwmap/cron/catalog-sync/libru"
 	"github.com/and-hom/wwmap/cron/catalog-sync/riskru"

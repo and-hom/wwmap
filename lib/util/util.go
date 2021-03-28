@@ -2,7 +2,7 @@ package util
 
 import (
 	"bytes"
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"io"
 	"time"
 )

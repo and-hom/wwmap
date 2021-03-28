@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"math"
 	"bytes"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/and-hom/wwmap/lib/dao"
 	"github.com/and-hom/wwmap/lib/util"
 	"github.com/and-hom/wwmap/lib/model"
