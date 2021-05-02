@@ -8,5 +8,6 @@
             command="another_command"
             args="args"
             critical="true"
+            log_ttl_days="60"
     />
 </dataset>

@@ -54,6 +54,7 @@ func TestSelectJobs(t *testing.T) {
 			true,
 			false,
 			"command",
+			120,
 			"arg1 arg2",
 		},
 	})
@@ -81,6 +82,7 @@ func TestSelectSingleJob(t *testing.T) {
 		true,
 		false,
 		"command",
+		120,
 		"arg1 arg2",
 	})
 }
@@ -113,6 +115,7 @@ func TestInsertJob(t *testing.T) {
 		false,
 		true,
 		"another_command",
+		120,
 		"args",
 	})
 	assert.Nil(t, err)
@@ -131,6 +134,7 @@ func TestUpdateMissing(t *testing.T) {
 		false,
 		true,
 		"another_command",
+		120,
 		"args",
 	})
 	assert.NotNil(t, err)
@@ -147,6 +151,7 @@ func TestUpdateJobEnabledChanged(t *testing.T) {
 		false,
 		true,
 		"another_command",
+		120,
 		"args",
 	})
 	assert.Nil(t, err)
@@ -164,6 +169,7 @@ func TestUpdateJobCronChanged(t *testing.T) {
 		true,
 		true,
 		"another_command",
+		120,
 		"args",
 	})
 	assert.Nil(t, err)
@@ -181,6 +187,7 @@ func TestUpdateJob(t *testing.T) {
 		true,
 		true,
 		"another_command",
+		60,
 		"args",
 	})
 	assert.Nil(t, err)

@@ -157,7 +157,7 @@ func TestRemoveOld1(t *testing.T) {
 	daoTester.ApplyDbunitData(t, "test/executions.xml")
 
 	date := time.Date(2020, 12, 10, 9, 1, 0, 0, time.UTC)
-	maxId, count, err := executionDao.RemoveOld(date)
+	maxId, count, err := executionDao.RemoveOld(1001, date)
 	assert.Nil(t, err)
 	assert.Equal(t, int64(1), count)
 	assert.Equal(t, int64(1003), maxId)
@@ -170,7 +170,7 @@ func TestRemoveOld2(t *testing.T) {
 	daoTester.ApplyDbunitData(t, "test/executions.xml")
 
 	date := time.Date(2020, 12, 10, 9, 2, 0, 0, time.UTC)
-	maxId, count, err := executionDao.RemoveOld(date)
+	maxId, count, err := executionDao.RemoveOld(1001, date)
 	assert.Nil(t, err)
 	assert.Equal(t, int64(2), count)
 	assert.Equal(t, int64(1003), maxId)

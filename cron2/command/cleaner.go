@@ -85,7 +85,7 @@ func (this cleanerCommandExecution) Execute() error {
 
 	keys, err := this.LogStorage.ListIds()
 	if err != nil {
-		this.logErr("Can't list file storage keys", err)
+		this.logErr("Can't list file storage keys: %v", err)
 		return err
 	}
 
@@ -98,12 +98,12 @@ func (this cleanerCommandExecution) Execute() error {
 		}
 		jobId, err := strconv.ParseInt(path[0], 10, 64)
 		if err != nil {
-			this.logErr("Can't detect job id for key ", key, err)
+			this.logErr("Can't detect job id for key %s: %v", key, err)
 			continue
 		}
 		executionId, err := strconv.ParseInt(path[1], 10, 64)
 		if err != nil {
-			this.logErr("Can't detect execution id for key ", key, err)
+			this.logErr("Can't detect execution id for key %s: %v", key, err)
 			continue
 		}
 
@@ -114,7 +114,7 @@ func (this cleanerCommandExecution) Execute() error {
 		if executionId <= maxId {
 			this.logErr("Delete log files for key %s", key)
 			if err := this.LogStorage.Remove(key); err != nil {
-				this.logErr("Can't remove log for key ", key, err)
+				this.logErr("Can't remove log for key %s: %v", key, err)
 				continue
 			}
 			fileCnt++

@@ -32,7 +32,7 @@ func ScanForAvailableCommands() map[string]Command {
 		for _, c := range found {
 			existing, override := commands[c.Name()]
 			if override {
-				log.Warn("Command %s will be replaced with %s", existing.String(), c.String())
+				log.Warnf("Command %s will be replaced with %s", existing.String(), c.String())
 			}
 			commands[c.Name()] = c
 		}
@@ -66,16 +66,16 @@ func scanForAvailableCommandsInDir(path string) []Command {
 
 func getCommand(path string, file os.FileInfo) (Command, bool) {
 	if !strings.HasSuffix(file.Name(), COMMAND_FILE_SUFFIX) {
-		log.Warn("File %s/%s has not suffix .job - ignored", path, file.Name())
+		log.Warnf("File %s/%s has not suffix .job - ignored", path, file.Name())
 		return nil, false
 	}
 	if file.IsDir() {
-		log.Warn("File %s/%s is directory - ignored", path, file.Name())
+		log.Warnf("File %s/%s is directory - ignored", path, file.Name())
 		return nil, false
 	}
 
 	if !canExecute(file) {
-		log.Warn("File %s/%s is not executable - ignored", path, file.Name())
+		log.Warnf("File %s/%s is not executable - ignored", path, file.Name())
 		return nil, false
 	}
 
