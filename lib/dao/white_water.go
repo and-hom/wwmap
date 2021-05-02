@@ -378,7 +378,7 @@ func (this whiteWaterStorage) Remove(id int64, tx interface{}) error {
 }
 
 func (this whiteWaterStorage) RemoveByRiver(id int64, tx interface{}) error {
-	log.Infof("Remove spots by river id", id)
+	log.Infof("Remove spots by river id %d", id)
 	return this.PerformUpdatesWithinTxOptionally(tx, this.deleteForRiverQuery, IdMapper, id)
 }
 

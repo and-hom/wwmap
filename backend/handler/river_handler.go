@@ -248,7 +248,7 @@ func (this *RiverHandler) GetVisibleRiversLite(w http.ResponseWriter, req *http.
 	if catFilterStr != "" {
 		catFilter, err = strconv.Atoi(catFilterStr)
 		if err != nil {
-			log.Warnf("Incorrect max_cat parameter %s.")
+			log.Warnf("Incorrect max_cat parameter %s", catFilterStr)
 			catFilter = 0
 		}
 	}

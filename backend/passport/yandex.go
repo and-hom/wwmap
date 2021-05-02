@@ -50,7 +50,7 @@ func (this *YandexPassport)ResolveUserInfo(token string) (UserInfo, error) {
 
 	err = json.Unmarshal(bytes, &result)
 	if err != nil {
-		log.Error("Can not unmarshal response %s: %v", string(bytes), err)
+		log.Errorf("Can not unmarshal response %s: %v", string(bytes), err)
 	} else {
 		(*this.cache).Put(token, result)
 	}

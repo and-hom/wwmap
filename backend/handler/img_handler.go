@@ -285,10 +285,10 @@ func (this *ImgHandler) Delete(w http.ResponseWriter, req *http.Request) {
 		imgRemoveErr := this.ImgStorage.Remove(storageKey)
 		previewRemoveErr := this.PreviewImgStorage.Remove(storageKey)
 		if imgRemoveErr != nil {
-			logrus.Errorf("Can not delete image data: ", imgRemoveErr)
+			logrus.Error("Can not delete image data: ", imgRemoveErr)
 		}
 		if previewRemoveErr != nil {
-			logrus.Errorf("Can not delete image preview: ", previewRemoveErr)
+			logrus.Error("Can not delete image preview: ", previewRemoveErr)
 		}
 	}
 

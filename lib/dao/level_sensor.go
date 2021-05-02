@@ -38,7 +38,7 @@ func (this levelSensorStorage) Find(id string) (LevelSensor, error) {
 		return LevelSensor{}, err
 	}
 	if !found {
-		return LevelSensor{}, fmt.Errorf("LevelSensor with id=%d not found", id)
+		return LevelSensor{}, fmt.Errorf("LevelSensor with id=%s not found", id)
 	}
 	return p.(LevelSensor), nil
 }
