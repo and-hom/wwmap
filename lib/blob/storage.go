@@ -71,11 +71,11 @@ func (this BasicFsStorage) Remove(id string) error {
 	}
 	for i := len(p) - 1; i > topLevelOfEmptyDirDetection; i-- {
 		path := this.path(p[:i]...)
-		contents, err := ioutil.ReadDir(path)
+		empty, err := IsEmpty(path)
 		if err != nil {
 			return err
 		}
-		if len(contents) > 0 {
+		if !empty {
 			return nil
 		}
 		if err := os.Remove(path); err != nil {
@@ -83,6 +83,20 @@ func (this BasicFsStorage) Remove(id string) error {
 		}
 	}
 	return nil
+}
+
+func IsEmpty(name string) (bool, error) {
+	f, err := os.Open(name)
+	if err != nil {
+		return false, err
+	}
+	defer f.Close()
+
+	_, err = f.Readdirnames(1)
+	if err == io.EOF {
+		return true, nil
+	}
+	return false, err
 }
 
 func (this BasicFsStorage) ListIds() ([]string, error) {
