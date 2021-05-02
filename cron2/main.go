@@ -90,7 +90,7 @@ func main() {
 
 		registry.cron.Stop()
 
-		if err := executionDao.MarkRunningAsOrphan(); err != nil {
+		if err := executionDao.MarkRunningAsOrphan(time.Now()); err != nil {
 			log.Error("Can't mark running tasks as orphan! ", err)
 		}
 
