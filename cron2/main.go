@@ -33,6 +33,7 @@ func main() {
 	logStorage := blob.BasicFsStorage{
 		BaseDir: configuration.LogDir,
 		Mkdirs:  true,
+		DeleteRecursivelyMaxDepth: 2,
 	}
 
 	commands := command.ScanForAvailableCommands()
