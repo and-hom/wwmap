@@ -2,6 +2,7 @@ package blob
 
 import (
 	"errors"
+	"github.com/and-hom/wwmap/lib/util"
 	"io"
 	"io/ioutil"
 	"os"
@@ -20,6 +21,12 @@ type BlobStorage interface {
 type BasicFsStorage struct {
 	BaseDir string
 	Mkdirs  bool
+	// 0 - means up to storage root
+	// 1 - delete only element
+	// 2 - delete element and it's directory if empty
+	// 3 - delete element, it's directory if empty and upper directory if empty
+	// ....
+	DeleteRecursivelyMaxDepth int
 }
 
 func (this BasicFsStorage) Store(id string, r io.Reader) error {
@@ -58,7 +65,11 @@ func (this BasicFsStorage) Remove(id string) error {
 		return err
 	}
 
-	for i := len(p) - 1; i > 0; i-- {
+	topLevelOfEmptyDirDetection := 0
+	if this.DeleteRecursivelyMaxDepth > 0 {
+		topLevelOfEmptyDirDetection = util.Max(len(p)-this.DeleteRecursivelyMaxDepth, 0)
+	}
+	for i := len(p) - 1; i > topLevelOfEmptyDirDetection; i-- {
 		path := this.path(p[:i]...)
 		contents, err := ioutil.ReadDir(path)
 		if err != nil {
