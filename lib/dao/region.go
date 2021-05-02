@@ -2,9 +2,9 @@ package dao
 
 import (
 	"database/sql"
-	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/lib/dao/queries"
 	"github.com/lib/pq"
+	log "github.com/sirupsen/logrus"
 )
 
 func NewRegionPostgresDao(postgresStorage PostgresStorage) RegionDao {
@@ -61,7 +61,14 @@ func (this regionStorage) ListAllWithCountry() ([]RegionWithCountry, error) {
 		result := RegionWithCountry{
 			Country: Country{},
 		}
-		err := rows.Scan(&result.Id, &result.Country.Id, &result.Country.Title, &result.Title, &result.Fake)
+		err := rows.Scan(
+			&result.Id,
+			&result.Country.Id,
+			&result.Country.Title,
+			&result.Country.Code,
+			&result.Title,
+			&result.Fake,
+			)
 		return result, err
 	})
 	if err != nil {
@@ -86,7 +93,11 @@ func (this regionStorage) GetFake(countryId int64) (Region, bool, error) {
 }
 
 func (this regionStorage) CreateFake(countryId int64) (int64, error) {
-	return this.insertReturningId(this.createFakeQuery, countryId)
+	ids, err := this.UpdateReturningId(this.createFakeQuery, IdMapper, true, countryId)
+	if err != nil {
+		return 0, err
+	}
+	return ids[0], err
 }
 
 func (this regionStorage) Save(regions ...Region) error {
@@ -116,7 +127,7 @@ func (this regionStorage) Remove(id int64) error {
 	return this.PerformUpdatesWithinTxOptionally(nil, this.deleteQuery, IdMapper, id)
 }
 
-func (this regionStorage) GetParentIds(riverIds []int64) (map[int64]RegionParentIds, error) {
+func (this regionStorage) GetParentIds(regionIds []int64) (map[int64]RegionParentIds, error) {
 	result := make(map[int64]RegionParentIds)
 
 	_, err := this.DoFindList(this.parentIds, func(rows *sql.Rows) (int, error) {
@@ -128,7 +139,7 @@ func (this regionStorage) GetParentIds(riverIds []int64) (map[int64]RegionParent
 			result[regionId] = parentIds
 		}
 		return 0, err
-	}, pq.Array(riverIds))
+	}, pq.Array(regionIds))
 
 	if err != nil {
 		return result, err

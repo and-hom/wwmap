@@ -3,7 +3,7 @@ package passport
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/dc0d/tinykv.v4"
 	"io/ioutil"
 	"net/http"

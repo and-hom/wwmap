@@ -1,0 +1,39 @@
+<?xml version="1.0" ?>
+<dataset>
+    <!--Running-->
+    <cron.execution
+            id="1001"
+            job_id="1001"
+            start="2020-12-10T10:00:00Z"
+            end=""
+            status="RUNNING"
+            manual="false"
+    />
+    <!--done-->
+    <cron.execution
+            id="1002"
+            job_id="1001"
+            start="2020-12-10T09:00:00Z"
+            end="2020-12-10T09:01:00Z"
+            status="DONE"
+            manual="false"
+    />
+    <!--fail-->
+    <cron.execution
+            id="1003"
+            job_id="1001"
+            start="2020-12-10T08:00:00Z"
+            end="2020-12-10T08:01:00Z"
+            status="FAIL"
+            manual="false"
+    />
+    <!--orphan-->
+    <cron.execution
+            id="1004"
+            job_id="1001"
+            start="2020-12-10T07:00:00Z"
+            end=""
+            status="ORPHAN"
+            manual="false"
+    />
+</dataset>

@@ -2,7 +2,7 @@ package command
 
 import (
 	"fmt"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/phayes/permbits"
 	"io/ioutil"
 	"os"

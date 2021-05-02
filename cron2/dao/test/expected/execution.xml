@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>
+<dataset>
+    <!--Running-->
+    <cron.execution
+            id="{{ index . "id" }}"
+            job_id="1001"
+            start="{{ index . "start" }}"
+            end=""
+            status="RUNNING"
+            manual="true"
+    />
+</dataset>

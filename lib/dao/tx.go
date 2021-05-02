@@ -3,7 +3,7 @@ package dao
 import (
 	"database/sql"
 	"fmt"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"reflect"
 )
 

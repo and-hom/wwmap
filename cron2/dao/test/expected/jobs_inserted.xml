@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>
+<dataset>
+    <cron.job
+            id="{{ index . "id" }}"
+            title="Job2"
+            expr="*/2 * * * *"
+            enabled="false"
+            command="another_command"
+            args="args"
+            critical="true"
+    />
+</dataset>

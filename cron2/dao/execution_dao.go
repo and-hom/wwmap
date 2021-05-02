@@ -77,10 +77,10 @@ func (this ExecutionDao) Insert(jobId int64, manual bool) (Execution, error) {
 	}, err
 }
 
-func (this ExecutionDao) SetStatus(id int64, status Status) error {
+func (this ExecutionDao) SetStatus(id int64, status Status, now time.Time) error {
 	return this.PerformUpdates(this.updateStatusQuery, func(entity interface{}) ([]interface{}, error) {
 		_e := entity.([]interface{})
-		return []interface{}{_e[0], time.Now(), _e[1]}, nil
+		return []interface{}{_e[0], now, _e[1]}, nil
 	}, []interface{}{id, status})
 }
 
@@ -99,8 +99,8 @@ func (this ExecutionDao) RemoveOld(notAfter time.Time) (int64, int64, error) {
 	return *(ids[0][0].(*int64)), *(ids[0][1].(*int64)), nil
 }
 
-func (this ExecutionDao) MarkRunningAsOrphan() error {
-	return this.PerformUpdates(this.markRunningAsOrphanQuery, dao.ArrayMapper, []interface{}{RUNNING, ORPHAN, time.Now()})
+func (this ExecutionDao) MarkRunningAsOrphan(endTime time.Time) error {
+	return this.PerformUpdates(this.markRunningAsOrphanQuery, dao.ArrayMapper, []interface{}{RUNNING, ORPHAN, endTime})
 }
 
 func scanExecution(rows *sql.Rows) (Execution, error) {
@@ -108,10 +108,11 @@ func scanExecution(rows *sql.Rows) (Execution, error) {
 	end := pq.NullTime{}
 	err := rows.Scan(&result.Id, &result.JobId, &result.Start, &end, &result.Status, &result.Manual)
 	if end.Valid {
-		t := dao.JSONTime(end.Time)
+		t := dao.JSONTime(end.Time.UTC())
 		result.End = &t
 	} else {
 		result.End = nil
 	}
+	result.Start = dao.JSONTime(time.Time(result.Start).UTC())
 	return result, err
 }

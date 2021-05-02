@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/and-hom/wwmap/lib/dao/queries"
 	"github.com/and-hom/wwmap/lib/geo"
 	"github.com/and-hom/wwmap/lib/model"
@@ -378,7 +378,7 @@ func (this whiteWaterStorage) Remove(id int64, tx interface{}) error {
 }
 
 func (this whiteWaterStorage) RemoveByRiver(id int64, tx interface{}) error {
-	log.Infof("Remove spots by river id", id)
+	log.Infof("Remove spots by river id %d", id)
 	return this.PerformUpdatesWithinTxOptionally(tx, this.deleteForRiverQuery, IdMapper, id)
 }
 

@@ -2,7 +2,7 @@ package http
 
 import (
 	"fmt"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/and-hom/wwmap/lib/dao"
 	"net/http"
 	"strings"

@@ -1,7 +1,7 @@
 package main
 
 import (
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/and-hom/wwmap/cron2/command"
 	cronDao "github.com/and-hom/wwmap/cron2/dao"
 	"github.com/and-hom/wwmap/lib/blob"
@@ -90,7 +90,7 @@ func main() {
 
 		registry.cron.Stop()
 
-		if err := executionDao.MarkRunningAsOrphan(); err != nil {
+		if err := executionDao.MarkRunningAsOrphan(time.Now()); err != nil {
 			log.Error("Can't mark running tasks as orphan! ", err)
 		}
 

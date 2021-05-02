@@ -4,7 +4,7 @@ package main
 
 import (
 	"bytes"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/and-hom/wwmap/cron/catalog-sync/common"
 	"github.com/and-hom/wwmap/cron/vodinfo-eye/graduation"
 	"github.com/and-hom/wwmap/lib/dao"

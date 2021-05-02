@@ -5,6 +5,7 @@
 DEB_VERSION = $(shell dpkg-parsechangelog --show-field Version)
 
 build:
+	go test ./...
 	CGO_ENABLED=0 go build -ldflags "-X main.version=$(DEB_VERSION)"
 
 override_dh_auto_install:

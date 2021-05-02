@@ -4,7 +4,7 @@ package queries
 
 import (
 	"bytes"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"regexp"
 	"strings"
 )

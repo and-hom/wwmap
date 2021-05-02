@@ -2,7 +2,7 @@ package handler
 
 import (
 	"fmt"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/and-hom/wwmap/cron/catalog-sync/huskytm"
 	"github.com/and-hom/wwmap/cron/catalog-sync/libru"
 	"github.com/and-hom/wwmap/cron/catalog-sync/riskru"
@@ -248,7 +248,7 @@ func (this *RiverHandler) GetVisibleRiversLite(w http.ResponseWriter, req *http.
 	if catFilterStr != "" {
 		catFilter, err = strconv.Atoi(catFilterStr)
 		if err != nil {
-			log.Warnf("Incorrect max_cat parameter %s.")
+			log.Warnf("Incorrect max_cat parameter %s", catFilterStr)
 			catFilter = 0
 		}
 	}

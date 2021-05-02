@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/and-hom/wwmap/cron2/command"
 	"github.com/and-hom/wwmap/cron2/dao"
 	"github.com/and-hom/wwmap/lib/blob"
@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 type Runner struct {
@@ -76,7 +77,7 @@ func (this Runner) updateStatus(e dao.Execution, s dao.Status) {
 		log.Error("Try to change status of fake execution - nothing to do")
 		return
 	}
-	if err := this.ExecutionDao.SetStatus(e.Id, s); err != nil {
+	if err := this.ExecutionDao.SetStatus(e.Id, s, time.Now()); err != nil {
 		log.Errorf("Can't set status for execution %d: %v", e.Id, err)
 	}
 }

@@ -1,0 +1,17 @@
+<?xml version='1.0' ?>
+<dataset>
+    <region
+            id='268'
+            country_id='260'
+            title='Алтай'
+            fake='false'
+            props='{}'
+    />
+    <region
+            id='269'
+            country_id='261'
+            title='Абхазия'
+            fake='true'
+            props='{}'
+    />
+</dataset>
