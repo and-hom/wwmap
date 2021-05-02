@@ -12,7 +12,7 @@ build:
 	cd ../lib/; go test ./...
 	go test ./...
 	# Build
-	go build -ldflags "-X main.version=$(DEB_VERSION)"
+	CGO_ENABLED=0 go build -ldflags "-X main.version=$(DEB_VERSION)"
 
 override_dh_auto_install:
 	install -D -m 0755 backend $$(pwd)/debian/wwmap-backend/usr/bin/wwmap-backend

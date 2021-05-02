@@ -7,5 +7,5 @@ Section: misc
 Package: wwmap-backend
 Priority: extra
 Architecture: amd64
-Depends: ${shlibs:Depends}, ${misc:Depends}, wwmap-config
+Depends: wwmap-config
 Description: Backend of the interactive whitewater map
