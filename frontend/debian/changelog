@@ -1,3 +1,10 @@
+wwmap-frontend (0.0.72) unstable; urgency=medium
+
+  * #371 use removed flag instead of voyage report real delete
+  * #392 Customize TTL for job logs
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sun, 02 May 2021 16:44:31 +0300
+
 wwmap-frontend (0.0.71) unstable; urgency=medium
 
   * #383 Show user first and last name in logs 

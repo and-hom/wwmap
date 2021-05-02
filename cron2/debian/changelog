@@ -1,3 +1,11 @@
+wwmap-cron (1.0.3) unstable; urgency=medium
+
+  * #392 Customize TTL for job logs
+  * #238 Some dao tests
+  * #398 Fix log storage
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sun, 02 May 2021 16:42:49 +0300
+
 wwmap-cron (1.0.2) unstable; urgency=medium
 
   * Use new configuration format 

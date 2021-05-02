@@ -1,3 +1,11 @@
+wwmap-db (0.0.33) unstable; urgency=medium
+
+  * #371 use removed flag instead of voyage report real delete
+  * #392 Customize TTL for job logs
+  * #238 Added unique constraint for single fake region per country
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sun, 02 May 2021 16:46:26 +0300
+
 wwmap-db (0.0.32) unstable; urgency=medium
 
   * #374 #325 Add start time to youtube video
