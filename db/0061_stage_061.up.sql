@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX single_fake_region_allowed ON region(country_id) WHERE (fake);

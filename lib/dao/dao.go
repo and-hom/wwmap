@@ -156,7 +156,7 @@ type RegionDao interface {
 	Save(region ...Region) error
 	Insert(region Region) (int64, error)
 	Remove(id int64) error
-	GetParentIds(riverIds []int64) (map[int64]RegionParentIds, error)
+	GetParentIds(regionIds []int64) (map[int64]RegionParentIds, error)
 }
 
 type RefererDao interface {

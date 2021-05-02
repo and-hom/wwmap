@@ -1,0 +1,1 @@
+DROP INDEX single_fake_region_allowed;

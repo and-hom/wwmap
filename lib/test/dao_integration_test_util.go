@@ -7,6 +7,8 @@ import (
 	"github.com/and-hom/godbt"
 	"github.com/and-hom/godbt/contract"
 	"github.com/golang-migrate/migrate"
+	_ "github.com/golang-migrate/migrate/database/postgres"
+	_ "github.com/golang-migrate/migrate/source/file"
 	"github.com/ory/dockertest"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"

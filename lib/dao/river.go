@@ -4,10 +4,10 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"github.com/and-hom/wwmap/lib/dao/queries"
 	"github.com/and-hom/wwmap/lib/geo"
 	"github.com/lib/pq"
+	log "github.com/sirupsen/logrus"
 	"strings"
 )
 
@@ -140,7 +140,20 @@ func (this riverStorage) Insert(river River) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	return this.insertReturningId(this.insertQuery, river.Region.Id, river.Title, string(aliasesB), river.Description, string(propsB))
+	ids, err := this.UpdateReturningId(
+		this.insertQuery,
+		IdMapper,
+		true,
+		river.Region.Id,
+		river.Title,
+		string(aliasesB),
+		river.Description,
+		string(propsB),
+	)
+	if err != nil {
+		return 0, err
+	}
+	return ids[0], err
 }
 
 func (this riverStorage) SaveFull(rivers ...River) error {
@@ -191,7 +204,7 @@ func (this riverStorage) listRiverFull(query string, queryParams ...interface{})
 
 func (this riverStorage) CountByRegion(regionId int64) (int, error) {
 	result, _, err := this.DoFindAndReturn(this.countByRegionQuery, IntColumnMapper, regionId)
-	if err!=nil {
+	if err != nil {
 		return 0, err
 	}
 	return result.(int), nil

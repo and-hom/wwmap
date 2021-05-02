@@ -1,0 +1,23 @@
+<?xml version='1.0' ?>
+<dataset>
+    <river
+            id='1'
+            title='Умба'
+            popularity='0'
+            region_id='263'
+            aliases='[]'
+            props='{}'
+            description='Река'
+            visible='true'
+    />
+    <river
+            id='2'
+            title='Колвица'
+            popularity='0'
+            region_id='263'
+            aliases='[]'
+            props='{}'
+            description='Река'
+            visible='false'
+    />
+</dataset>

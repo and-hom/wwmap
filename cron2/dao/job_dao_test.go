@@ -4,8 +4,6 @@ import (
 	cronDao "github.com/and-hom/wwmap/cron2/dao"
 	daoLib "github.com/and-hom/wwmap/lib/dao"
 	. "github.com/and-hom/wwmap/lib/test"
-	_ "github.com/golang-migrate/migrate/database/postgres"
-	_ "github.com/golang-migrate/migrate/source/file"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"os"

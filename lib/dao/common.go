@@ -2,7 +2,6 @@ package dao
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"github.com/and-hom/wwmap/lib/config"
@@ -114,45 +113,6 @@ func (this *PostgresStorage) forEach(query string, callback interface{}, args ..
 		}
 	}
 	return nil
-}
-
-// Deprecated: use updateReturningId
-func (this *PostgresStorage) insertReturningId(query string, args ...interface{}) (int64, error) {
-	tx, err := this.db.Begin()
-	if err != nil {
-		return -1, err
-	}
-
-	stmt, err := tx.Prepare(query)
-	if err != nil {
-		return -1, err
-	}
-	rows, err := stmt.Query(args...)
-	if err != nil {
-		return -1, err
-	}
-
-	lastId := int64(-1)
-	for rows.Next() {
-		rows.Scan(&lastId)
-	}
-
-	err = rows.Close()
-	if err != nil {
-		return -1, err
-	}
-	err = stmt.Close()
-	if err != nil {
-		return -1, err
-	}
-	err = tx.Commit()
-	if err != nil {
-		return -1, err
-	}
-	if lastId < 0 {
-		return -1, errors.New("Not inserted")
-	}
-	return lastId, nil
 }
 
 func (this *PostgresStorage) UpdateReturningId(query string,

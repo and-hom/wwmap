@@ -6,7 +6,9 @@ SELECT id, country_id, title, fake FROM region WHERE country_id=$1 AND not fake
 --@get-by-id
 SELECT id, country_id, title, fake FROM region WHERE id=$1
 --@list-all-with-country
-SELECT region.id AS id, country.id AS country_id, country.title AS country_title, region.title, region.fake
+SELECT region.id AS id, country.id AS country_id,
+       country.title AS country_title, country.code AS country_code,
+       region.title, region.fake
     FROM region INNER JOIN country ON region.country_id=country.id
 --@get-fake
 SELECT id, country_id, title, fake FROM region WHERE country_id=$1 AND fake LIMIT 1

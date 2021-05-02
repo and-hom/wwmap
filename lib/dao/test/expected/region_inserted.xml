@@ -1,0 +1,10 @@
+<?xml version='1.0' ?>
+<dataset>
+    <region
+            id="{{ index . "id" }}"
+            country_id='260'
+            title='Мой регион'
+            fake='false'
+            props='{}'
+    />
+</dataset>
