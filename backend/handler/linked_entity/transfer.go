@@ -84,6 +84,10 @@ func (this *TransferHandler) Upsert(w http.ResponseWriter, req *http.Request) {
 	this.LogUserEvent(req, handler.TRANSFER_LOG_ENTRY_TYPE, transfer.Id, logType, transfer.Title)
 }
 
+func (this *TransferHandler) UndoDelete(w http.ResponseWriter, r *http.Request) {
+	OnError(w, nil, "Not implemented", http.StatusNotImplemented)
+}
+
 func (this *TransferHandler) Delete(w http.ResponseWriter, req *http.Request) {
 	pathParams := mux.Vars(req)
 

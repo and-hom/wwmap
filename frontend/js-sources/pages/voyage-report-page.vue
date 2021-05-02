@@ -12,6 +12,7 @@
                      {"label": "Дата публикации",   "name":"date_published",    "type": "date"},
                      {"label": "Реки",              "name":"rivers_data",       "type": "rivers"},
                  ]'
+                 removed-field="removed"
                  :blank-entity-factory="createBlankReport">
       <template v-slot:form="slotProps">
         <voyage-report-form v-model="slotProps.entity"/>

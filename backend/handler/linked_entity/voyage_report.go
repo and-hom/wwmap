@@ -2,6 +2,7 @@ package linked_entity
 
 import (
 	"fmt"
+	log "github.com/Sirupsen/logrus"
 	"github.com/and-hom/wwmap/backend/handler"
 	"github.com/and-hom/wwmap/lib/dao"
 	. "github.com/and-hom/wwmap/lib/handler"
@@ -30,7 +31,11 @@ func (this *VoyageReportHandler) Create() linkedEntityHanler {
 func (this *VoyageReportHandler) List(w http.ResponseWriter, r *http.Request) {
 	JsonAnswerF(w, func() (i interface{}, err error) {
 		withRivers := handler.GetBoolParameter(r, "rivers", false)
-		return this.VoyageReportDao.List(withRivers)
+		_, allowed, err := CheckRoleAllowed(r, this.UserDao, dao.ADMIN, dao.EDITOR)
+		if err != nil {
+			log.Error("Can't detect user role ", err)
+		}
+		return this.VoyageReportDao.List(withRivers, err == nil && allowed)
 	}, "Can't list voyageReport records")
 }
 
@@ -128,4 +133,33 @@ func (this *VoyageReportHandler) Delete(w http.ResponseWriter, r *http.Request) 
 	}
 
 	this.LogUserEvent(r, handler.VOYAGE_REPORT_LOG_ENTRY_TYPE, voyageReportId, dao.ENTRY_TYPE_DELETE, voyageReport.Url)
+}
+
+func (this *VoyageReportHandler) UndoDelete(w http.ResponseWriter, r *http.Request) {
+	pathParams := mux.Vars(r)
+	voyageReportIdStr := pathParams["id"]
+	voyageReportId, err := strconv.ParseInt(voyageReportIdStr, 10, 64)
+	if err != nil {
+		OnError(w, err, "Can not parse id", http.StatusBadRequest)
+		return
+	}
+
+	voyageReport, found, err := this.VoyageReportDao.Find(voyageReportId)
+	if err != nil {
+		OnError500(w, err, fmt.Sprintf("Can not select voyageReport by id: %d", voyageReportId))
+		return
+	}
+	if !found {
+		OnError(w, err, fmt.Sprintf("VoyageReport with id %d not found", voyageReportId), http.StatusNotFound)
+		return
+	}
+
+	err = this.VoyageReportDao.UndoRemove(voyageReportId)
+
+	if err != nil {
+		OnError500(w, err, fmt.Sprintf("Can not undo delete of voyageReport by id: %d", voyageReportId))
+		return
+	}
+
+	this.LogUserEvent(r, handler.VOYAGE_REPORT_LOG_ENTRY_TYPE, voyageReportId, dao.ENTRY_TYPE_MODIFY, voyageReport.Url)
 }
