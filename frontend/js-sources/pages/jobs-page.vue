@@ -17,6 +17,7 @@
                     <th>Флаги</th>
                     <th>Команда</th>
                     <th>Аргументы</th>
+                    <th>TTL логов (дней)</th>
                     <th></th>
                 </tr>
                 </thead>
@@ -32,6 +33,7 @@
                     </td>
                     <td>{{job.command}}</td>
                     <td>{{job.args}}</td>
+                    <td>{{job.logsTtlDays}}</td>
                     <td>
                         <ask :id="'run-job-'+job.id" title="Запустить сейчас?" msg="Запустить задачу вне расписания прямо сейчас" :ok-fn="function() {
                           runNow(job.id)

@@ -39,6 +39,7 @@ func main() {
 
 	commands["cron-clean"] = command.CleanerCommand{
 		ExecutionDao: executionDao,
+		JobDao:       jobDao,
 		LogStorage:   logStorage,
 	}
 

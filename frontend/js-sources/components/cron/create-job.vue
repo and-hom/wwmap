@@ -21,6 +21,7 @@
                             </option>
                         </select>
                         <label for="args">Аргументы</label><input id="args" v-model="job.args"/>
+                        <label for="logsTtlDays">TTL логов (дней)</label><input id="logsTtlDays" type="number" min="0" step="1" v-model="job.logsTtlDays"/>
                     </div>
                 </div>
                 <div class="modal-footer">
