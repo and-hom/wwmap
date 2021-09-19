@@ -253,7 +253,7 @@ func (this *RiverHandler) GetVisibleRiversLite(w http.ResponseWriter, req *http.
 		}
 	}
 
-	showUnpublished := ShowUnpublished(req, this.UserDao)
+	req, showUnpublished := ShowUnpublished(req, this.UserDao)
 
 	rivers, err := this.TileDao.ListRiversWithBounds(bbox, RIVER_LIST_LIMIT, showUnpublished)
 	if err != nil {

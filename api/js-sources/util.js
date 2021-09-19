@@ -174,3 +174,11 @@ export function createCampsUrlPart(showCamps, first) {
     }
     return '';
 }
+export function createSlopeUrlPart(showSlope, first) {
+    if (showSlope) {
+        let sessionId = getWwmapSessionId();
+        let firstChar = first ? '?' : '&';
+        return `${firstChar}session_id=${sessionId}&show_slope=${showSlope}`;
+    }
+    return '';
+}

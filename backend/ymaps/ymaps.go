@@ -3,11 +3,11 @@ package ymaps
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"github.com/and-hom/wwmap/backend/clustering"
 	. "github.com/and-hom/wwmap/lib/dao"
 	. "github.com/and-hom/wwmap/lib/geo"
 	"github.com/and-hom/wwmap/lib/model"
+	"github.com/sirupsen/logrus"
 	"math"
 	"math/rand"
 )
@@ -207,10 +207,11 @@ func mkCluster(Id clustering.ClusterId, points []Spot, riverTitle string, visibl
 		Properties: FeatureProperties{
 			IconContent: riverTitle,
 
-			Title:    Id.Title,
-			Category: &model.SportCategory{Category: riverCats.Max},
-			Id:       Id.RiverId,
-			Color:    CatColorWithTransparency(riverCats.Avg, visible),
+			Title:      Id.Title,
+			ObjectType: OBJECT_TYPE_CLUSTER,
+			Category:   &model.SportCategory{Category: riverCats.Max},
+			Id:         Id.RiverId,
+			Color:      CatColorWithTransparency(riverCats.Avg, visible),
 		}, Options: options(visible, riverCats),
 	}
 }
@@ -260,7 +261,7 @@ func WhiteWaterPointsToYmaps(clusterMaker clustering.ClusterMaker, rivers []Rive
 				Properties: FeatureProperties{
 					HintContent: fmt.Sprintf("%s/%d", waterWay.Title, waterWay.OsmId),
 					Id:          waterWay.Id,
-
+					ObjectType: OBJECT_TYPE_WATERWAY,
 					Title: waterWay.Title,
 				},
 				Options: FeatureOptions{
@@ -314,6 +315,27 @@ func CampsToYmaps(camps []Camp, resourcesBase string, skip int64) []Feature {
 				ObjectType:  OBJECT_TYPE_CAMP,
 				HintContent: camp.Title,
 				ShortDesc:   camp.Description,
+			},
+		})
+	}
+	return result
+}
+
+func TracksToYmaps(tracks []WaterWayWithHeight, objectType ObjectType) []Feature {
+	result := make([]Feature, 0, len(tracks))
+	for i := 0; i < len(tracks); i++ {
+		track := tracks[i]
+		result = append(result, Feature{
+			Id:       track.Id,
+			Type:     FEATURE,
+			Geometry: NewPgLineString(track.Path),
+			Options: FeatureOptions{
+				Overlay:     "RiverTrackOverlay",
+			},
+			Properties: FeatureProperties{
+				Id:         track.Id,
+				ObjectType: objectType,
+				Heights:    track.Heights,
 			},
 		})
 	}

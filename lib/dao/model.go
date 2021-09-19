@@ -142,6 +142,12 @@ type WaterWay4Router struct {
 	Refs   map[int64][]Point `json:"refs"`
 }
 
+type WaterWayWithHeight struct {
+	WaterWaySimple
+	Length  int               `json:"Length"`
+	Heights []int64           `json:"Heights"`
+}
+
 type WaterWay struct {
 	WaterWaySimple
 	OsmId   int64  `json:"osm_id"`

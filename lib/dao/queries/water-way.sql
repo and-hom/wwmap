@@ -34,6 +34,10 @@ UPDATE ___table___ SET river_id=rivers_query.id
 --@list-by-river-ids
 SELECT ___select-fields___ FROM ___table___ WHERE river_id=ANY($1)
 
+--@list-with-river-without-heights
+SELECT id, ST_AsGeoJSON(path_simplified),'[]'::json
+FROM ___table___ WHERE river_id IS NOT NULL AND heights IS NULL
+
 --@list-by-river-id-4-router
 SELECT id, ST_AsGeoJSON(path_simplified), '[]' FROM ___table___ WHERE river_id=$1
 
@@ -50,6 +54,10 @@ SELECT rivers_in_area.id, ST_AsGeoJSON(path_simplified), COALESCE(refs,'[]')
     LEFT OUTER JOIN river_refs
     ON river_refs.id=rivers_in_area.id
 
+--@list-by-bbox-with-heights
+SELECT id, ST_AsGeoJSON(path_simplified), heights, ST_Length("path_simplified" :: GEOGRAPHY)
+FROM ___table___ WHERE river_id IS NOT NULL AND heights IS NOT NULL AND path && ST_MakeEnvelope($1,$2,$3,$4)
+
 --@list-by-bbox
 SELECT ___select-fields___ FROM ___table___ WHERE path && ST_MakeEnvelope($1,$2,$3,$4)
 
@@ -63,3 +71,6 @@ FROM (
 
 --@update-path-simplified
 UPDATE ___table___ SET path_simplified=ST_GeomFromGeoJSON($2) WHERE id=$1
+
+--@update-path-height-and-dists
+UPDATE ___table___ SET heights=$2, dists=$3 WHERE id=$1

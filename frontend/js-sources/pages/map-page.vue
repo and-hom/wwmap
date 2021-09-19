@@ -8,6 +8,8 @@
                     <label v-if="canViewUnpublished" for="show-unpublished" :style="unpublishedLabelStyle">Показывать неопубликованное</label>
                     <input v-if="canShowCamps" type="checkbox" id="show-camps" v-model="showCamps"/>
                     <label v-if="canShowCamps" for="show-camps">Показывать стоянки</label>
+                    <input v-if="canShowSlope" type="checkbox" id="show-slope" v-model="showSlope"/>
+                    <label v-if="canShowSlope" for="show-slope">Показывать уклон</label>
                 </div>
                 <div class="col-2">
                     <div id="wwmap-rivers" class="wwmap-river-menu"></div>
@@ -38,6 +40,7 @@
             }).then(map => {
               t.map = map;
               t.map.setOnBoundsChange(t.onBoundsChange)
+              t.onBoundsChange(null, t.map.getZoom());
             })
                 .catch(ex => console.error(ex));
         } else {
@@ -51,6 +54,10 @@
             loadMapWhenDivIsReady(this);
         },
         created: function (){
+            let p = getAuthorizedUserInfoOrNull();
+            if (p) {
+              p.then(userInfo => this.userInfo = userInfo)
+            }
             hasRole(ROLE_ADMIN, ROLE_EDITOR).then(canViewUnpublished => this.canViewUnpublished = canViewUnpublished);
         },
         watch: {
@@ -61,20 +68,27 @@
             showCamps: function (newValue) {
               this.map.setShowCamps(newValue);
             },
+            showSlope: function (newValue) {
+              this.map.setShowSlope(newValue);
+            },
         },
         data() {
             return {
                 showUnpublished: false,
                 showCamps: true,
+                showSlope: true,
                 unpublishedLabelStyle: '',
                 canViewUnpublished: false,
-                canShowCamps: true,
+                canShowCamps: false,
+                canShowSlope: false,
                 map: null,
+                userInfo: null,
             }
         },
       methods: {
         onBoundsChange(_, zoom) {
           this.canShowCamps = zoom >= 12;
+          this.canShowSlope = this.userInfo && this.userInfo.experimental_features && zoom >= 7;
         },
       }
     }

@@ -13,6 +13,7 @@ import './contrib/lightbox.min';
 import {regiterTemplate7Helpers} from "./template7-helpers";
 
 require('./tube');
+require('./slope/riverTrack');
 
 var wwMap;
 
@@ -88,8 +89,9 @@ export function initWWMap(mapId, riversListId, options) {
                 initLayoutFilters();
                 loadFragment('bubble_template').then(bubbleContent => {
                     wwMap = new WWMap(mapId, bubbleContent, riverList, tutorialPopup, catalogLinkType);
-                    ymaps.modules.require(['overlay.BiPlacemark'], function (BiPlacemarkOverlay) {
+                    ymaps.modules.require(['overlay.BiPlacemark', 'overlay.RiverTrack'], function (BiPlacemarkOverlay, RiverTrackOverlay) {
                         ymaps.overlay.storage.add("BiPlacemrakOverlay", BiPlacemarkOverlay);
+                        ymaps.overlay.storage.add("RiverTrackOverlay", RiverTrackOverlay);
                         wwMap.init()
                         resolve(wwMap);
                     });

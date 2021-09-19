@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"github.com/and-hom/wwmap/backend/passport"
 	"github.com/and-hom/wwmap/lib/dao/queries"
 	"github.com/pkg/errors"
 )
@@ -88,15 +87,15 @@ func (this userStorage) SetExperimentalFeatures(userId int64, enable bool) (bool
 	return (*(cols[0][0].(*bool))), (*(cols[0][1].(*bool))), nil
 }
 
-func (this userStorage) GetBySession(sessionId string) (User, error) {
+func (this userStorage) GetBySession(sessionId string) (User, bool, error) {
 	user, found, err := this.DoFindAndReturn(this.getBySessionQuery, userMapper, sessionId)
 	if err != nil {
-		return User{}, err
+		return User{}, false, err
 	}
 	if !found {
-		return User{}, passport.UnauthorizedError{}
+		return User{}, false, nil
 	}
-	return user.(User), nil
+	return user.(User), true, nil
 }
 
 func (this userStorage) GetRole(provider AuthProvider, extId string) (Role, error) {
