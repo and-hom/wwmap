@@ -4,12 +4,6 @@
             <div class="row">
                 <div class="col-10">
                     <div id="wwmap-container" style="width:100%; height: 700px; padding-bottom:17px;"></div>
-                    <input v-if="canViewUnpublished" type="checkbox" id="show-unpublished" v-model="showUnpublished"/>
-                    <label v-if="canViewUnpublished" for="show-unpublished" :style="unpublishedLabelStyle">Показывать неопубликованное</label>
-                    <input v-if="canShowCamps" type="checkbox" id="show-camps" v-model="showCamps"/>
-                    <label v-if="canShowCamps" for="show-camps">Показывать стоянки</label>
-                    <input v-if="canShowSlope" type="checkbox" id="show-slope" v-model="showSlope"/>
-                    <label v-if="canShowSlope" for="show-slope">Показывать уклон</label>
                 </div>
                 <div class="col-2">
                     <div id="wwmap-rivers" class="wwmap-river-menu"></div>
@@ -30,17 +24,13 @@
 </style>
 
 <script>
-    import {getAuthorizedUserInfoOrNull, hasRole, ROLE_ADMIN, ROLE_EDITOR} from "../auth";
+import {getAuthorizedUserInfoOrNull, hasRole, ROLE_ADMIN, ROLE_EDITOR} from "../auth";
 
-    function loadMapWhenDivIsReady(t) {
+function loadMapWhenDivIsReady(t) {
         if ($('#wwmap-container').outerWidth()) {
             wwmap.initWWMap("wwmap-container", "wwmap-rivers", {
                 catalogLinkType: "wwmap",
                 userInfoFunction: getAuthorizedUserInfoOrNull,
-            }).then(map => {
-              t.map = map;
-              t.map.setOnBoundsChange(t.onBoundsChange)
-              t.onBoundsChange(null, t.map.getZoom());
             })
                 .catch(ex => console.error(ex));
         } else {
@@ -53,43 +43,11 @@
         mounted: function () {
             loadMapWhenDivIsReady(this);
         },
-        created: function (){
-            let p = getAuthorizedUserInfoOrNull();
-            if (p) {
-              p.then(userInfo => this.userInfo = userInfo)
-            }
-            hasRole(ROLE_ADMIN, ROLE_EDITOR).then(canViewUnpublished => this.canViewUnpublished = canViewUnpublished);
-        },
-        watch: {
-            showUnpublished: function (newValue) {
-                this.unpublishedLabelStyle = newValue ? 'color:red; text-decoration: underline;' : '';
-                this.map.setShowUnpublished(newValue);
-            },
-            showCamps: function (newValue) {
-              this.map.setShowCamps(newValue);
-            },
-            showSlope: function (newValue) {
-              this.map.setShowSlope(newValue);
-            },
-        },
         data() {
             return {
-                showUnpublished: false,
-                showCamps: true,
-                showSlope: true,
-                unpublishedLabelStyle: '',
-                canViewUnpublished: false,
-                canShowCamps: false,
-                canShowSlope: false,
                 map: null,
                 userInfo: null,
             }
         },
-      methods: {
-        onBoundsChange(_, zoom) {
-          this.canShowCamps = zoom >= 12;
-          this.canShowSlope = this.userInfo && this.userInfo.experimental_features && zoom >= 7;
-        },
-      }
     }
 </script>
