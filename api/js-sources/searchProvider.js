@@ -1,10 +1,11 @@
 import {apiBase} from "./config";
-import {createUnpublishedUrlPart} from './util'
+import {createCountryUrlPart, createUnpublishedUrlPart} from './util'
 
-export function WWMapSearchProvider(mousemoved, click) {
+export function WWMapSearchProvider(mousemoved, click, countryId) {
     this.mousemoved = mousemoved;
     this.click = click;
     this.showUnpublished = false;
+    this.countryId = countryId;
 }
 
 WWMapSearchProvider.prototype.geocode = function (request, options) {
@@ -17,7 +18,7 @@ WWMapSearchProvider.prototype.geocode = function (request, options) {
 
     let t = this;
     var xhr = new XMLHttpRequest();
-    xhr.open("POST", `${apiBase}/search${createUnpublishedUrlPart(this.showUnpublished, true)}`, true);
+    xhr.open("POST", `${apiBase}/search${createUnpublishedUrlPart(this.showUnpublished, true)}${createCountryUrlPart(this.countryId, true)}`, true);
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.send(request);
     xhr.onload = function (e) {
