@@ -7,6 +7,7 @@ import (
 	. "github.com/and-hom/wwmap/lib/dao"
 	. "github.com/and-hom/wwmap/lib/handler"
 	"github.com/and-hom/wwmap/lib/notification"
+	"net/http"
 )
 
 type App struct {
@@ -40,4 +41,15 @@ func (this *App) processForWeb(img *Img) {
 		img.Url = fmt.Sprintf(this.ImgUrlBase, img.Id)
 		img.PreviewUrl = fmt.Sprintf(this.ImgUrlPreviewBase, img.Id)
 	}
+}
+
+func  (this *App) experimentalFeaturesEnabled(req *http.Request) (*http.Request, bool, error) {
+	user, requestWithUser, authorized, err := GetUser(req, this.UserDao)
+	if err!=nil {
+		return req, false, err
+	}
+	if !authorized {
+		return req, false, nil
+	}
+	return requestWithUser, user.ExperimentalFeaures, nil
 }

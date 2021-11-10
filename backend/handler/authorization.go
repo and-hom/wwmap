@@ -83,9 +83,14 @@ func (this *UserInfoHandler) SessionStart(w http.ResponseWriter, r *http.Request
 
 func (this *UserInfoHandler) GetUserInfo(w http.ResponseWriter, r *http.Request) {
 	sessionId := r.FormValue("session_id")
-	user, err := this.UserDao.GetBySession(sessionId)
+	user, found, err := this.UserDao.GetBySession(sessionId)
 	if err != nil {
-		onPassportErr(err, w, "Can not get user info!")
+		OnError500(w, err, "Can not get user info!")
+		return
+	}
+
+	if !found {
+		OnError(w, nil, "User not found", http.StatusUnauthorized)
 		return
 	}
 

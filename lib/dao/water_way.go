@@ -3,47 +3,53 @@ package dao
 import (
 	"database/sql"
 	"encoding/json"
-	log "github.com/sirupsen/logrus"
 	"github.com/and-hom/wwmap/lib/dao/queries"
 	"github.com/and-hom/wwmap/lib/geo"
 	"github.com/lib/pq"
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 )
 
 func NewWaterWayPostgresDao(postgresStorage PostgresStorage) WaterWayDao {
 	return waterWayStorage{
-		PostgresStorage:            postgresStorage,
-		insertQuery:                queries.SqlQuery("water-way", "insert"),
-		updateQuery:                queries.SqlQuery("water-way", "update"),
-		listQuery:                  queries.SqlQuery("water-way", "list"),
-		unlinkRiverQuery:           queries.SqlQuery("water-way", "unlink-river"),
-		detectForRiverQuery:        queries.SqlQuery("water-way", "detect-for-river"),
-		bindToRiverQuery:           queries.SqlQuery("water-way", "bind-to-river"),
-		listByRiverIdsQuery:        queries.SqlQuery("water-way", "list-by-river-ids"),
-		listByRiverId4RouterQuery:  queries.SqlQuery("water-way", "list-by-river-id-4-router"),
-		listByBbox4RouterQuery:     queries.SqlQuery("water-way", "list-by-bbox-4-router"),
-		listByBboxQuery:            queries.SqlQuery("water-way", "list-by-bbox"),
-		listByBbox4CorrectionQuery: queries.SqlQuery("water-way", "list-4-correction"),
-		updatePathSimplifiedQuery:  queries.SqlQuery("water-way", "update-path-simplified"),
-		listRefPoints:              queries.SqlQuery("water-way", "get-ref-points"),
+		PostgresStorage:                  postgresStorage,
+		insertQuery:                      queries.SqlQuery("water-way", "insert"),
+		updateQuery:                      queries.SqlQuery("water-way", "update"),
+		listQuery:                        queries.SqlQuery("water-way", "list"),
+		unlinkRiverQuery:                 queries.SqlQuery("water-way", "unlink-river"),
+		detectForRiverQuery:              queries.SqlQuery("water-way", "detect-for-river"),
+		bindToRiverQuery:                 queries.SqlQuery("water-way", "bind-to-river"),
+		listByRiverIdsQuery:              queries.SqlQuery("water-way", "list-by-river-ids"),
+		listWithRiverWithoutHeightsQuery: queries.SqlQuery("water-way", "list-with-river-without-heights"),
+		listByRiverId4RouterQuery:        queries.SqlQuery("water-way", "list-by-river-id-4-router"),
+		listByBbox4RouterQuery:           queries.SqlQuery("water-way", "list-by-bbox-4-router"),
+		listByBboxQuery:                  queries.SqlQuery("water-way", "list-by-bbox"),
+		listByBboxWithHeightsQuery:       queries.SqlQuery("water-way", "list-by-bbox-with-heights"),
+		listByBbox4CorrectionQuery:       queries.SqlQuery("water-way", "list-4-correction"),
+		updatePathSimplifiedQuery:        queries.SqlQuery("water-way", "update-path-simplified"),
+		updatePathHeightAndDistQuery:     queries.SqlQuery("water-way", "update-path-height-and-dists"),
+		listRefPoints:                    queries.SqlQuery("water-way", "get-ref-points"),
 	}
 }
 
 type waterWayStorage struct {
 	PostgresStorage
-	insertQuery                string
-	updateQuery                string
-	listQuery                  string
-	unlinkRiverQuery           string
-	detectForRiverQuery        string
-	bindToRiverQuery           string
-	listByRiverIdsQuery        string
-	listByRiverId4RouterQuery  string
-	listByBbox4RouterQuery     string
-	listByBbox4CorrectionQuery string
-	listRefPoints              string
-	listByBboxQuery            string
-	updatePathSimplifiedQuery  string
+	insertQuery                      string
+	updateQuery                      string
+	listQuery                        string
+	unlinkRiverQuery                 string
+	detectForRiverQuery              string
+	bindToRiverQuery                 string
+	listByRiverIdsQuery              string
+	listWithRiverWithoutHeightsQuery string
+	listByRiverId4RouterQuery        string
+	listByBbox4RouterQuery           string
+	listByBboxWithHeightsQuery       string
+	listByBbox4CorrectionQuery       string
+	listRefPoints                    string
+	listByBboxQuery                  string
+	updatePathSimplifiedQuery        string
+	updatePathHeightAndDistQuery     string
 }
 
 func (this waterWayStorage) AddWaterWays(waterways ...WaterWay) error {
@@ -175,6 +181,28 @@ func scanWaterWayTiny(rows *sql.Rows) (WaterWay4Router, error) {
 	return waterWay, nil
 }
 
+func scanWaterWayWithHeightNonFlipped(rows *sql.Rows) (WaterWayWithHeight, error) {
+	waterWay := WaterWayWithHeight{}
+	pathStr := ""
+	segmentLength := 0.0
+	var heights pq.Int64Array
+	err := rows.Scan(&waterWay.Id, &pathStr, &heights, &segmentLength)
+	if err != nil {
+		return WaterWayWithHeight{}, err
+	}
+	var path geo.LineString
+	err = json.Unmarshal([]byte(pathStr), &path)
+	if err != nil {
+		log.Errorf("Can not parse path \"%s\": %v", pathStr, err)
+		return WaterWayWithHeight{}, err
+	}
+	waterWay.Path = path.Coordinates
+	waterWay.Length = int(segmentLength / 1000)
+	waterWay.Heights = heights
+
+	return waterWay, nil
+}
+
 func scanWaterWay4RouterNonFlipped(rows *sql.Rows) (WaterWay4Router, error) {
 	waterWay := WaterWay4Router{}
 	pathStr := ""
@@ -229,6 +257,29 @@ func (this waterWayStorage) ListByRiverIds(riverIds ...int64) ([]WaterWay, error
 		return []WaterWay{}, err
 	}
 	return result.([]WaterWay), err
+}
+
+func (this waterWayStorage) ListWithRiver() ([]WaterWay4Router, error) {
+	result, err := this.DoFindList(this.listWithRiverWithoutHeightsQuery, scanWaterWayTiny)
+	if err != nil {
+		return []WaterWay4Router{}, err
+	}
+	return result.([]WaterWay4Router), err
+}
+
+func (this waterWayStorage) ListWithHeightsByBbox(bbox geo.Bbox) ([]WaterWayWithHeight, error) {
+	result, err := this.DoFindList(
+		this.listByBboxWithHeightsQuery,
+		scanWaterWayWithHeightNonFlipped,
+		bbox.Y1,
+		bbox.X1,
+		bbox.Y2,
+		bbox.X2,
+	)
+	if err != nil {
+		return []WaterWayWithHeight{}, err
+	}
+	return result.([]WaterWayWithHeight), err
 }
 
 func (this waterWayStorage) ListByBboxNonFilpped(bbox geo.Bbox) ([]WaterWay4Router, error) {

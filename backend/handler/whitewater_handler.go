@@ -2,13 +2,13 @@ package handler
 
 import (
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"github.com/and-hom/wwmap/backend/clustering"
 	"github.com/and-hom/wwmap/backend/ymaps"
 	"github.com/and-hom/wwmap/lib/dao"
 	. "github.com/and-hom/wwmap/lib/geo"
 	. "github.com/and-hom/wwmap/lib/handler"
 	. "github.com/and-hom/wwmap/lib/http"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -22,6 +22,7 @@ type WhiteWaterHandler struct {
 
 const PREVIEWS_COUNT int = 20
 const MIN_ZOOM_SHOW_CAMPS int = 12
+const MIN_ZOOM_SHOW_SLOPE int = 7
 
 func (this *WhiteWaterHandler) Init() {
 	this.Register("/ymaps-tile-ww", HandlerFunctions{Get: this.TileWhiteWaterHandler})
@@ -69,8 +70,9 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 		}
 	}
 
-	showUnpublished := ShowUnpublished(req, this.UserDao)
+	req, showUnpublished := ShowUnpublished(req, this.UserDao)
 	showCamps := GetBoolParameter(req, "show_camps", false)
+	showSlope := GetBoolParameter(req, "show_slope", false)
 
 	var features []Feature
 
@@ -115,7 +117,7 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 		}
 		if !found {
 			OnErrorWithCustomLogging(w, nil, fmt.Sprintf("Spots for river %d not found", riverId), http.StatusNotFound, func(s string) {
-				logrus.Debug(s)
+				log.Debug(s)
 			})
 			return
 		}
@@ -126,7 +128,7 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 		if showCamps && zoom >= MIN_ZOOM_SHOW_CAMPS {
 			camps, err := this.CampDao.FindWithinBoundsForRiver(bbox, riverId)
 			if err != nil {
-				logrus.Error(err)
+				log.Error(err)
 			} else {
 				features = append(features, ymaps.CampsToYmaps(camps, this.ResourceBase, skip)...)
 			}
@@ -162,9 +164,25 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 		if showCamps && zoom >= MIN_ZOOM_SHOW_CAMPS {
 			camps, err := this.CampDao.FindWithinBounds(bbox)
 			if err != nil {
-				logrus.Error(err)
+				log.Error(err)
 			} else {
 				features = append(features, ymaps.CampsToYmaps(camps, this.ResourceBase, skip)...)
+			}
+		}
+		if showSlope && zoom >= MIN_ZOOM_SHOW_SLOPE {
+			var experimentEnabled = false
+			req, experimentEnabled, err = this.experimentalFeaturesEnabled(req)
+			if err != nil {
+				OnError500(w, err, fmt.Sprintf("Can not check experimental futures of current user"))
+				return
+			}
+			if experimentEnabled {
+				tracks, err := this.WaterWayDao.ListWithHeightsByBbox(bbox)
+				if err != nil {
+					log.Error(err)
+				} else {
+					features = append(features, ymaps.TracksToYmaps(tracks, OBJECT_TYPE_SLOPE)...)
+				}
 			}
 		}
 	}
@@ -233,7 +251,7 @@ func (this *WhiteWaterHandler) search(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	showUnpublished := ShowUnpublished(r, this.UserDao)
+	r, showUnpublished := ShowUnpublished(r, this.UserDao)
 
 	spots, err := this.WhiteWaterDao.FindByTitlePart(string(requestBody), 30, 0, showUnpublished)
 	if err != nil {

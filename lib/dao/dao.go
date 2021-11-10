@@ -73,16 +73,24 @@ type WaterWayDao interface {
 	UnlinkRiver(id int64, tx interface{}) error
 	BindWaterwaysToRivers() error
 	ListByRiverIds(riverIds ...int64) ([]WaterWay, error)
+	ListWithRiver() ([]WaterWay4Router, error)
 	ListByBbox(bbox Bbox) ([]WaterWay, error)
 	ListByBboxNonFilpped(bbox Bbox) ([]WaterWay4Router, error)
 	ListByRiverIdNonFlipped(riverId int64) ([]WaterWay4Router, error)
+	ListWithHeightsByBbox(bbox Bbox) ([]WaterWayWithHeight, error)
 	List(limit int, offset int) ([]WaterWay4PathCorrection, error)
 	PathSimplifiedPersister() (PathSimplifiedPersister, error)
+	PathHeightPersister() (PathHeightPersister, error)
 }
 
 type PathSimplifiedPersister interface {
 	io.Closer
 	Add(id int64, pathSimplified []Point) error
+}
+
+type PathHeightPersister interface {
+	io.Closer
+	Add(id int64, pathHeight []int32, dists []float64) error
 }
 
 type WaterWayOsmRefDao interface {
@@ -134,7 +142,7 @@ type UserDao interface {
 	ListByRole(role Role) ([]User, error)
 	SetRole(userId int64, role Role) (Role, Role, error)
 	SetExperimentalFeatures(userId int64, enable bool) (bool, bool, error)
-	GetBySession(sessionId string) (User, error)
+	GetBySession(sessionId string) (User, bool, error)
 }
 
 type HasProperties interface {
@@ -255,4 +263,8 @@ type VoyageReportDao interface {
 	AssociateWithRiver(voyageReportId, riverId int64) error
 	ForEach(source string, callback func(report *VoyageReport) error) error
 	RemoveRiverLink(id int64, tx interface{}) error
+}
+
+type SrtmDao interface {
+	GetRaster(lat int, lon int) (Bytearea2D, bool, error)
 }

@@ -36,7 +36,10 @@ build-level:
 build-river-tracks-bind:
 	cd river-tracks-bind && go build
 
-build: pre-build build-notifier build-log-notifications build-catalog-sync build-db-clean build-spot-sort build-meteo build-level build-river-tracks-bind
+build-river-height-mapper:
+	cd river-height-mapper && go build
+
+build: pre-build build-notifier build-log-notifications build-catalog-sync build-db-clean build-spot-sort build-meteo build-level build-river-tracks-bind build-river-height-mapper
 
 override_dh_auto_install:
 	install -d $$(pwd)/debian/wwmap-cron-modules/usr/share/wwmap/backup/
@@ -69,4 +72,7 @@ override_dh_auto_install:
 
 	install -D -m 0755 river-tracks-bind/river-tracks-bind $$(pwd)/debian/wwmap-cron-modules/usr/bin/wwmap-river-tracks-bind
 	dh_link /usr/bin/wwmap-river-tracks-bind /etc/wwmap/job.d/river-tracks-bind.job
+
+	install -D -m 0755 river-height-mapper/river-height-mapper $$(pwd)/debian/wwmap-cron-modules/usr/bin/wwmap-river-height-mapper
+	dh_link /usr/bin/wwmap-river-height-mapper /etc/wwmap/job.d/river-height-mapper.job
 

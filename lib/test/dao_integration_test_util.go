@@ -39,6 +39,7 @@ func (this *DaoTester) Init() {
 		"POSTGRES_DB=wwmap",
 		"POSTGRES_USER=wwmap",
 		"POSTGRES_PASSWORD=wwmap",
+		"POSTGRES_MULTIPLE_EXTENSIONS=postgis_raster",
 	})
 	if err != nil {
 		log.Fatalf("Could not start resource: %s", err)
@@ -63,6 +64,16 @@ func (this *DaoTester) Init() {
 		log.Fatalf("Could not connect to docker: %s", err)
 	}
 	log.Info("Connected to database")
+
+	db, err := sql.Open("postgres", connString)
+	if err != nil {
+		log.Fatalf("Can not connect to postgres: %v", err)
+	}
+	defer db.Close()
+	_, err = db.Exec("CREATE EXTENSION postgis_raster")
+	if err != nil {
+		log.Fatalf("Can not create extension postgis_raster: %v", err)
+	}
 
 	absMigrationsPath, err := filepath.Abs("../../db")
 	if err != nil {

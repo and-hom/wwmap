@@ -3,8 +3,8 @@ package geo
 import (
 	"bytes"
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"github.com/and-hom/wwmap/lib/model"
+	"github.com/sirupsen/logrus"
 	"math"
 	"strconv"
 	"strings"
@@ -172,6 +172,7 @@ type FeatureProperties struct {
 	RiverTitle    string               `json:"river_title,omitempty"`
 	Images        []Preview            `json:"images,omitempty"`
 	Color         string               `json:"color,omitempty"`
+	Heights       []int64              `json:"heights,omitempty"`
 }
 
 type Preview struct {
@@ -195,8 +196,11 @@ const (
 
 type ObjectType string
 const (
-	OBJECT_TYPE_SPOT ObjectType ="spot"
-	OBJECT_TYPE_CAMP ObjectType ="camp"
+	OBJECT_TYPE_SPOT     ObjectType = "spot"
+	OBJECT_TYPE_CAMP     ObjectType = "camp"
+	OBJECT_TYPE_SLOPE    ObjectType = "slope"
+	OBJECT_TYPE_CLUSTER  ObjectType = "cluster"
+	OBJECT_TYPE_WATERWAY ObjectType = "waterway"
 )
 
 type FeatureOptions struct {

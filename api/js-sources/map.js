@@ -8,6 +8,7 @@ import {
     setLastPositionZoomType,
     isMobileBrowser,
     createCampsUrlPart,
+    createSlopeUrlPart,
 } from './util';
 import {bingSatTiles} from './map-urls/bing'
 import {googleSatTiles} from './map-urls/google'
@@ -27,6 +28,7 @@ export function WWMap(divId, bubbleTemplate, riverList, tutorialPopup, catalogLi
     this.catFilter = 1;
     this.showUnpublished = false;
     this.showCamps = true;
+    this.showSlope = true;
 
     this.onBoundsChange = null;
 
@@ -87,7 +89,8 @@ WWMap.prototype.createHelpBtn = function () {
 WWMap.prototype.createObjectsUrlTemplate = function () {
     let unpublishedUrlPart = createUnpublishedUrlPart(this.showUnpublished);
     let campsPart = createCampsUrlPart(this.showCamps);
-    return `${apiBase}/ymaps-tile-ww?bbox=%b&zoom=%z&link_type=${this.catalogLinkType}${unpublishedUrlPart}${campsPart}`;
+    let slopePart = createSlopeUrlPart(this.showSlope);
+    return `${apiBase}/ymaps-tile-ww?bbox=%b&zoom=%z&link_type=${this.catalogLinkType}${unpublishedUrlPart}${campsPart}${slopePart}`;
 };
 
 WWMap.prototype.setShowUnpublished = function (showUnpublished) {
@@ -100,6 +103,12 @@ WWMap.prototype.setShowUnpublished = function (showUnpublished) {
 
 WWMap.prototype.setShowCamps = function (showCamps) {
     this.showCamps = showCamps;
+    this.objectManager.setUrlTemplate(this.createObjectsUrlTemplate())
+    this.objectManager.reloadData();
+};
+
+WWMap.prototype.setShowSlope = function (showSlope) {
+    this.showSlope = showSlope;
     this.objectManager.setUrlTemplate(this.createObjectsUrlTemplate())
     this.objectManager.reloadData();
 };
@@ -203,7 +212,7 @@ WWMap.prototype.init = function () {
     });
 
     objectManager.setFilter(function (obj) {
-        if (t.catFilter <= 1) {
+        if (t.catFilter <= 1 || obj.properties.object_type != 'spot') {
             return true;
         }
 
@@ -289,6 +298,10 @@ WWMap.prototype.setBounds = function (bounds, opts) {
     this.yMap.setBounds(bounds, opts)
 };
 
+WWMap.prototype.getZoom = function () {
+    return this.yMap.getZoom();
+};
+
 WWMap.prototype.setOnBoundsChange = function (onBoundsChange) {
     this.onBoundsChange = onBoundsChange;
 };
@@ -315,7 +328,6 @@ WWMap.prototype.setSelectedRiverTracks = function (tracks) {
             },
             properties: {
                 hintContent: tracks[i].Id,
-                // balloonContent: ""
             }
         }, {
             strokeColor: "#0000FFAA",

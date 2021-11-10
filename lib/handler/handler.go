@@ -3,13 +3,13 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"github.com/and-hom/wwmap/backend/passport"
 	"github.com/and-hom/wwmap/lib/config"
 	"github.com/and-hom/wwmap/lib/dao"
 	. "github.com/and-hom/wwmap/lib/http"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 	"io/ioutil"
 	"net/http"
@@ -148,25 +148,47 @@ func DecodeJsonBody(r *http.Request, obj interface{}) (string, error) {
 }
 
 func CheckRoleAllowed(r *http.Request, userDao dao.UserDao, allowedRoles ...dao.Role) (*http.Request, bool, error) {
-	sessionId := r.FormValue("session_id")
-	if sessionId == "" {
-		sessionId = r.Header.Get("Authorization")
-	}
-	if sessionId == "" {
-		return r, false, nil
-	}
-	user, err := userDao.GetBySession(sessionId)
-	if err != nil {
+	user, reqWithUser, authorized, err := GetUser(r, userDao)
+	if err!=nil || !authorized {
 		return r, false, err
 	}
-	rWithUser := r.WithContext(context.WithValue(r.Context(), USER_REQUEST_VARIABLE, &user))
 
 	for i := 0; i < len(allowedRoles); i++ {
 		if allowedRoles[i] == user.Role {
-			return rWithUser, true, nil
+			return reqWithUser, true, nil
 		}
 	}
-	return rWithUser, false, nil
+	return reqWithUser, false, nil
+}
+
+func GetUser(r *http.Request, userDao dao.UserDao) (*dao.User, *http.Request, bool, error) {
+	existingUser := r.Context().Value(USER_REQUEST_VARIABLE)
+	var (
+		user        *dao.User
+		reqWithUser *http.Request
+	)
+	if existingUser != nil {
+		reqWithUser = r
+		user = existingUser.(*dao.User)
+	} else {
+		sessionId := r.FormValue("session_id")
+		if sessionId == "" {
+			sessionId = r.Header.Get("Authorization")
+		}
+		if sessionId == "" {
+			return nil, nil, false, nil
+		}
+		userFromDb, found, err := userDao.GetBySession(sessionId)
+		if err != nil {
+			return nil, r, false, err
+		}
+		if !found {
+			return nil, r, false, nil
+		}
+		user = &userFromDb
+		reqWithUser = r.WithContext(context.WithValue(r.Context(), USER_REQUEST_VARIABLE, user))
+	}
+	return user, reqWithUser, true, nil
 }
 
 func ForRoles(payload HandlerFunction, userDao dao.UserDao, roles ...dao.Role) HandlerFunction {
@@ -205,12 +227,11 @@ func CheckRoleAllowedAndMakeResponse(w http.ResponseWriter, userDao dao.UserDao,
 	return r2, true
 }
 
-func ShowUnpublished(req *http.Request, userDao dao.UserDao) bool {
+func ShowUnpublished(req *http.Request, userDao dao.UserDao) (*http.Request, bool) {
 	showUnpublishedStr := req.FormValue("show_unpublished")
-	showUnpublished := false
 	if showUnpublishedStr == "true" || showUnpublishedStr == "1" {
-		_, allowed, err := CheckRoleAllowed(req, userDao, dao.ADMIN, dao.EDITOR)
-		showUnpublished = err == nil && allowed
+		reqWithUserInfo, allowed, err := CheckRoleAllowed(req, userDao, dao.ADMIN, dao.EDITOR)
+		return reqWithUserInfo, err == nil && allowed
 	}
-	return showUnpublished
+	return req, false
 }
