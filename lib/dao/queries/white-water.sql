@@ -55,20 +55,25 @@ ORDER BY order_index ASC
 
 --@by-title-part
 WITH
-    alias_query AS (SELECT id, jsonb_array_elements_text(aliases) AS alias FROM white_water_rapid),
+    alias_query AS (
+        SELECT wwr.id, jsonb_array_elements_text(wwr.aliases) AS alias FROM white_water_rapid wwr
+            INNER JOIN river riv ON wwr.river_id = riv.id
+            INNER JOIN region reg ON riv.region_id = reg.id
+            WHERE ($2=0 OR reg.id = $2) AND ($3=0 OR reg.country_id = $3)
+        ),
     spot_with_alias_query AS (SELECT ___table___.id as id, river_id, title, alias_query.alias AS alias FROM ___table___ LEFT OUTER JOIN alias_query ON ___table___.id=alias_query.id),
     rank_query AS (SELECT spot_with_alias_query.id,
                             wwmap_search(spot_with_alias_query.title, $1) AS title_rank,
                             wwmap_search(spot_with_alias_query.alias, $1) AS alias_rank,
-                            wwmap_search(river.title, $1) AS river_rank FROM spot_with_alias_query LEFT OUTER JOIN river ON spot_with_alias_query.river_id=river.id WHERE river.visible=TRUE OR $4),
+                            wwmap_search(river.title, $1) AS river_rank FROM spot_with_alias_query LEFT OUTER JOIN river ON spot_with_alias_query.river_id=river.id WHERE river.visible=TRUE OR $6),
     final_rank_query AS (SELECT id, max(title_rank) + sum(alias_rank) AS own_rank, max(river_rank) AS river_rank FROM rank_query GROUP BY id)
 SELECT ___select-columns___
 FROM ___table___
     INNER JOIN final_rank_query ON ___table___.id=final_rank_query.id AND own_rank>0
     LEFT OUTER JOIN river ON ___table___.river_id=river.id
-    WHERE river.visible=TRUE OR $4
+    WHERE river.visible=TRUE OR $6
     ORDER BY river_rank*10 + own_rank DESC
-LIMIT $2 OFFSET $3
+LIMIT $4 OFFSET $5;
 
 --@by-river-full
 SELECT ___select-columns-full___

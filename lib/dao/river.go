@@ -69,9 +69,9 @@ func (this riverStorage) ListRiversWithBounds(bbox geo.Bbox, limit int, showUnpu
 	return this.listRiverTitles(this.insideBoundsQuery, bbox.Y1, bbox.X1, bbox.Y2, bbox.X2, limit, showUnpublished)
 }
 
-func (this riverStorage) FindByTitlePart(tPart string, limit, offset int, showUnpublished bool) ([]RiverTitle, error) {
+func (this riverStorage) FindByTitlePart(tPart string, regionId int64, countryId int64, limit, offset int, showUnpublished bool) ([]RiverTitle, error) {
 	tPart = eYoRepl.ReplaceAllLiteralString(tPart, "е")
-	return this.listRiverTitles(this.findByTitlePartQuery, pq.Array(strings.Fields(tPart)), limit, offset, showUnpublished)
+	return this.listRiverTitles(this.findByTitlePartQuery, pq.Array(strings.Fields(tPart)), regionId, countryId, limit, offset, showUnpublished)
 }
 
 func (this riverStorage) Find(id int64) (River, error) {

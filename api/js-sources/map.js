@@ -9,6 +9,8 @@ import {
     isMobileBrowser,
     createCampsUrlPart,
     createSlopeUrlPart,
+    createCountryUrlPart,
+    defaultPosition,
 } from './util';
 import {bingSatTiles} from './map-urls/bing'
 import {googleSatTiles} from './map-urls/google'
@@ -28,6 +30,7 @@ export function WWMap(divId, bubbleTemplate, riverList, tutorialPopup, catalogLi
     this.catFilter = 1;
     this.showUnpublished = false;
     this.showCamps = true;
+    this.countryId = true;
     this.showSlope = true;
 
     this.onBoundsChange = null;
@@ -90,7 +93,8 @@ WWMap.prototype.createObjectsUrlTemplate = function () {
     let unpublishedUrlPart = createUnpublishedUrlPart(this.showUnpublished);
     let campsPart = createCampsUrlPart(this.showCamps);
     let slopePart = createSlopeUrlPart(this.showSlope);
-    return `${apiBase}/ymaps-tile-ww?bbox=%b&zoom=%z&link_type=${this.catalogLinkType}${unpublishedUrlPart}${campsPart}${slopePart}`;
+    let countryPart = createCountryUrlPart(this.countryId)
+    return `${apiBase}/ymaps-tile-ww?bbox=%b&zoom=%z&link_type=${this.catalogLinkType}${unpublishedUrlPart}${campsPart}${countryPart}${slopePart}`;
 };
 
 WWMap.prototype.setShowUnpublished = function (showUnpublished) {
@@ -113,19 +117,24 @@ WWMap.prototype.setShowSlope = function (showSlope) {
     this.objectManager.reloadData();
 };
 
-WWMap.prototype.init = function () {
-    var positionAndZoom = getLastPositionAndZoom();
+WWMap.prototype.init = function (opts) {
+    this.countryId = opts ? opts.countryId : null;
+    let defaultPositionValue = opts ? opts.defaultCenter : defaultPosition();
+    let useHash = opts ? opts.useHash : true;
+    let options = opts ? opts.mapOptions : {};
 
-    var yMap;
+    let positionAndZoom = getLastPositionAndZoom(this.countryId, useHash, defaultPositionValue);
+
+    let yMap;
     try {
         yMap = new ymaps.Map(this.divId, {
             center: positionAndZoom.position,
             zoom: positionAndZoom.zoom,
             controls: ["zoomControl", "fullscreenControl"],
             type: positionAndZoom.type
-        });
+        }, options);
     } catch (err) {
-        setLastPositionZoomType(defaultPosition(), defaultZoom(), defaultMapType());
+        setLastPositionZoomType(defaultPositionValue, defaultZoom(), defaultMapType(), useHash, this.countryId);
         throw err
     }
     this.yMap = yMap;
@@ -192,7 +201,7 @@ WWMap.prototype.init = function () {
     this.yMap.events.add('boundschange', function (e) {
         let center = t.yMap.getCenter();
         let zoom = t.yMap.getZoom();
-        setLastPositionZoomType(center, zoom, t.yMap.getType());
+        setLastPositionZoomType(center, zoom, t.yMap.getType(), useHash, t.countryId);
         t.loadRivers(e.get("newBounds"))
         if (t.onBoundsChange) {
             t.onBoundsChange(center, zoom)
@@ -200,10 +209,10 @@ WWMap.prototype.init = function () {
     });
 
     this.yMap.events.add('typechange', function (e) {
-        setLastPositionZoomType(t.yMap.getCenter(), t.yMap.getZoom(), t.yMap.getType())
+        setLastPositionZoomType(t.yMap.getCenter(), t.yMap.getZoom(), t.yMap.getType(), useHash, t.countryId)
     });
 
-    var objectManager = new ymaps.RemoteObjectManager(this.createObjectsUrlTemplate(), {
+    let objectManager = new ymaps.RemoteObjectManager(this.createObjectsUrlTemplate(), {
         clusterHasBalloon: false,
         geoObjectOpenBalloonOnClick: false,
         geoObjectBalloonContentLayout: ymaps.templateLayoutFactory.createClass(this.bubbleTemplate),
@@ -264,7 +273,7 @@ WWMap.prototype.init = function () {
         if (t.measurementTool && t.measurementTool.canEditPath()) {
             t.measurementTool.multiPath.pushEmptySegment();
         }
-    });
+    }, this.countryId);
 
     let searchControl = new ymaps.control.SearchControl({
         options: {

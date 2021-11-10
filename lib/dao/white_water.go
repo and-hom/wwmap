@@ -5,12 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"github.com/and-hom/wwmap/lib/dao/queries"
 	"github.com/and-hom/wwmap/lib/geo"
 	"github.com/and-hom/wwmap/lib/model"
 	"github.com/and-hom/wwmap/lib/util"
 	"github.com/lib/pq"
+	log "github.com/sirupsen/logrus"
 	"strings"
 	"time"
 )
@@ -81,9 +81,15 @@ func (this whiteWaterStorage) ListByRiverAndTitle(riverId int64, title string) (
 	return this.list(this.listByRiverAndTitleQuery, riverId, title)
 }
 
-func (this whiteWaterStorage) FindByTitlePart(tPart string, limit, offset int, showUnpublished bool) ([]WhiteWaterPointWithRiverTitle, error) {
+func (this whiteWaterStorage) FindByTitlePart(
+	tPart string,
+	regionId int64,
+	countryId int64,
+	limit, offset int,
+	showUnpublished bool,
+) ([]WhiteWaterPointWithRiverTitle, error) {
 	tPart = eYoRepl.ReplaceAllLiteralString(tPart, "е")
-	return this.list(this.findByTitlePartQuery, pq.Array(strings.Fields(tPart)), limit, offset, showUnpublished)
+	return this.list(this.findByTitlePartQuery, pq.Array(strings.Fields(tPart)), regionId, countryId, limit, offset, showUnpublished)
 }
 
 func (this whiteWaterStorage) Find(id int64) (WhiteWaterPointWithRiverTitle, bool, error) {

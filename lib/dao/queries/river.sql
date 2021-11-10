@@ -117,10 +117,14 @@ UPDATE river SET visible=$2 WHERE id=$1
 
 --@by-title-part
 WITH
-  alias_query AS (SELECT id, jsonb_array_elements_text(aliases) AS alias FROM river),
+  alias_query AS (
+      SELECT riv.id, jsonb_array_elements_text(riv.aliases) AS alias FROM river riv
+        INNER JOIN region reg ON riv.region_id = reg.id
+      WHERE ($2=0 OR reg.id = $2) AND ($3=0 OR reg.country_id = $3)
+      ),
   visible_rivers_query AS (SELECT river.id, title, alias_query.alias AS alias FROM river
                                 LEFT OUTER JOIN alias_query ON river.id=alias_query.id
-                                WHERE visible=TRUE OR $4),
+                                WHERE visible=TRUE OR $6),
   rank_query AS (SELECT id,
                         wwmap_search(visible_rivers_query.title, $1) AS title_rank ,
                         wwmap_search(visible_rivers_query.alias, $1) AS alias_rank
@@ -136,7 +140,7 @@ WITH
 SELECT river_data_query.*
     FROM river_data_query INNER JOIN final_rank_query ON river_data_query.id=final_rank_query.id
     ORDER BY final_rank_query.own_rank DESC
-LIMIT $2 OFFSET $3
+LIMIT $4 OFFSET $5
 
 --@parent-ids
 SELECT ___table___.id AS river_id, CASE WHEN region.fake THEN 0 ELSE region.id END AS region_id, region.country_id AS country_id,
