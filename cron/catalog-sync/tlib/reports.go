@@ -175,7 +175,7 @@ func (this TlibReportsProvider) queryData(pageNum int, viewState ViewState, date
 
 		reportUrl, found := row.Find("td:nth-of-type(2) a").Attr("href")
 		if !found {
-			log.Warn("Can not find href for %s", row.Text())
+			log.Warnf("Can not find href for %s", row.Text())
 			return
 		}
 		reportUrl = strings.Replace(reportUrl, "..", SITE_URL, 1)

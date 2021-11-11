@@ -71,7 +71,7 @@ func (this *HuskytmCatalogConnector) CreateEmptyPageIfNotExistsAndReturnId(id in
 	} else if r.StatusCode == http.StatusNotFound || p.Status == "trash" {
 		log.Warnf("Existing page %d is not sutable: %d %s", pageId, r.StatusCode, p.Status)
 		createdPageId, link, err := this.createPage(parent, title)
-		log.Info("Created page id=%d for entity id=%d", createdPageId, id)
+		log.Infof("Created page id=%d for entity id=%d", createdPageId, id)
 		created := err == nil
 		return createdPageId, link, created, err
 	}
@@ -115,7 +115,7 @@ func (this *HuskytmCatalogConnector) writePage(pageId int, tmpl func(data interf
 
 	body, err := tmpl(data)
 	if err != nil {
-		log.Errorf("Can not process template", err)
+		log.Error("Can not process template", err)
 		return err
 	}
 

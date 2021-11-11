@@ -55,7 +55,7 @@ func (this *PdfCatalogConnector) WriteSpotPage(page common.SpotPageDto) error {
 func (this *PdfCatalogConnector) WriteRiverPage(page common.RiverPageDto) error {
 	b, err := this.templates.WriteRiver(RiverPageDto{RiverPageDto: page, Spots: this.spotBuf})
 	if err != nil {
-		log.Errorf("Can not process template", err)
+		log.Error("Can not process template", err)
 		return err
 	}
 	err = this.writePage(page.Id, b, page.River.Title)

@@ -73,7 +73,7 @@ func (this LibRuReportsProvider) ReportsSince(t time.Time) ([]dao.VoyageReport, 
 		link := row.Find("li > a")
 		reportUrl, found := link.Attr("href")
 		if !found {
-			log.Warn("Can not find href for %s", link.Text())
+			log.Warnf("Can not find href for %s", link.Text())
 			return
 		}
 		author := DEFAULT_AUTHOR

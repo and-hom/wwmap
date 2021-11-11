@@ -58,14 +58,14 @@ func (this *templates) WithDecorator(t *template.Template, data interface{}) (st
 	internalBuf := bytes.Buffer{}
 	err := t.Execute(&internalBuf, data)
 	if err != nil {
-		log.Errorf("Can not process river template", err)
+		log.Error("Can not process river template", err)
 		return "", err
 	}
 
 	fullBuf := bytes.Buffer{}
 	err = this.Decorator.Execute(&fullBuf, DecoratorParams{Body:template.HTML(internalBuf.String()), Data:data, })
 	if err != nil {
-		log.Errorf("Can not process river template", err)
+		log.Error("Can not process river template", err)
 		return "", err
 	}
 

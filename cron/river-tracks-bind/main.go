@@ -17,6 +17,6 @@ func main() {
 	log.Info("Bind tracks to rivers")
 	err := waterWayDao.BindWaterwaysToRivers()
 	if err != nil {
-		log.Fatalf("Can't bind tracks to river: ", err)
+		log.Fatal("Can't bind tracks to river: ", err)
 	}
 }

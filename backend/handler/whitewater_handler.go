@@ -316,7 +316,7 @@ func (this *WhiteWaterHandler) search(w http.ResponseWriter, req *http.Request) 
 	if regionIdStr != "" {
 		regionId, err = strconv.ParseInt(regionIdStr, 10, 64)
 		if err != nil {
-			OnError500(w, err, fmt.Sprintf("Can not parse region id %s", regionId))
+			OnError500(w, err, fmt.Sprintf("Can not parse region id %d", regionId))
 			return
 		}
 	}
@@ -326,7 +326,7 @@ func (this *WhiteWaterHandler) search(w http.ResponseWriter, req *http.Request) 
 	if countryIdStr != "" {
 		countryId, err = strconv.ParseInt(countryIdStr, 10, 64)
 		if err != nil {
-			OnError500(w, err, fmt.Sprintf("Can not parse country id %s", countryId))
+			OnError500(w, err, fmt.Sprintf("Can not parse country id %d", countryId))
 			return
 		}
 	}

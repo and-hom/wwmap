@@ -71,7 +71,7 @@ func GetLevelBySensors(levelSensorDao dao.LevelSensorDao,
 		s, err := levelSensorDao.Find(sensorId)
 		if err != nil {
 			levelGraduatedResult.SetU(sensorId, NO_SENSOR_DATA)
-			log.Errorf("Can't select sensor %d: %v", s, err)
+			log.Errorf("Can't select sensor %v: %v", s, err)
 			continue
 		}
 		levels, err := levelDao.GetDailyLevelBetweenDates(sensorId,
@@ -79,7 +79,7 @@ func GetLevelBySensors(levelSensorDao dao.LevelSensorDao,
 			date.Add(_daysAround*day))
 		if err != nil {
 			levelGraduatedResult.SetU(sensorId, NO_SENSOR_DATA)
-			log.Errorf("Can't select level for sensor %d and date %s: %v", s, date.String(), err)
+			log.Errorf("Can't select level for sensor %v and date %s: %v", s, date.String(), err)
 			continue
 		}
 		if len(levels) == 0 {

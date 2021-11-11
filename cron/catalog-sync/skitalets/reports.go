@@ -217,7 +217,7 @@ func (this SkitaletsReportsProvider) parseDateOfTrip(dateStr string) *time.Time 
 			return &d
 		}
 	}
-	log.Debug("Can not parse date: %s\n", dateStr)
+	log.Debugf("Can not parse date: %s", dateStr)
 	return nil
 }
 
