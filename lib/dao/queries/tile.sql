@@ -25,7 +25,13 @@ WITH river_ids AS (
 --@select-rivers-internal
 SELECT (river).id, (river).title, CASE (region).fake WHEN TRUE THEN 0 ELSE (region).id END, (region).country_id, (river).visible,
         (white_water_rapid).id, (white_water_rapid).title, (white_water_rapid).short_description,
-        ST_AsGeoJSON((white_water_rapid).point), (white_water_rapid).category, (white_water_rapid).link, (white_water_rapid).props,
+        ST_AsGeoJSON((white_water_rapid).point),
+       CASE (white_water_rapid).category
+           WHEN '"0"'
+               THEN GREATEST((white_water_rapid).hw_category,(white_water_rapid).mw_category,(white_water_rapid).lw_category)
+               ELSE  (white_water_rapid).category
+               END,
+       (white_water_rapid).link, (white_water_rapid).props,
         COALESCE((image).id, -1), COALESCE((image).source, ''), COALESCE((image).remote_id, ''), COALESCE((image).url, ''), COALESCE((image).preview_url, ''),
         COALESCE((image).date_published, to_timestamp(0)), COALESCE((image)."type", ''),
        (image).date, COALESCE((image).date_level_updated, to_timestamp(0)), (image).level, (image).props
