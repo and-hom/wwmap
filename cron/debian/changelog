@@ -1,3 +1,10 @@
+wwmap-cron-modules (0.0.37) unstable; urgency=medium
+
+  * #341 Show river slope on map
+  * #238 Dao test for cron.job
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Thu, 11 Nov 2021 12:51:14 +0300
+
 wwmap-cron-modules (0.0.36) unstable; urgency=medium
 
   * Use new format of configuration

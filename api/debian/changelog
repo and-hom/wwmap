@@ -1,4 +1,13 @@
-wwmap-api (2.1.11) UNRELEASED; urgency=medium
+wwmap-api (2.1.12) UNRELEASED; urgency=medium
+
+  * #403 Add show/hide controls to map
+  * #341 Show river slope on map
+  * #307 Map for single country support
+  * #387 Add headers to GGC
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Thu, 11 Nov 2021 12:46:51 +0300
+
+wwmap-api (2.1.11) unstable; urgency=medium
 
   * #368 Download camps as GPX 
 

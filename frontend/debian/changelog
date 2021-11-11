@@ -1,3 +1,10 @@
+wwmap-frontend (0.0.73) unstable; urgency=medium
+
+  * #403 Add show/hide controls to map
+  * #341 Show river slope on map
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Thu, 11 Nov 2021 12:44:20 +0300
+
 wwmap-frontend (0.0.72) unstable; urgency=medium
 
   * #371 use removed flag instead of voyage report real delete

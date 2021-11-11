@@ -1,3 +1,12 @@
+wwmap-backend (0.0.67) unstable; urgency=medium
+
+  * #402 Fix history log
+  * #401 Use max category of spot if category by classifier is not defined
+  * #341 Show river slope on map
+  * #307 Map for single country support
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Thu, 11 Nov 2021 12:42:17 +0300
+
 wwmap-backend (0.0.66) unstable; urgency=medium
 
   * #371 use removed flag instead of voyage report real delete
