@@ -3,20 +3,21 @@ import {createLegend} from "./legend";
 import {highlight_river} from "./main";
 import {
     CACHED_TILES_TEMPLATE,
-    createUnpublishedUrlPart,
-    getLastPositionAndZoom,
-    setLastPositionZoomType,
-    isMobileBrowser,
     createCampsUrlPart,
-    createSlopeUrlPart,
     createCountryUrlPart,
+    createSlopeUrlPart,
+    createUnpublishedUrlPart,
     defaultPosition,
+    getLastPositionAndZoom,
+    isMobileBrowser,
+    setLastPositionZoomType,
 } from './util';
 import {bingSatTiles} from './map-urls/bing'
 import {googleSatTiles} from './map-urls/google'
 import {apiBase} from "./config";
 import {createMeasurementToolControl} from "./router/control";
 import {WWMapMeasurementTool} from "./router/measurement";
+import {SHOW_CAMPS_MIN_ZOOM, SHOW_SLOPE_MIN_ZOOM} from "wwmap-js-commons/constants";
 
 export function WWMap(divId, bubbleTemplate, riverList, tutorialPopup, catalogLinkType) {
     this.divId = divId;
@@ -33,7 +34,14 @@ export function WWMap(divId, bubbleTemplate, riverList, tutorialPopup, catalogLi
     this.countryId = true;
     this.showSlope = true;
 
+    this.experimentalFeatures = false;
+    this.canShowUnpublished = false;
+
     this.onBoundsChange = null;
+
+    this.showCampsButton = null;
+    this.showSlopeButton = null;
+    this.showUnpublishedButton = null;
 
     addCachedLayer('osm#standard', 'OSM (O)', 'OpenStreetMap contributors, CC-BY-SA', 'osm');
     addLayer('google#satellite', 'Спутник Google (G)', 'Изображения © DigitalGlobe,CNES / Airbus, 2018,Картографические данные © Google, 2018', googleSatTiles);
@@ -74,19 +82,38 @@ WWMap.prototype.loadRivers = function (bounds) {
 };
 
 WWMap.prototype.createHelpBtn = function () {
-    var helpButton = new ymaps.control.Button({
+    let helpButton = new ymaps.control.Button({
         data: {
-            image: 'http://wwmap.ru/img/help.png'
+            image: 'http://wwmap.ru/img/help.png',
+            title: 'Справка',
         },
         options: {
             selectOnClick: false
         }
     });
     var t = this;
-    helpButton.events.add('click', function (e) {
+    helpButton.events.add('press', function (e) {
         t.tutorialPopup.show()
     });
     return helpButton
+};
+
+WWMap.prototype.initToolBtn = function (image, title, selected, onpress) {
+    let btn = new ymaps.control.Button({
+        data: {
+            image: image,
+            title: title,
+        },
+        options: {
+            selectOnClick: false,
+        }
+    });
+    btn.state.set('selected', selected);
+    btn.events.add('press', e => onpress());
+    this.yMap.controls.add(btn, {
+        float: 'right'
+    });
+    return btn;
 };
 
 WWMap.prototype.createObjectsUrlTemplate = function () {
@@ -103,18 +130,27 @@ WWMap.prototype.setShowUnpublished = function (showUnpublished) {
     this.objectManager.reloadData();
     this.loadRivers(this.yMap.getBounds());
     this.wwMapSearchProvider.showUnpublished = showUnpublished;
+    if (this.showUnpublishedButton) {
+        this.showUnpublishedButton.state.set('selected', this.showUnpublished);
+    }
 };
 
 WWMap.prototype.setShowCamps = function (showCamps) {
     this.showCamps = showCamps;
     this.objectManager.setUrlTemplate(this.createObjectsUrlTemplate())
     this.objectManager.reloadData();
+    if (this.showCampsButton) {
+        this.showCampsButton.state.set('selected', this.showCamps);
+    }
 };
 
 WWMap.prototype.setShowSlope = function (showSlope) {
     this.showSlope = showSlope;
     this.objectManager.setUrlTemplate(this.createObjectsUrlTemplate())
     this.objectManager.reloadData();
+    if (this.showSlopeButton) {
+        this.showSlopeButton.state.set('selected', this.showSlope);
+    }
 };
 
 WWMap.prototype.init = function (opts) {
@@ -122,6 +158,9 @@ WWMap.prototype.init = function (opts) {
     let defaultPositionValue = opts ? opts.defaultCenter : defaultPosition();
     let useHash = opts ? opts.useHash : true;
     let options = opts ? opts.mapOptions : {};
+    let showHideButtonsOnMap = opts ? opts.showHideButtonsOnMap : true;
+    this.experimentalFeatures = opts ? opts.experimentalFeatures : false;
+    this.canShowUnpublished = opts ? opts.canShowUnpublished : false;
 
     let positionAndZoom = getLastPositionAndZoom(this.countryId, useHash, defaultPositionValue);
 
@@ -186,6 +225,31 @@ WWMap.prototype.init = function (opts) {
         });
     }
 
+    if (showHideButtonsOnMap) {
+        this.showCampsButton = this.initToolBtn(
+            'http://wwmap.ru/img/camp.svg',
+            'Показывать стоянки',
+            this.showCamps,
+            () => this.setShowCamps(!this.showCamps)
+        );
+        if (this.canShowUnpublished) {
+            this.showUnpublishedButton = this.initToolBtn(
+                'http://wwmap.ru/img/invisible.png',
+                'Показывать неопубликованное',
+                this.showUnpublished,
+                () => this.setShowUnpublished(!this.showUnpublished)
+            );
+        }
+        if (this.experimentalFeatures) {
+            this.showSlopeButton = this.initToolBtn(
+                'http://wwmap.ru/img/slope.png',
+                'Показывать уклон рек',
+                this.showSlope,
+                () => this.setShowSlope(!this.showSlope)
+            )
+        }
+    }
+
     this.yMap.controls.add(createLegend(t), {
         float: 'left'
     });
@@ -206,6 +270,8 @@ WWMap.prototype.init = function (opts) {
         if (t.onBoundsChange) {
             t.onBoundsChange(center, zoom)
         }
+
+        t.showHideButtonsOnZoom(zoom);
     });
 
     this.yMap.events.add('typechange', function (e) {
@@ -301,6 +367,8 @@ WWMap.prototype.init = function (opts) {
         });
     }, this);
     this.yMap.controls.add(searchControl);
+
+    this.showHideButtonsOnZoom(positionAndZoom.zoom);
 };
 
 WWMap.prototype.setBounds = function (bounds, opts) {
@@ -348,6 +416,31 @@ WWMap.prototype.setSelectedRiverTracks = function (tracks) {
 
     this.selectedRiverTracks = mapObjects;
 };
+
+
+WWMap.prototype.showHideButtonsOnZoom = function (zoom) {
+    if (this.showCampsButton) {
+        if (zoom < SHOW_CAMPS_MIN_ZOOM) {
+            this.showCampsButton.disable();
+            if (this.showCamps) {
+                this.setShowCamps(false);
+            }
+        } else {
+            this.showCampsButton.enable();
+        }
+    }
+
+    if (this.showSlopeButton) {
+        if (zoom < SHOW_SLOPE_MIN_ZOOM) {
+            this.showSlopeButton.disable();
+            if (this.showSlope) {
+                this.setShowSlope(false);
+            }
+        } else {
+            this.showSlopeButton.enable();
+        }
+    }
+}
 
 function addCachedLayer(key, name, copyright, mapId, lower_scale, upper_scale) {
     return addLayer(key, name, copyright, CACHED_TILES_TEMPLATE.replace('###', mapId), lower_scale, upper_scale)

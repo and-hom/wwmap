@@ -53,6 +53,9 @@ export function initWWMap(mapId, riversListId, options) {
     let countryCode = optDefined ? options.countryCode : null;
     userInfoFunction = optDefined ? options.userInfoFunction : null;
 
+    // Отображать кнопки "Показать/Скрыть" на карте
+    let showHideButtonsOnMap = (optDefined && options.showHideButtonsOnMap!=null) ? options.showHideButtonsOnMap : true;
+
     if (catalogLinkType && CATALOG_LINK_TYPES.indexOf(catalogLinkType) <= -1) {
         throw "Unknown catalog link type. Available are: " + CATALOG_LINK_TYPES
     }
@@ -179,11 +182,28 @@ export function initWWMap(mapId, riversListId, options) {
             : mapP
         )
         .then(mapP => {
+            return getWwmapUserInfoForMapControls()
+                .then(info => {
+                    mapP.experimentalFeatures = !!info.experimental_features;
+                    mapP.canShowUnpublished = info && info.roles ? info.roles.includes('ADMIN') : false;
+                    return mapP;
+                })
+                .catch(ex => {
+                    if (ex != 'Unauthorized') {
+                        console.error(ex);
+                    }
+                    return mapP;
+                })
+        })
+        .then(mapP => {
             wwMap.init({
                 countryId: mapP.countryId,
                 defaultCenter: mapP.center,
                 useHash: mapP.countryId ? false : true,
                 mapOptions: mapP.mapOptions,
+                showHideButtonsOnMap: showHideButtonsOnMap,
+                experimentalFeatures: mapP.experimentalFeatures,
+                canShowUnpublished: mapP.canShowUnpublished,
             })
             if (mapP.geoObject) {
                 wwMap.yMap.geoObjects.add(mapP.geoObject);
