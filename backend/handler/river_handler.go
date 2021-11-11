@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"github.com/and-hom/wwmap/backend/handler/toggles"
 	log "github.com/sirupsen/logrus"
 	"github.com/and-hom/wwmap/cron/catalog-sync/huskytm"
 	"github.com/and-hom/wwmap/cron/catalog-sync/libru"
@@ -257,9 +258,15 @@ func (this *RiverHandler) GetVisibleRiversLite(w http.ResponseWriter, req *http.
 		}
 	}
 
-	req, showUnpublished := ShowUnpublished(req, this.UserDao)
+	req, showUnpublishedOld := ShowUnpublished(req, this.UserDao)
 
-	rivers, err := this.TileDao.ListRiversWithBounds(bbox, RIVER_LIST_LIMIT, showUnpublished)
+	featureToggles := toggles.ParseFeatureTogglesOrFallback(req, this.UserDao)
+	showUnpublished, ctx := featureToggles.GetShowUnpublished(req.Context())
+	if req.Context() != ctx {
+		req = req.WithContext(ctx)
+	}
+
+	rivers, err := this.TileDao.ListRiversWithBounds(bbox, RIVER_LIST_LIMIT, showUnpublishedOld || showUnpublished)
 	if err != nil {
 		OnError500(w, err, "Can not select rivers")
 		return

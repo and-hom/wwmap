@@ -1,15 +1,16 @@
 import {apiBase} from "./config";
-import {createCountryUrlPart, createUnpublishedUrlPart} from './util'
+import {createCountryUrlPart, createUrlPart} from './util'
+import {getWwmapSessionId} from "wwmap-js-commons/auth";
 
-export function WWMapSearchProvider(mousemoved, click, countryId) {
+export function WWMapSearchProvider(mousemoved, click, countryId, toggles) {
     this.mousemoved = mousemoved;
     this.click = click;
-    this.showUnpublished = false;
+    this.toggles = toggles;
     this.countryId = countryId;
 }
 
 WWMapSearchProvider.prototype.geocode = function (request, options) {
-    var deferred = new ymaps.vow.defer(),
+    let deferred = new ymaps.vow.defer(),
         geoObjects = new ymaps.GeoObjectCollection(),
         // Сколько результатов нужно пропустить.
         offset = options.skip || 0,
@@ -17,8 +18,15 @@ WWMapSearchProvider.prototype.geocode = function (request, options) {
         limit = options.results || 20;
 
     let t = this;
-    var xhr = new XMLHttpRequest();
-    xhr.open("POST", `${apiBase}/search${createUnpublishedUrlPart(this.showUnpublished, true)}${createCountryUrlPart(this.countryId, true)}`, true);
+    let xhr = new XMLHttpRequest();
+
+    let togglesPart = createUrlPart('toggles', this.featureToggles.serialize());
+    let authPart = this.featureToggles.getNeedsAuth()
+        ? createUrlPart('session_id', getWwmapSessionId())
+        : '';
+    let countryPart = createCountryUrlPart(this.countryId, true);
+
+    xhr.open("POST", `${apiBase}/search${togglesPart}${authPart}${countryPart}`, true);
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.send(request);
     xhr.onload = function (e) {

@@ -173,14 +173,14 @@ func CheckRoleAllowed(r *http.Request, userDao dao.UserDao, allowedRoles ...dao.
 }
 
 func GetUser(r *http.Request, userDao dao.UserDao) (*dao.User, *http.Request, bool, error) {
-	existingUser := r.Context().Value(USER_REQUEST_VARIABLE)
+	existingUser := GetUserFromContext(r.Context())
 	var (
 		user        *dao.User
 		reqWithUser *http.Request
 	)
 	if existingUser != nil {
 		reqWithUser = r
-		user = existingUser.(*dao.User)
+		user = existingUser
 	} else {
 		sessionId := r.FormValue("session_id")
 		if sessionId == "" {
@@ -197,9 +197,22 @@ func GetUser(r *http.Request, userDao dao.UserDao) (*dao.User, *http.Request, bo
 			return nil, r, false, nil
 		}
 		user = &userFromDb
-		reqWithUser = r.WithContext(context.WithValue(r.Context(), USER_REQUEST_VARIABLE, user))
+		reqWithUser = r.WithContext(WithUser(r.Context(), user))
 	}
 	return user, reqWithUser, true, nil
+}
+
+func GetUserFromContext(ctx context.Context) *dao.User {
+	user := ctx.Value(USER_REQUEST_VARIABLE)
+	if user != nil {
+		return user.(*dao.User)
+	} else {
+		return nil
+	}
+}
+
+func WithUser(ctx context.Context, user *dao.User) context.Context {
+	return context.WithValue(ctx, USER_REQUEST_VARIABLE, user)
 }
 
 func ForRoles(payload HandlerFunction, userDao dao.UserDao, roles ...dao.Role) HandlerFunction {
@@ -238,6 +251,7 @@ func CheckRoleAllowedAndMakeResponse(w http.ResponseWriter, userDao dao.UserDao,
 	return r2, true
 }
 
+// Deprecated
 func ShowUnpublished(req *http.Request, userDao dao.UserDao) (*http.Request, bool) {
 	showUnpublishedStr := req.FormValue("show_unpublished")
 	if showUnpublishedStr == "true" || showUnpublishedStr == "1" {

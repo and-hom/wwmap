@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"github.com/and-hom/wwmap/backend/clustering"
+	"github.com/and-hom/wwmap/backend/handler/toggles"
 	"github.com/and-hom/wwmap/backend/ymaps"
 	"github.com/and-hom/wwmap/lib/dao"
 	. "github.com/and-hom/wwmap/lib/geo"
@@ -93,16 +94,28 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 	sessionId := req.FormValue("session_id")
 	allowed := false
 	if sessionId != "" {
-		_, allowed, err = CheckRoleAllowed(req, this.UserDao, dao.ADMIN, dao.EDITOR)
+		req, allowed, err = CheckRoleAllowed(req, this.UserDao, dao.ADMIN, dao.EDITOR)
 		if err != nil {
 			OnError500(w, err, "Can not get user info for token")
 			return
 		}
 	}
 
-	req, showUnpublished := ShowUnpublished(req, this.UserDao)
-	showCamps := GetBoolParameter(req, "show_camps", false)
-	showSlope := GetBoolParameter(req, "show_slope", false)
+	// Deprecated
+	req, showUnpublishedOld := ShowUnpublished(req, this.UserDao)
+	// Deprecated
+	showCampsOld := GetBoolParameter(req, "show_camps", false) && zoom >= MIN_ZOOM_SHOW_CAMPS
+	// Deprecated
+	showSlopeOld := GetBoolParameter(req, "show_slope", false)
+
+	featureToggles := toggles.ParseFeatureTogglesOrFallback(req, this.UserDao)
+	ctx := req.Context()
+	showCamps, ctx := featureToggles.GetShowCamps(ctx)
+	showUnpublished, ctx := featureToggles.GetShowUnpublished(ctx)
+	showSlope, ctx := featureToggles.GetShowSlope(ctx)
+	if req.Context() != ctx {
+		req = req.WithContext(ctx)
+	}
 
 	var features []Feature
 
@@ -155,7 +168,7 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 		features = ymaps.WhiteWaterPointsToYmapsNoCluster([]dao.RiverWithSpots{river},
 			this.ResourceBase, skip, this.processForWeb, getLinkMaker(req.FormValue("link_type")))
 
-		if showCamps && zoom >= MIN_ZOOM_SHOW_CAMPS {
+		if showCamps || showCampsOld {
 			camps, err := this.CampDao.FindWithinBoundsForRiver(bbox, riverId)
 			if err != nil {
 				log.Error(err)
@@ -192,7 +205,11 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 			return
 		}
 	} else {
-		rivers, err := this.TileDao.ListRiversWithBounds(bbox, PREVIEWS_COUNT, showUnpublished)
+		rivers, err := this.TileDao.ListRiversWithBounds(
+			bbox,
+			PREVIEWS_COUNT,
+			showUnpublished || showUnpublishedOld,
+		)
 		if err != nil {
 			OnError500(w, err, fmt.Sprintf("Can not read whitewater points for bbox %s", bbox.String()))
 			return
@@ -219,7 +236,7 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 			return
 		}
 
-		if showCamps && zoom >= MIN_ZOOM_SHOW_CAMPS {
+		if showCamps || showCampsOld {
 			camps, err := this.CampDao.FindWithinBounds(bbox)
 			if err != nil {
 				log.Error(err)
@@ -227,7 +244,7 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 				features = append(features, ymaps.CampsToYmaps(camps, this.ResourceBase, skip)...)
 			}
 		}
-		if showSlope && zoom >= MIN_ZOOM_SHOW_SLOPE {
+		if showSlope || showSlopeOld && zoom >= MIN_ZOOM_SHOW_SLOPE {
 			var experimentEnabled = false
 			req, experimentEnabled, err = this.experimentalFeaturesEnabled(req)
 			if err != nil {
@@ -309,7 +326,13 @@ func (this *WhiteWaterHandler) search(w http.ResponseWriter, req *http.Request) 
 		return
 	}
 
-	req, showUnpublished := ShowUnpublished(req, this.UserDao)
+	featureToggles := toggles.ParseFeatureTogglesOrFallback(req, this.UserDao)
+	req, showUnpublishedOld := ShowUnpublished(req, this.UserDao)
+
+	showUnpublished, ctx := featureToggles.GetShowUnpublished(req.Context())
+	if req.Context() != ctx {
+		req = req.WithContext(ctx)
+	}
 
 	regionIdStr := req.FormValue("region")
 	regionId := int64(0)
@@ -331,12 +354,25 @@ func (this *WhiteWaterHandler) search(w http.ResponseWriter, req *http.Request) 
 		}
 	}
 
-	spots, err := this.WhiteWaterDao.FindByTitlePart(string(requestBody), regionId, countryId, 30, 0, showUnpublished)
+	spots, err := this.WhiteWaterDao.FindByTitlePart(
+		string(requestBody),
+		regionId,
+		countryId,
+		30,
+		0,
+		showUnpublished || showUnpublishedOld,
+	)
 	if err != nil {
 		OnError500(w, err, "Can not select spots")
 		return
 	}
-	rivers, err := this.RiverDao.FindByTitlePart(string(requestBody), regionId, countryId, 30, 0, showUnpublished)
+	rivers, err := this.RiverDao.FindByTitlePart(
+		string(requestBody),
+		regionId, countryId,
+		30,
+		0,
+		showUnpublished || showUnpublishedOld,
+	)
 	if err != nil {
 		OnError500(w, err, "Can not select rivers")
 		return
