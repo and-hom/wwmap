@@ -19,7 +19,7 @@ export function createMeasurementToolControl(measurementTool) {
     };
 
     function styleTag(url, hidden = true) {
-        return `style="${hidden ? 'display: none;' : ''}width: 24px; height: 24px; margin: 6px; border: 2px; background-repeat: no-repeat; background-size: contain; background-image: url(${url});"`;
+        return `style="${hidden ? 'display: none;' : ''}width: 24px; height: 24px; padding: 0px; background-color: rgb(239, 239, 239); margin: 6px; border: 2px; background-repeat: no-repeat; background-size: contain; background-image: url(${url});"`;
     }
 
     ymaps.util.augment(MeasurementControl, ymaps.collection.Item, {
