@@ -1,4 +1,11 @@
-wwmap-api (2.1.12) UNRELEASED; urgency=medium
+wwmap-api (2.1.13) unstable; urgency=medium
+
+  * #400 Use feature toggles instead of separate flags
+  * #409 Fix buttons size in measurement control
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sat, 27 Nov 2021 21:02:24 +0300
+
+wwmap-api (2.1.12) unstable; urgency=medium
 
   * #403 Add show/hide controls to map
   * #341 Show river slope on map

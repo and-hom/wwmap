@@ -1,3 +1,9 @@
+wwmap-backend (0.0.68) unstable; urgency=medium
+
+  * #400 Use feature toggles instead of separate flags
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sat, 27 Nov 2021 21:00:36 +0300
+
 wwmap-backend (0.0.67) unstable; urgency=medium
 
   * #402 Fix history log
