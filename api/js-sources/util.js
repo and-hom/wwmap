@@ -162,28 +162,10 @@ export function isMobileBrowser() {
         || navigator.userAgent.match(/Windows Phone/i));
 }
 
-
-export function createUnpublishedUrlPart(showUnpublished, first) {
-    if (showUnpublished) {
-        let sessionId = getWwmapSessionId();
+export function createUrlPart(key, value, first) {
+    if (value != null) {
         let firstChar = first ? '?' : '&';
-        return `${firstChar}session_id=${sessionId}&show_unpublished=${showUnpublished}`;
-    }
-    return '';
-}
-
-export function createCampsUrlPart(showCamps, first) {
-    if (showCamps) {
-        let firstChar = first ? '?' : '&';
-        return `${firstChar}show_camps=${showCamps}`;
-    }
-    return '';
-}
-export function createSlopeUrlPart(showSlope, first) {
-    if (showSlope) {
-        let sessionId = getWwmapSessionId();
-        let firstChar = first ? '?' : '&';
-        return `${firstChar}session_id=${sessionId}&show_slope=${showSlope}`;
+        return `${firstChar}${key}=${value}`;
     }
     return '';
 }
