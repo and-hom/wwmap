@@ -5,7 +5,7 @@ import {getWwmapSessionId} from "wwmap-js-commons/auth";
 export function WWMapSearchProvider(mousemoved, click, countryId, toggles) {
     this.mousemoved = mousemoved;
     this.click = click;
-    this.toggles = toggles;
+    this.featureToggles = toggles;
     this.countryId = countryId;
 }
 
@@ -20,7 +20,7 @@ WWMapSearchProvider.prototype.geocode = function (request, options) {
     let t = this;
     let xhr = new XMLHttpRequest();
 
-    let togglesPart = createUrlPart('toggles', this.featureToggles.serialize());
+    let togglesPart = createUrlPart('toggles', this.featureToggles.serialize(), true);
     let authPart = this.featureToggles.getNeedsAuth()
         ? createUrlPart('session_id', getWwmapSessionId())
         : '';
