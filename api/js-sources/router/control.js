@@ -18,6 +18,10 @@ export function createMeasurementToolControl(measurementTool) {
         });
     };
 
+    function styleTag(url, hidden = true) {
+        return `style="${hidden ? 'display: none;' : ''}width: 24px; height: 24px; margin: 6px; border: 2px; background-repeat: no-repeat; background-size: contain; background-image: url(${url});"`;
+    }
+
     ymaps.util.augment(MeasurementControl, ymaps.collection.Item, {
         onAddToMap: function (map) {
             MeasurementControl.superclass.onAddToMap.call(this, map);
@@ -39,16 +43,23 @@ export function createMeasurementToolControl(measurementTool) {
             var content = '<div class="wwmap-route-control">' +
                 '<div class="wwmap-overzoom-msg" style="display: none; background: #ff000099; font-size: x-small; color: #331100">Измерения пути при масштабе менее '+MIN_ZOOM_SUPPORTED+' не поддерживаются.</div> ' +
                 '<div class="wwmap-loading-msg" style="display: none; background: #ffff2299; font-size: x-small; color: #331100">Загрузка данных...</div> ' +
-                '<button class="ymaps-2-1-73-float-button-text, wwmap-measure-btn" title="Расстояние по реке"><img style="height:24px" src="http://wwmap.ru/img/ruler.png"/><img style="height:24px"/></button>' +
+                '<button class="ymaps-2-1-73-float-button-text, wwmap-measure-btn" title="Расстояние по реке" ' +
+                styleTag('http://wwmap.ru/img/ruler.png', false) +
 
-                '<button class="ymaps-2-1-73-float-button-text, wwmap-measure-ok-btn" style="display: none;" title="Закончить редактирование"><img style="height:24px" src="http://wwmap.ru/img/ok.png"/><img style="height:24px"/></button>' +
-                '<button class="ymaps-2-1-73-float-button-text, wwmap-measure-revert-btn" style="display: none;" title="Удалить последнюю точку (Esc)"><img style="height:24px" src="http://wwmap.ru/img/undo.png"/></button>' +
-                '<button class="ymaps-2-1-73-float-button-text, wwmap-measure-delete-btn" style="display: none;" title="Очистить трек"><img style="height:24px" src="http://wwmap.ru/img/del.png"/></button>' +
+                '/><button class="ymaps-2-1-73-float-button-text, wwmap-measure-ok-btn" title="Закончить редактирование" ' +
+                styleTag('http://wwmap.ru/img/ok.png') +
+                '/><button class="ymaps-2-1-73-float-button-text, wwmap-measure-revert-btn" title="Удалить последнюю точку (Esc)" ' +
+                styleTag('http://wwmap.ru/img/undo.png') +
+                '/><button class="ymaps-2-1-73-float-button-text, wwmap-measure-delete-btn" title="Очистить трек" ' +
+                styleTag('http://wwmap.ru/img/del.png') +
 
-                '<button class="ymaps-2-1-73-float-button-text, wwmap-measure-edit-btn" style="display: none;" title="Продолжить редактирование"><img style="height:24px" src="http://wwmap.ru/img/edit.png"/></button>' +
-                '<button class="ymaps-2-1-73-float-button-text, wwmap-measure-download-btn" style="display: none;" title="Скачать GPX"><img style="height:24px" src="http://wwmap.ru/img/download.png"/></button>' +
-                '<button class="ymaps-2-1-73-float-button-text, wwmap-measure-help-btn" style="display: none;" title="Справка об измерении пути по реке"><img style="height:24px" src="http://wwmap.ru/img/help.png"/></button>' +
-                '</div>';
+                '/><button class="ymaps-2-1-73-float-button-text, wwmap-measure-edit-btn" title="Продолжить редактирование" ' +
+                styleTag('http://wwmap.ru/img/edit.png') +
+                '/><button class="ymaps-2-1-73-float-button-text, wwmap-measure-download-btn" title="Скачать GPX" ' +
+                styleTag('http://wwmap.ru/img/download.png') +
+                '/><button class="ymaps-2-1-73-float-button-text, wwmap-measure-help-btn" title="Справка об измерении пути по реке" ' +
+                styleTag('http://wwmap.ru/img/help.png') +
+                '/></div>';
             this._$content = $(content).appendTo(parentDomContainer);
 
             var measureOnOffBtn = $('.wwmap-measure-btn');
