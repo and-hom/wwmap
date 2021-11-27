@@ -7,8 +7,14 @@ import (
 )
 
 func ParseFeatureTogglesOrFallback(req *http.Request, userDao dao.UserDao) Toggles {
+	value := req.FormValue("toggles")
+
+	if value == "" {
+		return Fallback()
+	}
+
 	featueToggles, err := Create(
-		req.FormValue("toggles"),
+		value,
 		[]ToggleAvailableChecker{
 			nil,
 			RoleChecker(),
@@ -18,7 +24,7 @@ func ParseFeatureTogglesOrFallback(req *http.Request, userDao dao.UserDao) Toggl
 		userDao,
 	)
 	if err != nil {
-		log.Error("failed to parse toggles", err)
+		log.Error("failed to parse toggles ", err)
 		featueToggles = Fallback()
 	}
 	return featueToggles
