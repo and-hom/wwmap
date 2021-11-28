@@ -22,8 +22,6 @@ type WhiteWaterHandler struct {
 }
 
 const PREVIEWS_COUNT int = 20
-const MIN_ZOOM_SHOW_CAMPS int = 12
-const MIN_ZOOM_SHOW_SLOPE int = 7
 
 func (this *WhiteWaterHandler) Init() {
 	this.Register("/ymaps-tile-ww", HandlerFunctions{Get: this.TileWhiteWaterHandler})
@@ -101,13 +99,6 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 		}
 	}
 
-	// Deprecated
-	req, showUnpublishedOld := ShowUnpublished(req, this.UserDao)
-	// Deprecated
-	showCampsOld := GetBoolParameter(req, "show_camps", false) && zoom >= MIN_ZOOM_SHOW_CAMPS
-	// Deprecated
-	showSlopeOld := GetBoolParameter(req, "show_slope", false)
-
 	featureToggles := toggles.ParseFeatureTogglesOrFallback(req, this.UserDao)
 	ctx := req.Context()
 	showCamps, ctx := featureToggles.GetShowCamps(ctx)
@@ -168,7 +159,7 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 		features = ymaps.WhiteWaterPointsToYmapsNoCluster([]dao.RiverWithSpots{river},
 			this.ResourceBase, skip, this.processForWeb, getLinkMaker(req.FormValue("link_type")))
 
-		if showCamps || showCampsOld {
+		if showCamps {
 			camps, err := this.CampDao.FindWithinBoundsForRiver(bbox, riverId)
 			if err != nil {
 				log.Error(err)
@@ -208,7 +199,7 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 		rivers, err := this.TileDao.ListRiversWithBounds(
 			bbox,
 			PREVIEWS_COUNT,
-			showUnpublished || showUnpublishedOld,
+			showUnpublished,
 		)
 		if err != nil {
 			OnError500(w, err, fmt.Sprintf("Can not read whitewater points for bbox %s", bbox.String()))
@@ -236,7 +227,7 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 			return
 		}
 
-		if showCamps || showCampsOld {
+		if showCamps {
 			camps, err := this.CampDao.FindWithinBounds(bbox)
 			if err != nil {
 				log.Error(err)
@@ -244,20 +235,12 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 				features = append(features, ymaps.CampsToYmaps(camps, this.ResourceBase, skip)...)
 			}
 		}
-		if showSlope || showSlopeOld && zoom >= MIN_ZOOM_SHOW_SLOPE {
-			var experimentEnabled = false
-			req, experimentEnabled, err = this.experimentalFeaturesEnabled(req)
+		if showSlope {
+			tracks, err := this.WaterWayDao.ListWithHeightsByBbox(bbox)
 			if err != nil {
-				OnError500(w, err, fmt.Sprintf("Can not check experimental futures of current user"))
-				return
-			}
-			if experimentEnabled {
-				tracks, err := this.WaterWayDao.ListWithHeightsByBbox(bbox)
-				if err != nil {
-					log.Error(err)
-				} else {
-					features = append(features, ymaps.TracksToYmaps(tracks, OBJECT_TYPE_SLOPE)...)
-				}
+				log.Error(err)
+			} else {
+				features = append(features, ymaps.TracksToYmaps(tracks, OBJECT_TYPE_SLOPE)...)
 			}
 		}
 	}
@@ -327,8 +310,6 @@ func (this *WhiteWaterHandler) search(w http.ResponseWriter, req *http.Request) 
 	}
 
 	featureToggles := toggles.ParseFeatureTogglesOrFallback(req, this.UserDao)
-	req, showUnpublishedOld := ShowUnpublished(req, this.UserDao)
-
 	showUnpublished, ctx := featureToggles.GetShowUnpublished(req.Context())
 	if req.Context() != ctx {
 		req = req.WithContext(ctx)
@@ -360,7 +341,7 @@ func (this *WhiteWaterHandler) search(w http.ResponseWriter, req *http.Request) 
 		countryId,
 		30,
 		0,
-		showUnpublished || showUnpublishedOld,
+		showUnpublished,
 	)
 	if err != nil {
 		OnError500(w, err, "Can not select spots")
@@ -371,7 +352,7 @@ func (this *WhiteWaterHandler) search(w http.ResponseWriter, req *http.Request) 
 		regionId, countryId,
 		30,
 		0,
-		showUnpublished || showUnpublishedOld,
+		showUnpublished,
 	)
 	if err != nil {
 		OnError500(w, err, "Can not select rivers")

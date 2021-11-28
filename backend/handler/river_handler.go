@@ -258,15 +258,13 @@ func (this *RiverHandler) GetVisibleRiversLite(w http.ResponseWriter, req *http.
 		}
 	}
 
-	req, showUnpublishedOld := ShowUnpublished(req, this.UserDao)
-
 	featureToggles := toggles.ParseFeatureTogglesOrFallback(req, this.UserDao)
 	showUnpublished, ctx := featureToggles.GetShowUnpublished(req.Context())
 	if req.Context() != ctx {
 		req = req.WithContext(ctx)
 	}
 
-	rivers, err := this.TileDao.ListRiversWithBounds(bbox, RIVER_LIST_LIMIT, showUnpublishedOld || showUnpublished)
+	rivers, err := this.TileDao.ListRiversWithBounds(bbox, RIVER_LIST_LIMIT, showUnpublished)
 	if err != nil {
 		OnError500(w, err, "Can not select rivers")
 		return
