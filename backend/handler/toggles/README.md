@@ -1,0 +1,1 @@
+Tool for parsing boolean parameters from bitmask GET request parameter.
