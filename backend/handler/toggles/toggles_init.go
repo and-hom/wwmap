@@ -19,6 +19,7 @@ func ParseFeatureTogglesOrFallback(req *http.Request, userDao dao.UserDao) Toggl
 			nil,
 			RoleChecker(),
 			ExperimentalFlagChecker(),
+			ExperimentalFlagChecker(),
 		},
 		req,
 		userDao,

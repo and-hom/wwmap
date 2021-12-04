@@ -144,6 +144,11 @@ WWMap.prototype.setShowSlope = function (showSlope) {
     this.reloadMapObjects();
 };
 
+WWMap.prototype.setShowAltitudeCoverage = function (showSlope) {
+    this.featureToggles.setShowAltitudeCoverage(showSlope);
+    this.reloadMapObjects();
+};
+
 WWMap.prototype.init = function (opts) {
     this.countryId = opts ? opts.countryId : null;
     let defaultPositionValue = opts ? opts.defaultCenter : defaultPosition();
@@ -219,18 +224,19 @@ WWMap.prototype.init = function (opts) {
     let showCampsButton;
     let showUnpublishedButton;
     let showSlopeButton;
+    let showAltitudeCoverageButton;
     if (showHideButtonsOnMap) {
         showCampsButton = this.initToolBtn(
             'http://wwmap.ru/img/camp.svg',
             'Показывать стоянки',
-            this.showCamps,
+            false,
             () => this.setShowCamps(!this.featureToggles.getShowCamps())
         );
         if (canShowUnpublished) {
             showUnpublishedButton = this.initToolBtn(
                 'http://wwmap.ru/img/invisible.png',
                 'Показывать неопубликованное',
-                this.showUnpublished,
+                false,
                 () => this.setShowUnpublished(!this.featureToggles.getShowUnpublished())
             );
         }
@@ -238,17 +244,23 @@ WWMap.prototype.init = function (opts) {
             showSlopeButton = this.initToolBtn(
                 'http://wwmap.ru/img/slope.png',
                 'Показывать уклон рек',
-                this.showSlope,
+                false,
                 () => this.setShowSlope(!this.featureToggles.getShowSlope())
+            );
+            showAltitudeCoverageButton = this.initToolBtn(
+                'http://localhost:63342/wwmap/frontend/img/alt-coverage.png',
+                'Покрытие данных о высоте',
+                false,
+                () => this.setShowAltitudeCoverage(!this.featureToggles.getShowAltitudeCoverage())
             );
         }
     }
     this.featureToggles = new FeatureToggles(
-        [true, false, true,],
-        [true, canShowUnpublished, this.experimentalFeatures,],
-        [showCampsButton, showUnpublishedButton, showSlopeButton],
-        [SHOW_CAMPS_MIN_ZOOM, 0, SHOW_SLOPE_MIN_ZOOM],
-        [false, true, true],
+        [true, false, true, false,],
+        [true, canShowUnpublished, this.experimentalFeatures, this.experimentalFeatures,],
+        [showCampsButton, showUnpublishedButton, showSlopeButton, showAltitudeCoverageButton],
+        [SHOW_CAMPS_MIN_ZOOM, 0, SHOW_SLOPE_MIN_ZOOM, 0],
+        [false, true, true, true],
         positionAndZoom.zoom
     )
 

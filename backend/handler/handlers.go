@@ -34,6 +34,7 @@ type App struct {
 	CampDao            CampDao
 	CampPhotoDao       PhotoDao
 	CampRateDao        RateDao
+	SrtmDao            SrtmDao
 }
 
 func (this *App) processForWeb(img *Img) {
@@ -43,9 +44,9 @@ func (this *App) processForWeb(img *Img) {
 	}
 }
 
-func  (this *App) experimentalFeaturesEnabled(req *http.Request) (*http.Request, bool, error) {
+func (this *App) experimentalFeaturesEnabled(req *http.Request) (*http.Request, bool, error) {
 	user, requestWithUser, authorized, err := GetUser(req, this.UserDao)
-	if err!=nil {
+	if err != nil {
 		return req, false, err
 	}
 	if !authorized {

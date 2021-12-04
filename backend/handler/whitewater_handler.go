@@ -62,7 +62,7 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 		tdf = tile_data_fetcher.Country(this.TileDao, this.ClusterMaker,
 			getLinkMaker(req.FormValue("link_type")), this.processForWeb, this.ResourceBase)
 	} else {
-		tdf = tile_data_fetcher.World(this.TileDao, this.WaterWayDao, this.CampDao, this.ClusterMaker,
+		tdf = tile_data_fetcher.World(this.TileDao, this.WaterWayDao, this.CampDao, this.SrtmDao, this.ClusterMaker,
 			getLinkMaker(req.FormValue("link_type")), this.processForWeb, this.ResourceBase)
 	}
 
