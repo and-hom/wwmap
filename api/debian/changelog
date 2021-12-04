@@ -1,3 +1,9 @@
+wwmap-api (2.1.14) unstable; urgency=medium
+
+  * #341 Show altitude data coverage
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sat, 04 Dec 2021 18:55:40 +0300
+
 wwmap-api (2.1.13) unstable; urgency=medium
 
   * #400 Use feature toggles instead of separate flags

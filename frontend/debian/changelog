@@ -1,3 +1,9 @@
+wwmap-frontend (0.0.74) unstable; urgency=medium
+
+  * #341 Show altitude data coverage: image for button
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sat, 04 Dec 2021 18:56:59 +0300
+
 wwmap-frontend (0.0.73) unstable; urgency=medium
 
   * #403 Add show/hide controls to map

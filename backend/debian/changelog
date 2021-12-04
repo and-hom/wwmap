@@ -1,3 +1,11 @@
+wwmap-backend (0.0.69) unstable; urgency=medium
+
+  * #341 Show altitude data coverage
+  * #400 Remove old feature flags
+  * #412 tile handler refactoring
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sat, 04 Dec 2021 18:54:23 +0300
+
 wwmap-backend (0.0.68) unstable; urgency=medium
 
   * #400 Use feature toggles instead of separate flags
