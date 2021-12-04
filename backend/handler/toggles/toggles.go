@@ -13,9 +13,10 @@ import (
 const FALLBACK int = 0
 
 const (
-	FEATURE_SHOW_CAMPS       = 0
-	FEATURE_SHOW_UNPUBLISHED = 1
-	FEATURE_SHOW_SLOPE       = 2
+	FEATURE_SHOW_CAMPS        = 0
+	FEATURE_SHOW_UNPUBLISHED  = 1
+	FEATURE_SHOW_SLOPE        = 2
+	FEATURE_ALTITUED_COVERAGE = 3
 )
 
 const NEEDS_AUTH = 0x110
@@ -24,6 +25,7 @@ type Toggles interface {
 	GetShowCamps(ctx context.Context) (bool, context.Context)
 	GetShowUnpublished(ctx context.Context) (bool, context.Context)
 	GetShowSlope(ctx context.Context) (bool, context.Context)
+	GetAltitudeCoverage(ctx context.Context) (bool, context.Context)
 }
 
 func Create(
@@ -105,4 +107,8 @@ func (this *bitmaskToggles) GetShowUnpublished(ctx context.Context) (bool, conte
 
 func (this *bitmaskToggles) GetShowSlope(ctx context.Context) (bool, context.Context) {
 	return this.get(FEATURE_SHOW_SLOPE, ctx)
+}
+
+func (this *bitmaskToggles) GetAltitudeCoverage(ctx context.Context) (bool, context.Context) {
+	return this.get(FEATURE_ALTITUED_COVERAGE, ctx)
 }

@@ -3,6 +3,7 @@ import {SHOW_CAMPS_MIN_ZOOM, SHOW_SLOPE_MIN_ZOOM} from "wwmap-js-commons/constan
 export const FEATURE_SHOW_CAMPS = 0;
 export const FEATURE_SHOW_UNPUBLISHED = 1;
 export const FEATURE_SHOW_SLOPE = 2;
+export const FEATURE_SHOW_ALTITUDE_COVERAGE = 3;
 
 export function FeatureToggles(
     selectedValues = [true, false, true],
@@ -129,6 +130,14 @@ FeatureToggles.prototype.getShowSlope = function () {
 
 FeatureToggles.prototype.setShowSlope = function (showSlope) {
     this.set(FEATURE_SHOW_SLOPE, showSlope);
+}
+
+FeatureToggles.prototype.getShowAltitudeCoverage = function () {
+    return this.get(FEATURE_SHOW_ALTITUDE_COVERAGE);
+}
+
+FeatureToggles.prototype.setShowAltitudeCoverage = function (showAltitudeCoverage) {
+    this.set(FEATURE_SHOW_ALTITUDE_COVERAGE, showAltitudeCoverage);
 }
 
 FeatureToggles.prototype.getNeedsAuth = function () {

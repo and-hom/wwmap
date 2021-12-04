@@ -1,7 +1,6 @@
 package main
 
 import (
-	log "github.com/sirupsen/logrus"
 	"github.com/and-hom/wwmap/backend/clustering"
 	"github.com/and-hom/wwmap/backend/handler"
 	"github.com/and-hom/wwmap/backend/handler/linked_entity"
@@ -13,6 +12,7 @@ import (
 	. "github.com/and-hom/wwmap/lib/handler"
 	"github.com/and-hom/wwmap/lib/notification"
 	"github.com/gorilla/mux"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"time"
 )
@@ -47,6 +47,7 @@ func main() {
 	campPhotoDao := NewCampPhotoPostgresDao(storage)
 	dbVersionDao := NewDbVersionPostgresDao(storage)
 	transferDao := NewTransferPostgresDao(storage)
+	srtmDao := NewSrtmPostgresDao(storage)
 
 	clusterMaker := clustering.NewClusterMaker(configuration.ClusterizationParams)
 
@@ -97,6 +98,7 @@ func main() {
 		CampDao:      campDao,
 		CampPhotoDao: campPhotoDao,
 		CampRateDao:  campRateDao,
+		SrtmDao:      srtmDao,
 	}
 
 	transferHandler := (&linked_entity.TransferHandler{App: app, TransferDao: transferDao}).Create()

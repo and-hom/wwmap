@@ -11,12 +11,14 @@ func NewSrtmPostgresDao(postgresStorage PostgresStorage) SrtmDao {
 	return srtmPostgresStorage{
 		PostgresStorage:   postgresStorage,
 		selectRasterQuery: "SELECT array_to_json(ST_DumpValues(rast, 1, true))::text from srtm WHERE lat=$1 AND lon=$2",
+		listPointsQuery: "SELECT lat, lon FROM srtm WHERE srtm.lon >= $1 AND srtm.lat >= $2 AND srtm.lon <= $3 AND srtm.lat <= $4",
 	}
 }
 
 type srtmPostgresStorage struct {
 	PostgresStorage
 	selectRasterQuery string
+	listPointsQuery string
 }
 
 func (this srtmPostgresStorage) GetRaster(lat int, lon int) (geo.Bytearea2D, bool, error) {
@@ -25,6 +27,20 @@ func (this srtmPostgresStorage) GetRaster(lat int, lon int) (geo.Bytearea2D, boo
 		return nil, found, err
 	}
 	return raster.(geo.Bytearea2D), found, err
+}
+
+func (this srtmPostgresStorage) GetRasterCoords(bbox geo.Bbox) ([]geo.PointInt, error) {
+	lst, err := this.PostgresStorage.DoFindList(this.listPointsQuery, scanPoint, int(bbox.Y1), int(bbox.X1), int(bbox.Y2), int(bbox.X2))
+	if err != nil {
+		return []geo.PointInt{}, err
+	}
+	return lst.([]geo.PointInt), nil
+}
+
+func scanPoint(rows *sql.Rows) (geo.PointInt, error) {
+	result := geo.PointInt{}
+	err := rows.Scan(&result.Y, &result.X)
+	return result, err
 }
 
 func rasterMapper(rows *sql.Rows) (geo.Bytearea2D, error) {

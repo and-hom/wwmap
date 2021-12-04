@@ -271,4 +271,5 @@ type VoyageReportDao interface {
 
 type SrtmDao interface {
 	GetRaster(lat int, lon int) (Bytearea2D, bool, error)
+	GetRasterCoords(bbox Bbox) ([]PointInt, error)
 }
