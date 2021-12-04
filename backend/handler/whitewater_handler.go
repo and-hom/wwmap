@@ -3,13 +3,14 @@ package handler
 import (
 	"fmt"
 	"github.com/and-hom/wwmap/backend/clustering"
+	"github.com/and-hom/wwmap/backend/handler/params"
+	"github.com/and-hom/wwmap/backend/handler/tile_data_fetcher"
 	"github.com/and-hom/wwmap/backend/handler/toggles"
 	"github.com/and-hom/wwmap/backend/ymaps"
 	"github.com/and-hom/wwmap/lib/dao"
 	. "github.com/and-hom/wwmap/lib/geo"
 	. "github.com/and-hom/wwmap/lib/handler"
 	. "github.com/and-hom/wwmap/lib/http"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -20,8 +21,6 @@ type WhiteWaterHandler struct {
 	ResourceBase string
 	ClusterMaker clustering.ClusterMaker
 }
-
-const PREVIEWS_COUNT int = 20
 
 func (this *WhiteWaterHandler) Init() {
 	this.Register("/ymaps-tile-ww", HandlerFunctions{Get: this.TileWhiteWaterHandler})
@@ -34,215 +33,48 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 	this.collectReferer(req)
 	w.Header().Set("Content-Type", "application/javascript")
 
-	callback, bbox, zoom, err := this.tileParamsZ(w, req)
+	callback, bbox, zoom, err := TileParamsZ(w, req)
 	if err != nil {
+		OnError500(w, err, "Can't parse bbox")
 		return
 	}
 
-	skipIdStr := req.FormValue("skip")
-	skip := int64(0)
-	if skipIdStr != "" {
-		skip, err = strconv.ParseInt(skipIdStr, 10, 64)
-		if err != nil {
-			OnError500(w, err, fmt.Sprintf("Can not parse skip id %s", skipIdStr))
-			return
-		}
-	}
-
-	onlyIdStr := req.FormValue("only")
-	onlyId := int64(0)
-	if onlyIdStr != "" {
-		onlyId, err = strconv.ParseInt(onlyIdStr, 10, 64)
-		if err != nil {
-			OnError500(w, err, fmt.Sprintf("Can not parse only id %s", onlyIdStr))
-			return
-		}
-	}
-
-	riverIdStr := req.FormValue("river")
-	riverId := int64(0)
-	if riverIdStr != "" {
-		riverId, err = strconv.ParseInt(riverIdStr, 10, 64)
-		if err != nil {
-			OnError500(w, err, fmt.Sprintf("Can not parse river id %s", riverIdStr))
-			return
-		}
-	}
-
-	regionIdStr := req.FormValue("region")
-	regionId := int64(0)
-	if regionIdStr != "" {
-		regionId, err = strconv.ParseInt(regionIdStr, 10, 64)
-		if err != nil {
-			OnError500(w, err, fmt.Sprintf("Can not parse region id %s", regionIdStr))
-			return
-		}
-	}
-
-	countryIdStr := req.FormValue("country")
-	countryId := int64(0)
-	if countryIdStr != "" {
-		countryId, err = strconv.ParseInt(countryIdStr, 10, 64)
-		if err != nil {
-			OnError500(w, err, fmt.Sprintf("Can not parse country id %s", countryIdStr))
-			return
-		}
-	}
-
-	sessionId := req.FormValue("session_id")
-	allowed := false
-	if sessionId != "" {
-		req, allowed, err = CheckRoleAllowed(req, this.UserDao, dao.ADMIN, dao.EDITOR)
-		if err != nil {
-			OnError500(w, err, "Can not get user info for token")
-			return
-		}
+	requestParams, req, err := params.Parse(req)
+	if err != nil {
+		OnError500(w, err, "Can't parse request params")
+		return
 	}
 
 	featureToggles := toggles.ParseFeatureTogglesOrFallback(req, this.UserDao)
-	ctx := req.Context()
-	showCamps, ctx := featureToggles.GetShowCamps(ctx)
-	showUnpublished, ctx := featureToggles.GetShowUnpublished(ctx)
-	showSlope, ctx := featureToggles.GetShowSlope(ctx)
-	if req.Context() != ctx {
-		req = req.WithContext(ctx)
+
+	var tdf tile_data_fetcher.TileDataFetcher
+
+	if requestParams.Only != 0 {
+		tdf = tile_data_fetcher.Spot(this.WhiteWaterDao, this.RiverDao,
+			getLinkMaker(req.FormValue("link_type")), this.processForWeb, this.ResourceBase)
+	} else if requestParams.River != 0 {
+		tdf = tile_data_fetcher.River(this.TileDao, this.CampDao, this.ClusterMaker,
+			getLinkMaker(req.FormValue("link_type")), this.processForWeb, this.ResourceBase)
+	} else if requestParams.Region != 0 {
+		tdf = tile_data_fetcher.Region(this.TileDao, this.ClusterMaker,
+			getLinkMaker(req.FormValue("link_type")), this.processForWeb, this.ResourceBase)
+	} else if requestParams.Country != 0 {
+		tdf = tile_data_fetcher.Country(this.TileDao, this.ClusterMaker,
+			getLinkMaker(req.FormValue("link_type")), this.processForWeb, this.ResourceBase)
+	} else {
+		tdf = tile_data_fetcher.World(this.TileDao, this.WaterWayDao, this.CampDao, this.ClusterMaker,
+			getLinkMaker(req.FormValue("link_type")), this.processForWeb, this.ResourceBase)
 	}
 
-	var features []Feature
-
-	if onlyId != 0 {
-		spot, found, err := this.WhiteWaterDao.Find(onlyId)
-		if err != nil {
-			OnError500(w, err, fmt.Sprintf("Can not select whitewater point for id %d", onlyId))
-			return
+	features, req, err := tdf.Fetch(req, bbox, zoom, requestParams, featureToggles)
+	if err != nil {
+		switch e := err.(type) {
+		case *tile_data_fetcher.DataFetchError:
+			OnError(w, e.Cause(), e.Error(), e.HttpStatus())
+		default:
+			OnError500(w, err, "")
 		}
-		if !found {
-			OnError(w, err, fmt.Sprintf("Can not find whitewater point for id %d", onlyId), http.StatusNotFound)
-			return
-		}
-		sp := dao.Spot{
-			IdTitle:     spot.IdTitle,
-			Description: spot.ShortDesc,
-			Link:        spot.Link,
-			Point:       spot.Point,
-			Images:      spot.Images,
-			Category:    spot.Category,
-		}
-
-		river, err := this.RiverDao.Find(spot.RiverId)
-		if err != nil {
-			OnError500(w, err, fmt.Sprintf("Can not find river for id %d", spot.RiverId))
-			return
-		}
-		rws := dao.RiverWithSpots{
-			IdTitle:   river.IdTitle,
-			CountryId: river.Region.CountryId,
-			RegionId:  river.Region.Id,
-			Spots:     []dao.Spot{},
-			Visible:   river.Visible,
-		}
-
-		features, err = ymaps.SingleWhiteWaterPointToYmaps(sp, rws, this.ResourceBase, this.processForWeb, getLinkMaker(req.FormValue("link_type")))
-	} else if riverId != 0 {
-		river, found, err := this.TileDao.GetRiverById(riverId, PREVIEWS_COUNT)
-		if err != nil {
-			OnError500(w, err, fmt.Sprintf("Can not read whitewater points for river id %d", riverId))
-			return
-		}
-		if !found {
-			OnErrorWithCustomLogging(w, nil, fmt.Sprintf("Spots for river %d not found", riverId), http.StatusNotFound, func(s string) {
-				log.Debug(s)
-			})
-			return
-		}
-
-		features = ymaps.WhiteWaterPointsToYmapsNoCluster([]dao.RiverWithSpots{river},
-			this.ResourceBase, skip, this.processForWeb, getLinkMaker(req.FormValue("link_type")))
-
-		if showCamps {
-			camps, err := this.CampDao.FindWithinBoundsForRiver(bbox, riverId)
-			if err != nil {
-				log.Error(err)
-			} else {
-				features = append(features, ymaps.CampsToYmaps(camps, this.ResourceBase, skip)...)
-			}
-		}
-	} else if regionId != 0 {
-		rivers, err := this.TileDao.ListRiversInRegionWithBounds(bbox, regionId, PREVIEWS_COUNT, allowed)
-		if err != nil {
-			OnError500(w, err, fmt.Sprintf("Can not read whitewater points for river id %d", riverId))
-			return
-		}
-
-		features, err = ymaps.WhiteWaterPointsToYmaps(this.ClusterMaker, rivers, bbox, zoom,
-			this.ResourceBase, skip, this.processForWeb, getLinkMaker(req.FormValue("link_type")),
-			[]dao.WaterWay{})
-		if err != nil {
-			OnError500(w, err, fmt.Sprintf("Can not cluster: %s", bbox.String()))
-			return
-		}
-	} else if countryId != 0 {
-		rivers, err := this.TileDao.ListRiversInCountryWithBounds(bbox, countryId, PREVIEWS_COUNT, allowed)
-		if err != nil {
-			OnError500(w, err, fmt.Sprintf("Can not read whitewater points for river id %d", riverId))
-			return
-		}
-
-		features, err = ymaps.WhiteWaterPointsToYmaps(this.ClusterMaker, rivers, bbox, zoom,
-			this.ResourceBase, skip, this.processForWeb, getLinkMaker(req.FormValue("link_type")),
-			[]dao.WaterWay{})
-		if err != nil {
-			OnError500(w, err, fmt.Sprintf("Can not cluster: %s", bbox.String()))
-			return
-		}
-	} else {
-		rivers, err := this.TileDao.ListRiversWithBounds(
-			bbox,
-			PREVIEWS_COUNT,
-			showUnpublished,
-		)
-		if err != nil {
-			OnError500(w, err, fmt.Sprintf("Can not read whitewater points for bbox %s", bbox.String()))
-			return
-		}
-
-		riverIds := make([]int64, len(rivers))
-		for i := 0; i < len(rivers); i++ {
-			riverIds[i] = rivers[i].Id
-		}
-		//paths, err := this.WaterWayDao.ListByRiverIds(riverIds...)
-		//paths, err := this.WaterWayDao.ListByBbox(bbox)
-		//if err != nil {
-		//	OnError500(w, err, "aaaa")
-		//	return
-		//}
-
-		paths := []dao.WaterWay{}
-
-		features, err = ymaps.WhiteWaterPointsToYmaps(this.ClusterMaker, rivers, bbox, zoom,
-			this.ResourceBase, skip, this.processForWeb, getLinkMaker(req.FormValue("link_type")),
-			paths)
-		if err != nil {
-			OnError500(w, err, fmt.Sprintf("Can not cluster: %s", bbox.String()))
-			return
-		}
-
-		if showCamps {
-			camps, err := this.CampDao.FindWithinBounds(bbox)
-			if err != nil {
-				log.Error(err)
-			} else {
-				features = append(features, ymaps.CampsToYmaps(camps, this.ResourceBase, skip)...)
-			}
-		}
-		if showSlope {
-			tracks, err := this.WaterWayDao.ListWithHeightsByBbox(bbox)
-			if err != nil {
-				log.Error(err)
-			} else {
-				features = append(features, ymaps.TracksToYmaps(tracks, OBJECT_TYPE_SLOPE)...)
-			}
-		}
+		return
 	}
 
 	featureCollection := MkFeatureCollection(features)
@@ -265,7 +97,7 @@ func (this *WhiteWaterHandler) RiverPathSegments(w http.ResponseWriter, req *htt
 }
 
 func (this *WhiteWaterHandler) RouterData(w http.ResponseWriter, req *http.Request) {
-	_, bbox, _, err := this.tileParamsZ(w, req)
+	_, bbox, _, err := TileParamsZ(w, req)
 	ways, err := this.WaterWayDao.ListByBboxNonFilpped(bbox)
 	if err != nil {
 		OnError500(w, err, fmt.Sprintf("Can not get waterways for bbox: %s", bbox.String()))

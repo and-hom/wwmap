@@ -16,7 +16,7 @@ import (
 	"time"
 )
 
-func (this *App) bboxFormValue(w http.ResponseWriter, req *http.Request) (geo.Bbox, error) {
+func BboxFormValue(w http.ResponseWriter, req *http.Request) (geo.Bbox, error) {
 	bboxStr := req.FormValue("bbox")
 	bbox, err := geo.ParseBbox(bboxStr)
 	if err != nil {
@@ -26,9 +26,9 @@ func (this *App) bboxFormValue(w http.ResponseWriter, req *http.Request) (geo.Bb
 	return bbox, nil
 }
 
-func (this *App) tileParams(w http.ResponseWriter, req *http.Request) (string, geo.Bbox, error) {
+func TileParams(w http.ResponseWriter, req *http.Request) (string, geo.Bbox, error) {
 	callback := req.FormValue("callback")
-	bbox, err := this.bboxFormValue(w, req)
+	bbox, err := BboxFormValue(w, req)
 	if err != nil {
 		return "", geo.Bbox{}, err
 	}
@@ -36,10 +36,10 @@ func (this *App) tileParams(w http.ResponseWriter, req *http.Request) (string, g
 	return callback, bbox, nil
 }
 
-func (this *App) tileParamsZ(w http.ResponseWriter, req *http.Request) (string, geo.Bbox, int, error) {
+func TileParamsZ(w http.ResponseWriter, req *http.Request) (string, geo.Bbox, int, error) {
 
 	callback := req.FormValue("callback")
-	bbox, err := this.bboxFormValue(w, req)
+	bbox, err := BboxFormValue(w, req)
 	if err != nil {
 		return "", geo.Bbox{}, 0, err
 	}

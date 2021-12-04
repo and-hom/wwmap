@@ -3,7 +3,6 @@ package handler
 import (
 	"fmt"
 	"github.com/and-hom/wwmap/backend/handler/toggles"
-	log "github.com/sirupsen/logrus"
 	"github.com/and-hom/wwmap/cron/catalog-sync/huskytm"
 	"github.com/and-hom/wwmap/cron/catalog-sync/libru"
 	"github.com/and-hom/wwmap/cron/catalog-sync/riskru"
@@ -15,6 +14,7 @@ import (
 	. "github.com/and-hom/wwmap/lib/http"
 	"github.com/and-hom/wwmap/lib/model"
 	"github.com/gorilla/mux"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -243,7 +243,7 @@ func (this *ReportsListBuilder) others() {
 }
 
 func (this *RiverHandler) GetVisibleRiversLite(w http.ResponseWriter, req *http.Request) {
-	bbox, err := this.bboxFormValue(w, req)
+	bbox, err := BboxFormValue(w, req)
 	if err != nil {
 		return
 	}
@@ -305,7 +305,7 @@ func (this *RiverHandler) GetVisibleRiversLite(w http.ResponseWriter, req *http.
 }
 
 func (this *RiverHandler) GetVisibleRivers(w http.ResponseWriter, req *http.Request) {
-	bbox, err := this.bboxFormValue(w, req)
+	bbox, err := BboxFormValue(w, req)
 	if err != nil {
 		return
 	}
