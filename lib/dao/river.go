@@ -142,13 +142,15 @@ func (this riverStorage) Insert(river River) (int64, error) {
 	}
 	ids, err := this.UpdateReturningId(
 		this.insertQuery,
-		IdMapper,
+		ArrayMapper,
 		true,
-		river.Region.Id,
-		river.Title,
-		string(aliasesB),
-		river.Description,
-		string(propsB),
+		[]interface{}{
+			river.Region.Id,
+			river.Title,
+			string(aliasesB),
+			river.Description,
+			string(propsB),
+		},
 	)
 	if err != nil {
 		return 0, err
