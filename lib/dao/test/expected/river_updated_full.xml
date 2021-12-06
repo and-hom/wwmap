@@ -6,18 +6,18 @@
             popularity='0'
             region_id='263'
             aliases='[]'
-            props='{}'
-            description='Река'
+            props='{"a": "b"}'
+            description='Река Умба'
             visible='true'
     />
     <river
             id='2'
-            title='Колвица'
+            title='Кодор'
             popularity='0'
-            region_id='263'
+            region_id='269'
             aliases='[]'
-            props='{}'
-            description='Река'
+            props='{"a": 1}'
+            description='Река Кодор'
             visible='false'
     />
 </dataset>

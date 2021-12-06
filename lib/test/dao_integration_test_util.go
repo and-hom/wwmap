@@ -124,14 +124,26 @@ func (this *DaoTester) ApplyDbunitData(t *testing.T, path string) {
 
 func (this *DaoTester) TestDatabase(t *testing.T, table string, path string, opts ...interface{}) {
 	var params map[string]string
+	var except []string
+
 	if len(opts) > 0 {
 		ok := false
 		params, ok = opts[0].(map[string]string)
 		if !ok {
-			assert.Fail(t, "Param should be map[string]string but was %v", opts[0])
+			assert.Fail(t, "Param 1 should be map[string]string but was %v", opts[0])
 		}
 	} else {
 		params = make(map[string]string)
+	}
+
+	if len(opts) > 1 {
+		ok := false
+		except, ok = opts[1].([]string)
+		if !ok {
+			assert.Fail(t, "Param 2 should be []string but was %v", opts[1])
+		}
+	} else {
+		except = make([]string, 0)
 	}
 
 	content, err := ioutil.ReadFile(path)
@@ -157,6 +169,13 @@ func (this *DaoTester) TestDatabase(t *testing.T, table string, path string, opt
 	if err != nil {
 		assert.Fail(t, "Can't load table data from %s: %s", path, err)
 	}
+
+	for _, prop := range except {
+		for _, row := range actualImage {
+			delete(row.Data, prop)
+		}
+	}
+
 	diffs := this.Tester.GetImageManager().GetImagesDiff(expectedImage, actualImage)
 	if len(diffs) > 0 {
 		assert.Fail(t, "Tables are different: %v", diffs)

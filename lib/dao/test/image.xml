@@ -1,0 +1,39 @@
+<?xml version='1.0' ?>
+<dataset>
+    <image
+        id="1"
+        white_water_rapid_id="1"
+        source="wwmap"
+        remote_id="1"
+        enabled="true"
+        type="image"
+        main_image="false"
+        url=""
+        preview_url=""
+        report_id="0"
+    />
+    <image
+        id="2"
+        white_water_rapid_id="1"
+        source="wwmap"
+        remote_id="2"
+        enabled="true"
+        type="image"
+        main_image="true"
+        url=""
+        preview_url=""
+        report_id="0"
+    />
+    <image
+        id="3"
+        white_water_rapid_id="1"
+        source="youtube"
+        remote_id="videoid"
+        enabled="true"
+        type="video"
+        main_image="false"
+        url=""
+        preview_url=""
+        report_id="0"
+    />
+</dataset>

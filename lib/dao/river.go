@@ -80,7 +80,10 @@ func (this riverStorage) Find(id int64) (River, error) {
 		return River{}, err
 	}
 	if !found {
-		return River{}, fmt.Errorf("River with id %d not found", id)
+		return River{}, EntityNotFoundError{
+			Id:         id,
+			EntityType: RIVER,
+		}
 	}
 	return r.(River), nil
 }
@@ -165,7 +168,11 @@ func (this riverStorage) SaveFull(rivers ...River) error {
 	}
 	return this.PerformUpdates(this.updateFullQuery, func(entity interface{}) ([]interface{}, error) {
 		_river := entity.(River)
-		aliasesB, err := json.Marshal(_river.Aliases)
+		aliases := _river.Aliases
+		if aliases == nil {
+			aliases = []string{}
+		}
+		aliasesB, err := json.Marshal(aliases)
 		if err != nil {
 			return []interface{}{}, err
 		}
@@ -184,7 +191,11 @@ func (this riverStorage) Save(rivers ...RiverTitle) error {
 	}
 	return this.PerformUpdates(this.updateQuery, func(entity interface{}) ([]interface{}, error) {
 		_river := entity.(RiverTitle)
-		aliasesB, err := json.Marshal(_river.Aliases)
+		aliases := _river.Aliases
+		if aliases == nil {
+			aliases = []string{}
+		}
+		aliasesB, err := json.Marshal(aliases)
 		if err != nil {
 			return []interface{}{}, err
 		}
