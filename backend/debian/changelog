@@ -1,3 +1,9 @@
+wwmap-backend (0.0.71) unstable; urgency=medium
+
+  * #421 Fix logs page
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sat, 18 Dec 2021 14:20:39 +0300
+
 wwmap-backend (0.0.70) unstable; urgency=medium
 
   * #419 Fix river dao 
