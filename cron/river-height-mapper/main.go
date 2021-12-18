@@ -66,7 +66,7 @@ func main() {
 				h, err = getMinHeightAcrossRiverValley(raster, latSec, lonSec, tgAlpha, 8)
 			}
 			if err != nil {
-				log.Errorf("Can't get point %d %d from raster for %s", latSec, lonSec, point.String())
+				log.Errorf("Can't get point %d %d from raster for %s: %s", latSec, lonSec, point.String(), err)
 				continue
 			}
 
@@ -107,7 +107,16 @@ func getMinHeightAcrossRiverValley(
 
 	for i := -step; i < step; i++ {
 		dLat, dLon := GetVectorNormPoint(i, tgAlpha)
-		c, err := raster.Get(3600-latSec+int(dLat), lonSec+int(dLon))
+		x := 3600 - latSec + int(dLat)
+		y := lonSec + int(dLon)
+
+		// TODO: тут проверяем выход за границы растра
+		// Надо сделать получение из соседнего растра при необходимости
+		if i != 0 && (x < 0 || y < 0 || x > 3600 || y > 3600) {
+			continue
+		}
+
+		c, err := raster.Get(x, y)
 		if err != nil {
 			lastErr = err
 			continue
