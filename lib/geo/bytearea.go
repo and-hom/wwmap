@@ -15,8 +15,11 @@ type bytearea2D struct {
 }
 
 func (this bytearea2D) Get(x, y int) (int32, error) {
-	if x < 0 || x >= len(this.Data) || y < 0 || y >= len(this.Data[x]) {
-		return 0, fmt.Errorf("Incorrect coords %d %d for area %d %d", x, y, len(this.Data), -1)
+	if x < 0 || x >= len(this.Data) {
+		return 0, fmt.Errorf("Incorrect x-coord %d for area width %d", x, len(this.Data))
+	}
+	if y < 0 || y >= len(this.Data[x]) {
+		return 0, fmt.Errorf("Incorrect coords %d %d for area %dx%d", x, y, len(this.Data), len(this.Data[x]))
 	}
 	return this.Data[x][y], nil
 }
