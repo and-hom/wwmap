@@ -1,15 +1,7 @@
 import {WWMapSearchProvider} from "./searchProvider";
 import {createLegend} from "./legend";
 import {highlight_river} from "./main";
-import {
-    CACHED_TILES_TEMPLATE,
-    createCountryUrlPart,
-    createUrlPart,
-    defaultPosition,
-    getLastPositionAndZoom,
-    isMobileBrowser,
-    setLastPositionZoomType,
-} from './util';
+import {CACHED_TILES_TEMPLATE, createCountryUrlPart, createUrlPart, defaultPosition, isMobileBrowser,} from './util';
 import {bingSatTiles} from './map-urls/bing'
 import {googleSatTiles} from './map-urls/google'
 import {apiBase} from "./config";
@@ -18,6 +10,21 @@ import {WWMapMeasurementTool} from "./router/measurement";
 import {FeatureToggles} from "./feature-toggles";
 import {getWwmapSessionId} from "wwmap-js-commons/auth";
 import {SHOW_CAMPS_MIN_ZOOM, SHOW_SLOPE_MIN_ZOOM} from "wwmap-js-commons/constants";
+import {
+    DEFAULT_MAP_TYPE,
+    DEFAULT_POSITION,
+    DEFAULT_ZOOM,
+    DefaultMapParamsStorage,
+    EditorHashMapParamsStorage,
+    JsonDataMapper,
+    KeyValueMapParamsStorage,
+    LAST_MAP_TYPE_COOKIE_NAME,
+    LAST_POS_COOKIE_NAME,
+    LAST_ZOOM_COOKIE_NAME,
+    LocalStorageDataStorage,
+    MapParams,
+    MapParamsStorage
+} from "wwmap-js-commons/map-settings";
 
 export function WWMap(divId, bubbleTemplate, riverList, tutorialPopup, catalogLinkType) {
     this.divId = divId;
@@ -158,7 +165,18 @@ WWMap.prototype.init = function (opts) {
     this.experimentalFeatures = opts ? opts.experimentalFeatures : false;
     let canShowUnpublished = opts ? opts.canShowUnpublished : false;
 
-    let positionAndZoom = getLastPositionAndZoom(this.countryId, useHash, defaultPositionValue);
+    this.mapParamStorage = useHash
+        ? new MapParamsStorage(
+            new EditorHashMapParamsStorage(0),
+            new KeyValueMapParamsStorage(LAST_POS_COOKIE_NAME, LAST_ZOOM_COOKIE_NAME, LAST_MAP_TYPE_COOKIE_NAME, new JsonDataMapper(), new LocalStorageDataStorage()),
+            new DefaultMapParamsStorage(new MapParams(DEFAULT_POSITION, DEFAULT_ZOOM, DEFAULT_MAP_TYPE))
+        )
+        : new MapParamsStorage(
+            new KeyValueMapParamsStorage(LAST_POS_COOKIE_NAME, LAST_ZOOM_COOKIE_NAME, LAST_MAP_TYPE_COOKIE_NAME, new JsonDataMapper(), new LocalStorageDataStorage()),
+            new DefaultMapParamsStorage(new MapParams(DEFAULT_POSITION, DEFAULT_ZOOM, DEFAULT_MAP_TYPE))
+        );
+
+    let positionAndZoom = this.mapParamStorage.getLastPositionZoomType(this.countryId);
 
     let yMap;
     try {
@@ -169,7 +187,12 @@ WWMap.prototype.init = function (opts) {
             type: positionAndZoom.type
         }, options);
     } catch (err) {
-        setLastPositionZoomType(defaultPositionValue, defaultZoom(), defaultMapType(), useHash, this.countryId);
+        this.mapParamStorage.setLastPositionZoomType(
+            defaultPositionValue,
+            defaultZoom(),
+            defaultMapType(),
+            this.countryId
+        )
         throw err
     }
     this.yMap = yMap;
@@ -279,7 +302,7 @@ WWMap.prototype.init = function (opts) {
     this.yMap.events.add('boundschange', function (e) {
         let center = t.yMap.getCenter();
         let zoom = t.yMap.getZoom();
-        setLastPositionZoomType(center, zoom, t.yMap.getType(), useHash, t.countryId);
+        t.mapParamStorage.setLastPositionZoomType(center, zoom, t.yMap.getType(), t.countryId);
         t.loadRivers(e.get("newBounds"))
         if (t.onBoundsChange) {
             t.onBoundsChange(center, zoom)
@@ -293,7 +316,7 @@ WWMap.prototype.init = function (opts) {
     });
 
     this.yMap.events.add('typechange', function (e) {
-        setLastPositionZoomType(t.yMap.getCenter(), t.yMap.getZoom(), t.yMap.getType(), useHash, t.countryId)
+        t.mapParamStorage.setLastPositionZoomType(t.yMap.getCenter(), t.yMap.getZoom(), t.yMap.getType(), t.countryId);
     });
 
     let objectManager = new ymaps.RemoteObjectManager(this.createObjectsUrlTemplate(), {
