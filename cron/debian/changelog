@@ -1,3 +1,9 @@
+wwmap-cron-modules (0.0.39) unstable; urgency=medium
+
+  * #425 Fix memory usage on raster fetch
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sun, 19 Dec 2021 14:49:21 +0300
+
 wwmap-cron-modules (0.0.38) unstable; urgency=medium
 
   * #341 Fix error with hight calculation on raster border
