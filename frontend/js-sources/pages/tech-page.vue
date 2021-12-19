@@ -12,6 +12,10 @@
                         <dd>Иногда важно увидеть порог на нескольких вариантах спутниковой съёмки, потому дополнительно подключены снимки от <a target="_blank" href="https://www.google.ru/maps">Google</a></dd>
                         <dt>Данные об уровнях воды Центра Регистра и Кадастра</dt>
                         <dd>Графики уровня воды взяты с <a target="_blank" href="http://gis.vodinfo.ru/">http://gis.vodinfo.ru/informer/</a></dd>
+                        <dt>Данные о высоте над уровнем моря</dt>
+                        <dd>Для определения уклона русла используются данные SRTM о высоте
+                          <a target="_blank" href="https://e4ftl01.cr.usgs.gov/MEASURES/SRTMGL1.003/">https://e4ftl01.cr.usgs.gov/MEASURES/SRTMGL1.003/</a>
+                        </dd>
                         <dt>Источники отчётов</dt>
                         <dd><ul>
                             <li><a target="_blank" href="http://tlib.ru">tlib.ru</a></li>
