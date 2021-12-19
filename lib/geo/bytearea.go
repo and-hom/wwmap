@@ -1,25 +1,41 @@
 package geo
 
-import "fmt"
+import (
+	"fmt"
+	"image"
+)
 
 type Bytearea2D interface {
-	Get(x, y int) (int32, error)
+	Get(x, y int) (int, error)
 }
 
-func InitBytearea2D(data [][]int32) (Bytearea2D, error) {
+func InitBytearea2D(data [][]int) (Bytearea2D, error) {
 	return bytearea2D{data}, nil
 }
 
 type bytearea2D struct {
-	Data   [][]int32
+	Data [][]int
 }
 
-func (this bytearea2D) Get(x, y int) (int32, error) {
-	if x < 0 || x >= len(this.Data) {
-		return 0, fmt.Errorf("Incorrect x-coord %d for area width %d", x, len(this.Data))
+func (this bytearea2D) Get(latSec, lonSec int) (int, error) {
+	if latSec < 0 || latSec >= len(this.Data) {
+		return 0, fmt.Errorf("Incorrect x-coord %d for area width %d", latSec, len(this.Data))
 	}
-	if y < 0 || y >= len(this.Data[x]) {
-		return 0, fmt.Errorf("Incorrect coords %d %d for area %dx%d", x, y, len(this.Data), len(this.Data[x]))
+	if lonSec < 0 || lonSec >= len(this.Data[latSec]) {
+		return 0, fmt.Errorf("Incorrect coords %d %d for area %dx%d", latSec, lonSec, len(this.Data), len(this.Data[latSec]))
 	}
-	return this.Data[x][y], nil
+	return this.Data[3600-latSec][lonSec], nil
+}
+
+func InitImageBasedBytearea2D(img image.Image) (Bytearea2D, error) {
+	return &imageBasedByteArea{img}, nil
+}
+
+type imageBasedByteArea struct {
+	Image image.Image
+}
+
+func (this *imageBasedByteArea) Get(latSec, lonSec int) (int, error) {
+	r, _, _, _ := this.Image.At(lonSec, 3600-latSec).RGBA()
+	return int(r), nil
 }

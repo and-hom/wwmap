@@ -67,16 +67,7 @@ func rasterMapper(rows *sql.Rows) (geo.Bytearea2D, error) {
 		return nil, fmt.Errorf("No raster loaded!")
 	}
 
-	data := make([][]int32, 3601)
-	for i := 0; i < 3601; i++ {
-		data[i] = make([]int32, 3601)
-		for j := 0; j < 3601; j++ {
-			val, _, _, _ := m[0][0].At(j, i).RGBA()
-			data[i][j] = int32(val)
-		}
-	}
-
-	return geo.InitBytearea2D(data)
+	return geo.InitImageBasedBytearea2D(m[0][0])
 }
 
 func (this waterWayStorage) PathHeightPersister() (PathHeightPersister, error) {
@@ -93,7 +84,7 @@ type PathHeightPersisterImpl struct {
 	stmt *sql.Stmt
 }
 
-func (this PathHeightPersisterImpl) Add(id int64, pathHeight []int32, dists []float64) error {
+func (this PathHeightPersisterImpl) Add(id int64, pathHeight []int, dists []float64) error {
 	_, err := this.stmt.Exec(id, pq.Array(pathHeight), pq.Array(dists))
 	return err
 }

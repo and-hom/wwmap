@@ -1,13 +1,13 @@
-package main
+package util
 
 import (
 	"github.com/and-hom/wwmap/lib/util"
 	"math"
 )
 
-func RemoveHeightGrowing(heights []int32) {
-	start := int32(0)
-	end := int32(0)
+func RemoveHeightGrowing(heights []int) {
+	start := 0
+	end := 0
 	for i := 0; i < util.Min(10, len(heights)); i++ {
 		start += heights[i]
 	}
@@ -16,11 +16,11 @@ func RemoveHeightGrowing(heights []int32) {
 	}
 	reverse := start < end
 
-	if (reverse) {
+	if reverse {
 		return
 	}
 
-	if (reverse) {
+	if reverse {
 		for i := 0; i < len(heights); i++ {
 			heights[i] = math.MaxInt16 - heights[i]
 		}
@@ -37,7 +37,7 @@ func RemoveHeightGrowing(heights []int32) {
 		} else {
 			if interpolationStart > 0 {
 				for j := interpolationStart; j < i; j++ {
-					heights[j] = int32(float64(prev) - float64(prev-val)*float64(j-interpolationStart+1)/float64(i-interpolationStart+1))
+					heights[j] = int(float64(prev) - float64(prev-val)*float64(j-interpolationStart+1)/float64(i-interpolationStart+1))
 				}
 				interpolationStart = -1
 			}
@@ -45,7 +45,7 @@ func RemoveHeightGrowing(heights []int32) {
 		}
 	}
 
-	if (reverse) {
+	if reverse {
 		for i := 0; i < len(heights); i++ {
 			heights[i] = math.MaxInt16 - heights[i]
 		}
