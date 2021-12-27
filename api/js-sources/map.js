@@ -12,7 +12,7 @@ import {
 } from './util';
 import {bingSatTiles} from './map-urls/bing'
 import {googleSatTiles} from './map-urls/google'
-import {apiBase} from "./config";
+import {apiBase, frontendBase} from "./config";
 import {createMeasurementToolControl} from "./router/control";
 import {WWMapMeasurementTool} from "./router/measurement";
 import {FeatureToggles} from "./feature-toggles";
@@ -81,7 +81,7 @@ WWMap.prototype.loadRivers = function (bounds) {
 WWMap.prototype.createHelpBtn = function () {
     let helpButton = new ymaps.control.Button({
         data: {
-            image: 'http://wwmap.ru/img/help.png',
+            image: `${frontendBase}/img/help.png`,
             title: 'Справка',
         },
         options: {
@@ -227,14 +227,14 @@ WWMap.prototype.init = function (opts) {
     let showAltitudeCoverageButton;
     if (showHideButtonsOnMap) {
         showCampsButton = this.initToolBtn(
-            'http://wwmap.ru/img/camp.svg',
+            `${frontendBase}/img/camp.svg`,
             'Показывать стоянки',
             false,
             () => this.setShowCamps(!this.featureToggles.getShowCamps())
         );
         if (canShowUnpublished) {
             showUnpublishedButton = this.initToolBtn(
-                'http://wwmap.ru/img/invisible.png',
+                `${frontendBase}/img/invisible.png`,
                 'Показывать неопубликованное',
                 false,
                 () => this.setShowUnpublished(!this.featureToggles.getShowUnpublished())
@@ -242,13 +242,13 @@ WWMap.prototype.init = function (opts) {
         }
         if (this.experimentalFeatures) {
             showSlopeButton = this.initToolBtn(
-                'http://wwmap.ru/img/slope.png',
+                `${frontendBase}/img/slope.png`,
                 'Показывать уклон рек',
                 false,
                 () => this.setShowSlope(!this.featureToggles.getShowSlope())
             );
             showAltitudeCoverageButton = this.initToolBtn(
-                'http://localhost:63342/wwmap/frontend/img/alt-coverage.png',
+                `${frontendBase}/img/alt-coverage.png`,
                 'Покрытие данных о высоте',
                 false,
                 () => this.setShowAltitudeCoverage(!this.featureToggles.getShowAltitudeCoverage())

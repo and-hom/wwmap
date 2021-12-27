@@ -4,6 +4,7 @@ import {loadFragment} from "./template-data";
 
 var $ = require("jquery");
 import Template7 from "./contrib/template7";
+import {frontendBase} from "./config";
 
 export function RiverList(divId, templateDivId, riversTemplateData) {
     this.divId = divId;
@@ -24,6 +25,7 @@ RiverList.prototype.update = function (rivers) {
     if (this.template) {
         canEdit().then(canEdit => {
             rivers.canEdit = canEdit;
+            rivers.frontendBase = frontendBase;
             var html = this.template(rivers);
             $('#' + this.divId).html(html);
         });
