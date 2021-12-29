@@ -1,7 +1,17 @@
 import {WWMapSearchProvider} from "./searchProvider";
 import {createLegend} from "./legend";
 import {highlight_river} from "./main";
-import {CACHED_TILES_TEMPLATE, createCountryUrlPart, createUrlPart, defaultPosition, isMobileBrowser,} from './util';
+import {
+    CACHED_TILES_TEMPLATE,
+    createCountryUrlPart,
+    createUrlPart,
+    defaultPosition,
+    isMobileBrowser,
+    LAST_MAP_TYPE_KEY,
+    LAST_POS_KEY,
+    LAST_TOGGLES_KEY,
+    LAST_ZOOM_KEY,
+} from './util';
 import {bingSatTiles} from './map-urls/bing'
 import {googleSatTiles} from './map-urls/google'
 import {apiBase} from "./config";
@@ -13,14 +23,12 @@ import {SHOW_CAMPS_MIN_ZOOM, SHOW_SLOPE_MIN_ZOOM} from "wwmap-js-commons/constan
 import {
     DEFAULT_MAP_TYPE,
     DEFAULT_POSITION,
+    DEFAULT_TOGGLES,
     DEFAULT_ZOOM,
     DefaultMapParamsStorage,
     EditorHashMapParamsStorage,
     JsonDataMapper,
     KeyValueMapParamsStorage,
-    LAST_MAP_TYPE_COOKIE_NAME,
-    LAST_POS_COOKIE_NAME,
-    LAST_ZOOM_COOKIE_NAME,
     LocalStorageDataStorage,
     MapParams,
     MapParamsStorage
@@ -112,8 +120,19 @@ WWMap.prototype.initToolBtn = function (image, title, selected, onpress) {
             selectOnClick: false,
         }
     });
+    let t = this;
     btn.state.set('selected', selected);
-    btn.events.add('press', e => onpress());
+    btn.events.add('press', e => {
+        onpress();
+
+        t.mapParamStorage.setLastPositionZoomTypeToggles(
+            t.yMap.getCenter(),
+            t.yMap.getZoom(),
+            t.yMap.getType(),
+            t.featureToggles.serialize(),
+            t.countryId
+        );
+    });
     this.yMap.controls.add(btn, {
         float: 'right'
     });
@@ -168,29 +187,30 @@ WWMap.prototype.init = function (opts) {
     this.mapParamStorage = useHash
         ? new MapParamsStorage(
             new EditorHashMapParamsStorage(0),
-            new KeyValueMapParamsStorage(LAST_POS_COOKIE_NAME, LAST_ZOOM_COOKIE_NAME, LAST_MAP_TYPE_COOKIE_NAME, new JsonDataMapper(), new LocalStorageDataStorage()),
-            new DefaultMapParamsStorage(new MapParams(DEFAULT_POSITION, DEFAULT_ZOOM, DEFAULT_MAP_TYPE))
+            new KeyValueMapParamsStorage(LAST_POS_KEY, LAST_ZOOM_KEY, LAST_MAP_TYPE_KEY, LAST_TOGGLES_KEY, new JsonDataMapper(), new LocalStorageDataStorage()),
+            new DefaultMapParamsStorage(new MapParams(DEFAULT_POSITION, DEFAULT_ZOOM, DEFAULT_MAP_TYPE, DEFAULT_TOGGLES))
         )
         : new MapParamsStorage(
-            new KeyValueMapParamsStorage(LAST_POS_COOKIE_NAME, LAST_ZOOM_COOKIE_NAME, LAST_MAP_TYPE_COOKIE_NAME, new JsonDataMapper(), new LocalStorageDataStorage()),
-            new DefaultMapParamsStorage(new MapParams(DEFAULT_POSITION, DEFAULT_ZOOM, DEFAULT_MAP_TYPE))
+            new KeyValueMapParamsStorage(LAST_POS_KEY, LAST_ZOOM_KEY, LAST_MAP_TYPE_KEY, LAST_TOGGLES_KEY, new JsonDataMapper(), new LocalStorageDataStorage()),
+            new DefaultMapParamsStorage(new MapParams(DEFAULT_POSITION, DEFAULT_ZOOM, DEFAULT_MAP_TYPE, DEFAULT_TOGGLES))
         );
 
-    let positionAndZoom = this.mapParamStorage.getLastPositionZoomType(this.countryId);
+    let positionZoomTypeToggles = this.mapParamStorage.getLastPositionZoomTypeToggles(this.countryId);
 
     let yMap;
     try {
         yMap = new ymaps.Map(this.divId, {
-            center: positionAndZoom.position,
-            zoom: positionAndZoom.zoom,
+            center: positionZoomTypeToggles.position,
+            zoom: positionZoomTypeToggles.zoom,
             controls: ["zoomControl", "fullscreenControl"],
-            type: positionAndZoom.type
+            type: positionZoomTypeToggles.type
         }, options);
     } catch (err) {
-        this.mapParamStorage.setLastPositionZoomType(
+        this.mapParamStorage.setLastPositionZoomTypeToggles(
             defaultPositionValue,
-            defaultZoom(),
-            defaultMapType(),
+            DEFAULT_ZOOM,
+            DEFAULT_MAP_TYPE,
+            DEFAULT_TOGGLES,
             this.countryId
         )
         throw err
@@ -284,8 +304,9 @@ WWMap.prototype.init = function (opts) {
         [showCampsButton, showUnpublishedButton, showSlopeButton, showAltitudeCoverageButton],
         [SHOW_CAMPS_MIN_ZOOM, 0, SHOW_SLOPE_MIN_ZOOM, 0],
         [false, true, true, true],
-        positionAndZoom.zoom
+        positionZoomTypeToggles.zoom
     )
+    this.featureToggles.parse(positionZoomTypeToggles.toggles);
 
     this.yMap.controls.add(createLegend(t), {
         float: 'left'
@@ -302,13 +323,19 @@ WWMap.prototype.init = function (opts) {
     this.yMap.events.add('boundschange', function (e) {
         let center = t.yMap.getCenter();
         let zoom = t.yMap.getZoom();
-        t.mapParamStorage.setLastPositionZoomType(center, zoom, t.yMap.getType(), t.countryId);
+        let needsReloadGeoObjects = t.featureToggles.setZoom(zoom);
+
+        t.mapParamStorage.setLastPositionZoomTypeToggles(
+            center,
+            zoom,
+            t.yMap.getType(),
+            t.featureToggles.serialize(),
+            t.countryId
+        );
         t.loadRivers(e.get("newBounds"))
         if (t.onBoundsChange) {
             t.onBoundsChange(center, zoom)
         }
-
-        let needsReloadGeoObjects = t.featureToggles.setZoom(zoom);
 
         if (needsReloadGeoObjects) {
             t.reloadMapObjects();
@@ -316,7 +343,13 @@ WWMap.prototype.init = function (opts) {
     });
 
     this.yMap.events.add('typechange', function (e) {
-        t.mapParamStorage.setLastPositionZoomType(t.yMap.getCenter(), t.yMap.getZoom(), t.yMap.getType(), t.countryId);
+        t.mapParamStorage.setLastPositionZoomTypeToggles(
+            t.yMap.getCenter(),
+            t.yMap.getZoom(),
+            t.yMap.getType(),
+            t.featureToggles.serialize(),
+            t.countryId
+        );
     });
 
     let objectManager = new ymaps.RemoteObjectManager(this.createObjectsUrlTemplate(), {

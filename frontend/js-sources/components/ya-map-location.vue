@@ -79,7 +79,7 @@
                     let myMap;
                     let mapType = this.defaultMap;
                     if (!mapType) {
-                        let lastPositionZoomType = component.mapParamsStorage.getLastPositionZoomType();
+                        let lastPositionZoomType = component.mapParamsStorage.getLastPositionZoomTypeToggles();
                         mapType = lastPositionZoomType.type
                     }
                     if (Array.isArray(component.spot.point[0])) {
@@ -123,12 +123,12 @@
                         }));
                     }
 
-                    component.mapParamsStorage.setLastPositionZoomType(myMap.getCenter(), myMap.getZoom(), myMap.getType())
+                    component.mapParamsStorage.setLastPositionZoomTypeToggles(myMap.getCenter(), myMap.getZoom(), myMap.getType(), "")
                     myMap.events.add('typechange', function (e) {
-                        component.mapParamsStorage.setLastPositionZoomType(myMap.getCenter(), myMap.getZoom(), myMap.getType())
+                        component.mapParamsStorage.setLastPositionZoomTypeToggles(myMap.getCenter(), myMap.getZoom(), myMap.getType(), "")
                     });
                     myMap.events.add('boundschange', function (e) {
-                        component.mapParamsStorage.setLastPositionZoomType(myMap.getCenter(), myMap.getZoom(), myMap.getType())
+                        component.mapParamsStorage.setLastPositionZoomTypeToggles(myMap.getCenter(), myMap.getZoom(), myMap.getType(), "")
                     });
 
                     component.map = myMap;

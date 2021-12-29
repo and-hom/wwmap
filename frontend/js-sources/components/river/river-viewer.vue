@@ -221,19 +221,19 @@
                             }
                             addMapLayers();
 
-                            let mapParams = t.mapParamsStorage.getLastPositionZoomType();
+                            let mapParams = t.mapParamsStorage.getLastPositionZoomTypeToggles();
                             let map = new ymaps.Map("map", {
                                 bounds: expandIfTooSmall(t.bounds),
                                 type: mapParams.type,
                                 controls: ["zoomControl"]
                             });
 
-                            t.mapParamsStorage.setLastPositionZoomType(map.getCenter(), map.getZoom(), map.getType())
+                            t.mapParamsStorage.setLastPositionZoomTypeToggles(map.getCenter(), map.getZoom(), map.getType(), "")
                             map.events.add('typechange', function () {
-                                t.mapParamsStorage.setLastPositionZoomType(map.getCenter(), map.getZoom(), map.getType())
+                                t.mapParamsStorage.setLastPositionZoomTypeToggles(map.getCenter(), map.getZoom(), map.getType(), "")
                             });
                             map.events.add('boundschange', function () {
-                                t.mapParamsStorage.setLastPositionZoomType(map.getCenter(), map.getZoom(), map.getType())
+                                t.mapParamsStorage.setLastPositionZoomTypeToggles(map.getCenter(), map.getZoom(), map.getType(), "")
                             });
                             map.controls.add(
                                 new ymaps.control.TypeSelector([

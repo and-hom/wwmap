@@ -96,7 +96,7 @@
                 store.commit("setRiverEditorVisible", false);
                 store.commit("setSpotEditorVisible", false);
 
-                let lastPositionZoomType = this.mapParamsStorage.getLastPositionZoomType();
+                let lastPositionZoomType = this.mapParamsStorage.getLastPositionZoomTypeToggles();
                 store.commit("setSpotEditorState", {
                     visible: true,
                     editMode: true,
