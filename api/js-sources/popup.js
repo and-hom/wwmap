@@ -3,6 +3,7 @@ import {loadFragment} from "./template-data";
 
 var $ = require("jquery");
 import Template7 from "./contrib/template7";
+import {frontendBase} from "./config";
 
 export function WWMapPopup(divId, templateId, options) {
     this.divId = divId;
@@ -49,9 +50,10 @@ WWMapPopup.prototype.show = function (dataObject) {
 
     var html = "";
     if (dataObject) {
+        dataObject.frontendBase = frontendBase;
         html = this.template(dataObject)
     } else {
-        html = this.template({})
+        html = this.template({frontendBase: frontendBase})
     }
 
     this.div.html(html);

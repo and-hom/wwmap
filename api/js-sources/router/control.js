@@ -1,6 +1,7 @@
 import fileDownload from "js-file-download"
 import {WWMapPopup} from "../popup";
 import {MIN_ZOOM_SUPPORTED} from "./measurement"
+import {frontendBase} from "../config";
 
 export function createMeasurementToolControl(measurementTool) {
     let MeasurementControl = function (options) {
@@ -40,26 +41,26 @@ export function createMeasurementToolControl(measurementTool) {
 
         _onGetChildElement: function (parentDomContainer) {
             // Создаем HTML-элемент с текстом.
-            var content = '<div class="wwmap-route-control">' +
-                '<div class="wwmap-overzoom-msg" style="display: none; background: #ff000099; font-size: x-small; color: #331100">Измерения пути при масштабе менее '+MIN_ZOOM_SUPPORTED+' не поддерживаются.</div> ' +
-                '<div class="wwmap-loading-msg" style="display: none; background: #ffff2299; font-size: x-small; color: #331100">Загрузка данных...</div> ' +
-                '<button class="ymaps-2-1-73-float-button-text, wwmap-measure-btn" title="Расстояние по реке" ' +
-                styleTag('http://wwmap.ru/img/ruler.png', false) +
+            let content = `<div class="wwmap-route-control">
+                <div class="wwmap-overzoom-msg" style="display: none; background: #ff000099; font-size: x-small; color: #331100">Измерения пути при масштабе менее ${MIN_ZOOM_SUPPORTED} не поддерживаются.</div>
+                <div class="wwmap-loading-msg" style="display: none; background: #ffff2299; font-size: x-small; color: #331100">Загрузка данных...</div>
+                <button class="ymaps-2-1-73-float-button-text, wwmap-measure-btn" title="Расстояние по реке"
+                ${styleTag(frontendBase + '/img/ruler.png', false)}
 
-                '/><button class="ymaps-2-1-73-float-button-text, wwmap-measure-ok-btn" title="Закончить редактирование" ' +
-                styleTag('http://wwmap.ru/img/ok.png') +
-                '/><button class="ymaps-2-1-73-float-button-text, wwmap-measure-revert-btn" title="Удалить последнюю точку (Esc)" ' +
-                styleTag('http://wwmap.ru/img/undo.png') +
-                '/><button class="ymaps-2-1-73-float-button-text, wwmap-measure-delete-btn" title="Очистить трек" ' +
-                styleTag('http://wwmap.ru/img/del.png') +
+                /><button class="ymaps-2-1-73-float-button-text, wwmap-measure-ok-btn" title="Закончить редактирование"
+                ${styleTag(frontendBase + '/img/ok.png')}
+                /><button class="ymaps-2-1-73-float-button-text, wwmap-measure-revert-btn" title="Удалить последнюю точку (Esc)"
+                ${styleTag(frontendBase + '/img/undo.png')}
+                /><button class="ymaps-2-1-73-float-button-text, wwmap-measure-delete-btn" title="Очистить трек"
+                ${styleTag(frontendBase + '/img/del.png')}
 
-                '/><button class="ymaps-2-1-73-float-button-text, wwmap-measure-edit-btn" title="Продолжить редактирование" ' +
-                styleTag('http://wwmap.ru/img/edit.png') +
-                '/><button class="ymaps-2-1-73-float-button-text, wwmap-measure-download-btn" title="Скачать GPX" ' +
-                styleTag('http://wwmap.ru/img/download.png') +
-                '/><button class="ymaps-2-1-73-float-button-text, wwmap-measure-help-btn" title="Справка об измерении пути по реке" ' +
-                styleTag('http://wwmap.ru/img/help.png') +
-                '/></div>';
+                /><button class="ymaps-2-1-73-float-button-text, wwmap-measure-edit-btn" title="Продолжить редактирование"
+                ${styleTag(frontendBase + '/img/edit.png')}
+                /><button class="ymaps-2-1-73-float-button-text, wwmap-measure-download-btn" title="Скачать GPX"
+                ${styleTag(frontendBase + '/img/download.png')}
+                /><button class="ymaps-2-1-73-float-button-text, wwmap-measure-help-btn" title="Справка об измерении пути по реке"
+                ${styleTag(frontendBase + '/img/help.png')}
+                /></div>`;
             this._$content = $(content).appendTo(parentDomContainer);
 
             var measureOnOffBtn = $('.wwmap-measure-btn');
