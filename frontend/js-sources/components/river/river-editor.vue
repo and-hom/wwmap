@@ -324,7 +324,7 @@
                       (bounds[0][0] + bounds[1][0])/2,
                       (bounds[0][1] + bounds[1][1])/2,
                     ]
-                    : createMapParamsStorage().getLastPositionZoomType().position;
+                    : createMapParamsStorage().getLastPositionZoomTypeToggles().position;
               },
             }
         },

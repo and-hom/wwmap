@@ -141,14 +141,15 @@ FeatureToggles.prototype.setShowAltitudeCoverage = function (showAltitudeCoverag
 }
 
 FeatureToggles.prototype.getNeedsAuth = function () {
-    return (this.needsAuthMask & this.state & this.allowed & this.minZoomMask) != 0
+    return (this.needsAuthMask & this.state & this.allowed & this.minZoomMask) != 0;
 }
 
 FeatureToggles.prototype.serialize = function () {
-    return (this.state & this.allowed & this.minZoomMask).toString(2).padStart(this.size, '0');
+    return (this.state & this.allowed).toString(2).padStart(this.size, '0');
 }
 
 FeatureToggles.prototype.parse = function (toggles) {
     this.state = parseInt(toggles, 2)
     this.size = toggles.length
+    this.refreshButtonsEnabled()
 }
