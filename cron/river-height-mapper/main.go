@@ -55,7 +55,7 @@ func main() {
 			latSec, lonSec := int(point.Lat*3600), int(point.Lon*3600)
 
 			var h int
-			if tgAlpha == math.MaxFloat64 {
+			if tgAlpha == math.MaxFloat64 || tgAlpha == math.Inf(1) || tgAlpha == math.Inf(-1) {
 				h, err = getMinHeightAround(worldAltitudeMap, latSec, lonSec, 2)
 			} else {
 				h, err = getMinHeightAcrossRiverValley(worldAltitudeMap, latSec, lonSec, tgAlpha, 8)
