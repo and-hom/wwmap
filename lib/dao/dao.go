@@ -90,7 +90,7 @@ type PathSimplifiedPersister interface {
 
 type PathHeightPersister interface {
 	io.Closer
-	Add(id int64, pathHeight []int32, dists []float64) error
+	Add(id int64, pathHeight []int, dists []float64) error
 }
 
 type WaterWayOsmRefDao interface {
