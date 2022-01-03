@@ -1,0 +1,20 @@
+<?xml version='1.0' ?>
+<dataset>
+    <white_water_rapid
+        id="1"
+        river_id="1"
+        title="Падун"
+        point="01020000000400000052368613AB0D41400F7CAACE1BDD50402A36867B520D4140E4A0FFC50DDD50401D36862F260D4140D9F92694ECDC5040213686B3FC0C41404F289C46DEDC5040"
+        short_description="Камень делит русло на 2 протоки"
+        category="3"
+        hw_category="3"
+        mw_category="3"
+        lw_category="-1"
+        hw_description=""
+        mw_description=""
+        lw_description=""
+        orient=""
+        approach=""
+        safety=""
+    />
+</dataset>

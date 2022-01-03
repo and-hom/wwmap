@@ -6,17 +6,17 @@
             popularity='0'
             region_id='263'
             aliases='[]'
-            props='{}'
+            props='{"a": "b"}'
             description='Река'
             visible='true'
     />
     <river
             id='2'
-            title='Колвица'
+            title='Кодор'
             popularity='0'
-            region_id='263'
+            region_id='269'
             aliases='[]'
-            props='{}'
+            props='{"a": 1}'
             description='Река'
             visible='false'
     />

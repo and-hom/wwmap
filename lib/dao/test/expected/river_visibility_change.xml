@@ -8,7 +8,7 @@
             aliases='[]'
             props='{}'
             description='Река'
-            visible='true'
+            visible='false'
     />
     <river
             id='2'
@@ -18,6 +18,6 @@
             aliases='[]'
             props='{}'
             description='Река'
-            visible='false'
+            visible='true'
     />
 </dataset>

@@ -1,0 +1,14 @@
+<?xml version='1.0' ?>
+<dataset>
+    <river
+            id="{{ index . "id" }}"
+
+            region_id='268'
+            title='River 1'
+            description='Description'
+            props='{"a": 1, "b": "b"}'
+            aliases='["Riv 1", "R1"]'
+            popularity='0'
+            visible='false'
+    />
+</dataset>

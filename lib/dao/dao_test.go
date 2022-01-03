@@ -11,6 +11,7 @@ import (
 var daoTester *test.DaoTester
 var countryDao dao.CountryDao
 var regionDao dao.RegionDao
+var riverDao dao.RiverDao
 var tileDao dao.TileDao
 
 func TestMain(m *testing.M) {
@@ -20,6 +21,7 @@ func TestMain(m *testing.M) {
 	postgresStorage := dao.NewPostgresStorageForDb(daoTester.Db)
 	countryDao = dao.NewCountryPostgresDao(postgresStorage)
 	regionDao = dao.NewRegionPostgresDao(postgresStorage)
+	riverDao = dao.NewRiverPostgresDao(postgresStorage)
 	tileDao = dao.NewTilePostgresDao(postgresStorage)
 
 	log.Info("Dao initialized")
