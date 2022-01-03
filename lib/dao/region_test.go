@@ -8,8 +8,7 @@ import (
 )
 
 func TestRegionGetMissing(t *testing.T) {
-	daoTester.ClearTable(t, "region")
-	daoTester.ClearTable(t, "country")
+	ClearDb(t)
 	daoTester.ApplyDbunitData(t, "test/country.xml")
 	daoTester.ApplyDbunitData(t, "test/region.xml")
 
@@ -19,8 +18,7 @@ func TestRegionGetMissing(t *testing.T) {
 }
 
 func TestRegionGet(t *testing.T) {
-	daoTester.ClearTable(t, "region")
-	daoTester.ClearTable(t, "country")
+	ClearDb(t)
 	daoTester.ApplyDbunitData(t, "test/country.xml")
 	daoTester.ApplyDbunitData(t, "test/region.xml")
 
@@ -37,8 +35,7 @@ func TestRegionGet(t *testing.T) {
 }
 
 func TestRegionGetFakeNotFound(t *testing.T) {
-	daoTester.ClearTable(t, "region")
-	daoTester.ClearTable(t, "country")
+	ClearDb(t)
 	daoTester.ApplyDbunitData(t, "test/country.xml")
 	daoTester.ApplyDbunitData(t, "test/region.xml")
 
@@ -49,8 +46,7 @@ func TestRegionGetFakeNotFound(t *testing.T) {
 }
 
 func TestRegionGetFake(t *testing.T) {
-	daoTester.ClearTable(t, "region")
-	daoTester.ClearTable(t, "country")
+	ClearDb(t)
 	daoTester.ApplyDbunitData(t, "test/country.xml")
 	daoTester.ApplyDbunitData(t, "test/region.xml")
 
@@ -67,8 +63,7 @@ func TestRegionGetFake(t *testing.T) {
 }
 
 func TestRegionCreateFake(t *testing.T) {
-	daoTester.ClearTable(t, "region")
-	daoTester.ClearTable(t, "country")
+	ClearDb(t)
 	daoTester.ApplyDbunitData(t, "test/country.xml")
 	daoTester.ApplyDbunitData(t, "test/region.xml")
 
@@ -88,8 +83,7 @@ func TestRegionCreateFake(t *testing.T) {
 }
 
 func TestRegionCreateFakeDuplicate(t *testing.T) {
-	daoTester.ClearTable(t, "region")
-	daoTester.ClearTable(t, "country")
+	ClearDb(t)
 	daoTester.ApplyDbunitData(t, "test/country.xml")
 	daoTester.ApplyDbunitData(t, "test/region.xml")
 
@@ -99,8 +93,7 @@ func TestRegionCreateFakeDuplicate(t *testing.T) {
 }
 
 func TestRegionList(t *testing.T) {
-	daoTester.ClearTable(t, "region")
-	daoTester.ClearTable(t, "country")
+	ClearDb(t)
 	daoTester.ApplyDbunitData(t, "test/country.xml")
 	daoTester.ApplyDbunitData(t, "test/region.xml")
 
@@ -123,8 +116,7 @@ func TestRegionList(t *testing.T) {
 	}, regions)
 }
 func TestRegionListAllWithCountry(t *testing.T) {
-	daoTester.ClearTable(t, "region")
-	daoTester.ClearTable(t, "country")
+	ClearDb(t)
 	daoTester.ApplyDbunitData(t, "test/country.xml")
 	daoTester.ApplyDbunitData(t, "test/region.xml")
 
@@ -167,8 +159,7 @@ func TestRegionListAllWithCountry(t *testing.T) {
 }
 
 func TestRegionSaveWrongCountry(t *testing.T) {
-	daoTester.ClearTable(t, "region")
-	daoTester.ClearTable(t, "country")
+	ClearDb(t)
 	daoTester.ApplyDbunitData(t, "test/country.xml")
 	daoTester.ApplyDbunitData(t, "test/region.xml")
 
@@ -184,8 +175,7 @@ func TestRegionSaveWrongCountry(t *testing.T) {
 }
 
 func TestRegionSave(t *testing.T) {
-	daoTester.ClearTable(t, "region")
-	daoTester.ClearTable(t, "country")
+	ClearDb(t)
 	daoTester.ApplyDbunitData(t, "test/country.xml")
 	daoTester.ApplyDbunitData(t, "test/region.xml")
 
@@ -201,8 +191,7 @@ func TestRegionSave(t *testing.T) {
 }
 
 func TestRegionInsertNonExistingCountry(t *testing.T) {
-	daoTester.ClearTable(t, "region")
-	daoTester.ClearTable(t, "country")
+	ClearDb(t)
 	daoTester.ApplyDbunitData(t, "test/country.xml")
 
 	_, err := regionDao.Insert(dao.Region{
@@ -214,8 +203,7 @@ func TestRegionInsertNonExistingCountry(t *testing.T) {
 }
 
 func TestRegionInsert(t *testing.T) {
-	daoTester.ClearTable(t, "region")
-	daoTester.ClearTable(t, "country")
+	ClearDb(t)
 	daoTester.ApplyDbunitData(t, "test/country.xml")
 
 	id, err := regionDao.Insert(dao.Region{
@@ -230,8 +218,7 @@ func TestRegionInsert(t *testing.T) {
 }
 
 func TestRegionRemoveMissing(t *testing.T) {
-	daoTester.ClearTable(t, "region")
-	daoTester.ClearTable(t, "country")
+	ClearDb(t)
 	daoTester.ApplyDbunitData(t, "test/country.xml")
 	daoTester.ApplyDbunitData(t, "test/region.xml")
 
@@ -242,8 +229,7 @@ func TestRegionRemoveMissing(t *testing.T) {
 }
 
 func TestRegionRemove(t *testing.T) {
-	daoTester.ClearTable(t, "region")
-	daoTester.ClearTable(t, "country")
+	ClearDb(t)
 	daoTester.ApplyDbunitData(t, "test/country.xml")
 	daoTester.ApplyDbunitData(t, "test/region.xml")
 
@@ -253,9 +239,19 @@ func TestRegionRemove(t *testing.T) {
 	daoTester.TestDatabase(t, "region", "test/expected/region_after_remove.xml")
 }
 
+func TestRegionRemoveInCountry(t *testing.T) {
+	ClearDb(t)
+	daoTester.ApplyDbunitData(t, "test/country.xml")
+	daoTester.ApplyDbunitData(t, "test/region.xml")
+
+	err := regionDao.RemoveAllByCountry(260)
+	assert.Nil(t, err)
+
+	daoTester.TestDatabase(t, "region", "test/expected/region_after_remove_all_in_country.xml")
+}
+
 func TestRegionGetParentIds(t *testing.T) {
-	daoTester.ClearTable(t, "region")
-	daoTester.ClearTable(t, "country")
+	ClearDb(t)
 	daoTester.ApplyDbunitData(t, "test/country.xml")
 	daoTester.ApplyDbunitData(t, "test/region.xml")
 

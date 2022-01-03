@@ -19,6 +19,7 @@ func NewRegionPostgresDao(postgresStorage PostgresStorage) RegionDao {
 		insertQuery:             queries.SqlQuery("region", "insert"),
 		updateQuery:             queries.SqlQuery("region", "update"),
 		deleteQuery:             queries.SqlQuery("region", "delete"),
+		deleteInCountryQuery:    queries.SqlQuery("region", "delete-in-country"),
 		parentIds:               queries.SqlQuery("region", "parent-ids"),
 	}
 }
@@ -34,6 +35,7 @@ type regionStorage struct {
 	insertQuery             string
 	updateQuery             string
 	deleteQuery             string
+	deleteInCountryQuery    string
 	parentIds               string
 }
 
@@ -125,6 +127,11 @@ func (this regionStorage) Insert(region Region) (int64, error) {
 func (this regionStorage) Remove(id int64) error {
 	log.Infof("Remove region %d", id)
 	return this.PerformUpdatesWithinTxOptionally(nil, this.deleteQuery, IdMapper, id)
+}
+
+func (this regionStorage) RemoveAllByCountry(countryId int64) error {
+	log.Infof("Remove regions by country %d", countryId)
+	return this.PerformUpdatesWithinTxOptionally(nil, this.deleteInCountryQuery, IdMapper, countryId)
 }
 
 func (this regionStorage) GetParentIds(regionIds []int64) (map[int64]RegionParentIds, error) {

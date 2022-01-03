@@ -1,4 +1,4 @@
-import {backendApiBase, tCacheVersionUrl, cronApiBase} from './config'
+import {backendApiBase, cronApiBase, tCacheVersionUrl} from './config'
 import {getWwmapSessionId} from "wwmap-js-commons/auth";
 
 export function sendRequest(url, _type, auth) {
@@ -8,7 +8,10 @@ export function sendRequest(url, _type, auth) {
         addAuth(xhr, auth);
 
         xhr.onload = () => onLoad(xhr, resolve, reject);
-        xhr.onerror = () => reject(xhr.statusText);
+        xhr.onerror = () => reject({
+            "statusText": xhr.responseText,
+            "status": xhr.status
+        });
 
         try {
             xhr.send();
@@ -48,9 +51,17 @@ export function doPost(url, value, auth) {
         var data = JSON.stringify(value);
 
         xhr.onload = () => onLoad(xhr, resolve, reject);
-        xhr.onerror = () => reject(xhr.statusText);
+        xhr.onerror = () => reject({
+            "statusText": xhr.responseText,
+            "status": xhr.status
+        });
 
-        xhr.send(data);
+        try {
+            xhr.send(data);
+        } catch (err) {
+            console.log(err);
+            reject(err);
+        }
     })
 }
 
@@ -67,7 +78,10 @@ function addAuth(xhr, auth) {
 
 function onLoad(xhr, resolve, reject) {
     if (xhr.status / 100 != 2) {
-        reject(xhr.responseText);
+        reject({
+            "statusText": xhr.responseText,
+            "status": xhr.status
+        });
         return;
     }
     resolve(xhr.responseText);

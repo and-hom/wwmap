@@ -11,6 +11,9 @@
             <div class="container-fluid" style="margin-top: 20px;">
                 <div class="row">
                     <div class="col-3" id="left-menu">
+                        <div v-if="canAddCountry" style="padding-left: 40px; padding-bottom: 15px;">
+                            <button type="button" class="btn btn-primary" v-on:click="add_country()">Добавить страну</button>
+                        </div>
                         <ul class="menu-items">
                             <country v-bind:key="country.id" v-bind:country="country" v-for="country in countries"/>
                         </ul>
@@ -23,7 +26,7 @@
                         </transition>
                         <div>
                             <country-page v-if="countryeditorstate.visible"
-                                          v-bind:country="countryeditorstate.country"/>
+                                          v-bind:initial-country="countryeditorstate.country"/>
                         </div>
                         <div>
                             <region-page v-if="regioneditorstate.visible"
@@ -56,11 +59,17 @@
 
 <script>
     import {store, getById} from '../app-state'
+    import {hasRole, ROLE_ADMIN} from "../auth";
 
 
     export default {
         data() {
-            return {};
+            return {
+              canAddCountry: false
+            };
+        },
+        created: function () {
+          hasRole(ROLE_ADMIN).then(canAddCountry => this.canAddCountry = canAddCountry);
         },
         computed: {
             countries() {
@@ -84,6 +93,12 @@
             spoteditorstate() {
                 return store.state.spoteditorstate
             },
+        },
+        methods: {
+          add_country: function () {
+            store.commit('newCountry', {
+            })
+          },
         }
     }
 </script>

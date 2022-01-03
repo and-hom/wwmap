@@ -21,6 +21,8 @@ INSERT INTO region(country_id, title, fake) VALUES($1, $2, $3) RETURNING id
 UPDATE region SET country_id=$1, title=$2, fake=$3 WHERE id=$4
 --@delete
 DELETE FROM region WHERE id=$1
+--@delete-in-country
+DELETE FROM region WHERE country_id=$1
 
 --@parent-ids
 SELECT id, country_id, title FROM region WHERE id = ANY ($1)

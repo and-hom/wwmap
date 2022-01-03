@@ -43,8 +43,10 @@
                 onSelectCountry: function () {
                     setActiveEntityUrlHash(this.country.id);
 
-                    store.commit('setTreeSelection', this.country.id);
-                    store.commit('showCountryPage', {country: this.country});
+                    store.commit('setTreeSelection', {
+                        countryId: this.country.id
+                    });
+                    store.commit('showCountryPage', {countryId: this.country.id});
                 },
                 countryClass: function () {
                     if (this.country.id == store.state.selectedCountry) {

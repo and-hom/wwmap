@@ -183,7 +183,7 @@ module.exports = {
     },
     newEntityFactory: function () {
       let pos;
-      if (map) {
+      if (this.map) {
         if (this.mapDefaultLocation) {
           if (typeof this.mapDefaultLocation == 'function') {
             pos = this.mapDefaultLocation();

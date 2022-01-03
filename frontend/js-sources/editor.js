@@ -29,6 +29,18 @@ export function getCountries() {
     return doGetJson(backendApiBase + "/country")
 }
 
+export function getCountry(countryId) {
+    return doGetJson(backendApiBase + "/country/" + countryId)
+}
+
+export function saveCountry(country) {
+    return doPostJson(backendApiBase + "/country/" + country.id, country, true)
+}
+
+export function removeCountry(id) {
+    return doDelete(backendApiBase + "/country/" + id, true)
+}
+
 export function getRegions(countryId) {
     return doGetJson(backendApiBase + "/country/" + countryId + "/region")
 }
@@ -300,7 +312,7 @@ export function setActiveEntityUrlHash(countryId, regionId, riverId, spotId) {
 }
 
 export function createActiveEntityHash(countryId, regionId, riverId, spotId) {
-    var hash = countryId;
+    var hash = countryId || '';
 
     if (regionId) {
         hash += "," + regionId

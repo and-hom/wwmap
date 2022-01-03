@@ -34,9 +34,7 @@ var expectedRiver1 = dao.River{
 }
 
 func TestRiverInsert(t *testing.T) {
-	daoTester.ClearTable(t, "river")
-	daoTester.ClearTable(t, "region")
-	daoTester.ClearTable(t, "country")
+	ClearDb(t)
 	daoTester.ApplyDbunitData(t, "test/country.xml")
 	daoTester.ApplyDbunitData(t, "test/region.xml")
 
@@ -62,9 +60,7 @@ func TestRiverInsert(t *testing.T) {
 }
 
 func TestRiverSave(t *testing.T) {
-	daoTester.ClearTable(t, "river")
-	daoTester.ClearTable(t, "region")
-	daoTester.ClearTable(t, "country")
+	ClearDb(t)
 	daoTester.ApplyDbunitData(t, "test/country.xml")
 	daoTester.ApplyDbunitData(t, "test/region.xml")
 	daoTester.ApplyDbunitData(t, "test/river.xml")
@@ -102,9 +98,7 @@ func TestRiverSave(t *testing.T) {
 }
 
 func TestRiverSaveFull(t *testing.T) {
-	daoTester.ClearTable(t, "river")
-	daoTester.ClearTable(t, "region")
-	daoTester.ClearTable(t, "country")
+	ClearDb(t)
 	daoTester.ApplyDbunitData(t, "test/country.xml")
 	daoTester.ApplyDbunitData(t, "test/region.xml")
 	daoTester.ApplyDbunitData(t, "test/river.xml")
@@ -148,9 +142,7 @@ func TestRiverSaveFull(t *testing.T) {
 }
 
 func TestRiverSetVisible(t *testing.T) {
-	daoTester.ClearTable(t, "river")
-	daoTester.ClearTable(t, "region")
-	daoTester.ClearTable(t, "country")
+	ClearDb(t)
 	daoTester.ApplyDbunitData(t, "test/country.xml")
 	daoTester.ApplyDbunitData(t, "test/region.xml")
 	daoTester.ApplyDbunitData(t, "test/river.xml")
@@ -171,9 +163,7 @@ func TestRiverSetVisible(t *testing.T) {
 }
 
 func TestRiverFindMissing(t *testing.T) {
-	daoTester.ClearTable(t, "river")
-	daoTester.ClearTable(t, "region")
-	daoTester.ClearTable(t, "country")
+	ClearDb(t)
 	daoTester.ApplyDbunitData(t, "test/country.xml")
 	daoTester.ApplyDbunitData(t, "test/region.xml")
 	daoTester.ApplyDbunitData(t, "test/river.xml")
@@ -187,10 +177,7 @@ func TestRiverFindMissing(t *testing.T) {
 }
 
 func TestRiverFind(t *testing.T) {
-	daoTester.ClearTable(t, "white_water_rapid")
-	daoTester.ClearTable(t, "river")
-	daoTester.ClearTable(t, "region")
-	daoTester.ClearTable(t, "country")
+	ClearDb(t)
 	daoTester.ApplyDbunitData(t, "test/country.xml")
 	daoTester.ApplyDbunitData(t, "test/region.xml")
 	daoTester.ApplyDbunitData(t, "test/river.xml")
@@ -203,11 +190,7 @@ func TestRiverFind(t *testing.T) {
 }
 
 func TestRiverFindForImage(t *testing.T) {
-	daoTester.ClearTable(t, "image")
-	daoTester.ClearTable(t, "white_water_rapid")
-	daoTester.ClearTable(t, "river")
-	daoTester.ClearTable(t, "region")
-	daoTester.ClearTable(t, "country")
+	ClearDb(t)
 	daoTester.ApplyDbunitData(t, "test/country.xml")
 	daoTester.ApplyDbunitData(t, "test/region.xml")
 	daoTester.ApplyDbunitData(t, "test/river.xml")
@@ -221,11 +204,7 @@ func TestRiverFindForImage(t *testing.T) {
 }
 
 func TestRiverFindForSpot(t *testing.T) {
-	daoTester.ClearTable(t, "image")
-	daoTester.ClearTable(t, "white_water_rapid")
-	daoTester.ClearTable(t, "river")
-	daoTester.ClearTable(t, "region")
-	daoTester.ClearTable(t, "country")
+	ClearDb(t)
 	daoTester.ApplyDbunitData(t, "test/country.xml")
 	daoTester.ApplyDbunitData(t, "test/region.xml")
 	daoTester.ApplyDbunitData(t, "test/river.xml")
@@ -235,4 +214,28 @@ func TestRiverFindForSpot(t *testing.T) {
 	assert.Nil(t, err)
 
 	assert.Equal(t, expectedRiver1, river)
+}
+
+func TestRiverCountByCountry(t *testing.T) {
+	ClearDb(t)
+	daoTester.ApplyDbunitData(t, "test/country.xml")
+	daoTester.ApplyDbunitData(t, "test/region.xml")
+	daoTester.ApplyDbunitData(t, "test/river.xml")
+
+	count, err := riverDao.CountByCountry(260)
+	assert.Nil(t, err)
+
+	assert.Equal(t, 2, count)
+}
+
+func TestRiverCountByCountry0(t *testing.T) {
+	ClearDb(t)
+	daoTester.ApplyDbunitData(t, "test/country.xml")
+	daoTester.ApplyDbunitData(t, "test/region.xml")
+	daoTester.ApplyDbunitData(t, "test/river.xml")
+
+	count, err := riverDao.CountByCountry(261)
+	assert.Nil(t, err)
+
+	assert.Equal(t, 0, count)
 }

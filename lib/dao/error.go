@@ -16,3 +16,10 @@ type EntityNotFoundError struct {
 func (this EntityNotFoundError) Error() string {
 	return fmt.Sprintf("%s with id %d not found", this.EntityType, this.Id)
 }
+
+type DuplicateError struct {
+}
+
+func (this DuplicateError) Error() string {
+	return "Duplicate!"
+}
