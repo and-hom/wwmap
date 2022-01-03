@@ -1,3 +1,11 @@
+wwmap-api (2.1.15) unstable; urgency=medium
+
+  * #417 Use common map param storage for map
+  * #417 Add feature toggles to map state. Use application storage instead of cookie
+  * #429 parametrize image base url
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Mon, 03 Jan 2022 21:38:33 +0300
+
 wwmap-api (2.1.14) unstable; urgency=medium
 
   * #341 Show altitude data coverage

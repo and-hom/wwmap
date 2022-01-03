@@ -1,3 +1,10 @@
+wwmap-frontend (0.0.75) unstable; urgency=medium
+
+  * #341 SRTM added to technologies page
+  * #417 Map state storage refactoring
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Mon, 03 Jan 2022 21:41:14 +0300
+
 wwmap-frontend (0.0.74) unstable; urgency=medium
 
   * #341 Show altitude data coverage: image for button
