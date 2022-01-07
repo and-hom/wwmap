@@ -164,8 +164,7 @@ type RootPageDto struct {
 type CatalogConnector interface {
 	io.Closer
 	SourceId() string
-	PassportEntriesSince(key string) ([]dao.WWPassport, error)
-	GetImages(key string) ([]dao.Img, error)
+	FailOnFirstError() bool
 
 	CreateEmptyPageIfNotExistsAndReturnId(id int64, parent int, pageId int, title string) (int, string, bool, error)
 	WriteSpotPage(SpotPageDto) error

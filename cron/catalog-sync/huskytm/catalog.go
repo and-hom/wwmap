@@ -50,6 +50,10 @@ func (this *HuskytmCatalogConnector) SourceId() string {
 	return SOURCE
 }
 
+func (this *HuskytmCatalogConnector) FailOnFirstError() bool {
+	return true
+}
+
 func (this *HuskytmCatalogConnector) Close() error {
 	return nil
 }
@@ -147,16 +151,6 @@ func (this *HuskytmCatalogConnector) writePage(pageId int, tmpl func(data interf
 	}
 
 	return nil
-}
-
-func (this *HuskytmCatalogConnector) PassportEntriesSince(key string) ([]dao.WWPassport, error) {
-	return []dao.WWPassport{}, nil
-}
-func (this *HuskytmCatalogConnector) GetPassport(key string) (dao.WhiteWaterPoint, error) {
-	return dao.WhiteWaterPoint{}, nil
-}
-func (this *HuskytmCatalogConnector) GetImages(key string) ([]dao.Img, error) {
-	return []dao.Img{}, nil
 }
 
 type PageNotFoundError struct {
