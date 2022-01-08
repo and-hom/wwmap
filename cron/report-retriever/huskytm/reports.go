@@ -4,7 +4,7 @@ import (
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	wp "github.com/and-hom/go-wordpress"
-	. "github.com/and-hom/wwmap/cron/catalog-sync/common"
+	. "github.com/and-hom/wwmap/cron/report-retriever/common"
 	"github.com/and-hom/wwmap/lib/dao"
 	"github.com/and-hom/wwmap/lib/util"
 	"html"

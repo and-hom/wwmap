@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/and-hom/wwmap/cron/catalog-sync/common"
+	"github.com/and-hom/wwmap/cron/catalog-export/common"
 	"github.com/and-hom/wwmap/lib/dao"
 	log "github.com/sirupsen/logrus"
 	"strings"

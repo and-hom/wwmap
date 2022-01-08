@@ -3,16 +3,19 @@ package pdf
 //go:generate go-bindata -pkg $GOPACKAGE -o templates.go -prefix templates/  ./templates
 
 import (
+	"context"
 	"fmt"
 	"github.com/SebastiaanKlippert/go-wkhtmltopdf"
-	"github.com/and-hom/wwmap/cron/catalog-sync/common"
+	"github.com/and-hom/wwmap/cron/catalog-export/common"
 	"github.com/and-hom/wwmap/lib/blob"
 	log "github.com/sirupsen/logrus"
 	"os"
 	"strings"
+	"time"
 )
 
 const SOURCE = "pdf"
+const MAX_PDF_GENERATION_DURATION = 20 * time.Second
 
 func GetCatalogConnector(pdfStorage, htmlStorage blob.BlobStorage, pageLinkTemplate string) (common.CatalogConnector, error) {
 	t, err := common.LoadTemplates(MustAsset)
@@ -79,8 +82,23 @@ func (this *PdfCatalogConnector) WriteRootPage(page common.RootPageDto) error {
 }
 
 func (this *PdfCatalogConnector) writePage(pageId int, body string, title string) error {
-	this.htmlStorage.Store(fmt.Sprintf("%d.htm", pageId), strings.NewReader(body))
-	log.Infof("Write page %d for %s", pageId, title)
+	log.Infof("Write html page %d for %s", pageId, title)
+	htmlFileKey := fmt.Sprintf("%d.htm", pageId)
+	if err := this.htmlStorage.Remove(htmlFileKey); err!=nil && !os.IsNotExist(err) {
+		log.Error("Can't write html page: ", err)
+		return err
+	}
+	if err := this.htmlStorage.Store(htmlFileKey, strings.NewReader(body)); err!=nil {
+		log.Error("Can't write html page: ", err)
+		return err
+	}
+
+	log.Infof("Write pdf page %d for %s", pageId, title)
+	pdfFileKey := fmt.Sprintf("%d.pdf", pageId)
+	if err := this.htmlStorage.Remove(pdfFileKey); err!=nil && !os.IsNotExist(err) {
+		log.Error("Can't write pdf page: ", err)
+		return err
+	}
 
 	pdfGenerator, err := wkhtmltopdf.NewPDFGenerator()
 	if err != nil {
@@ -96,6 +114,9 @@ func (this *PdfCatalogConnector) writePage(pageId int, body string, title string
 	pdfGenerator.MarginRight.Set(10)
 	pdfGenerator.Title.Set(title)
 
+	ctx, cancelFunc := context.WithTimeout(context.TODO(), MAX_PDF_GENERATION_DURATION)
+	defer cancelFunc()
+
 	cacheDir := os.TempDir() + "/wwmap-wkhtml-cache"
 	os.MkdirAll(cacheDir, os.ModePerm)
 
@@ -107,23 +128,23 @@ func (this *PdfCatalogConnector) writePage(pageId int, body string, title string
 	pr.LoadMediaErrorHandling.Set("ignore")
 	pdfGenerator.AddPage(pr)
 
-	storageId := fmt.Sprintf("%d.pdf", pageId)
-	err = pdfGenerator.Create()
+	err = pdfGenerator.CreateContext(ctx)
 	if err != nil {
 		log.Errorf("Can not render pdf - remove if exists: %v", err)
-		err2 := this.pdfStorage.Remove(storageId)
+		err2 := this.pdfStorage.Remove(pdfFileKey)
 		if err2!=nil {
 			log.Warnf("Can not remove: %v", err2)
 		}
 		return nil
 	}
 
-	err = this.pdfStorage.Store(storageId, pdfGenerator.Buffer())
+	err = this.pdfStorage.Store(pdfFileKey, pdfGenerator.Buffer())
 	if err != nil {
 		log.Errorf("Can not write file: %v", err)
 		return err
 	}
 
+	log.Infof("Page %d for %s written successfully!", pageId, title)
 	return nil
 }
 

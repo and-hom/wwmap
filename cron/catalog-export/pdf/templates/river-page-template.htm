@@ -1,12 +1,10 @@
 <script type="text/javascript" src="https://api-maps.yandex.ru/2.1/?lang=ru_RU"></script>
-<script type="text/javascript" src="https://wwmap.ru/js/config.js"></script>
-<script type="text/javascript" src="https://wwmap.ru/js/map.v2.js"></script>
 
 <h1>{{.River.Title}}</h1>
 {{.River.Description}}
-<table style="border:0px;withh:100%;">
+<table style="border:0px;width:100%;">
     <tr>
-        <td style="width:70%;">
+        <td style="width:70%; vertical-align: top;">
             <h3>Пороги (к./с.)</h3>
             <ul style="list-style-type:disc">
                 {{range .Spots}}
@@ -23,7 +21,7 @@
 
 
 <script type="text/javascript">
-    mapCnt = 0;
+    let mapCnt = 0;
 
     function loadStarted() {
         mapCnt += 1
@@ -32,12 +30,12 @@
     function loadFinished(myMap) {
         var layer = myMap.layers.get(0).get(0);
         // Отслеживаем событие окончания отрисовки тайлов.
-        waitForTilesLoad(layer).then(function() {
-        mapCnt -= 1
-            if (mapCnt==0) {
-                window.setTimeout(function() {
+        waitForTilesLoad(layer).then(function () {
+            mapCnt -= 1
+            if (mapCnt <= 0) {
+                window.setTimeout(function () {
                     window.status = 'LOAD_FINISHED'
-                },10000);
+                }, 10000);
             }
         });
     }
@@ -75,9 +73,68 @@
             }
         });
     }
+
+    function initAllSuppportedLayers() {
+        addCachedLayer('osm#standard', 'OSM (O)', 'OpenStreetMap contributors, CC-BY-SA', 'osm');
+        addLayer('google#satellite', 'Спутник Google (G)', 'Изображения © DigitalGlobe,CNES / Airbus, 2018,Картографические данные © Google, 2018', googleSatTiles);
+        // addLayer('bing#satellite', 'Спутник Bing (B)', 'Изображения © Майкрософт (Microsoft), 2019', bingSatTiles);
+        addCachedLayer('ggc#standard', 'Топографическая карта (T)', '', 'ggc', 0, 15);
+        addCachedLayer('topomapper#genshtab', 'TopoMapper', 'TopoMapper.com', 'topo-mapper', 0, 13);
+        addCachedLayer('marshruty.ru#genshtab', 'Маршруты.ру', 'marshruty.ru', 'marshruty-ru', 8, 13);
+    }
+
+
+    var googleTileUrlCache = {};
+
+    function googleSatTiles(tile, zoom) {
+        let key = tile[0] + "_" + tile[1] + "_" + zoom;
+        let cached = googleTileUrlCache[key];
+        if (cached && GOOGLE_API_VERSION > 0) {
+            return cached;
+        }
+
+        let url = 'https://khms' + (Math.floor(Math.random()) % 4) + '.google.com/kh/v=908&src=app&x=' + tile[0] + '&y=' + tile[1] + '&z=' + zoom;
+        googleTileUrlCache[key] = url;
+        return url;
+    }
+
+    const tileBase = "http://wwmap.ru/maps"
+    const CACHED_TILES_TEMPLATE = tileBase + '/###/%z/%x/%y.png';
+
+    const GOOGLE_SAT_TILES = 'http://khms' + Math.floor(Math.random()) % 4 + '.google.com/kh/v=845&src=app&x=%x&y=%y&z=%z&s=Gal';
+
+    function addCachedLayer(key, name, copyright, mapId, lower_scale, upper_scale) {
+        return addLayer(key, name, copyright, CACHED_TILES_TEMPLATE.replace('###', mapId), lower_scale, upper_scale)
+    }
+
+    function addLayer(key, name, copyright, tilesUrlTemplate, lower_scale, upper_scale) {
+        if (typeof (lower_scale) == "undefined") {
+            lower_scale = 0
+        }
+        if (typeof (upper_scale) == "undefined") {
+            upper_scale = 18
+        }
+        var layer = function () {
+            var layer = new ymaps.Layer(tilesUrlTemplate, {
+                projection: ymaps.projection.sphericalMercator
+            });
+            //  Копирайты.
+            layer.getCopyrights = function () {
+                return ymaps.vow.resolve(copyright);
+            };
+            layer.getZoomRange = function () {
+                return ymaps.vow.resolve([lower_scale, upper_scale]);
+            };
+            return layer;
+        };
+        ymaps.layer.storage.add(key, layer);
+        ymaps.mapType.storage.add(key, new ymaps.MapType(name, [key]));
+    }
+
     loadStarted();
     ymaps.ready(function () {
-        addCachedLayer('osm#standard', 'OSM', 'OpenStreetMap contributors, CC-BY-SA', 'osm')
+        initAllSuppportedLayers();
+
         {{ $spotCount := len .Spots }}
 
         var mapType = {{coalesce_string_prop "river_export_map_type" "osm#standard" .River.Props}};
@@ -111,9 +168,7 @@
     function spotMap(spotId, point, mapType, zoom) {
         loadStarted()
         ymaps.ready(function() {
-                    addCachedLayer('osm#standard', 'OSM', 'OpenStreetMap contributors, CC-BY-SA', 'osm')
-                    addLayer('google#satellite', 'Спутник Google', 'Изображения © DigitalGlobe,CNES / Airbus, 2018,Картографические данные © Google, 2018', GOOGLE_SAT_TILES)
-                    addCachedLayer('ggc#standard', 'Топографическая карта', '', 'ggc', 0, 15)
+                    initAllSuppportedLayers();
 
                     divId = "map" + spotId;
                     var myMap = new ymaps.Map(divId, {
@@ -155,7 +210,7 @@
             {{.Spot.ShortDesc}}
         </div>
         <div style="width: 100%;">
-            <strong>Координаты:</strong>&nbsp;{{lat .Spot.StartPoint.Lat}}&nbsp;{{lon .Spot.Point.Lon}}
+            <strong>Координаты:</strong>&nbsp;{{lat .Spot.StartPoint.Lat}}&nbsp;{{lon .Spot.StartPoint.Lon}}
             <br/>
             <div><strong>К.с. нв/св/вв:</strong>
                 &nbsp;{{catStr .Spot.LowWaterCategory}}/{{catStr .Spot.MediumWaterCategory}}/{{catStr .Spot.HighWaterCategory}}

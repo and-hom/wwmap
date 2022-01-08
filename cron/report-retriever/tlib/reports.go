@@ -4,7 +4,7 @@ import (
 	"time"
 	"github.com/and-hom/wwmap/lib/dao"
 	"github.com/PuerkitoBio/goquery"
-	"github.com/and-hom/wwmap/cron/catalog-sync/common"
+	"github.com/and-hom/wwmap/cron/report-retriever/common"
 	"net/url"
 	"net/http"
 	"github.com/pkg/errors"
