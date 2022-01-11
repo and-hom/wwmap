@@ -21,6 +21,8 @@ type Params struct {
 	LinkType string
 	// Maximum category of displayed rivers
 	MaximumCategory int
+	// Clustering
+	Clustering bool
 }
 
 func Parse(req *http.Request) (Params,  *http.Request, error) {
@@ -66,6 +68,9 @@ func Parse(req *http.Request) (Params,  *http.Request, error) {
 			return params, req, fmt.Errorf("Can not parse country id %s %s", countryIdStr, err)
 		}
 	}
+
+	clusteringStr := req.FormValue("clustering")
+	params.Clustering = (clusteringStr != "false" && clusteringStr != "0")
 
 	return params, req, nil
 }
