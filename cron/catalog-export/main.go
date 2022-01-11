@@ -59,7 +59,12 @@ func CreateApp() App {
 				return huskytm.GetCatalogConnector(configuration.Sync.Login, configuration.Sync.Password, configuration.Sync.MinDeltaBetweenRequests)
 			}},
 			{F: func() (common.CatalogConnector, error) {
-				return pdf.GetCatalogConnector(riverPassportPdfStorage, riverPassportHtmlStorage, configuration.RiverPassportPdfStorage.UrlBase)
+				return pdf.GetCatalogConnector(
+					riverPassportPdfStorage,
+					riverPassportHtmlStorage,
+					configuration.RiverPassportPdfStorage,
+					configuration.RiverPassportHtmlStorage,
+					)
 			}},
 		},
 		ImgUrlBase:        configuration.ImgStorage.Full.UrlBase,

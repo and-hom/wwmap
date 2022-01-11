@@ -8,6 +8,7 @@ import (
 	"github.com/SebastiaanKlippert/go-wkhtmltopdf"
 	"github.com/and-hom/wwmap/cron/catalog-export/common"
 	"github.com/and-hom/wwmap/lib/blob"
+	"github.com/and-hom/wwmap/lib/config"
 	log "github.com/sirupsen/logrus"
 	"os"
 	"strings"
@@ -17,27 +18,34 @@ import (
 const SOURCE = "pdf"
 const MAX_PDF_GENERATION_DURATION = 20 * time.Second
 
-func GetCatalogConnector(pdfStorage, htmlStorage blob.BlobStorage, pageLinkTemplate string) (common.CatalogConnector, error) {
+func GetCatalogConnector(
+	pdfStorage, htmlStorage blob.BlobStorage,
+	pdfStorageParams, htmlStorageParams config.BlobStorageParams,
+) (common.CatalogConnector, error) {
 	t, err := common.LoadTemplates(MustAsset)
 	if err != nil {
 		return nil, err
 	}
 
 	return &PdfCatalogConnector{
-		templates:        t,
-		pdfStorage:       pdfStorage,
-		htmlStorage:      htmlStorage,
-		spotBuf:          []common.SpotPageDto{},
-		pageLinkTemplate: pageLinkTemplate,
+		templates:         t,
+		pdfStorage:        pdfStorage,
+		htmlStorage:       htmlStorage,
+		pdfStorageParams:  pdfStorageParams,
+		htmlStorageParams: htmlStorageParams,
+		spotBuf:           []common.SpotPageDto{},
 	}, nil
 }
 
 type PdfCatalogConnector struct {
-	pdfStorage       blob.BlobStorage
-	htmlStorage      blob.BlobStorage
+	pdfStorage  blob.BlobStorage
+	htmlStorage blob.BlobStorage
+
+	pdfStorageParams config.BlobStorageParams
+	htmlStorageParams config.BlobStorageParams
+
 	templates        common.Templates
 	spotBuf          []common.SpotPageDto
-	pageLinkTemplate string
 }
 
 func (this *PdfCatalogConnector) SourceId() string {
@@ -53,7 +61,7 @@ func (this *PdfCatalogConnector) Close() error {
 }
 
 func (this *PdfCatalogConnector) CreateEmptyPageIfNotExistsAndReturnId(id int64, parent int, pageId int, title string) (int, string, bool, error) {
-	return int(id), fmt.Sprintf(this.pageLinkTemplate, id), true, nil
+	return int(id), fmt.Sprintf(this.pdfStorageParams.UrlBase, id), true, nil
 }
 
 func (this *PdfCatalogConnector) WriteSpotPage(page common.SpotPageDto) error {
@@ -83,19 +91,19 @@ func (this *PdfCatalogConnector) WriteRootPage(page common.RootPageDto) error {
 
 func (this *PdfCatalogConnector) writePage(pageId int, body string, title string) error {
 	log.Infof("Write html page %d for %s", pageId, title)
-	htmlFileKey := fmt.Sprintf("%d.htm", pageId)
-	if err := this.htmlStorage.Remove(htmlFileKey); err!=nil && !os.IsNotExist(err) {
+	htmlFileKey := fmt.Sprintf("%d.%s", pageId, this.htmlStorageParams.Suffix)
+	if err := this.htmlStorage.Remove(htmlFileKey); err != nil && !os.IsNotExist(err) {
 		log.Error("Can't write html page: ", err)
 		return err
 	}
-	if err := this.htmlStorage.Store(htmlFileKey, strings.NewReader(body)); err!=nil {
+	if err := this.htmlStorage.Store(htmlFileKey, strings.NewReader(body)); err != nil {
 		log.Error("Can't write html page: ", err)
 		return err
 	}
 
 	log.Infof("Write pdf page %d for %s", pageId, title)
-	pdfFileKey := fmt.Sprintf("%d.pdf", pageId)
-	if err := this.htmlStorage.Remove(pdfFileKey); err!=nil && !os.IsNotExist(err) {
+	pdfFileKey := fmt.Sprintf("%d.%s", pageId, this.pdfStorageParams.Suffix)
+	if err := this.htmlStorage.Remove(pdfFileKey); err != nil && !os.IsNotExist(err) {
 		log.Error("Can't write pdf page: ", err)
 		return err
 	}
@@ -132,7 +140,7 @@ func (this *PdfCatalogConnector) writePage(pageId int, body string, title string
 	if err != nil {
 		log.Errorf("Can not render pdf - remove if exists: %v", err)
 		err2 := this.pdfStorage.Remove(pdfFileKey)
-		if err2!=nil {
+		if err2 != nil {
 			log.Warnf("Can not remove: %v", err2)
 		}
 		return nil

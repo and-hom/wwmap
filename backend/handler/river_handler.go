@@ -8,6 +8,8 @@ import (
 	"github.com/and-hom/wwmap/cron/report-retriever/riskru"
 	"github.com/and-hom/wwmap/cron/report-retriever/skitalets"
 	"github.com/and-hom/wwmap/cron/report-retriever/tlib"
+	"github.com/and-hom/wwmap/lib/blob"
+	"github.com/and-hom/wwmap/lib/config"
 	"github.com/and-hom/wwmap/lib/dao"
 	"github.com/and-hom/wwmap/lib/geo"
 	. "github.com/and-hom/wwmap/lib/handler"
@@ -23,10 +25,12 @@ import (
 
 type RiverHandler struct {
 	App
-	TransferDao              dao.TransferDao
-	ResourceBase             string
-	RiverPassportPdfUrlBase  string
-	RiverPassportHtmlUrlBase string
+	TransferDao                    dao.TransferDao
+	ResourceBase                   string
+	RiverPassportPdfStorageParams  config.BlobStorageParams
+	RiverPassportHtmlStorageParams config.BlobStorageParams
+	RiverPassportPdfStorage        blob.BlobStorage
+	RiverPassportHtmlStorage       blob.BlobStorage
 }
 
 func (this *RiverHandler) Init() {
@@ -170,8 +174,16 @@ func (this *RiverHandler) GetRiverCard(w http.ResponseWriter, req *http.Request)
 		HasCamps:      hasCamps,
 		Imgs:          imgs,
 		Videos:        videos,
-		PdfUrl:        this.getRiverPassportUrl(&river, this.RiverPassportPdfUrlBase),
-		HtmlUrl:       this.getRiverPassportUrl(&river, this.RiverPassportHtmlUrlBase),
+		PdfUrl:        this.getRiverPassportUrl(
+			&river,
+			this.RiverPassportPdfStorageParams,
+			this.RiverPassportPdfStorage,
+			),
+		HtmlUrl:       this.getRiverPassportUrl(
+			&river,
+			this.RiverPassportHtmlStorageParams,
+			this.RiverPassportHtmlStorage,
+			),
 		MaxCategory:   model.SportCategory{Category: riverCats.Max},
 		AvgCategory:   model.SportCategory{Category: riverCats.Avg},
 		HasImpassible: riverCats.HasImpassible,
@@ -341,20 +353,35 @@ func (this *RiverHandler) GetVisibleRivers(w http.ResponseWriter, req *http.Requ
 		riversWithReports[i] = RiverListDto{
 			RiverTitle: *river,
 			Reports:    reportDtos,
-			PdfUrl:     this.getRiverPassportUrl(river, this.RiverPassportPdfUrlBase),
-			HtmlUrl:    this.getRiverPassportUrl(river, this.RiverPassportHtmlUrlBase),
+			PdfUrl:     this.getRiverPassportUrl(river, this.RiverPassportPdfStorageParams, nil),
+			HtmlUrl:    this.getRiverPassportUrl(river, this.RiverPassportHtmlStorageParams, nil),
 		}
 
 	}
 	w.Write([]byte(JsonStr(riversWithReports, "[]")))
 }
 
-func (this *RiverHandler) getRiverPassportUrl(river HasPropertiesAndId, base string) string {
+func (this *RiverHandler) getRiverPassportUrl(
+	river HasPropertiesAndId,
+	storageParams config.BlobStorageParams,
+	storage blob.BlobStorage,
+	) string {
 	export, found := river.GetProperties()["export_pdf"]
 	if found && export.(bool) {
-		return fmt.Sprintf(base, river.GetId())
+		if storage == nil {
+			return createRiverPassportUrl(river, storageParams.UrlBase)
+		}
+
+		key := fmt.Sprintf("%d.%s", river.GetId(), storageParams.Suffix)
+		if exists, err := storage.Exists(key); err == nil && exists {
+			return createRiverPassportUrl(river, storageParams.UrlBase)
+		}
 	}
 	return ""
+}
+
+func createRiverPassportUrl(river HasPropertiesAndId, base string) string {
+	return fmt.Sprintf(base, river.GetId())
 }
 
 type HasPropertiesAndId interface {
