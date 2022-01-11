@@ -1,7 +1,10 @@
 <script type="text/javascript" src="https://api-maps.yandex.ru/2.1/?lang=ru_RU"></script>
+<script type="text/javascript" src="https://wwmap.ru/js/tube.js"></script>
 
 <h1>{{.River.Title}}</h1>
+<div style="padding-bottom: 15px;">
 {{.River.Description}}
+</div>
 <table style="border:0px;width:100%;">
     <tr>
         <td style="width:70%; vertical-align: top;">
@@ -133,60 +136,71 @@
 
     loadStarted();
     ymaps.ready(function () {
-        initAllSuppportedLayers();
+        ymaps.modules.require(['overlay.BiPlacemark'], function (BiPlacemarkOverlay) {
+            if (ymaps.overlay.storage.get("BiPlacemrakOverlay") == null) {
+                ymaps.overlay.storage.add("BiPlacemrakOverlay", BiPlacemarkOverlay);
+            }
 
-        {{ $spotCount := len .Spots }}
+            initAllSuppportedLayers();
 
-        var mapType = {{coalesce_string_prop "river_export_map_type" "osm#standard" .River.Props}};
-        var myMap;
+            {{ $spotCount := len .Spots }}
 
-        {{ if eq $spotCount 1 }}
-        {{ $spot := index .Spots 0 }}
-        myMap = new ymaps.Map("map", {
-            center: {{$spot.Spot.Point}},
+            var mapType = {{coalesce_string_prop "river_export_map_type" "osm#standard" .River.Props}};
+            var myMap;
+
+            {{ if eq $spotCount 1 }}
+            {{ $spot := index .Spots 0 }}
+            myMap = new ymaps.Map("map", {
+                center: {{$spot.Spot.Point}},
             zoom: 15,
+                type: mapType,
+                controls: ["zoomControl"]
+        });
+            {{else}}
+            myMap = new ymaps.Map("map", {
+                bounds: {{ .River.Bounds.WithMargins 0.2 }},
             type: mapType,
-            controls: ["zoomControl"]
+                controls: ["zoomControl"]
         });
-        {{else}}
-        myMap = new ymaps.Map("map", {
-            bounds: {{ .River.Bounds.WithMargins 0.2 }},
-            type: mapType,
-            controls: ["zoomControl"]
+            {{end}}
+            var objectManager = new ymaps.RemoteObjectManager('http://localhost:7007/ymaps-tile-ww?bbox=%b&zoom=%z&river=' + {{ .River.Id }}, {
+                clusterHasBalloon: false,
+                    geoObjectOpenBalloonOnClick: false,
+                    geoObjectStrokeWidth: 3,
+                    splitRequests: true
+            });
+            myMap.geoObjects.add(objectManager);
+            loadFinished(myMap);
         });
-        {{end}}
-        var objectManager = new ymaps.RemoteObjectManager('https://wwmap.ru/api/ymaps-tile-ww?bbox=%b&zoom=%z', {
-            clusterHasBalloon: false,
-            geoObjectOpenBalloonOnClick: false,
-            geoObjectStrokeWidth: 3,
-            splitRequests: true
-        });
-        myMap.geoObjects.add(objectManager);
-        loadFinished(myMap);
     });
 
     function spotMap(spotId, point, mapType, zoom) {
         loadStarted()
         ymaps.ready(function() {
-                    initAllSuppportedLayers();
+            ymaps.modules.require(['overlay.BiPlacemark'], function (BiPlacemarkOverlay) {
+                if (ymaps.overlay.storage.get("BiPlacemrakOverlay") == null) {
+                    ymaps.overlay.storage.add("BiPlacemrakOverlay", BiPlacemarkOverlay);
+                }
+                initAllSuppportedLayers();
 
-                    divId = "map" + spotId;
-                    var myMap = new ymaps.Map(divId, {
-                        center: point,
-                        zoom: zoom,
-                        type: mapType,
-                        controls: ["zoomControl"],
-                    });
-                    var objectManager = new ymaps.RemoteObjectManager('https://wwmap.ru/api/ymaps-tile-ww?bbox=%b&zoom=%z&only=' + spotId, {
-                            clusterHasBalloon: false,
-                            geoObjectOpenBalloonOnClick: false,
-                            geoObjectStrokeWidth: 3,
-                            splitRequests: true,
-                            clusterHasBalloon: false,
-                        });
-                    myMap.geoObjects.add(objectManager);
-                    loadFinished(myMap);
-                })
+                divId = "map" + spotId;
+                var myMap = new ymaps.Map(divId, {
+                    center: Array.isArray(point[0]) ? point[0] : point,
+                    zoom: zoom,
+                    type: mapType,
+                    controls: ["zoomControl"],
+                });
+                var objectManager = new ymaps.RemoteObjectManager('http://localhost:7007/ymaps-tile-ww?bbox=%b&zoom=%z&only=' + spotId, {
+                    clusterHasBalloon: false,
+                    geoObjectOpenBalloonOnClick: false,
+                    geoObjectStrokeWidth: 3,
+                    splitRequests: true,
+                    clusterHasBalloon: false,
+                });
+                myMap.geoObjects.add(objectManager);
+                loadFinished(myMap);
+            });
+        });
     }
 
 </script>
@@ -265,7 +279,7 @@
         </div>
     </div>
     <script type="text/javascript">
-    spotMap("{{.Spot.Id}}", {{.Spot.Point}}, "{{coalesce_string_prop "spot_export_map_type" "yandex#satellite" .Spot.Props .River.Props}}", {{coalesce_int_prop "spot_export_map_zoom" 16 .Spot.Props .River.Props}})
+    spotMap("{{.Spot.Id}}", {{.Spot.Point.Center}}, "{{coalesce_string_prop "spot_export_map_type" "yandex#satellite" .Spot.Props .River.Props}}", {{coalesce_int_prop "spot_export_map_zoom" 16 .Spot.Props .River.Props}})
 
     </script>
 </div>
