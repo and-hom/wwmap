@@ -3,11 +3,6 @@ package handler
 import (
 	"fmt"
 	"github.com/and-hom/wwmap/backend/handler/toggles"
-	"github.com/and-hom/wwmap/cron/report-retriever/huskytm"
-	"github.com/and-hom/wwmap/cron/report-retriever/libru"
-	"github.com/and-hom/wwmap/cron/report-retriever/riskru"
-	"github.com/and-hom/wwmap/cron/report-retriever/skitalets"
-	"github.com/and-hom/wwmap/cron/report-retriever/tlib"
 	"github.com/and-hom/wwmap/lib/blob"
 	"github.com/and-hom/wwmap/lib/config"
 	"github.com/and-hom/wwmap/lib/dao"
@@ -217,11 +212,9 @@ func (this *RiverHandler) groupReports(reports []dao.VoyageReport, river dao.Riv
 		// https://apoorvam.github.io/blog/2017/golang-json-marshal-slice-as-empty-array-not-null/
 		reportsList: make([]VoyageReportListDto, 0),
 	}
-	reportsListBuilder.addReportDtos(huskytm.SOURCE, "huskytm.ru")
-	reportsListBuilder.addReportDtos(tlib.SOURCE, "tlib.ru")
-	reportsListBuilder.addReportDtos(skitalets.SOURCE, "Скиталец")
-	reportsListBuilder.addReportDtos(libru.SOURCE, "lib.ru/TURIZM")
-	reportsListBuilder.addReportDtos(riskru.SOURCE, "RISK.RU")
+	for _, s := range REPORT_SOURCES {
+		reportsListBuilder.addReportDtos(s.Id, s.Title)
+	}
 	reportsListBuilder.others()
 	return reportsListBuilder.reportsList
 }
