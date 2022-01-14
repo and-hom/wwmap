@@ -1,10 +1,15 @@
 package handler
 
 import (
-	log "github.com/sirupsen/logrus"
+	"github.com/and-hom/wwmap/cron/catalog-sync/huskytm"
+	"github.com/and-hom/wwmap/cron/catalog-sync/libru"
+	"github.com/and-hom/wwmap/cron/catalog-sync/riskru"
+	"github.com/and-hom/wwmap/cron/catalog-sync/skitalets"
+	"github.com/and-hom/wwmap/cron/catalog-sync/tlib"
 	"github.com/and-hom/wwmap/lib/dao"
 	. "github.com/and-hom/wwmap/lib/handler"
 	. "github.com/and-hom/wwmap/lib/http"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"regexp"
@@ -26,6 +31,7 @@ func (this *SystemHandler) Init() {
 	this.Register("/db-version", HandlerFunctions{Get: this.DbVersion})
 	this.Register("/log", HandlerFunctions{Get: this.ForRoles(this.Log, dao.ADMIN)})
 	this.Register("/gav", HandlerFunctions{Get: this.Gav})
+	this.Register("/report-sources", HandlerFunctions{Get: this.ReportSources})
 }
 
 func (this *SystemHandler) Version(w http.ResponseWriter, req *http.Request) {
@@ -101,4 +107,22 @@ func (this *SystemHandler) Gav(w http.ResponseWriter, req *http.Request) {
 		log.Error("Can't find googleapi version")
 		JsonAnswer(w, DEFAULT_GAV)
 	}
+}
+
+type ReportSourceDto struct {
+	Id    string `json:"id"`
+	Title string `json:"title"`
+}
+
+var REPORT_SOURCES = [5]ReportSourceDto{
+		{huskytm.SOURCE, "huskytm.ru"},
+		{tlib.SOURCE, "tlib.ru"},
+		{skitalets.SOURCE, "Скиталец"},
+		{libru.SOURCE, "lib.ru/TURIZM"},
+		{riskru.SOURCE, "RISK.RU"},
+	}
+
+func (this *SystemHandler) ReportSources(w http.ResponseWriter, req *http.Request) {
+
+	JsonAnswer(w, REPORT_SOURCES)
 }

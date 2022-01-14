@@ -24,10 +24,17 @@
     </transition>
     <pager :data="entities"
            :filter="riverFilter"
+           :custom-filter="customFilter"
            :filter-function="filterData"
            :page-size="10">
       <template v-slot:filter="slotProps">
-        <river-select v-model="riverFilter" :multiselect="true" :bindId="true"/>
+        <slot name="filter" ></slot>
+        <river-select
+            v-model="riverFilter"
+            :multiselect="true"
+            :bindId="true"
+            style="width: 400px; display: inline; float: left;"
+        />
       </template>
       <template v-slot:default="slotProps">
         <table class="table">
@@ -135,6 +142,14 @@ module.exports = {
       type: String,
       required: false,
     },
+    customFilterFunction: {
+      type: Function,
+      required: false,
+    },
+    customFilter: {
+      type: Object,
+      required: false,
+    },
   },
   computed: {
     errMsg() {
@@ -192,9 +207,12 @@ module.exports = {
     hideError: function () {
       store.commit("setErrMsg", null);
     },
-    filterData(data, filter) {
-      if (data && filter && filter.length > 0) {
-        return data.filter(d => d.rivers && arrays_intersects(d.rivers, filter))
+    filterData(data, filter, customFilter) {
+      if (data) {
+        return data.filter(d =>
+            (filter && filter.length > 0 && d.rivers ? arrays_intersects(d.rivers, filter) : true) &&
+            (customFilter && this.customFilterFunction ? this.customFilterFunction(d, customFilter) : true)
+        )
       } else {
         return data
       }

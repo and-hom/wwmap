@@ -33,7 +33,7 @@ export default {
       return {
         title: "",
         description: "",
-        point: this.mapParamsStorage.getLastPositionZoomType().position,
+        point: this.mapParamsStorage.getLastPositionZoomTypeToggles().position,
         rivers: [],
       }
     },
