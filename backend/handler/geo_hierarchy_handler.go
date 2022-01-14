@@ -2,9 +2,9 @@ package handler
 
 import (
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"github.com/and-hom/wwmap/cron/vodinfo-eye/graduation"
 	"github.com/and-hom/wwmap/lib/blob"
+	"github.com/and-hom/wwmap/lib/config"
 	"github.com/and-hom/wwmap/lib/dao"
 	"github.com/and-hom/wwmap/lib/geo"
 	. "github.com/and-hom/wwmap/lib/handler"
@@ -14,6 +14,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 	"github.com/ptrv/go-gpx"
+	log "github.com/sirupsen/logrus"
 	"io"
 	"net/http"
 	"strconv"
@@ -22,14 +23,16 @@ import (
 
 type GeoHierarchyHandler struct {
 	App
-	LevelDao                 dao.LevelDao
-	LevelSensorDao           dao.LevelSensorDao
-	TransferDao              dao.TransferDao
-	ImgStorage               blob.BlobStorage
-	PreviewImgStorage        blob.BlobStorage
-	RiverPassportPdfStorage  blob.BlobStorage
-	RiverPassportHtmlStorage blob.BlobStorage
-	regions                  map[int64]dao.Region
+	LevelDao                       dao.LevelDao
+	LevelSensorDao                 dao.LevelSensorDao
+	TransferDao                    dao.TransferDao
+	ImgStorage                     blob.BlobStorage
+	PreviewImgStorage              blob.BlobStorage
+	RiverPassportPdfStorage        blob.BlobStorage
+	RiverPassportHtmlStorage       blob.BlobStorage
+	RiverPassportPdfStorageParams  config.BlobStorageParams
+	RiverPassportHtmlStorageParams config.BlobStorageParams
+	regions                        map[int64]dao.Region
 }
 
 func (this *GeoHierarchyHandler) Init() {
@@ -163,7 +166,7 @@ func (this *GeoHierarchyHandler) ListRegionsByCountryCode(w http.ResponseWriter,
 		return
 	}
 	if !found {
-		OnError(w, err, "Country with code " + countryCode + " not found!", http.StatusNotFound)
+		OnError(w, err, "Country with code "+countryCode+" not found!", http.StatusNotFound)
 		return
 	}
 
@@ -676,7 +679,7 @@ func (this *GeoHierarchyHandler) writeRiver(riverId int64, w http.ResponseWriter
 		Visible:     river.Visible,
 		Props:       river.Props,
 		Transfers:   transfers,
-		Camps:   	 camps,
+		Camps:       camps,
 	}
 	JsonAnswer(w, riverWithRegion)
 }
@@ -833,11 +836,23 @@ func (this *GeoHierarchyHandler) writeSpot(spotId int64, w http.ResponseWriter) 
 }
 
 func (this *GeoHierarchyHandler) GetRiverPassportPdf(w http.ResponseWriter, req *http.Request) {
-	this.getRiverPassport(w, req, "application/pdf", this.RiverPassportPdfStorage, ".pdf")
+	this.getRiverPassport(
+		w,
+		req,
+		"application/pdf",
+		this.RiverPassportPdfStorage,
+		"."+this.RiverPassportPdfStorageParams.Suffix,
+	)
 }
 
 func (this *GeoHierarchyHandler) GetRiverPassportHtml(w http.ResponseWriter, req *http.Request) {
-	this.getRiverPassport(w, req, "text/html", this.RiverPassportHtmlStorage, ".htm")
+	this.getRiverPassport(
+		w,
+		req,
+		"text/html",
+		this.RiverPassportHtmlStorage,
+		"."+this.RiverPassportHtmlStorageParams.Suffix,
+	)
 }
 
 func (this *GeoHierarchyHandler) getRiverPassport(w http.ResponseWriter, req *http.Request,

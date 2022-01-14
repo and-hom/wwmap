@@ -63,9 +63,11 @@ img-storage:
 river-passport-pdf-storage:
   dir: "/var/lib/wwmap/backend/river-passport"
   url-base: "http://localhost:7007/river/%d/pdf"
+  suffix: "pdf"
 river-passport-html-storage:
   dir: "/var/lib/wwmap/backend/river-passport"
   url-base: "http://localhost:7007/river/%d/html"
+  suffix: "htm"
 
 
 backup:

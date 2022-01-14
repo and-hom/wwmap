@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	log "github.com/sirupsen/logrus"
-	"github.com/and-hom/wwmap/cron/catalog-sync/common"
+	"github.com/and-hom/wwmap/cron/catalog-export/common"
 	"github.com/and-hom/wwmap/lib/dao"
+	log "github.com/sirupsen/logrus"
 	"strings"
 	"time"
 )
@@ -145,10 +145,10 @@ func (this *App) doWriteCatalog(catalogConnector *common.CatalogConnector) error
 			riverLinks := []common.LinkOnPage{}
 			for _, river := range regionRivers {
 				riverPageLink, err := this.uploadRiver(catalogConnector, country, region, river, rootPageLink, countryPageLink, regionPageLink, regionPageId)
-				if err != nil {
+				if err != nil && (*catalogConnector).FailOnFirstError() {
 					return err
 				}
-				if riverPageLink != "" {
+				if err == nil && riverPageLink != "" {
 					riverLinks = append(riverLinks, common.LinkOnPage{Title: river.Title, Url: riverPageLink})
 				}
 			}
@@ -160,20 +160,22 @@ func (this *App) doWriteCatalog(catalogConnector *common.CatalogConnector) error
 				RootPageLink:    rootPageLink,
 				CountryPageLink: countryPageLink,
 			})
-			if err != nil {
+			if err != nil && (*catalogConnector).FailOnFirstError() {
 				log.Errorf("Can not write region page %d", region.Id)
 				return err
 			}
-			countryRegionLinks = append(countryRegionLinks, common.LinkOnPage{Title: region.Title, Url: regionPageLink})
+			if err == nil {
+				countryRegionLinks = append(countryRegionLinks, common.LinkOnPage{Title: region.Title, Url: regionPageLink})
+			}
 		}
 		for _, river := range countryRivers {
 			log.Infof("Upload river %s/%s", country.Title, river.Title)
 
 			riverPageLink, err := this.uploadRiver(catalogConnector, country, fakeRegion, river, rootPageLink, countryPageLink, "", countryPageId)
-			if err != nil {
+			if err != nil && (*catalogConnector).FailOnFirstError() {
 				return err
 			}
-			if riverPageLink != "" {
+			if err == nil && riverPageLink != "" {
 				countryRiverLinks = append(countryRiverLinks, common.LinkOnPage{Title: river.Title, Url: riverPageLink})
 			}
 		}
@@ -185,15 +187,17 @@ func (this *App) doWriteCatalog(catalogConnector *common.CatalogConnector) error
 			RiverLinks:   countryRiverLinks,
 			RootPageLink: rootPageLink,
 		})
-		if err != nil {
+		if err != nil && (*catalogConnector).FailOnFirstError() {
 			log.Errorf("Can not write country page %d", country.Id)
 			return err
 		}
 
-		countryLinks = append(countryLinks, common.CountryLink{
-			LinkOnPage: common.LinkOnPage{Title: country.Title, Url: countryPageLink},
-			Code:       country.Code,
-		})
+		if err == nil {
+			countryLinks = append(countryLinks, common.CountryLink{
+				LinkOnPage: common.LinkOnPage{Title: country.Title, Url: countryPageLink},
+				Code:       country.Code,
+			})
+		}
 	}
 
 	err = (*catalogConnector).WriteRootPage(common.RootPageDto{

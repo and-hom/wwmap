@@ -2,11 +2,10 @@ package huskytm
 
 import (
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	wp "github.com/and-hom/go-wordpress"
-	"github.com/and-hom/wwmap/cron/catalog-sync/common"
-	"github.com/and-hom/wwmap/lib/dao"
+	"github.com/and-hom/wwmap/cron/catalog-export/common"
 	"github.com/and-hom/wwmap/lib/util"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"time"
 )
@@ -48,6 +47,10 @@ type HuskytmCatalogConnector struct {
 
 func (this *HuskytmCatalogConnector) SourceId() string {
 	return SOURCE
+}
+
+func (this *HuskytmCatalogConnector) FailOnFirstError() bool {
+	return true
 }
 
 func (this *HuskytmCatalogConnector) Close() error {
@@ -147,16 +150,6 @@ func (this *HuskytmCatalogConnector) writePage(pageId int, tmpl func(data interf
 	}
 
 	return nil
-}
-
-func (this *HuskytmCatalogConnector) PassportEntriesSince(key string) ([]dao.WWPassport, error) {
-	return []dao.WWPassport{}, nil
-}
-func (this *HuskytmCatalogConnector) GetPassport(key string) (dao.WhiteWaterPoint, error) {
-	return dao.WhiteWaterPoint{}, nil
-}
-func (this *HuskytmCatalogConnector) GetImages(key string) ([]dao.Img, error) {
-	return []dao.Img{}, nil
 }
 
 type PageNotFoundError struct {

@@ -67,6 +67,7 @@ type WordpressSync struct {
 type BlobStorageParams struct {
 	Dir     string `yaml:"dir"`
 	UrlBase string `yaml:"url-base"`
+	Suffix  string `yaml:"suffix"`
 }
 
 type ImgStorage struct {

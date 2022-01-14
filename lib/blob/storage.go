@@ -16,6 +16,7 @@ type BlobStorage interface {
 	Length(id string) (int64, error)
 	Remove(id string) error
 	ListIds() ([]string, error)
+	Exists(id string) (bool, error)
 }
 
 type BasicFsStorage struct {
@@ -128,4 +129,15 @@ func (this BasicFsStorage) findFiles(dir string, baseName string) ([]string, err
 
 func (this BasicFsStorage) path(id ...string) string {
 	return filepath.Join(this.BaseDir, filepath.Join(id...))
+}
+
+func (this BasicFsStorage) Exists(id string) (bool, error) {
+	_, err := os.Stat(this.path(id))
+	if err != nil && errors.Is(err, os.ErrNotExist) {
+		return false, nil
+	} else if err == nil {
+		return true, nil
+	} else {
+		return false, err
+	}
 }

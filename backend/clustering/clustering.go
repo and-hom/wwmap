@@ -2,10 +2,10 @@ package clustering
 
 import (
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"github.com/and-hom/wwmap/lib/config"
 	"github.com/and-hom/wwmap/lib/dao"
 	"github.com/and-hom/wwmap/lib/geo"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/dc0d/tinykv.v4"
 	"math"
 	"reflect"
@@ -14,22 +14,45 @@ import (
 
 type RiverClusters map[ClusterId]interface{}
 
+type ClusterMaker interface {
+	Get(river dao.RiverWithSpots, zoom int, bbox geo.Bbox) (RiverClusters, error)
+}
+
+func NewDummyClusterMaker() ClusterMaker {
+	return &DummyClusterMaker{}
+}
+
+type DummyClusterMaker struct {
+}
+
+func (this DummyClusterMaker) Get(river dao.RiverWithSpots, zoom int, bbox geo.Bbox) (RiverClusters, error) {
+	clusters := make(map[ClusterId]interface{})
+	for _, spot := range river.Spots {
+		clusters[ClusterId{
+			Id: int(spot.Id),
+			Title: spot.Title,
+			RiverId: river.Id,
+		}] = spot
+	}
+	return clusters, nil
+}
+
 func NewClusterMaker(clusterizationParams config.ClusterizationParams) ClusterMaker {
 	cache := tinykv.New(time.Millisecond)
-	return ClusterMaker{
+	return &DefaultClusterMaker{
 		ClusterizationParams: clusterizationParams,
 		cache:                &cache,
 	}
 }
 
-type ClusterMaker struct {
+type DefaultClusterMaker struct {
 	WhiteWaterDao        dao.WhiteWaterDao
 	ImgDao               dao.ImgDao
 	ClusterizationParams config.ClusterizationParams
 	cache                *tinykv.KV
 }
 
-func (this *ClusterMaker) Get(river dao.RiverWithSpots, zoom int, bbox geo.Bbox) (RiverClusters, error) {
+func (this *DefaultClusterMaker) Get(river dao.RiverWithSpots, zoom int, bbox geo.Bbox) (RiverClusters, error) {
 	cacheKey := fmt.Sprintf("%d-%d", river.Id, zoom)
 
 	cl, foundInCache := (*this.cache).Get(cacheKey)
@@ -50,7 +73,7 @@ func (this *ClusterMaker) Get(river dao.RiverWithSpots, zoom int, bbox geo.Bbox)
 	return this.filter(clusters, bbox), nil
 }
 
-func (this *ClusterMaker) filter(riverClusters RiverClusters, bbox geo.Bbox) RiverClusters {
+func (this *DefaultClusterMaker) filter(riverClusters RiverClusters, bbox geo.Bbox) RiverClusters {
 	result := make(RiverClusters)
 	for clusterId, obj := range riverClusters {
 		switch obj.(type) {
@@ -70,7 +93,7 @@ func (this *ClusterMaker) filter(riverClusters RiverClusters, bbox geo.Bbox) Riv
 	return result
 }
 
-func (this *ClusterMaker) doCluster(river dao.RiverWithSpots, zoom int) (RiverClusters, error) {
+func (this *DefaultClusterMaker) doCluster(river dao.RiverWithSpots, zoom int) (RiverClusters, error) {
 	result := make(RiverClusters)
 
 	riverHasSinglePoint := len(river.Spots) == 1
@@ -136,7 +159,7 @@ PointsLoop:
 	return result, nil
 }
 
-func (this *ClusterMaker) minDistance(points []dao.Spot) (float64, float64) {
+func (this *DefaultClusterMaker) minDistance(points []dao.Spot) (float64, float64) {
 	actualMinDist := math.MaxFloat64
 	actualMaxDist := 0.0
 
@@ -153,11 +176,11 @@ func (this *ClusterMaker) minDistance(points []dao.Spot) (float64, float64) {
 	return actualMinDist, actualMaxDist
 }
 
-func (this *ClusterMaker) barrierDistance(zoom int) float64 {
+func (this *DefaultClusterMaker) barrierDistance(zoom int) float64 {
 	return this.ClusterizationParams.BarrierRatio * math.Pow(2.0, -float64(zoom))
 }
 
-func (this *ClusterMaker) clusteringMinDistance(zoom int) float64 {
+func (this *DefaultClusterMaker) clusteringMinDistance(zoom int) float64 {
 	return this.ClusterizationParams.MinDistRatio * math.Pow(2.0, -float64(zoom))
 }
 

@@ -1,7 +1,6 @@
 package tile_data_fetcher
 
 import (
-	"github.com/and-hom/wwmap/backend/clustering"
 	"github.com/and-hom/wwmap/backend/handler/params"
 	"github.com/and-hom/wwmap/backend/handler/toggles"
 	"github.com/and-hom/wwmap/backend/ymaps"
@@ -14,7 +13,6 @@ import (
 func River(
 	tileDao dao.TileDao,
 	campDao dao.CampDao,
-	clusterMaker clustering.ClusterMaker,
 	linkMaker ymaps.LinkMaker,
 	imageProcessor func(img *dao.Img),
 	resourceBase string,
@@ -22,7 +20,6 @@ func River(
 	return &riverDataFetcher{
 		tileDao,
 		campDao,
-		clusterMaker,
 		linkMaker,
 		imageProcessor,
 		resourceBase,
@@ -33,7 +30,6 @@ type riverDataFetcher struct {
 	TileDao dao.TileDao
 	CampDao dao.CampDao
 
-	ClusterMaker clustering.ClusterMaker
 	LinkMaker    ymaps.LinkMaker
 	// modifies image hyperlinks
 	ImageProcessor func(img *dao.Img)

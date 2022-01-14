@@ -231,8 +231,17 @@ func options(visible bool, riverCats RiverCategoryMetrics) FeatureOptions {
 	}
 }
 
-func WhiteWaterPointsToYmaps(clusterMaker clustering.ClusterMaker, rivers []RiverWithSpots, bbox Bbox, zoom int,
-	resourcesBase string, skipId int64, processImgForWeb func(img *Img), linkMaker LinkMaker, waterWays []WaterWay) ([]Feature, error) {
+func WhiteWaterPointsToYmaps(
+	clusterMaker clustering.ClusterMaker,
+	rivers []RiverWithSpots,
+	bbox Bbox,
+	zoom int,
+	resourcesBase string,
+	skipId int64,
+	processImgForWeb func(img *Img),
+	linkMaker LinkMaker,
+	waterWays []WaterWay,
+	) ([]Feature, error) {
 	result := make([]Feature, 0)
 	for _, river := range rivers {
 		riverClusters, err := clusterMaker.Get(river, zoom, bbox)

@@ -87,9 +87,17 @@ func (this *worldDataFetcher) Fetch(
 
 	paths := []dao.WaterWay{}
 
-	features, err = ymaps.WhiteWaterPointsToYmaps(this.ClusterMaker, rivers, bbox, zoom,
-		this.ResourceBase, requestParams.Skip, this.ImageProcessor, this.LinkMaker,
-		paths)
+	features, err = ymaps.WhiteWaterPointsToYmaps(
+		this.ClusterMaker,
+		rivers,
+		bbox,
+		zoom,
+		this.ResourceBase,
+		requestParams.Skip,
+		this.ImageProcessor,
+		this.LinkMaker,
+		paths,
+		)
 	if err != nil {
 		return nil, req, InternalServerError(err, "can not cluster: %s %s", bbox.String())
 	}

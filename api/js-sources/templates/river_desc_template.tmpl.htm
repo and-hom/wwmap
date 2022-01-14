@@ -107,10 +107,16 @@
             </tr>
             {{/if}}
             {{#if props.export_pdf}}
-            <tr>
-                <td><label for="pdf_desc">Краткое описание для печати</label></td>
-                <td><a id="pdf_desc" href="{{html}}" target="_blank" alt="Скачать описание для печати">Описание<br/>для&nbsp;печати</a></td>
-            </tr>
+                <tr>
+                    <td><label for="pdf_desc">Краткое описание для печати</label></td>
+                    <td>
+                        {{#if pdf}}
+                        <a id="pdf_desc" href="{{pdf}}" target="_blank" alt="Скачать описание для печати (PDF)" style="display: block">PDF</a>
+                        {{/if}}{{#if html}}
+                        <a id="html_desc" href="{{html}}" target="_blank" alt="Скачать описание для печати (HTML)" style="display: block">HTML</a>
+                        {{/if}}
+                    </td>
+                </tr>
             {{/if}}
         </table>
     </div>

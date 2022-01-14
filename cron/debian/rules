@@ -21,8 +21,8 @@ build-log-notifications:
 	cd log-notifications && go build
 
 TEMPLATE_FILES=spot-page-template.htm river-page-template.htm region-page-template.htm country-page-template.htm root-page-template.htm decorator.htm
-build-catalog-sync:
-	cd catalog-sync && go build
+build-catalog-export:
+	cd catalog-export && go build
 
 build-db-clean:
 	cd db-clean && go build
@@ -36,13 +36,16 @@ build-meteo:
 build-level:
 	cd vodinfo-eye && go build
 
+build-report-retriever:
+	cd report-retriever && go build
+
 build-river-tracks-bind:
 	cd river-tracks-bind && go build
 
 build-river-height-mapper:
 	cd river-height-mapper && go build
 
-build: pre-build build-notifier build-log-notifications build-catalog-sync build-db-clean build-spot-sort build-meteo build-level build-river-tracks-bind build-river-height-mapper
+build: pre-build build-notifier build-log-notifications build-catalog-export build-db-clean build-spot-sort build-meteo build-level build-report-retriever build-river-tracks-bind build-river-height-mapper
 
 override_dh_auto_install:
 	install -d $$(pwd)/debian/wwmap-cron-modules/usr/share/wwmap/backup/
@@ -58,8 +61,8 @@ override_dh_auto_install:
 	install -D -m 0644 backup/tables.list $$(pwd)/debian/wwmap-cron-modules/usr/share/wwmap/backup/tables.list
 	dh_link /usr/bin/wwmap-backup /etc/wwmap/job.d/backup.job
 
-	install -D -m 0755 catalog-sync/catalog-sync $$(pwd)/debian/wwmap-cron-modules/usr/bin/wwmap-catalog-sync
-	dh_link /usr/bin/wwmap-catalog-sync /etc/wwmap/job.d/catalog-sync.job
+	install -D -m 0755 catalog-export/catalog-export $$(pwd)/debian/wwmap-cron-modules/usr/bin/wwmap-catalog-export
+	dh_link /usr/bin/wwmap-catalog-export /etc/wwmap/job.d/catalog-export.job
 
 	install -D -m 0755 db-clean/db-clean $$(pwd)/debian/wwmap-cron-modules/usr/bin/wwmap-db-clean
 	dh_link /usr/bin/wwmap-db-clean /etc/wwmap/job.d/db-clean.job
@@ -72,6 +75,9 @@ override_dh_auto_install:
 
 	install -D -m 0755 vodinfo-eye/vodinfo-eye $$(pwd)/debian/wwmap-cron-modules/usr/bin/wwmap-vodinfo-eye
 	dh_link /usr/bin/wwmap-vodinfo-eye /etc/wwmap/job.d/vodinfo-eye.job
+
+	install -D -m 0755 report-retriever/report-retriever $$(pwd)/debian/wwmap-cron-modules/usr/bin/wwmap-report-retriever
+	dh_link /usr/bin/wwmap-report-retriever /etc/wwmap/job.d/report-retriever.job
 
 	install -D -m 0755 river-tracks-bind/river-tracks-bind $$(pwd)/debian/wwmap-cron-modules/usr/bin/wwmap-river-tracks-bind
 	dh_link /usr/bin/wwmap-river-tracks-bind /etc/wwmap/job.d/river-tracks-bind.job

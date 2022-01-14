@@ -8,9 +8,12 @@ import (
 	"testing"
 )
 
+const BASE = "/tmp/fs-storage-test"
+
 func TestBasicFsStorageRecursivelyRemoveDepth1(t *testing.T) {
+	os.RemoveAll(BASE)
 	storage := blob.BasicFsStorage{
-		BaseDir:                   "/tmp/fs-storage-test",
+		BaseDir:                   BASE,
 		Mkdirs:                    false,
 		DeleteRecursivelyMaxDepth: 1,
 	}
@@ -35,8 +38,9 @@ func TestBasicFsStorageRecursivelyRemoveDepth1(t *testing.T) {
 }
 
 func TestBasicFsStorageRecursivelyRemoveDepth2(t *testing.T) {
+	os.RemoveAll(BASE)
 	storage := blob.BasicFsStorage{
-		BaseDir:                   "/tmp/fs-storage-test",
+		BaseDir:                   BASE,
 		Mkdirs:                    false,
 		DeleteRecursivelyMaxDepth: 2,
 	}
@@ -61,9 +65,10 @@ func TestBasicFsStorageRecursivelyRemoveDepth2(t *testing.T) {
 }
 
 func TestBasicFsStorageRecursivelyRemoveDepthUnlimited(t *testing.T) {
+	os.RemoveAll(BASE)
 	storage := blob.BasicFsStorage{
-		BaseDir:                   "/tmp/fs-storage-test",
-		Mkdirs:                    false,
+		BaseDir: BASE,
+		Mkdirs:  false,
 	}
 
 	err := os.MkdirAll("/tmp/fs-storage-test/a/b/", os.ModeDir|0755)
@@ -81,7 +86,6 @@ func TestBasicFsStorageRecursivelyRemoveDepthUnlimited(t *testing.T) {
 	err = storage.Remove("a/b/c")
 	assert.Nil(t, err)
 
-
 	assertNotExists(t, "/tmp/fs-storage-test/a")
 	assertExists(t, "/tmp/fs-storage-test")
 }
@@ -96,4 +100,40 @@ func assertExists(t *testing.T, path string) {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		assert.Fail(t, path+" not exists!")
 	}
+}
+
+func TestExists(t *testing.T) {
+	os.RemoveAll(BASE)
+	os.MkdirAll(BASE, os.ModeDir|0755)
+
+	storage := blob.BasicFsStorage{
+		BaseDir: BASE,
+		Mkdirs:  true,
+	}
+
+	_, err := os.Create(BASE + "/a")
+	if err != nil {
+		log.Fatal(err)
+	}
+	if _, err = os.Stat("/tmp/fs-storage-test/a"); os.IsNotExist(err) {
+		log.Fatal(err)
+	}
+
+	exists, err := storage.Exists("a")
+	assert.Nil(t, err)
+	assert.True(t, exists)
+}
+
+func TestNotExists(t *testing.T) {
+	os.RemoveAll(BASE)
+	os.MkdirAll(BASE, os.ModeDir|0755)
+
+	storage := blob.BasicFsStorage{
+		BaseDir: BASE,
+		Mkdirs:  true,
+	}
+
+	exists, err := storage.Exists("a")
+	assert.Nil(t, err)
+	assert.False(t, exists)
 }

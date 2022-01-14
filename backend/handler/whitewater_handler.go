@@ -49,21 +49,54 @@ func (this *WhiteWaterHandler) TileWhiteWaterHandler(w http.ResponseWriter, req 
 
 	var tdf tile_data_fetcher.TileDataFetcher
 
+	clusterMaker := this.ClusterMaker
+	if !requestParams.Clustering {
+		clusterMaker = clustering.NewDummyClusterMaker()
+	}
+
 	if requestParams.Only != 0 {
-		tdf = tile_data_fetcher.Spot(this.WhiteWaterDao, this.RiverDao,
-			getLinkMaker(req.FormValue("link_type")), this.processForWeb, this.ResourceBase)
+		tdf = tile_data_fetcher.Spot(
+			this.WhiteWaterDao,
+			this.RiverDao,
+			getLinkMaker(req.FormValue("link_type")),
+			this.processForWeb,
+			this.ResourceBase,
+		)
 	} else if requestParams.River != 0 {
-		tdf = tile_data_fetcher.River(this.TileDao, this.CampDao, this.ClusterMaker,
-			getLinkMaker(req.FormValue("link_type")), this.processForWeb, this.ResourceBase)
+		tdf = tile_data_fetcher.River(
+			this.TileDao,
+			this.CampDao,
+			getLinkMaker(req.FormValue("link_type")),
+			this.processForWeb,
+			this.ResourceBase,
+		)
 	} else if requestParams.Region != 0 {
-		tdf = tile_data_fetcher.Region(this.TileDao, this.ClusterMaker,
-			getLinkMaker(req.FormValue("link_type")), this.processForWeb, this.ResourceBase)
+		tdf = tile_data_fetcher.Region(
+			this.TileDao,
+			clusterMaker,
+			getLinkMaker(req.FormValue("link_type")),
+			this.processForWeb,
+			this.ResourceBase,
+		)
 	} else if requestParams.Country != 0 {
-		tdf = tile_data_fetcher.Country(this.TileDao, this.ClusterMaker,
-			getLinkMaker(req.FormValue("link_type")), this.processForWeb, this.ResourceBase)
+		tdf = tile_data_fetcher.Country(
+			this.TileDao,
+			clusterMaker,
+			getLinkMaker(req.FormValue("link_type")),
+			this.processForWeb,
+			this.ResourceBase,
+		)
 	} else {
-		tdf = tile_data_fetcher.World(this.TileDao, this.WaterWayDao, this.CampDao, this.SrtmDao, this.ClusterMaker,
-			getLinkMaker(req.FormValue("link_type")), this.processForWeb, this.ResourceBase)
+		tdf = tile_data_fetcher.World(
+			this.TileDao,
+			this.WaterWayDao,
+			this.CampDao,
+			this.SrtmDao,
+			clusterMaker,
+			getLinkMaker(req.FormValue("link_type")),
+			this.processForWeb,
+			this.ResourceBase,
+		)
 	}
 
 	features, req, err := tdf.Fetch(req, bbox, zoom, requestParams, featureToggles)
