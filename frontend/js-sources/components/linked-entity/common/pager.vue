@@ -39,6 +39,9 @@ module.exports = {
     filter: {
       required: false,
     },
+    customFilter: {
+      required: false,
+    },
     filterFunction: {
       type: Function,
       required: false,
@@ -81,14 +84,18 @@ module.exports = {
   },
   watch: {
     filter: function (newVal, _) {
-      this.refreshData(this.data, newVal)
+      this.refreshData(this.data, newVal, this.customFilter);
+    },
+    customFilter: function (newVal, _) {
+      this._customFilter = newVal;
+      this.refreshData(this.data, this.filter, newVal);
     },
     data: function (newVal, _) {
-      this.refreshData(newVal, this.filter)
+      this.refreshData(newVal, this.filter, this.customFilter)
     },
   },
   created() {
-    this.refreshData(this.data, this.filter)
+    this.refreshData(this.data, this.filter, this.customFilter)
   },
   data() {
     return {
@@ -134,10 +141,10 @@ module.exports = {
     isNotEnd(pages) {
       return pages[pages.length - 1] != (this.pageCount - 1);
     },
-    refreshData(data, filter) {
+    refreshData(data, filter, customFilter) {
       if (this.filterFunction && filter) {
         let page = this.currentPage;
-        this.filteredData = this.filterFunction(data, filter);
+        this.filteredData = this.filterFunction(data, filter, customFilter);
         this.toPage(page);
       }
     },
