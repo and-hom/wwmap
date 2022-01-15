@@ -1,11 +1,11 @@
 package handler
 
 import (
-	"github.com/and-hom/wwmap/cron/catalog-sync/huskytm"
-	"github.com/and-hom/wwmap/cron/catalog-sync/libru"
-	"github.com/and-hom/wwmap/cron/catalog-sync/riskru"
-	"github.com/and-hom/wwmap/cron/catalog-sync/skitalets"
-	"github.com/and-hom/wwmap/cron/catalog-sync/tlib"
+	"github.com/and-hom/wwmap/cron/report-retriever/huskytm"
+	"github.com/and-hom/wwmap/cron/report-retriever/libru"
+	"github.com/and-hom/wwmap/cron/report-retriever/riskru"
+	"github.com/and-hom/wwmap/cron/report-retriever/skitalets"
+	"github.com/and-hom/wwmap/cron/report-retriever/tlib"
 	"github.com/and-hom/wwmap/lib/dao"
 	. "github.com/and-hom/wwmap/lib/handler"
 	. "github.com/and-hom/wwmap/lib/http"
