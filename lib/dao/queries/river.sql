@@ -151,3 +151,7 @@ WHERE ___table___.id = ANY($1)
 
 --@count-by-region
 SELECT count(1) FROM river WHERE region_id=$1
+--@count-by-country
+SELECT count(1) FROM river
+    INNER JOIN region ON region.id = river.region_id
+WHERE country_id=$1

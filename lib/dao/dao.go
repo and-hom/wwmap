@@ -32,6 +32,7 @@ type RiverDao interface {
 	FindByTitlePart(tPart string, regionId int64, countryId int64, limit, offset int, showUnpublished bool) ([]RiverTitle, error)
 	GetParentIds(riverIds []int64) (map[int64]RiverParentIds, error)
 	CountByRegion(regionId int64) (int, error)
+	CountByCountry(countryId int64) (int, error)
 }
 
 type WhiteWaterDao interface {
@@ -155,6 +156,9 @@ type CountryDao interface {
 	HasProperties
 	List() ([]Country, error)
 	Get(id int64) (Country, bool, error)
+	Save(country ...Country) error
+	Insert(country Country) (int64, error)
+	Remove(id int64) error
 	GetByCode(code string) (Country, bool, error)
 }
 
@@ -168,6 +172,7 @@ type RegionDao interface {
 	Save(region ...Region) error
 	Insert(region Region) (int64, error)
 	Remove(id int64) error
+	RemoveAllByCountry(countryId int64) error
 	GetParentIds(regionIds []int64) (map[int64]RegionParentIds, error)
 }
 

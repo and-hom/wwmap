@@ -1,0 +1,10 @@
+<?xml version='1.0' ?>
+<dataset>
+    <region
+            id='269'
+            country_id='261'
+            title='Абхазия'
+            fake='true'
+            props='{}'
+    />
+</dataset>

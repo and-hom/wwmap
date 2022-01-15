@@ -1,0 +1,9 @@
+<?xml version='1.0' ?>
+<dataset>
+    <country
+            id='{{ index . "id" }}'
+            title='Россия'
+            code='RU'
+            props='{}'
+    />
+</dataset>

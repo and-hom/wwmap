@@ -46,7 +46,10 @@
                         {{entry.type}}
                     </td>
 
-                    <td v-if="isRegion(entry)">
+                    <td v-if="isCountry(entry)">
+                        <a :href="getCountryUrl(entry.object_id)">{{getCountryTitle(entry.object_id)}}</a>
+                    </td>
+                    <td v-else-if="isRegion(entry)">
                         <a :href="getRegionUrl(entry.object_id)">{{getRegionTitle(entry.object_id)}}</a>
                     </td>
                     <td v-else-if ="isRiver(entry)">
@@ -97,6 +100,13 @@ export default {
             doGetJson(backendApiBase + "/log", true).then(logs => {
                 this.logs = logs;
 
+                this.countryIds = this.logs.filter(this.isCountry).map(this.getObjId).filter(this.distinct);
+                doGetJson(backendApiBase + "/country", false)
+                    .then(countries => this.countryById = countries.reduce((map, country) => {
+                      map[country.id] = country;
+                      return map;
+                    }, {}));
+
                 this.regionIds = this.logs.filter(this.isRegion).map(this.getObjId).filter(this.distinct);
                 doPostJson(backendApiBase + "/region_base_ids", this.regionIds, true).then(regionById => this.regionById = regionById);
 
@@ -117,12 +127,22 @@ export default {
         data() {
             return {
                 logs: [],
+                countryById: {},
                 regionById: {},
                 riverById: {},
                 spotById: {},
                 imgById: {},
                 vkLink: function (vkId) {
                     return "https://vk.com/id" + vkId;
+                },
+
+                getCountryUrl: function (id) {
+                    return this.countryById[id] ? `${frontendBase}/editor.htm#${id}` : null;
+                },
+
+                getCountryTitle: function (id) {
+                    let countryData = this.countryById[id];
+                    return !countryData ? ("Страна " + id) : countryData.title;
                 },
 
                 getRegionUrl: function (id) {
@@ -183,6 +203,9 @@ export default {
                 },
                 getObjId: function (logEntry) {
                     return logEntry.object_id
+                },
+                isCountry: function (logEntry) {
+                    return logEntry.object_type == 'COUNTRY'
                 },
                 isRegion: function (logEntry) {
                     return logEntry.object_type == 'REGION'

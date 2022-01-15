@@ -5,6 +5,8 @@ import {
     COUNTRY_ACTIVE_ENTITY_LEVEL,
     getActiveId,
     getCamps,
+    getCountry,
+    getCountries,
     getRegion,
     getRegions,
     getReports,
@@ -152,6 +154,12 @@ export const store = new Vuex.Store({
     },
     getters: {},
     actions: {
+        reloadCountries(context) {
+            return getCountries().then(countries => {
+                context.commit('setTreePath', countries)
+            })
+        },
+
         reloadCountrySubentities(context, id) {
             return Promise.all([getRiversByCountry(id), getRegions(id)]).then(result => {
                 context.commit('showCountrySubentities', {
@@ -215,12 +223,17 @@ export const store = new Vuex.Store({
         setTreePath(state, treePath) {
             state.treePath = treePath;
         },
+        showEmptyPage(state) {
+            hideAllEditorPanes(state);
+        },
         showCountryPage(state, payload) {
             hideAllEditorPanes(state);
 
-            state.countryeditorstate.country = payload.country;
-            state.countryeditorstate.editMode = false;
-            state.countryeditorstate.visible = true
+            getCountry(payload.countryId).then(country => {
+                state.countryeditorstate.country = country;
+                state.countryeditorstate.editMode = false;
+                state.countryeditorstate.visible = true
+            })
         },
         showRegionPage(state, payload) {
             hideAllEditorPanes(state);
@@ -293,6 +306,20 @@ export const store = new Vuex.Store({
             state.regioneditorstate.country = payload.country;
         },
 
+        newCountry(state, payload) {
+            state.spoteditorstate.visible = false;
+            state.rivereditorstate.visible = false;
+            state.regioneditorstate.visible = false;
+            state.countryeditorstate.visible = false;
+
+            state.countryeditorstate.visible = true;
+            state.countryeditorstate.editMode = true;
+            state.countryeditorstate.country = {
+                id: 0,
+                title: '',
+            };
+        },
+
         newRiver(state, payload) {
             state.spoteditorstate.visible = false;
             state.rivereditorstate.visible = false;
@@ -352,6 +379,9 @@ export const store = new Vuex.Store({
             }
         },
 
+        setCountryEditorEditMode(state, payload) {
+            state.countryeditorstate.editMode = payload;
+        },
         setRegionEditorEditMode(state, payload) {
             state.regioneditorstate.editMode = payload;
         },

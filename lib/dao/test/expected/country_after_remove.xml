@@ -12,10 +12,4 @@
             props='{}'
             code='KZ'
     />
-    <country
-            id='261'
-            title='Абхазия'
-            props='{}'
-            code='AB'
-    />
 </dataset>

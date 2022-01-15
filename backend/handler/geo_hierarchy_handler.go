@@ -37,7 +37,12 @@ type GeoHierarchyHandler struct {
 
 func (this *GeoHierarchyHandler) Init() {
 	this.Register("/country", HandlerFunctions{Get: this.ListCountries})
-	this.Register("/country/{countryId}", HandlerFunctions{Get: this.GetCountry})
+	this.Register("/country/{countryId}", HandlerFunctions{
+		Get:    this.GetCountry,
+		Put:    this.ForRoles(this.SaveCountry, dao.ADMIN),
+		Post:   this.ForRoles(this.SaveCountry, dao.ADMIN),
+		Delete: this.ForRoles(this.RemoveCountry, dao.ADMIN),
+	})
 	this.Register("/country/code/{code}", HandlerFunctions{Get: this.GetCountryByCode})
 	this.Register("/country/code/{code}/region", HandlerFunctions{Get: this.ListRegionsByCountryCode})
 	this.Register("/country/{countryId}/region", HandlerFunctions{Get: this.ListRegions})
@@ -111,6 +116,11 @@ type RegionDto struct {
 	HasRivers bool `json:"has_rivers"`
 }
 
+type CountryDto struct {
+	dao.Country
+	HasRivers bool `json:"has_rivers"`
+}
+
 func (this *GeoHierarchyHandler) ListCountries(w http.ResponseWriter, r *http.Request) {
 	countries, err := this.CountryDao.List()
 	if err != nil {
@@ -127,9 +137,8 @@ func (this *GeoHierarchyHandler) GetCountry(w http.ResponseWriter, r *http.Reque
 		OnError(w, err, "Can not parse id", http.StatusBadRequest)
 		return
 	}
-	JsonAnswerFWith404(w, func() (interface{}, bool, error) {
-		return this.CountryDao.Get(countryId)
-	}, "Can't select country with id %d", countryId)
+
+	this.writeCountry(countryId, w)
 }
 
 func (this *GeoHierarchyHandler) GetCountryByCode(w http.ResponseWriter, r *http.Request) {
@@ -138,6 +147,110 @@ func (this *GeoHierarchyHandler) GetCountryByCode(w http.ResponseWriter, r *http
 	JsonAnswerFWith404(w, func() (interface{}, bool, error) {
 		return this.CountryDao.GetByCode(code)
 	}, "Can't select country with code %s", code)
+}
+
+func (this *GeoHierarchyHandler) SaveCountry(w http.ResponseWriter, r *http.Request) {
+	country := dao.Country{}
+	body, err := DecodeJsonBody(r, &country)
+	if err != nil {
+		OnError500(w, err, "Can not parse json from request body: "+body)
+		return
+	}
+
+	if len(strings.TrimSpace(country.Title)) == 0 {
+		OnError(w, errors.New(""), "Can not save country with empty name", http.StatusBadRequest)
+		return
+	}
+
+	var id int64
+	var logEntryType dao.ChangesLogEntryType
+	if country.Id > 0 {
+		err = this.CountryDao.Save(country)
+		id = country.Id
+		logEntryType = dao.ENTRY_TYPE_MODIFY
+
+	} else {
+		id, err = this.CountryDao.Insert(country)
+		logEntryType = dao.ENTRY_TYPE_CREATE
+	}
+	if err != nil {
+		switch err.(type) {
+		case dao.DuplicateError:
+			OnError(w, err, "Дубликат!", http.StatusConflict)
+		default:
+			OnError500(w, err, "Can not save country: "+body)
+		}
+		return
+	}
+
+	if country.Id <= 0 {
+		if _, err := this.RegionDao.CreateFake(id); err != nil {
+			OnError500(w, err, "Can not create default region for country: "+body)
+		}
+	}
+
+	this.writeCountry(id, w)
+	this.LogUserEvent(r, COUNTRY_LOG_ENTRY_TYPE, id, logEntryType, country.Title)
+}
+
+func (this *GeoHierarchyHandler) RemoveCountry(w http.ResponseWriter, r *http.Request) {
+	pathParams := mux.Vars(r)
+	countryId, err := strconv.ParseInt(pathParams["countryId"], 10, 64)
+	if err != nil {
+		OnError(w, err, "Can not parse id", http.StatusBadRequest)
+		return
+	}
+
+	country, found, err := this.CountryDao.Get(countryId)
+	if err != nil {
+		OnError500(w, err, fmt.Sprintf("Can not find country by id: %d", countryId))
+		return
+	}
+	if !found {
+		OnError(w, err, fmt.Sprintf("Country with id %d not found", countryId), http.StatusNotFound)
+		return
+	}
+
+	if err := this.RegionDao.RemoveAllByCountry(countryId); err != nil {
+		OnError(
+			w,
+			err,
+			fmt.Sprintf("Can not remove country regions by country id: %d", countryId),
+			http.StatusBadRequest,
+			)
+		return
+	}
+
+	if err := this.CountryDao.Remove(countryId); err != nil {
+		OnError500(w, err, fmt.Sprintf("Can not remove country by id: %d", countryId))
+		return
+	}
+	this.LogUserEvent(r, COUNTRY_LOG_ENTRY_TYPE, countryId, dao.ENTRY_TYPE_DELETE, country.Title)
+}
+
+func (this *GeoHierarchyHandler) writeCountry(countryId int64, w http.ResponseWriter) {
+	country, found, err := this.CountryDao.Get(countryId)
+	if err != nil {
+		OnError500(w, err, fmt.Sprintf("Can not get country %d", countryId))
+		return
+	}
+	if !found {
+		OnError(w, err, fmt.Sprintf("Country with id %d not found", countryId), http.StatusNotFound)
+		return
+	}
+
+	riverCnt, err := this.RiverDao.CountByCountry(countryId)
+	if err != nil {
+		OnError500(w, err, fmt.Sprintf("Can not get count of rivers for country %d", countryId))
+		return
+	}
+
+	dto := CountryDto{
+		country,
+		riverCnt > 0,
+	}
+
+	JsonAnswer(w, dto)
 }
 
 func (this *GeoHierarchyHandler) ListRegions(w http.ResponseWriter, r *http.Request) {

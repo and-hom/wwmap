@@ -35,3 +35,11 @@ func TestMain(m *testing.M) {
 
 	os.Exit(code)
 }
+
+func ClearDb(t *testing.T) {
+	daoTester.ClearTable(t, "image")
+	daoTester.ClearTable(t, "white_water_rapid")
+	daoTester.ClearTable(t, "river")
+	daoTester.ClearTable(t, "region")
+	daoTester.ClearTable(t, "country")
+}
