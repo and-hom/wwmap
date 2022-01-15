@@ -1,3 +1,11 @@
+wwmap-cron-modules (0.0.41) unstable; urgency=medium
+
+  * #433 Pdf page view improvements
+  * #433 Move report import and catalog export to separate binaries + enable pdf generation + misc fixes
+  * #433 Don't break file generation on single fail for PDF (parameterized for connector)
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sat, 15 Jan 2022 20:38:12 +0300
+
 wwmap-cron-modules (0.0.40) unstable; urgency=medium
 
   * #424 River track altitude calculation refactoring

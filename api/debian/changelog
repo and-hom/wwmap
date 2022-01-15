@@ -1,3 +1,9 @@
+wwmap-api (2.1.16) unstable; urgency=medium
+
+  * #433 Show only existing river passport links 
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sat, 15 Jan 2022 20:34:47 +0300
+
 wwmap-api (2.1.15) unstable; urgency=medium
 
   * #417 Use common map param storage for map

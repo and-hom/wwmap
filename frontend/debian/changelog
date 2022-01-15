@@ -1,3 +1,10 @@
+wwmap-frontend (0.0.76) unstable; urgency=medium
+
+  * #433 Add country editor
+  * #438 Reports filtering by source + custom filters in grid
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sat, 15 Jan 2022 20:37:01 +0300
+
 wwmap-frontend (0.0.75) unstable; urgency=medium
 
   * #341 SRTM added to technologies page

@@ -1,3 +1,12 @@
+wwmap-backend (0.0.72) unstable; urgency=medium
+
+  * #433 Add country editor
+  * #438 Reports filtering by source + custom filters in grid
+  * #433 Show only existing river passport links
+  * #433 Clustering enable/disable flag
+
+ -- Andrey Khomyakov <and.hom@gmail.com>  Sat, 15 Jan 2022 20:35:33 +0300
+
 wwmap-backend (0.0.71) unstable; urgency=medium
 
   * #421 Fix logs page
