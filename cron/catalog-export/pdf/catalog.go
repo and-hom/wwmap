@@ -27,6 +27,10 @@ func GetCatalogConnector(
 		return nil, err
 	}
 
+	if err := os.Setenv("QT_QPA_PLATFORM", "offscreen"); err != nil {
+		log.Error("Can't set environment value QT_QPA_PLATFORM for headless wkhtmltopdf execution: ", err)
+	}
+
 	return &PdfCatalogConnector{
 		templates:         t,
 		pdfStorage:        pdfStorage,
