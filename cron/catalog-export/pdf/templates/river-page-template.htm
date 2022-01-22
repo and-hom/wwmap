@@ -163,7 +163,7 @@
                 controls: ["zoomControl"]
         });
             {{end}}
-            var objectManager = new ymaps.RemoteObjectManager('http://localhost:7007/ymaps-tile-ww?bbox=%b&zoom=%z&river=' + {{ .River.Id }}, {
+            var objectManager = new ymaps.RemoteObjectManager('https://wwmap.ru/api/ymaps-tile-ww?bbox=%b&zoom=%z&river=' + {{ .River.Id }}, {
                 clusterHasBalloon: false,
                     geoObjectOpenBalloonOnClick: false,
                     geoObjectStrokeWidth: 3,
@@ -190,7 +190,7 @@
                     type: mapType,
                     controls: ["zoomControl"],
                 });
-                var objectManager = new ymaps.RemoteObjectManager('http://localhost:7007/ymaps-tile-ww?bbox=%b&zoom=%z&only=' + spotId, {
+                var objectManager = new ymaps.RemoteObjectManager('https://wwmap.ru/api/ymaps-tile-ww?bbox=%b&zoom=%z&only=' + spotId, {
                     clusterHasBalloon: false,
                     geoObjectOpenBalloonOnClick: false,
                     geoObjectStrokeWidth: 3,
