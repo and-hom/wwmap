@@ -195,7 +195,9 @@ func TestRiverFindForImage(t *testing.T) {
 	daoTester.ApplyDbunitData(t, "test/region.xml")
 	daoTester.ApplyDbunitData(t, "test/river.xml")
 	daoTester.ApplyDbunitData(t, "test/white_water_rapid.xml")
+	daoTester.ApplyDbunitData(t, "test/voyage_report.xml")
 	daoTester.ApplyDbunitData(t, "test/image.xml")
+	daoTester.ApplyDbunitData(t, "test/white_water_rapid_image.xml")
 
 	river, err := riverDao.FindForImage(1)
 	assert.Nil(t, err)

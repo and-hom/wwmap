@@ -13,6 +13,7 @@ var countryDao dao.CountryDao
 var regionDao dao.RegionDao
 var riverDao dao.RiverDao
 var tileDao dao.TileDao
+var imgDao dao.ImgDao
 
 func TestMain(m *testing.M) {
 	daoTester = &test.DaoTester{}
@@ -23,6 +24,7 @@ func TestMain(m *testing.M) {
 	regionDao = dao.NewRegionPostgresDao(postgresStorage)
 	riverDao = dao.NewRiverPostgresDao(postgresStorage)
 	tileDao = dao.NewTilePostgresDao(postgresStorage)
+	imgDao = dao.NewImgPostgresDao(postgresStorage)
 
 	log.Info("Dao initialized")
 
@@ -38,6 +40,8 @@ func TestMain(m *testing.M) {
 
 func ClearDb(t *testing.T) {
 	daoTester.ClearTable(t, "image")
+	daoTester.ClearTable(t, "voyage_report_river")
+	daoTester.ClearTable(t, "voyage_report")
 	daoTester.ClearTable(t, "white_water_rapid")
 	daoTester.ClearTable(t, "river")
 	daoTester.ClearTable(t, "region")

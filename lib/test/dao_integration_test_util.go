@@ -130,7 +130,7 @@ func (this *DaoTester) TestDatabase(t *testing.T, table string, path string, opt
 		ok := false
 		params, ok = opts[0].(map[string]string)
 		if !ok {
-			assert.Fail(t, "Param 1 should be map[string]string but was %v", opts[0])
+			assert.Fail(t, fmt.Sprintf("Param 1 should be map[string]string but was %v", opts[0]))
 		}
 	} else {
 		params = make(map[string]string)
@@ -140,7 +140,7 @@ func (this *DaoTester) TestDatabase(t *testing.T, table string, path string, opt
 		ok := false
 		except, ok = opts[1].([]string)
 		if !ok {
-			assert.Fail(t, "Param 2 should be []string but was %v", opts[1])
+			assert.Fail(t, fmt.Sprintf("Param 2 should be []string but was %v", opts[1]))
 		}
 	} else {
 		except = make([]string, 0)
@@ -148,26 +148,26 @@ func (this *DaoTester) TestDatabase(t *testing.T, table string, path string, opt
 
 	content, err := ioutil.ReadFile(path)
 	if err != nil {
-		assert.Fail(t, "Can't load file %s: %s", path, err)
+		assert.Fail(t, fmt.Sprintf("Can't load file %s: %s", path, err))
 	}
 
 	tmpl, err := template.New("replace").Parse(string(content))
 	if err != nil {
-		assert.Fail(t, "Can't load template: %s", err)
+		assert.Fail(t, fmt.Sprintf("Can't load template: %s", err))
 	}
 	buf := bytes.NewBufferString("")
 	err = tmpl.Execute(buf, params)
 	if err != nil {
-		assert.Fail(t, "Can't apply template: %s", err)
+		assert.Fail(t, fmt.Sprintf("Can't apply template: %s", err))
 	}
 
 	expectedImage, err := this.Tester.GetImageManager().LoadImage(buf.String())
 	if err != nil {
-		assert.Fail(t, "Can't load dbunit data from xml %s: %s", buf.String(), err)
+		assert.Fail(t, fmt.Sprintf("Can't load dbunit data from xml %s: %s", buf.String(), err))
 	}
 	actualImage, err := this.Tester.GetInstaller().GetTableImage(table)
 	if err != nil {
-		assert.Fail(t, "Can't load table data from %s: %s", path, err)
+		assert.Fail(t, fmt.Sprintf("Can't load table data from %s: %s", path, err))
 	}
 
 	for _, prop := range except {
@@ -178,14 +178,17 @@ func (this *DaoTester) TestDatabase(t *testing.T, table string, path string, opt
 
 	diffs := this.Tester.GetImageManager().GetImagesDiff(expectedImage, actualImage)
 	if len(diffs) > 0 {
-		assert.Fail(t, "Tables are different: %v", diffs)
+		for _, diff := range diffs {
+			log.Error(diff)
+		}
+		assert.Fail(t, fmt.Sprintf("Tables are different: %v", diffs))
 	}
 }
 
 func (this *DaoTester) loadImg(t *testing.T, path string) contract.Image {
 	image, err := this.Tester.GetImageManager().LoadImage(path)
 	if err != nil {
-		assert.Fail(t, "Can't load dbunit data from %s: %s", path, err)
+		assert.Fail(t, fmt.Sprintf("Can't load dbunit data from %s: %s", path, err))
 	}
 	return image
 }

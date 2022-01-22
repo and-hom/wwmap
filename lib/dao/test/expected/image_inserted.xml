@@ -1,0 +1,33 @@
+<?xml version='1.0' ?>
+<dataset>
+    <image
+            id='{{ index . "id1" }}'
+            report_id="100"
+            source="TEST"
+            remote_id="100"
+            url="http://test.ru/100.png"
+            preview_url="http://test.ru/100p.png"
+            date_published="2022-01-16T07:00:00Z"
+            enabled="true"
+            type="image"
+            date="2022-01-15T00:00:00Z"
+            level="{}"
+            date_level_updated=""
+            props='{"a": 1}'
+    />
+    <image
+            id='{{ index . "id2" }}'
+            report_id="0"
+            source="TEST"
+            remote_id="101"
+            url="http://test.ru/101.png"
+            preview_url="http://test.ru/101p.png"
+            date_published="2022-01-16T07:00:00Z"
+            enabled="true"
+            type="schema"
+            date=""
+            level="{}"
+            date_level_updated=""
+            props="{}"
+    />
+</dataset>

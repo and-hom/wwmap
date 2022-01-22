@@ -2,36 +2,35 @@
 <dataset>
     <image
         id="1"
-        white_water_rapid_id="1"
         source="wwmap"
         remote_id="1"
         enabled="true"
         type="image"
-        main_image="false"
         url=""
         preview_url=""
         report_id="0"
+        date_published="2021-01-16T07:00:00Z"
+        level='{"1": 3}'
+        props='{"1": "a"}'
     />
     <image
         id="2"
-        white_water_rapid_id="1"
         source="wwmap"
         remote_id="2"
-        enabled="true"
+        enabled="false"
         type="image"
-        main_image="true"
+        date_published="2021-01-16T07:00:00Z"
         url=""
         preview_url=""
         report_id="0"
     />
     <image
         id="3"
-        white_water_rapid_id="1"
         source="youtube"
         remote_id="videoid"
         enabled="true"
         type="video"
-        main_image="false"
+        date_published="2021-01-16T07:00:00Z"
         url=""
         preview_url=""
         report_id="0"

@@ -45,26 +45,46 @@ type ImgHandler struct {
 }
 
 func (this *ImgHandler) Init() {
-	this.Register("/spot/{spotId}/img", HandlerFunctions{Get: this.GetImages,
+	this.Register("/{entityType}/{entityId}/img", HandlerFunctions{
+		Get: this.GetImages,
 		Post: this.ForRoles(this.Upload, dao.ADMIN, dao.EDITOR),
-		Put:  this.ForRoles(this.Upload, dao.ADMIN, dao.EDITOR)})
+		Put:  this.ForRoles(this.Upload, dao.ADMIN, dao.EDITOR),
+	})
 	this.Register("/spot/{spotId}/img_ext", HandlerFunctions{
 		Post: this.ForRoles(this.AddExternalImage, dao.ADMIN, dao.EDITOR),
-		Put:  this.ForRoles(this.AddExternalImage, dao.ADMIN, dao.EDITOR)})
-	this.Register("/spot/{spotId}/img/{imgId}", HandlerFunctions{Get: this.GetImage,
-		Delete: this.ForRoles(this.Delete, dao.ADMIN, dao.EDITOR)})
-	this.Register("/spot/{spotId}/img/{imgId}/preview", HandlerFunctions{Get: this.GetImagePreview})
-	this.Register("/spot/{spotId}/img/{imgId}/enabled", HandlerFunctions{
-		Post: this.ForRoles(this.SetEnabled, dao.ADMIN, dao.EDITOR)})
+		Put:  this.ForRoles(this.AddExternalImage, dao.ADMIN, dao.EDITOR),
+	})
+	this.Register("/spot/{spotId}/img/{imgId}", HandlerFunctions{
+		Get: this.GetImage,
+		Delete: this.ForRoles(this.DeleteReturningAll, dao.ADMIN, dao.EDITOR),
+	})
+
+	this.Register("/{entityType}/{entityId}/img/{imgId}/preview", HandlerFunctions{
+		Get: this.GetImagePreview,
+	})
+	this.Register("/{entityType}/{entityId}/preview", HandlerFunctions{
+		Get: this.GetPreview,
+		Post:   this.ForRoles(this.SetPreview, dao.ADMIN, dao.EDITOR),
+		Delete: this.ForRoles(this.DropPreview, dao.ADMIN, dao.EDITOR),
+	})
+
+	this.Register("/{entityType}/{entityId}/img/{imgId}/enabled", HandlerFunctions{
+		Post: this.ForRoles(this.SetEnabledReturningAll, dao.ADMIN, dao.EDITOR),
+	})
+
 	this.Register("/spot/{spotId}/img/{imgId}/date", HandlerFunctions{
 		Post: this.ForRoles(this.SetDate, dao.ADMIN, dao.EDITOR)})
 	this.Register("/spot/{spotId}/img/{imgId}/manual-level", HandlerFunctions{
 		Post:   this.ForRoles(this.SetManualLevel, dao.ADMIN, dao.EDITOR),
 		Delete: this.ForRoles(this.ResetManualLevel, dao.ADMIN, dao.EDITOR),
 	})
-	this.Register("/spot/{spotId}/preview", HandlerFunctions{Get: this.GetPreview,
-		Post:   this.ForRoles(this.SetPreview, dao.ADMIN, dao.EDITOR),
-		Delete: this.ForRoles(this.DropPreview, dao.ADMIN, dao.EDITOR)})
+
+	this.Register("/img/{imgId}", HandlerFunctions{
+		Delete: this.ForRoles(this.Delete, dao.ADMIN, dao.EDITOR),
+	})
+	this.Register("/img/{imgId}/enabled", HandlerFunctions{
+		Post: this.ForRoles(this.SetEnabled, dao.ADMIN, dao.EDITOR),
+	})
 
 	exif.RegisterParsers(mknote.All...)
 }
@@ -181,7 +201,7 @@ func (this *ImgHandler) Upload(w http.ResponseWriter, req *http.Request) {
 		realDate = util.GetImageRealDate(bytes.NewReader(headCacher.GetCache().Bytes()))
 	}
 	level := this.getLevelsForDate(spotId, realDate)
-	img, err := this.ImgDao.InsertLocal(spotId, imgType, dao.IMG_SOURCE_WWMAP, time.Now(), realDate, level)
+	img, err := this.ImgDao.InsertLocal(imgType, dao.IMG_SOURCE_WWMAP, time.Now(), realDate, level)
 	if err != nil {
 		OnError500(w, err, "Can not insert")
 		return
@@ -250,7 +270,8 @@ func compress(sourceImage image.Image, src io.ReadSeeker, maxW, maxH int, resize
 	return &b, nil
 }
 
-func (this *ImgHandler) Delete(w http.ResponseWriter, req *http.Request) {
+//Deprecated
+func (this *ImgHandler) DeleteReturningAll(w http.ResponseWriter, req *http.Request) {
 	pathParams := mux.Vars(req)
 	spotId, err := strconv.ParseInt(pathParams["spotId"], 10, 64)
 	if err != nil {
@@ -296,7 +317,52 @@ func (this *ImgHandler) Delete(w http.ResponseWriter, req *http.Request) {
 	this.LogUserEvent(req, IMAGE_LOG_ENTRY_TYPE, imgId, dao.ENTRY_TYPE_DELETE, "")
 }
 
-func (this *ImgHandler) SetEnabled(w http.ResponseWriter, req *http.Request) {
+
+func (this *ImgHandler) Delete(w http.ResponseWriter, req *http.Request) {
+	pathParams := mux.Vars(req)
+
+	imgIdStr := pathParams["imgId"]
+	imgId, err := strconv.ParseInt(imgIdStr, 10, 64)
+	if err != nil {
+		OnError(w, err, "Can not parse img id", http.StatusBadRequest)
+		return
+	}
+
+	existing, found, err := this.ImgDao.Find(imgId)
+	if err != nil {
+		OnError500(w, err, "Can't select existing image from database")
+		return
+	}
+	if !found {
+		OnError(w, err, "Image does not exist", http.StatusNotFound)
+		return
+	}
+
+	err = this.ImgDao.Remove(imgId, nil)
+	if err != nil {
+		OnError500(w, err, "Can not delete image from db")
+		return
+	}
+
+	if existing.Source == dao.IMG_SOURCE_WWMAP {
+		storageKey := storageKeyById(imgIdStr)
+		imgRemoveErr := this.ImgStorage.Remove(storageKey)
+		previewRemoveErr := this.PreviewImgStorage.Remove(storageKey)
+		if imgRemoveErr != nil {
+			logrus.Error("Can not delete image data: ", imgRemoveErr)
+		}
+		if previewRemoveErr != nil {
+			logrus.Error("Can not delete image preview: ", previewRemoveErr)
+		}
+	}
+
+	JsonAnswer(w, true)
+
+	this.LogUserEvent(req, IMAGE_LOG_ENTRY_TYPE, imgId, dao.ENTRY_TYPE_DELETE, "")
+}
+
+//Deprecated
+func (this *ImgHandler) SetEnabledReturningAll(w http.ResponseWriter, req *http.Request) {
 	pathParams := mux.Vars(req)
 	spotId, err := strconv.ParseInt(pathParams["spotId"], 10, 64)
 	if err != nil {
@@ -324,6 +390,33 @@ func (this *ImgHandler) SetEnabled(w http.ResponseWriter, req *http.Request) {
 	}
 
 	this.listImagesForSpot(w, spotId, getImgType(req))
+
+	this.LogUserEvent(req, IMAGE_LOG_ENTRY_TYPE, imgId, dao.ENTRY_TYPE_MODIFY, fmt.Sprintf("enabled=%t", enabled))
+}
+
+func (this *ImgHandler) SetEnabled(w http.ResponseWriter, req *http.Request) {
+	pathParams := mux.Vars(req)
+	imgIdStr := pathParams["imgId"]
+	imgId, err := strconv.ParseInt(imgIdStr, 10, 64)
+	if err != nil {
+		OnError(w, err, "Can not parse img id", http.StatusBadRequest)
+		return
+	}
+
+	enabled := false
+	body, err := DecodeJsonBody(req, &enabled)
+	if err != nil {
+		OnError(w, err, "Can not unmarshal request body: "+body, http.StatusBadRequest)
+		return
+	}
+
+	err = this.ImgDao.SetEnabled(imgId, enabled)
+	if err != nil {
+		OnError500(w, err, "Can not set image enables/disabled")
+		return
+	}
+
+	JsonAnswer(w, true)
 
 	this.LogUserEvent(req, IMAGE_LOG_ENTRY_TYPE, imgId, dao.ENTRY_TYPE_MODIFY, fmt.Sprintf("enabled=%t", enabled))
 }

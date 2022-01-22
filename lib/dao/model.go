@@ -283,7 +283,6 @@ const IMG_WATER_LEVEL_MANUAL string = "0"
 
 type Img struct {
 	Id               int64                  `json:"id"`
-	WwId             int64                  `json:"ww_id"`
 	ReportId         int64                  `json:"report_id"`
 	Source           string                 `json:"source"`
 	RemoteId         string                 `json:"remote_id"`
@@ -294,9 +293,9 @@ type Img struct {
 	LabelsForSearch  []string               `json:"-"`
 	Enabled          bool                   `json:"enabled"`
 	Type             ImageType              `json:"type"`
-	MainImage        bool                   `json:"main_image"`
 	Date             *time.Time             `json:"date"`
 	DateLevelUpdated time.Time              `json:"-"`
+	// Уровни по ID гидропостов, откалиброванные в баллах от 1 до 5
 	Level            map[string]int8        `json:"level"`
 	Props            map[string]interface{} `json:"props"`
 }

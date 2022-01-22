@@ -1,0 +1,48 @@
+<?xml version='1.0' ?>
+<dataset>
+    <image
+            id="2"
+            source="wwmap"
+            remote_id="2"
+            enabled="false"
+            type="image"
+            date=""
+            date_published="2021-01-16T07:00:00Z"
+            url=""
+            preview_url=""
+            report_id="0"
+            level="{}"
+            date_level_updated=""
+            props="{}"
+    />
+    <image
+            id="3"
+            source="youtube"
+            remote_id="videoid"
+            enabled="true"
+            type="video"
+            date=""
+            date_published="2021-01-16T07:00:00Z"
+            url=""
+            preview_url=""
+            report_id="0"
+            level="{}"
+            date_level_updated=""
+            props="{}"
+    />
+    <image
+            id="1"
+            source="wwmap"
+            remote_id="1"
+            enabled="true"
+            type="image"
+            date=""
+            url=""
+            preview_url=""
+            report_id="0"
+            date_published="2021-01-16T07:00:00Z"
+            level='{"0": 1, "1": 3}'
+            date_level_updated=""
+            props='{"1": "a"}'
+    />
+</dataset>

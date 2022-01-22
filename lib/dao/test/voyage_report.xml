@@ -1,0 +1,25 @@
+<?xml version='1.0' ?>
+<dataset>
+    <!--   вместо report_id=null использован report_id=0 и фейковый отчёт - надо переделать -->
+    <voyage_report
+            id="0"
+            title="-"
+            source="wwmap"
+            remote_id="0"
+            url="http://test.ru/reports/100"
+            date_modified="2022-01-16T09:00:00+03:00"
+            removed="true"/>
+
+    <voyage_report
+            id="100"
+            title="Отчёт"
+            source="TEST"
+            remote_id="test100"
+            url="http://test.ru/reports/100"
+            date_published="2022-01-16T09:00:00+03:00"
+            date_modified="2022-01-16T09:00:00+03:00"
+            date_of_trip="2021-06-05"
+            tags='["Страшная река", "Приток страшной реки"]'
+            author="Иван Петров"
+            removed="false"/>
+</dataset>

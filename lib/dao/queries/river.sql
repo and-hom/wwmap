@@ -50,8 +50,9 @@ SELECT river.id,region_id, region.country_id,river.title, region.title AS region
  FROM river
      INNER JOIN region ON river.region_id=region.id
      INNER JOIN white_water_rapid wwr ON river.id = wwr.river_id
-     INNER JOIN image ON wwr.id = image.white_water_rapid_id
-WHERE image.id=$1
+     INNER JOIN white_water_rapid_image wwrimg ON wwr.id = wwrimg.white_water_rapid_id
+     INNER JOIN image img ON img.id = wwrimg.image_id
+WHERE img.id=$1
 
 --@for-spot
 SELECT river.id,region_id, region.country_id,river.title, region.title AS region_title, fake AS region_fake,NULL,

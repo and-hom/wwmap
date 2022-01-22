@@ -130,10 +130,14 @@
                     return backendApiBase + "/spot/" + this.spot.id + "/img?type=" + this.type
                 },
                 removeImage: function (imgId) {
-                    removeImage(this.spot.id, imgId, this.type).then(images => this.images = images);
+                    removeImage(this.spot.id, imgId, this.type)
+                        .then(r => getImages("spot", this.spot.id, this.type))
+                        .then(images => this.images = images);
                 },
                 setImgEnabled: function (enabled, imgId) {
-                    setImageEnabled(this.spot.id, imgId, enabled, this.type).then(images => this.images = images);
+                    setImageEnabled(imgId, enabled, this.type)
+                        .then(r => getImages("spot", this.spot.id, this.type))
+                        .then(images => this.images = images);
                 },
                 setSpotPreview: function (imgId) {
                     setSpotPreview(this.spot.id, imgId, this.type).then(images => {
@@ -141,7 +145,7 @@
                     });
                 },
                 refresh: function () {
-                    getImages(this.spot.id, this.type).then(images => {
+                    getImages("spot", this.spot.id, this.type).then(images => {
                         // Workaround #140 do not refresh the same images list. It produces update event and then refresh and then update and then.....
                         var filesSum = images.map(function (x) {
                             return x.id

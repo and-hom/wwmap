@@ -1,0 +1,18 @@
+<?xml version='1.0' ?>
+<dataset>
+    <image
+            id='{{ index . "id" }}'
+            report_id="0"
+            source="wwmap"
+            remote_id='{{ index . "id" }}'
+            url=""
+            preview_url=""
+            date_published="2022-01-16T07:00:00Z"
+            enabled="true"
+            type="image"
+            date="2022-01-15T00:00:00Z"
+            level='{"1": 3}'
+            date_level_updated=""
+            props="{}"
+    />
+</dataset>

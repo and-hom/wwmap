@@ -105,24 +105,36 @@ type WaterWayRefDao interface {
 type ImgDao interface {
 	IdEntity
 	HasProperties
-	InsertLocal(wwId int64, _type ImageType, source string, datePublished time.Time, date *time.Time, level map[string]int8) (Img, error)
+	InsertLocal(
+		_type ImageType,
+		source string,
+		datePublished time.Time,
+		date *time.Time,
+		level map[string]int8,
+		levelUpdateDate time.Time,
+		) (Img, error)
 	Upsert(img ...Img) ([]Img, error)
 	Find(id int64) (Img, bool, error)
-	List(wwId int64, limit int, _type ImageType, enabledOnly bool) ([]Img, error)
-	ListExt(wwId int64, limit int, _type ImageType, enabledOnly bool) ([]ImgExt, error)
-	ListAllBySpot(wwId int64) ([]Img, error)
-	ListMainByRiver(riverId int64) ([]Img, error)
-	ListAllByRiver(riverId int64) ([]Img, error)
+
 	SetEnabled(id int64, enabled bool) error
-	SetDateAndLevel(id int64, date time.Time, level map[string]int8) error
+	SetDateAndLevel(id int64, date time.Time, level map[string]int8, dateLevelUpdated time.Time) error
 	SetManualLevel(id int64, level int8) (map[string]int8, error)
 	ResetManualLevel(id int64) (map[string]int8, error)
+
+	// Spot-specific
 	SetMain(spotId int64, id int64) error
 	DropMainForSpot(spotId int64) error
 	GetMainForSpot(spotId int64) (Img, bool, error)
 	RemoveBySpot(spotId int64, tx interface{}) error
 	RemoveByRiver(spotId int64, tx interface{}) error
+
 	GetParentIds(imgIds []int64) (map[int64]ImageParentIds, error)
+
+	List(wwId int64, limit int, _type ImageType, enabledOnly bool) ([]Img, error)
+	ListExt(wwId int64, limit int, _type ImageType, enabledOnly bool) ([]ImgExt, error)
+	ListAllBySpot(wwId int64) ([]Img, error)
+	ListMainByRiver(riverId int64) ([]Img, error)
+	ListAllByRiver(riverId int64) ([]Img, error)
 }
 
 type TileDao interface {

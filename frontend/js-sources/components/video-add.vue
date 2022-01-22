@@ -40,7 +40,7 @@
     import {backendApiBase} from '../config'
 
     module.exports = {
-        props: ['spot', 'value', 'type', 'auth'],
+        props: ['entityType', 'entityId', 'value', 'type', 'auth'],
         computed: {
             headers: function () {
                 if (this.auth) {
@@ -62,10 +62,14 @@
         data: function () {
             return {
                 removeImage: function (imgId) {
-                    removeImage(this.spot.id, imgId, this.type).then(images => this.images = images);
+                    removeImage(imgId, this.type)
+                        .then(r => getImages(this.entityId, this.entityId, "video"))
+                        .then(images => this.images = images);
                 },
                 setImgEnabled: function (enabled, imgId) {
-                    setImageEnabled(this.spot.id, imgId, enabled, this.type).then(images => this.images = images);
+                    setImageEnabled(imgId, enabled, this.type)
+                        .then(r => getImages(this.entityId, this.entityId, "video"))
+                        .then(images => this.images = images);
                 },
                 imageClass: function (image) {
                     if (image.enabled === false) {
@@ -74,7 +78,7 @@
                     return ""
                 },
                 uploadPath: function () {
-                    return backendApiBase + "/spot/" + this.spot.id + "/img_ext?type=" + this.type
+                    return `${backendApiBase}/${this.entityType}/${this.entityId}/img_ext?type=${this.type}`
                 },
                 onAddVideo: function () {
                     try {
@@ -113,7 +117,7 @@
                         var t = this;
                         doPostJson(this.uploadPath(), requestData, true).then(resp => {
                             if (resp) {
-                               getImages(this.spot.id, "video").then(images => t.images = images);
+                               getImages(this.entityType, this.entityId, "video").then(images => t.images = images);
                                 t.hideError();
                             } else {
                                 t.showError("Не удалось добавить видео")

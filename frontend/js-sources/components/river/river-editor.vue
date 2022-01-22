@@ -41,7 +41,10 @@
                         </dd>
                     </dl>
                 </b-tab>
-                <b-tab title="Стоянки">
+                <b-tab title="Видео" :disabled="river.id<=0">
+                  <video-add :spot="spot" v-model="_videos" type="video" :auth="true"></video-add>
+                </b-tab>
+                <b-tab title="Стоянки" :disabled="river.id<=0">
                   <linked-entity-in-place-editor
                       v-model="river.camps"
                       :multiselect="true"
@@ -57,7 +60,7 @@
                     </template>
                   </linked-entity-in-place-editor>
                 </b-tab>
-                <b-tab title="Заброски">
+                <b-tab title="Заброски" :disabled="river.id<=0">
                   <linked-entity-in-place-editor
                       v-model="river.transfers"
                       :multiselect="true"

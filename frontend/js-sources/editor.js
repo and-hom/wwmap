@@ -139,16 +139,16 @@ export function setRiverVisible(riverId, visible) {
 }
 
 
-export function getImages(id, _type) {
-    return doGetJson(backendApiBase + "/spot/" + id + "/img?type=" + _type).then(prepareImgs);
+export function getImages(type, id, _type) {
+    return doGetJson(`${backendApiBase}/${type}/${id}/img?type=${_type}`).then(prepareImgs);
 }
 
-export function removeImage(spotId, id, _type) {
-    return doDeleteWithJsonResp(backendApiBase + "/spot/" + spotId + "/img/" + id + "?type=" + _type, true).then(prepareImgs)
+export function removeImage(id, _type) {
+    return doDeleteWithJsonResp(`${backendApiBase}/img/${id}?type=${_type}`, true).then(prepareImgs)
 }
 
-export function setImageEnabled(spotId, id, enabled, _type) {
-    return doPostJson(backendApiBase + "/spot/" + spotId + "/img/" + id + "/enabled?type=" + _type, enabled, true).then(prepareImgs)
+export function setImageEnabled(id, enabled, _type) {
+    return doPostJson(`${backendApiBase}/img/${id}/enabled?type=${_type}`, enabled, true).then(prepareImgs)
 }
 
 export function setManualLevel(spotId, id, l) {
