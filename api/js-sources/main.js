@@ -101,6 +101,7 @@ export function initWWMap(mapId, riversListId, options) {
             ymaps.overlay.storage.add("BiPlacemrakOverlay", BiPlacemrakOverlay);
             ymaps.overlay.storage.add("RiverTrackOverlay", RiverTrackOverlay);
         })
+        .then(_ => ymaps.regions.settings.setBaseUrl('https://huggingface.co/datasets/world-igr-plum/regions/resolve/main/'))
         .then(_ => ymaps.borders.load("001"))
         .then(function (countries) {
             let restrictMapArea = null;
